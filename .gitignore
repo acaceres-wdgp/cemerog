@@ -29,7 +29,7 @@ yarn-error.log
 /.zed
 /.agents
 /.amp
-/.claude
+# /.claude  # included: contains project commands
 /.cursor
 /.factory
 /.grok
@@ -38,7 +38,7 @@ yarn-error.log
 /.pi
 /.mcp.json
 /AGENTS.md
-/CLAUDE.md
+# /CLAUDE.md  # included: project context for Claude Code
 /boost.json
 /opencode.json
 /opencode.jsonc
