@@ -35,6 +35,10 @@ export default defineConfig({
         }),
     ]),
     server: {
+        host: 'cemerog.test',
+        hmr: {
+            host: 'cemerog.test',
+        },
         watch: {
             ignored: [
                 '**/.agents/**',

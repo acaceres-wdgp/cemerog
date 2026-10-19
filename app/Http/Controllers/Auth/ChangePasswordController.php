@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,14 +27,18 @@ class ChangePasswordController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)->numbers(),
+            ],
         ]);
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
         $user->update([
-            'password' => $request->string('password'),
+            'password' => Hash::make($request->string('password')),
             'must_change_password' => false,
         ]);
 

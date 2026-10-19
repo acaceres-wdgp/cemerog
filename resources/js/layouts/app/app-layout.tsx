@@ -4,9 +4,9 @@
  * Collapsed state is persisted in cookie (sidebar_state).
  */
 
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
-import { route } from 'ziggy-js';
+import { logout } from '@/routes';
 import {
     House,
     LayoutDashboard,
@@ -107,7 +107,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     const permissions: string[] = (usePage<PageProps>().props as unknown as { permissions?: string[] }).permissions ?? [];
 
     const handleLogout = () => {
-        router.post(route('logout'));
+        router.post(logout.url());
     };
 
     const sidebarBg = THEME_COLORS[theme].bg;
@@ -168,7 +168,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                                     return (
                                         <Link
                                             key={item.key}
-                                            href={route(item.route)}
+                                            href={item.href}
                                             className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
                                                 isActive
                                                     ? 'text-white'
@@ -316,7 +316,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                                         </div>
                                         <div className="p-1">
                                             <Link
-                                                href={route('password.change-required')}
+                                                href="/password/change-required"
                                                 className="flex items-center gap-2 rounded px-3 py-2 text-sm text-[#333333] hover:bg-[#F3F7F2] transition-colors"
                                                 onClick={() => setShowUserMenu(false)}
                                             >

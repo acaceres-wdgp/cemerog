@@ -27,6 +27,9 @@ use App\Http\Controllers\Modules\TableroController;
 use App\Http\Controllers\Modules\TemaController;
 use Illuminate\Support\Facades\Route;
 
+// Root redirect
+Route::get('/', fn () => redirect()->route('login'));
+
 // Auth routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
