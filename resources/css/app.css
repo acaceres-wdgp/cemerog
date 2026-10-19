@@ -1,0 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+/* Only light mode – dark mode disabled for CEMEROG */
+
+@theme {
+    /* ── Typography ─────────────────────────────── */
+    --font-sans:
+        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
+    --font-serif: 'Bitter', ui-serif, Georgia, serif;
+
+    /* ── Radius ──────────────────────────────────── */
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    /* ── Brand / Primary ─────────────────────────── */
+    --color-primary: #2E8B3E;
+    --color-primary-hover: #277a35;
+    --color-primary-foreground: #FFFFFF;
+
+    /* ── Brand Accent ────────────────────────────── */
+    --color-accent: #8CC63F;
+    --color-accent-bg: #EEF6E2;
+    --color-accent-fg: #2f4a17;
+
+    /* ── Text ────────────────────────────────────── */
+    --color-text-body: #333333;
+    --color-text-heading: #1f2d22;
+    --color-muted: #71717a;
+    --color-muted-bg: #f4f4f5;
+
+    /* ── App Background ──────────────────────────── */
+    --color-app-bg: #F3F7F2;
+
+    /* ── Card ────────────────────────────────────── */
+    --color-card-bg: #FFFFFF;
+    --color-card-border: #e3e9e3;
+
+    /* ── Input ───────────────────────────────────── */
+    --color-input-border: #e4e4e7;
+
+    /* ── Table Header ────────────────────────────── */
+    --color-table-header-bg: #F6FAF1;
+    --color-table-header-text: #56693f;
+
+    /* ── Error ───────────────────────────────────── */
+    --color-error: #b91c1c;
+    --color-error-bg: #fef2f2;
+    --color-error-border: #fecaca;
+
+    /* ── Sidebar Themes ──────────────────────────── */
+    --color-sidebar-carbon: #2A2E2C;
+    --color-sidebar-slate: #1F2B33;
+    --color-sidebar-forest: #173F26;
+
+    /* ── shadcn/ui semantic tokens ───────────────── */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+    --background: #F3F7F2;
+    --foreground: #333333;
+    --card: #FFFFFF;
+    --card-foreground: #333333;
+    --popover: #FFFFFF;
+    --popover-foreground: #333333;
+    --primary: #2E8B3E;
+    --primary-foreground: #FFFFFF;
+    --secondary: #F6F9F5;
+    --secondary-foreground: #1f2d22;
+    --muted: #f4f4f5;
+    --muted-foreground: #71717a;
+    --accent: #EEF6E2;
+    --accent-foreground: #2f4a17;
+    --destructive: #b91c1c;
+    --destructive-foreground: #FFFFFF;
+    --border: #e3e9e3;
+    --input: #e4e4e7;
+    --ring: #2E8B3E;
+    --chart-1: #2E8B3E;
+    --chart-2: #8CC63F;
+    --chart-3: #277a35;
+    --chart-4: #56693f;
+    --chart-5: #2f4a17;
+    --radius: 0.5rem;
+    --sidebar: #2A2E2C;
+    --sidebar-foreground: #f4f4f5;
+    --sidebar-primary: #8CC63F;
+    --sidebar-primary-foreground: #1f2d22;
+    --sidebar-accent: rgba(255,255,255,0.08);
+    --sidebar-accent-foreground: #FFFFFF;
+    --sidebar-border: rgba(255,255,255,0.1);
+    --sidebar-ring: #8CC63F;
+}
+
+/* ── Attention State Utilities ────────────────────── */
+.state-espera     { --state-bg: #FEF3C7; --state-text: #92400E; --state-accent: #D97706; }
+.state-consulta   { --state-bg: #DBEAFE; --state-text: #1E40AF; --state-accent: #2563EB; }
+.state-emergencia { --state-bg: #FEE2E2; --state-text: #991B1B; --state-accent: #DC2626; }
+.state-internado  { --state-bg: #EDE9FE; --state-text: #5B21B6; --state-accent: #7C3AED; }
+.state-cirugia    { --state-bg: #FCE7F3; --state-text: #9D174D; --state-accent: #DB2777; }
+.state-pendiente  { --state-bg: #FFEDD5; --state-text: #9A3412; --state-accent: #EA580C; }
+.state-balance    { --state-bg: #CFFAFE; --state-text: #155E75; --state-accent: #0891B2; }
+.state-saldada    { --state-bg: #2E8B3E; --state-text: #FFFFFF; --state-accent: #FFFFFF; }
+.state-cancelada  { --state-bg: #F4F4F5; --state-text: #52525B; --state-accent: #A1A1AA; }
+
+/* ── Triage Level Utilities ──────────────────────── */
+.triage-i   { --triage-bg: #DC2626; --triage-text: #FFFFFF; }
+.triage-ii  { --triage-bg: #EA580C; --triage-text: #FFFFFF; }
+.triage-iii { --triage-bg: #F59E0B; --triage-text: #3b2a00; }
+.triage-iv  { --triage-bg: #2E8B3E; --triage-text: #FFFFFF; }
+.triage-v   { --triage-bg: #2563EB; --triage-text: #FFFFFF; }
+
+/* ── Sidebar Themes ──────────────────────────────── */
+[data-sidebar-theme="carbon"]  { --sidebar: #2A2E2C; }
+[data-sidebar-theme="slate"]   { --sidebar: #1F2B33; }
+[data-sidebar-theme="forest"]  { --sidebar: #173F26; }
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+        font-family: var(--font-sans);
+        font-size: 14px;
+        line-height: 1.45;
+    }
+
+    h1, h2, h3, .font-brand {
+        font-family: var(--font-serif);
+        color: var(--color-text-heading);
+    }
+}
+
+/* ── Button overrides ─────────────────────────────── */
+@layer components {
+    .btn-primary {
+        @apply h-9 px-[14px] bg-[#2E8B3E] text-white hover:bg-[#277a35] rounded-md text-sm font-medium transition-colors;
+    }
+
+    .btn-secondary {
+        @apply h-9 px-[14px] bg-[#F6F9F5] border border-[#dfe7df] text-[#1f2d22] hover:bg-[#EEF6E2] rounded-md text-sm font-medium transition-colors;
+    }
+}
