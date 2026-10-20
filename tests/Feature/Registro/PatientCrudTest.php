@@ -1,0 +1,268 @@
+<?php
+
+use App\Models\Patient;
+use App\Models\User;
+
+beforeEach(function () {
+    $this->secretaria = User::factory()->create();
+    $this->secretaria->givePermissionTo('module.registro.access');
+});
+
+// ─── Search ─────────────────────────────────────────────────────────────────
+
+test('search redirects unauthenticated users', function () {
+    $this->get('/registro/pacientes/buscar?q=maria')
+        ->assertRedirect('/login');
+});
+
+test('search returns 403 without permission', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->getJson('/registro/pacientes/buscar?q=maria')
+        ->assertForbidden();
+});
+
+test('search returns empty array when query is too short', function () {
+    $this->actingAs($this->secretaria)
+        ->getJson('/registro/pacientes/buscar?q=m')
+        ->assertOk()
+        ->assertExactJson([]);
+});
+
+test('search returns matching patients by name', function () {
+    Patient::factory()->create([
+        'first_names' => 'Carla',
+        'last_names' => 'Torres',
+        'document_number' => '001-1234567-8',
+    ]);
+    Patient::factory()->create(['first_names' => 'Juan', 'last_names' => 'Perez', 'document_number' => '001-9999999-9']);
+
+    $this->actingAs($this->secretaria)
+        ->getJson('/registro/pacientes/buscar?q=Carla')
+        ->assertOk()
+        ->assertJsonCount(1)
+        ->assertJsonFragment(['document_number' => '001-1234567-8']);
+});
+
+test('search returns matching patients by document number', function () {
+    $patient = Patient::factory()->create(['document_number' => '001-9876543-2']);
+
+    $this->actingAs($this->secretaria)
+        ->getJson('/registro/pacientes/buscar?q=001-9876543-2')
+        ->assertOk()
+        ->assertJsonFragment(['id' => $patient->id]);
+});
+
+test('search returns matching patients by phone', function () {
+    $patient = Patient::factory()->create(['phone' => '809-555-1234']);
+
+    $this->actingAs($this->secretaria)
+        ->getJson('/registro/pacientes/buscar?q=809-555-1234')
+        ->assertOk()
+        ->assertJsonFragment(['id' => $patient->id]);
+});
+
+test('search does not return soft-deleted patients', function () {
+    $patient = Patient::factory()->create(['first_names' => 'Borrado']);
+    $patient->delete();
+
+    $this->actingAs($this->secretaria)
+        ->getJson('/registro/pacientes/buscar?q=Borrado')
+        ->assertOk()
+        ->assertJsonCount(0);
+});
+
+// ─── Store ───────────────────────────────────────────────────────────────────
+
+test('store redirects unauthenticated users', function () {
+    $this->post('/registro/pacientes', [])->assertRedirect('/login');
+});
+
+test('store returns 403 without permission', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/registro/pacientes', [])
+        ->assertForbidden();
+});
+
+test('store creates a patient with valid data', function () {
+    $data = [
+        'document_type' => 'cedula',
+        'document_number' => '001-1234567-8',
+        'first_names' => 'María',
+        'last_names' => 'García López',
+        'birth_date' => '1982-05-15',
+        'sex' => 'F',
+        'phone' => '809-555-0001',
+        'address' => 'Calle Principal #12',
+        'blood_type' => 'O+',
+        'allergies' => 'Penicilina',
+        'emergency_contact_name' => 'Pedro García',
+        'emergency_contact_phone' => '809-555-0002',
+    ];
+
+    $this->actingAs($this->secretaria)
+        ->post('/registro/pacientes', $data)
+        ->assertRedirect('/registro');
+
+    $this->assertDatabaseHas('patients', [
+        'document_number' => '001-1234567-8',
+        'first_names' => 'María',
+        'last_names' => 'García López',
+        'sex' => 'F',
+    ]);
+});
+
+test('store validates required fields', function () {
+    $this->actingAs($this->secretaria)
+        ->post('/registro/pacientes', [])
+        ->assertSessionHasErrors([
+            'document_type',
+            'document_number',
+            'first_names',
+            'last_names',
+            'birth_date',
+            'sex',
+        ]);
+});
+
+test('store rejects invalid sex value', function () {
+    $this->actingAs($this->secretaria)
+        ->post('/registro/pacientes', [
+            'document_type' => 'cedula',
+            'document_number' => '001-1234567-8',
+            'first_names' => 'María',
+            'last_names' => 'García',
+            'birth_date' => '1982-05-15',
+            'sex' => 'X',
+        ])
+        ->assertSessionHasErrors(['sex']);
+});
+
+test('store rejects duplicate document number', function () {
+    Patient::factory()->create(['document_number' => '001-1234567-8']);
+
+    $this->actingAs($this->secretaria)
+        ->post('/registro/pacientes', [
+            'document_type' => 'cedula',
+            'document_number' => '001-1234567-8',
+            'first_names' => 'Juan',
+            'last_names' => 'Pérez',
+            'birth_date' => '1990-01-01',
+            'sex' => 'M',
+        ])
+        ->assertSessionHasErrors(['document_number']);
+});
+
+test('store rejects future birth date', function () {
+    $this->actingAs($this->secretaria)
+        ->post('/registro/pacientes', [
+            'document_type' => 'cedula',
+            'document_number' => '001-1234567-8',
+            'first_names' => 'Bebé',
+            'last_names' => 'Futuro',
+            'birth_date' => now()->addDay()->format('Y-m-d'),
+            'sex' => 'M',
+        ])
+        ->assertSessionHasErrors(['birth_date']);
+});
+
+// ─── Update ──────────────────────────────────────────────────────────────────
+
+test('update redirects unauthenticated users', function () {
+    $patient = Patient::factory()->create();
+
+    $this->put("/registro/pacientes/{$patient->id}", [])->assertRedirect('/login');
+});
+
+test('update returns 403 without permission', function () {
+    $user = User::factory()->create();
+    $patient = Patient::factory()->create();
+
+    $this->actingAs($user)
+        ->put("/registro/pacientes/{$patient->id}", [])
+        ->assertForbidden();
+});
+
+test('update modifies patient data', function () {
+    $patient = Patient::factory()->create();
+
+    $this->actingAs($this->secretaria)
+        ->put("/registro/pacientes/{$patient->id}", [
+            'document_type' => $patient->document_type,
+            'document_number' => $patient->document_number,
+            'first_names' => 'Nuevo Nombre',
+            'last_names' => $patient->last_names,
+            'birth_date' => $patient->birth_date->format('Y-m-d'),
+            'sex' => $patient->sex,
+        ])
+        ->assertRedirect('/registro');
+
+    $this->assertDatabaseHas('patients', [
+        'id' => $patient->id,
+        'first_names' => 'Nuevo Nombre',
+    ]);
+});
+
+test('update allows keeping the same document number', function () {
+    $patient = Patient::factory()->create(['document_number' => '001-1234567-8']);
+
+    $this->actingAs($this->secretaria)
+        ->put("/registro/pacientes/{$patient->id}", [
+            'document_type' => $patient->document_type,
+            'document_number' => '001-1234567-8',
+            'first_names' => $patient->first_names,
+            'last_names' => $patient->last_names,
+            'birth_date' => $patient->birth_date->format('Y-m-d'),
+            'sex' => $patient->sex,
+        ])
+        ->assertRedirect('/registro');
+});
+
+test('update returns 404 for non-existent patient', function () {
+    $this->actingAs($this->secretaria)
+        ->put('/registro/pacientes/9999', [
+            'document_type' => 'cedula',
+            'document_number' => '001-1234567-8',
+            'first_names' => 'X',
+            'last_names' => 'X',
+            'birth_date' => '1990-01-01',
+            'sex' => 'M',
+        ])
+        ->assertNotFound();
+});
+
+// ─── Destroy ─────────────────────────────────────────────────────────────────
+
+test('destroy redirects unauthenticated users', function () {
+    $patient = Patient::factory()->create();
+
+    $this->delete("/registro/pacientes/{$patient->id}")->assertRedirect('/login');
+});
+
+test('destroy returns 403 without permission', function () {
+    $user = User::factory()->create();
+    $patient = Patient::factory()->create();
+
+    $this->actingAs($user)
+        ->delete("/registro/pacientes/{$patient->id}")
+        ->assertForbidden();
+});
+
+test('destroy soft-deletes the patient', function () {
+    $patient = Patient::factory()->create();
+
+    $this->actingAs($this->secretaria)
+        ->delete("/registro/pacientes/{$patient->id}")
+        ->assertRedirect('/registro');
+
+    $this->assertSoftDeleted('patients', ['id' => $patient->id]);
+});
+
+test('destroy returns 404 for non-existent patient', function () {
+    $this->actingAs($this->secretaria)
+        ->delete('/registro/pacientes/9999')
+        ->assertNotFound();
+});

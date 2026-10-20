@@ -61,9 +61,13 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         ->middleware('permission:module.tablero.access')
         ->name('tablero');
 
-    Route::get('/registro', [RegistroController::class, 'index'])
-        ->middleware('permission:module.registro.access')
-        ->name('registro');
+    Route::prefix('/registro')->middleware('permission:module.registro.access')->group(function () {
+        Route::get('/', [RegistroController::class, 'index'])->name('registro');
+        Route::get('/pacientes/buscar', [RegistroController::class, 'search'])->name('registro.pacientes.buscar');
+        Route::post('/pacientes', [RegistroController::class, 'store'])->name('registro.pacientes.store');
+        Route::put('/pacientes/{patient}', [RegistroController::class, 'update'])->name('registro.pacientes.update');
+        Route::delete('/pacientes/{patient}', [RegistroController::class, 'destroy'])->name('registro.pacientes.destroy');
+    });
 
     Route::get('/citas', [CitasController::class, 'index'])
         ->middleware('permission:module.citas.access')
