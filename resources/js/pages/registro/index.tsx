@@ -1,459 +1,203 @@
-import { router, useForm } from '@inertiajs/react';
-import { useCallback, useRef, useState } from 'react';
-import type { BloodType, PatientSearchResult, Sex } from '@/types/patient';
+import { router } from '@inertiajs/react';
+import { useState } from 'react';
+import type { PatientSearchResult } from '@/types/patient';
 
-type TipoAtencion = 'consulta' | 'emergencia' | 'estudios' | null;
-
-const inputStyle: React.CSSProperties = {
-    height: 36, padding: '0 12px', border: '1px solid #e4e4e7', borderRadius: 10,
-    outline: 'none', width: '100%', fontSize: 14, fontFamily: 'inherit',
+type PaginatedPatients = {
+    data: PatientSearchResult[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+    links: { url: string | null; label: string; active: boolean }[];
 };
 
-const labelStyle: React.CSSProperties = {
-    display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 500, fontSize: 14,
+type Props = {
+    patients: PaginatedPatients;
+    filters: { q?: string };
 };
 
-const TIPOS = [
-    { key: 'consulta' as TipoAtencion, label: 'Consulta', desc: 'Asigna turno y médico tratante.' },
-    { key: 'emergencia' as TipoAtencion, label: 'Emergencia', desc: 'Sin turno. Triaje inmediato.' },
-    { key: 'estudios' as TipoAtencion, label: 'Solo análisis / imágenes', desc: 'Sin médico de cabecera.' },
-];
+export default function RegistroIndex({ patients, filters }: Props) {
+    const [search, setSearch] = useState(filters.q ?? '');
 
-const BLOOD_TYPES: BloodType[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-
-type PatientForm = {
-    document_type: string;
-    document_number: string;
-    first_names: string;
-    last_names: string;
-    birth_date: string;
-    sex: Sex;
-    phone: string;
-    address: string;
-    blood_type: string;
-    allergies: string;
-    emergency_contact_name: string;
-    emergency_contact_phone: string;
-};
-
-const emptyForm: PatientForm = {
-    document_type: 'cedula',
-    document_number: '',
-    first_names: '',
-    last_names: '',
-    birth_date: '',
-    sex: 'F',
-    phone: '',
-    address: '',
-    blood_type: '',
-    allergies: '',
-    emergency_contact_name: '',
-    emergency_contact_phone: '',
-};
-
-function patientToForm(p: PatientSearchResult): PatientForm {
-    return {
-        document_type: p.document_type,
-        document_number: p.document_number,
-        first_names: p.first_names,
-        last_names: p.last_names,
-        birth_date: p.birth_date,
-        sex: p.sex,
-        phone: p.phone ?? '',
-        address: p.address ?? '',
-        blood_type: p.blood_type ?? '',
-        allergies: p.allergies ?? '',
-        emergency_contact_name: p.emergency_contact_name ?? '',
-        emergency_contact_phone: p.emergency_contact_phone ?? '',
-    };
-}
-
-export default function RegistroIndex() {
-    const [query, setQuery] = useState('');
-    const [dropOpen, setDropOpen] = useState(false);
-    const [results, setResults] = useState<PatientSearchResult[]>([]);
-    const [searching, setSearching] = useState(false);
-    const [selected, setSelected] = useState<PatientSearchResult | null>(null);
-    const [isNew, setIsNew] = useState(false);
-    const [tipo, setTipo] = useState<TipoAtencion>('consulta');
-
-    const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    const { data, setData, post, put, processing, errors, reset } = useForm<PatientForm>(emptyForm);
-
-    const runSearch = useCallback((q: string) => {
-        if (q.length < 2) {
-            setResults([]);
-            return;
-        }
-        setSearching(true);
-        fetch(`/registro/pacientes/buscar?q=${encodeURIComponent(q)}`, {
-            headers: { Accept: 'application/json' },
-        })
-            .then(r => r.json())
-            .then((data: PatientSearchResult[]) => { setResults(data); setSearching(false); })
-            .catch(() => setSearching(false));
-    }, []);
-
-    const handleQueryChange = (value: string) => {
-        setQuery(value);
-        setDropOpen(true);
-        if (searchTimer.current) clearTimeout(searchTimer.current);
-        searchTimer.current = setTimeout(() => runSearch(value), 250);
-    };
-
-    const handleSelect = (p: PatientSearchResult) => {
-        setSelected(p);
-        setIsNew(false);
-        setQuery(p.full_name);
-        setDropOpen(false);
-        Object.entries(patientToForm(p)).forEach(([k, v]) => setData(k as keyof PatientForm, v));
-    };
-
-    const handleNewPatient = () => {
-        setSelected(null);
-        setIsNew(true);
-        setDropOpen(false);
-        reset();
-    };
-
-    const handleReset = () => {
-        setSelected(null);
-        setIsNew(false);
-        setQuery('');
-        reset();
-    };
-
-    const handleDelete = () => {
-        if (!selected) return;
-        if (!confirm(`¿Eliminar a ${selected.full_name}? Esta acción no se puede deshacer.`)) return;
-        router.delete(`/registro/pacientes/${selected.id}`);
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        if (selected) {
-            put(`/registro/pacientes/${selected.id}`);
-        } else if (isNew) {
-            post('/registro/pacientes');
-        }
+        router.get('/registro', { q: search || undefined }, { preserveState: true, replace: true });
+    };
+
+    const handleDelete = (patient: PatientSearchResult) => {
+        if (!confirm(`¿Eliminar a ${patient.full_name}? Esta acción no se puede deshacer.`)) return;
+        router.delete(`/registro/pacientes/${patient.id}`);
     };
 
     return (
         <div className="flex flex-col gap-5">
-            <div>
-                <h1 style={{ fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 26, color: '#1f2d22', margin: 0 }}>
-                    Nueva atención
-                </h1>
-                <p style={{ margin: '4px 0 0', color: '#5f6b64' }}>
-                    Busca primero por cédula. Si el paciente no existe, completa sus datos y crea la atención.
-                </p>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+                <div>
+                    <h1 style={{ fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 26, color: '#1f2d22', margin: 0 }}>
+                        Pacientes
+                    </h1>
+                    <p style={{ margin: '4px 0 0', color: '#5f6b64' }}>
+                        {patients.total} {patients.total === 1 ? 'paciente registrado' : 'pacientes registrados'}
+                    </p>
+                </div>
+                <a
+                    href="/registro/nuevo"
+                    style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 8,
+                        height: 36, padding: '0 14px', borderRadius: 10, border: 'none',
+                        background: '#2E8B3E', color: '#fff', fontWeight: 500,
+                        cursor: 'pointer', fontFamily: 'inherit', fontSize: 14,
+                        textDecoration: 'none',
+                    }}
+                >
+                    + Nuevo paciente
+                </a>
             </div>
 
-            <form onSubmit={handleSubmit}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)', gap: 16, alignItems: 'start' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        {/* Patient data card */}
-                        <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14 }}>
-                            <div style={{ padding: '16px 20px', borderBottom: '1px solid #eef0ec', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                                <div>
-                                    <div style={{ fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 16, color: '#1f2d22' }}>Datos del paciente</div>
-                                    <div style={{ fontSize: 13, color: '#71717a' }}>Los campos con * son obligatorios.</div>
-                                </div>
-                                <div style={{ position: 'relative', flex: '0 1 340px', minWidth: 240 }}>
-                                    <span style={{ position: 'absolute', left: 10, top: 10, fontSize: 16, color: '#71717a', pointerEvents: 'none' }}>🔍</span>
-                                    <input
-                                        value={query}
-                                        onChange={e => handleQueryChange(e.target.value)}
-                                        onFocus={() => setDropOpen(true)}
-                                        onBlur={() => setTimeout(() => setDropOpen(false), 200)}
-                                        placeholder="Buscar por cédula, nombre o teléfono…"
-                                        style={{ ...inputStyle, paddingLeft: 34, paddingRight: 30 }}
-                                    />
-                                    {dropOpen && query.length >= 2 && (
-                                        <div style={{ position: 'absolute', zIndex: 30, top: 42, left: 0, right: 0, minWidth: 340, background: '#fff', border: '1px solid #e3e9e3', borderRadius: 12, boxShadow: '0 12px 32px rgba(16,40,24,.14)', overflow: 'hidden' }}>
-                                            {searching && (
-                                                <div style={{ padding: '12px 14px', fontSize: 13, color: '#71717a' }}>Buscando…</div>
-                                            )}
-                                            {!searching && results.length === 0 && (
-                                                <div style={{ padding: '12px 14px', fontSize: 13, color: '#71717a' }}>Ningún paciente coincide con «{query}».</div>
-                                            )}
-                                            {results.map(p => (
-                                                <div key={p.id} onMouseDown={() => handleSelect(p)} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '8px 14px', cursor: 'pointer' }}>
-                                                    <span style={{ flexShrink: 0, width: 32, height: 32, borderRadius: '50%', background: '#EEF6E2', color: '#2f4a17', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 12 }}>{p.initials}</span>
-                                                    <div style={{ flex: 1 }}>
-                                                        <div style={{ fontWeight: 500 }}>{p.full_name}</div>
-                                                        <div style={{ fontSize: 12, color: '#71717a' }}>{p.document_number} · {p.age} años · {p.phone}</div>
-                                                    </div>
-                                                    <div style={{ flexShrink: 0, textAlign: 'right', fontSize: 11.5, lineHeight: 1.3, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
-                                                        {p.allergies && <span style={{ padding: '1px 7px', borderRadius: 999, background: '#fef2f2', color: '#b91c1c', fontWeight: 600 }}>Alergias</span>}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            <div onMouseDown={handleNewPatient} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '10px 14px', borderTop: '1px solid #eef0ec', cursor: 'pointer', color: '#2E8B3E', fontWeight: 600, background: '#F8FBF6' }}>
-                                                + Registrar como paciente nuevo
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+            {/* Search bar */}
+            <form onSubmit={handleSearch} style={{ display: 'flex', gap: 8 }}>
+                <div style={{ position: 'relative', flex: '0 1 380px' }}>
+                    <span style={{ position: 'absolute', left: 10, top: 10, fontSize: 15, color: '#71717a', pointerEvents: 'none' }}>🔍</span>
+                    <input
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder="Buscar por cédula, nombre o teléfono…"
+                        style={{ height: 36, padding: '0 12px 0 34px', border: '1px solid #e4e4e7', borderRadius: 10, outline: 'none', width: '100%', fontSize: 14, fontFamily: 'inherit' }}
+                    />
+                </div>
+                <button
+                    type="submit"
+                    style={{ height: 36, padding: '0 14px', borderRadius: 10, border: '1px solid #e4e4e7', background: '#fff', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14 }}
+                >
+                    Buscar
+                </button>
+                {filters.q && (
+                    <button
+                        type="button"
+                        onClick={() => { setSearch(''); router.get('/registro', {}, { replace: true }); }}
+                        style={{ height: 36, padding: '0 14px', borderRadius: 10, border: '1px solid #e4e4e7', background: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, color: '#71717a' }}
+                    >
+                        Limpiar
+                    </button>
+                )}
+            </form>
 
-                            <div style={{ padding: '10px 20px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                {isNew && (
-                                    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 12px', border: '1px solid #e4e4e7', borderRadius: 10, fontSize: 13, background: '#fafafa' }}>
-                                        <span style={{ fontSize: 16, color: '#2E8B3E', marginTop: 1 }}>ℹ</span>
-                                        <span>Se registrará como <strong>paciente nuevo</strong>. Completa sus datos.</span>
-                                    </div>
-                                )}
-                                {selected && (
-                                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '10px 12px', border: '1px solid #cfe3b8', borderRadius: 10, fontSize: 13, background: '#F3F9EC', flexWrap: 'wrap' }}>
-                                        <span style={{ fontSize: 16, color: '#2E8B3E' }}>✓</span>
-                                        <span style={{ flex: 1, minWidth: 200 }}>
-                                            <strong>Paciente existente</strong> · {selected.age} años. Verifica que los datos estén al día.
-                                        </span>
-                                        <button type="button" onClick={handleReset} style={{ border: 'none', background: 'transparent', color: '#2E8B3E', fontWeight: 600, cursor: 'pointer', padding: 0 }}>
-                                            Cambiar paciente
-                                        </button>
-                                    </div>
-                                )}
-                                {selected?.allergies && (
-                                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '10px 12px', border: '1px solid #fecaca', borderRadius: 10, fontSize: 13, background: '#fef2f2', color: '#b91c1c' }}>
-                                        <span style={{ fontSize: 16 }}>⚠</span>
-                                        <span><strong>Alérgico(a) a:</strong> {selected.allergies}</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div style={{ padding: '16px 20px 20px', display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: '14px 16px' }}>
-                                <label style={labelStyle}>
-                                    <span>Tipo de documento *</span>
-                                    <select
-                                        value={data.document_type}
-                                        onChange={e => setData('document_type', e.target.value)}
-                                        style={inputStyle}
-                                    >
-                                        <option value="cedula">Cédula</option>
-                                        <option value="pasaporte">Pasaporte</option>
-                                        <option value="rnc">RNC</option>
-                                    </select>
-                                    {errors.document_type && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.document_type}</span>}
-                                </label>
-                                <label style={labelStyle}>
-                                    <span>No. de documento *</span>
-                                    <input
-                                        value={data.document_number}
-                                        onChange={e => setData('document_number', e.target.value)}
-                                        style={{ ...inputStyle, borderColor: errors.document_number ? '#fecaca' : undefined }}
-                                        placeholder="000-0000000-0"
-                                    />
-                                    {errors.document_number && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.document_number}</span>}
-                                </label>
-                                <label style={labelStyle}>
-                                    <span>Fecha de nacimiento *</span>
-                                    <input
-                                        type="date"
-                                        value={data.birth_date}
-                                        onChange={e => setData('birth_date', e.target.value)}
-                                        style={{ ...inputStyle, borderColor: errors.birth_date ? '#fecaca' : undefined }}
-                                    />
-                                    {errors.birth_date && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.birth_date}</span>}
-                                </label>
-                                <label style={labelStyle}>
-                                    <span>Nombres *</span>
-                                    <input
-                                        value={data.first_names}
-                                        onChange={e => setData('first_names', e.target.value)}
-                                        style={{ ...inputStyle, borderColor: errors.first_names ? '#fecaca' : undefined }}
-                                    />
-                                    {errors.first_names && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.first_names}</span>}
-                                </label>
-                                <label style={labelStyle}>
-                                    <span>Apellidos *</span>
-                                    <input
-                                        value={data.last_names}
-                                        onChange={e => setData('last_names', e.target.value)}
-                                        style={{ ...inputStyle, borderColor: errors.last_names ? '#fecaca' : undefined }}
-                                    />
-                                    {errors.last_names && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.last_names}</span>}
-                                </label>
-                                <div style={labelStyle}>
-                                    <span>Sexo *</span>
-                                    <div style={{ display: 'flex', gap: 16, height: 36, alignItems: 'center' }}>
-                                        {(['F', 'M'] as Sex[]).map(s => (
-                                            <span key={s} onClick={() => setData('sex', s)} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                                                <span style={{ width: 16, height: 16, borderRadius: '50%', border: `1px solid ${data.sex === s ? '#2E8B3E' : '#d4d4d8'}`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: data.sex === s ? '#2E8B3E' : 'transparent' }}></span>
-                                                </span>
-                                                {s === 'F' ? 'Femenino' : 'Masculino'}
-                                            </span>
-                                        ))}
-                                    </div>
-                                    {errors.sex && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.sex}</span>}
-                                </div>
-                                <label style={labelStyle}>
-                                    <span>Teléfono</span>
-                                    <input
-                                        value={data.phone}
-                                        onChange={e => setData('phone', e.target.value)}
-                                        style={inputStyle}
-                                        placeholder="809-000-0000"
-                                    />
-                                </label>
-                                <label style={{ ...labelStyle, gridColumn: 'span 2' }}>
-                                    <span>Dirección</span>
-                                    <input
-                                        value={data.address}
-                                        onChange={e => setData('address', e.target.value)}
-                                        style={inputStyle}
-                                    />
-                                </label>
-                                <label style={labelStyle}>
-                                    <span>Persona de contacto</span>
-                                    <input
-                                        value={data.emergency_contact_name}
-                                        onChange={e => setData('emergency_contact_name', e.target.value)}
-                                        style={inputStyle}
-                                    />
-                                </label>
-                                <label style={labelStyle}>
-                                    <span>Tel. de contacto</span>
-                                    <input
-                                        value={data.emergency_contact_phone}
-                                        onChange={e => setData('emergency_contact_phone', e.target.value)}
-                                        style={inputStyle}
-                                        placeholder="809-000-0000"
-                                    />
-                                </label>
-                                <label style={labelStyle}>
-                                    <span>Tipo de sangre</span>
-                                    <select
-                                        value={data.blood_type}
-                                        onChange={e => setData('blood_type', e.target.value)}
-                                        style={inputStyle}
-                                    >
-                                        <option value="">Seleccionar</option>
-                                        {BLOOD_TYPES.map(bt => (
-                                            <option key={bt} value={bt}>{bt}</option>
-                                        ))}
-                                    </select>
-                                </label>
-                                <div style={{ ...labelStyle, gridColumn: '1 / -1' }}>
-                                    <span style={{ color: '#b91c1c', display: 'inline-flex', alignItems: 'center', gap: 6 }}>⚠ Alergias</span>
-                                    <textarea
-                                        rows={2}
-                                        value={data.allergies}
-                                        onChange={e => setData('allergies', e.target.value)}
-                                        placeholder="Medicamentos, alimentos u otros"
-                                        style={{ padding: '8px 12px', border: '1px solid #fecaca', borderRadius: 10, outline: 'none', fontFamily: 'inherit', fontSize: 14, resize: 'vertical' }}
-                                    />
-                                </div>
-                            </div>
-
-                            {selected && (
-                                <div style={{ padding: '0 20px 16px', display: 'flex', justifyContent: 'flex-end' }}>
-                                    <button
-                                        type="button"
-                                        onClick={handleDelete}
-                                        style={{ height: 36, padding: '0 14px', borderRadius: 10, border: '1px solid #fecaca', background: '#fef2f2', color: '#b91c1c', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14 }}
-                                    >
-                                        Eliminar paciente
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Tipo atención */}
-                        <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14 }}>
-                            <div style={{ padding: '16px 20px', borderBottom: '1px solid #eef0ec' }}>
-                                <div style={{ fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 16, color: '#1f2d22' }}>Nueva atención</div>
-                                <div style={{ fontSize: 13, color: '#71717a' }}>¿Cómo llega el paciente?</div>
-                            </div>
-                            <div style={{ padding: '16px 20px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 12 }}>
-                                    {TIPOS.map(t => (
-                                        <div key={t.key!} onClick={() => setTipo(t.key)} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: 14, borderRadius: 10, cursor: 'pointer', border: `1.5px solid ${tipo === t.key ? '#2E8B3E' : '#e4e4e7'}`, background: tipo === t.key ? '#F3F9EC' : '#fff' }}>
-                                            <span style={{ width: 16, height: 16, marginTop: 2, flexShrink: 0, borderRadius: '50%', border: `1px solid ${tipo === t.key ? '#2E8B3E' : '#d4d4d8'}`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: tipo === t.key ? '#2E8B3E' : 'transparent' }}></span>
+            {/* Table */}
+            <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14, overflow: 'hidden' }}>
+                {patients.data.length === 0 ? (
+                    <div style={{ padding: '48px 24px', textAlign: 'center', color: '#71717a' }}>
+                        {filters.q
+                            ? `No se encontraron pacientes para «${filters.q}».`
+                            : 'No hay pacientes registrados aún.'}
+                    </div>
+                ) : (
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                            <tr style={{ borderBottom: '1px solid #eef0ec', background: '#F8FBF6' }}>
+                                <th style={thStyle}>Paciente</th>
+                                <th style={thStyle}>Documento</th>
+                                <th style={thStyle}>Edad</th>
+                                <th style={thStyle}>Teléfono</th>
+                                <th style={thStyle}>Sangre</th>
+                                <th style={thStyle}>Alergias</th>
+                                <th style={{ ...thStyle, width: 100 }}></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {patients.data.map((p, i) => (
+                                <tr
+                                    key={p.id}
+                                    style={{ borderBottom: i < patients.data.length - 1 ? '1px solid #f0f2f0' : 'none' }}
+                                >
+                                    <td style={tdStyle}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                            <span style={{ flexShrink: 0, width: 32, height: 32, borderRadius: '50%', background: '#EEF6E2', color: '#2f4a17', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 12 }}>
+                                                {p.initials}
                                             </span>
                                             <div>
-                                                <div style={{ fontWeight: 600 }}>{t.label}</div>
-                                                <div style={{ fontSize: 13, color: '#71717a' }}>{t.desc}</div>
+                                                <div style={{ fontWeight: 500, color: '#1f2d22' }}>{p.full_name}</div>
+                                                <div style={{ fontSize: 12, color: '#71717a' }}>{p.sex === 'F' ? 'Femenina' : 'Masculino'}</div>
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-
-                                {tipo === 'consulta' && (
-                                    <div style={labelStyle}>
-                                        <span>Médico *</span>
-                                        <div style={{ ...inputStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'default' }}>
-                                            Dra. Ana Rodríguez — Medicina General <span>▾</span>
+                                    </td>
+                                    <td style={tdStyle}>
+                                        <div style={{ fontSize: 13 }}>{p.document_number}</div>
+                                        <div style={{ fontSize: 11, color: '#71717a', textTransform: 'capitalize' }}>{p.document_type}</div>
+                                    </td>
+                                    <td style={tdStyle}>{p.age} años</td>
+                                    <td style={tdStyle}>{p.phone ?? '—'}</td>
+                                    <td style={tdStyle}>
+                                        {p.blood_type
+                                            ? <span style={{ padding: '2px 8px', borderRadius: 999, background: '#EEF6E2', color: '#2f4a17', fontSize: 12, fontWeight: 600 }}>{p.blood_type}</span>
+                                            : <span style={{ color: '#c4c9c4' }}>—</span>}
+                                    </td>
+                                    <td style={tdStyle}>
+                                        {p.allergies
+                                            ? <span style={{ padding: '2px 8px', borderRadius: 999, background: '#fef2f2', color: '#b91c1c', fontSize: 12, fontWeight: 500 }}>⚠ Alergias</span>
+                                            : <span style={{ color: '#c4c9c4' }}>—</span>}
+                                    </td>
+                                    <td style={{ ...tdStyle, textAlign: 'right' }}>
+                                        <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                                            <a
+                                                href={`/registro/pacientes/${p.id}/editar`}
+                                                style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #dfe7df', background: '#F6F9F5', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, display: 'inline-flex', alignItems: 'center', textDecoration: 'none', color: '#1f2d22' }}
+                                            >
+                                                Editar
+                                            </a>
+                                            <button
+                                                onClick={() => handleDelete(p)}
+                                                style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #fecaca', background: '#fef2f2', color: '#b91c1c', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}
+                                            >
+                                                ×
+                                            </button>
                                         </div>
-                                    </div>
-                                )}
-                                {tipo === 'emergencia' && (
-                                    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '12px 14px', border: '1px solid #fecaca', background: '#fef2f2', borderRadius: 10, color: '#b91c1c', fontSize: 13 }}>
-                                        <span style={{ fontSize: 16, marginTop: 1 }}>🚨</span>
-                                        <span>Se notificará a Enfermería para realizar el triaje de inmediato. No se asigna turno.</span>
-                                    </div>
-                                )}
-                                {tipo !== 'emergencia' && (
-                                    <label style={labelStyle}>
-                                        <span>Motivo de la visita</span>
-                                        <textarea rows={2} style={{ padding: '8px 12px', border: '1px solid #e4e4e7', borderRadius: 10, outline: 'none', fontFamily: 'inherit', fontSize: 14 }} />
-                                    </label>
-                                )}
-                            </div>
-                            <div style={{ padding: '14px 20px', borderTop: '1px solid #eef0ec', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                                <button type="button" onClick={handleReset} style={{ height: 36, padding: '0 14px', borderRadius: 10, border: '1px solid #dfe7df', background: '#F6F9F5', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14 }}>
-                                    Cancelar
-                                </button>
-                                {(isNew || selected) && (
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 14px', borderRadius: 10, border: 'none', background: processing ? '#7ec48a' : '#2E8B3E', color: '#fff', fontWeight: 500, cursor: processing ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14 }}
-                                    >
-                                        {selected ? '✓ Actualizar datos' : '✓ Registrar paciente'}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+            </div>
 
-                    {/* Summary sidebar */}
-                    <div style={{ position: 'sticky', top: 92, display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14 }}>
-                            <div style={{ padding: '16px 20px', borderBottom: '1px solid #eef0ec', fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 16, color: '#1f2d22' }}>Resumen</div>
-                            <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                {tipo === 'consulta' && (selected || isNew) && (
-                                    <div style={{ textAlign: 'center', padding: 14, borderRadius: 10, background: '#EEF6E2' }}>
-                                        <div style={{ fontSize: 13, color: '#2f4a17' }}>Turno asignado</div>
-                                        <div style={{ fontSize: 40, fontWeight: 700, color: '#2E8B3E', lineHeight: 1.1, fontVariantNumeric: 'tabular-nums', fontFamily: 'Bitter,Georgia,serif' }}>T-–</div>
-                                        <div style={{ fontSize: 12, color: '#2f4a17' }}>Se genera al guardar</div>
-                                    </div>
-                                )}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px 12px', fontSize: 13 }}>
-                                    <span style={{ color: '#71717a' }}>Paciente</span>
-                                    <span style={{ fontWeight: 500, textAlign: 'right' }}>
-                                        {selected
-                                            ? selected.full_name
-                                            : isNew && (data.first_names || data.last_names)
-                                                ? `${data.first_names} ${data.last_names}`.trim()
-                                                : '—'}
-                                    </span>
-                                    <span style={{ color: '#71717a' }}>Edad</span>
-                                    <span style={{ textAlign: 'right' }}>{selected ? `${selected.age} años` : '—'}</span>
-                                    <span style={{ color: '#71717a' }}>No. de atención</span>
-                                    <span style={{ textAlign: 'right', color: '#71717a' }}>Se genera al guardar</span>
-                                    <span style={{ color: '#71717a' }}>Tipo</span>
-                                    <span style={{ textAlign: 'right', fontWeight: 500 }}>{tipo ? tipo.charAt(0).toUpperCase() + tipo.slice(1) : '—'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            {/* Pagination */}
+            {patients.last_page > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 4 }}>
+                    {patients.links.map((link, i) => (
+                        <button
+                            key={i}
+                            disabled={!link.url}
+                            onClick={() => link.url && router.get(link.url)}
+                            dangerouslySetInnerHTML={{ __html: link.label }}
+                            style={{
+                                height: 32, minWidth: 32, padding: '0 10px', borderRadius: 8, border: '1px solid #e4e4e7',
+                                background: link.active ? '#2E8B3E' : '#fff',
+                                color: link.active ? '#fff' : link.url ? '#1f2d22' : '#c4c9c4',
+                                fontWeight: link.active ? 600 : 400,
+                                cursor: link.url ? 'pointer' : 'default',
+                                fontFamily: 'inherit', fontSize: 13,
+                            }}
+                        />
+                    ))}
                 </div>
-            </form>
+            )}
+
+            {patients.data.length > 0 && (
+                <p style={{ textAlign: 'center', fontSize: 13, color: '#71717a', margin: 0 }}>
+                    Mostrando {patients.from}–{patients.to} de {patients.total} pacientes
+                </p>
+            )}
         </div>
     );
 }
+
+const thStyle: React.CSSProperties = {
+    padding: '10px 16px', textAlign: 'left', fontSize: 12,
+    fontWeight: 600, color: '#5f6b64', textTransform: 'uppercase', letterSpacing: '0.04em',
+};
+
+const tdStyle: React.CSSProperties = {
+    padding: '12px 16px', fontSize: 14, color: '#1f2d22', verticalAlign: 'middle',
+};

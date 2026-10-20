@@ -16,9 +16,39 @@ use Inertia\Response;
 
 class RegistroController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        return Inertia::render('registro/index');
+        $patients = Patient::query()
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $q = (string) $request->string('q');
+                $query->where(function ($inner) use ($q) {
+                    $inner->where('document_number', 'like', "%{$q}%")
+                        ->orWhere('first_names', 'like', "%{$q}%")
+                        ->orWhere('last_names', 'like', "%{$q}%")
+                        ->orWhere('phone', 'like', "%{$q}%");
+                });
+            })
+            ->orderBy('last_names')
+            ->orderBy('first_names')
+            ->paginate(20)
+            ->withQueryString();
+
+        return Inertia::render('registro/index', [
+            'patients' => $patients,
+            'filters' => $request->only('q'),
+        ]);
+    }
+
+    public function create(): Response
+    {
+        return Inertia::render('registro/create');
+    }
+
+    public function edit(Patient $patient): Response
+    {
+        return Inertia::render('registro/edit', [
+            'patient' => $patient,
+        ]);
     }
 
     public function search(Request $request): JsonResponse
