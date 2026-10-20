@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\UniqueDocumentNumber;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,7 +17,8 @@ class StorePatientRequest extends FormRequest
     {
         return [
             'document_type' => ['required', 'string', Rule::in(['cedula', 'pasaporte', 'rnc'])],
-            'document_number' => ['required', 'string', 'max:30', 'unique:patients,document_number'],
+            'document_number' => ['required', 'string', 'max:30', new UniqueDocumentNumber],
+            'email' => ['nullable', 'string', 'email', 'max:150'],
             'first_names' => ['required', 'string', 'max:100'],
             'last_names' => ['required', 'string', 'max:100'],
             'birth_date' => ['required', 'date', 'before:today'],

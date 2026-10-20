@@ -45,22 +45,24 @@ test('search returns matching patients by name', function () {
         ->assertJsonFragment(['document_number' => '001-1234567-8']);
 });
 
-test('search returns matching patients by document number', function () {
+test('search returns matching patients by exact document number', function () {
     $patient = Patient::factory()->create(['document_number' => '001-9876543-2']);
 
+    // document_number is encrypted – search uses HMAC hash for exact match
     $this->actingAs($this->secretaria)
         ->getJson('/registro/pacientes/buscar?q=001-9876543-2')
         ->assertOk()
         ->assertJsonFragment(['id' => $patient->id]);
 });
 
-test('search returns matching patients by phone', function () {
-    $patient = Patient::factory()->create(['phone' => '809-555-1234']);
+test('search does not find partial document number (encrypted field)', function () {
+    Patient::factory()->create(['document_number' => '001-9876543-2']);
 
+    // Partial match is not possible on encrypted columns
     $this->actingAs($this->secretaria)
-        ->getJson('/registro/pacientes/buscar?q=809-555-1234')
+        ->getJson('/registro/pacientes/buscar?q=9876543')
         ->assertOk()
-        ->assertJsonFragment(['id' => $patient->id]);
+        ->assertJsonCount(0);
 });
 
 test('search does not return soft-deleted patients', function () {
@@ -107,8 +109,9 @@ test('store creates a patient with valid data', function () {
         ->post('/registro/pacientes', $data)
         ->assertRedirect('/registro');
 
+    // document_number is encrypted in DB – verify via its HMAC hash
     $this->assertDatabaseHas('patients', [
-        'document_number' => '001-1234567-8',
+        'document_number_hash' => hash_hmac('sha256', '001-1234567-8', config('app.key')),
         'first_names' => 'María',
         'last_names' => 'García López',
         'sex' => 'F',
@@ -144,12 +147,13 @@ test('store rejects invalid sex value', function () {
 test('store rejects duplicate document number', function () {
     Patient::factory()->create(['document_number' => '001-1234567-8']);
 
+    // The UniqueDocumentNumber rule checks document_number_hash (not the encrypted column)
     $this->actingAs($this->secretaria)
         ->post('/registro/pacientes', [
             'document_type' => 'cedula',
             'document_number' => '001-1234567-8',
             'first_names' => 'Juan',
-            'last_names' => 'Pérez',
+            'last_names' => 'Perez',
             'birth_date' => '1990-01-01',
             'sex' => 'M',
         ])

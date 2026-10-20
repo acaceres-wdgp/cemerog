@@ -63,16 +63,17 @@ resources/js/
 
 ## Convenciones
 
-| Concepto       | Regla                                                               |
-| -------------- | ------------------------------------------------------------------- |
-| Dinero         | Siempre en **centavos** (int). Usar `formatMoney()` para mostrar    |
-| Fechas display | `dd/MM/yyyy` con `date-fns` locale `es`                             |
-| Fechas DB      | UTC ISO 8601                                                        |
-| Idioma UI      | Español (es-DO)                                                     |
-| Idioma código  | Inglés (variables, métodos, tests)                                  |
-| IDs            | Auto-increment en DB; nunca exponer en URLs de lectura pública      |
-| Rutas          | Kebab-case, en español (`/registro-paciente`, `/cuadre-de-caja`)    |
-| Permisos       | `module.<key>.access` – verificar SIEMPRE en controlador Y frontend |
+| Concepto              | Regla                                                                                                                                                                                                                                                                       |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dinero                | Siempre en **centavos** (int). Usar `formatMoney()` para mostrar                                                                                                                                                                                                            |
+| Fechas display        | `dd/MM/yyyy` con `date-fns` locale `es`                                                                                                                                                                                                                                     |
+| Fechas DB             | UTC ISO 8601                                                                                                                                                                                                                                                                |
+| Idioma UI             | Español (es-DO)                                                                                                                                                                                                                                                             |
+| Idioma código         | Inglés (variables, métodos, tests)                                                                                                                                                                                                                                          |
+| IDs                   | Auto-increment en DB; nunca exponer en URLs de lectura pública                                                                                                                                                                                                              |
+| Rutas                 | Kebab-case, en español (`/registro-paciente`, `/cuadre-de-caja`)                                                                                                                                                                                                            |
+| Permisos              | `module.<key>.access` – verificar SIEMPRE en controlador Y frontend                                                                                                                                                                                                         |
+| PII (datos sensibles) | Cédula (`document_number`), correo (`email`) y teléfono (`phone`) **siempre** con `encrypted` cast en el modelo. Para `document_number`, además guardar `document_number_hash` (HMAC-SHA256 de `config('app.key')`) para el índice único y búsquedas exactas. Nunca usar `LIKE` sobre columnas cifradas. |
 
 ## Tokens de diseño
 

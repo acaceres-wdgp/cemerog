@@ -4,6 +4,7 @@ import type { BloodType, PatientSearchResult, Sex } from '@/types/patient';
 type PatientForm = {
     document_type: string;
     document_number: string;
+    email: string;
     first_names: string;
     last_names: string;
     birth_date: string;
@@ -30,6 +31,7 @@ export default function RegistroEdit({ patient }: Props) {
     const { data, setData, put, processing, errors } = useForm<PatientForm>({
         document_type: patient.document_type,
         document_number: patient.document_number,
+        email: patient.email ?? '',
         first_names: patient.first_names,
         last_names: patient.last_names,
         birth_date: patient.birth_date,
@@ -100,6 +102,11 @@ export default function RegistroEdit({ patient }: Props) {
                                 <span>Apellidos *</span>
                                 <input value={data.last_names} onChange={e => setData('last_names', e.target.value)} style={{ ...inputStyle, borderColor: errors.last_names ? '#fecaca' : undefined }} />
                                 {errors.last_names && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.last_names}</span>}
+                            </label>
+                            <label style={{ ...labelStyle, gridColumn: 'span 2' }}>
+                                <span>Correo electrónico</span>
+                                <input type="email" value={data.email} onChange={e => setData('email', e.target.value)} placeholder="paciente@ejemplo.com" style={{ ...inputStyle, borderColor: errors.email ? '#fecaca' : undefined }} />
+                                {errors.email && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.email}</span>}
                             </label>
                             <div style={labelStyle}>
                                 <span>Sexo *</span>

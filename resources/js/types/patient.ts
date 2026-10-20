@@ -8,6 +8,7 @@ export type PatientSearchResult = {
     initials: string;
     document_type: DocumentType;
     document_number: string;
+    email: string | null;
     first_names: string;
     last_names: string;
     birth_date: string;

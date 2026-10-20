@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\PatientFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,12 +13,14 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property string $document_type
- * @property string $document_number
+ * @property string $document_number Decrypted on read; encrypted on write.
+ * @property string $document_number_hash HMAC-SHA256 of the plaintext document number.
+ * @property string|null $email Decrypted on read; encrypted on write.
  * @property string $first_names
  * @property string $last_names
  * @property Carbon $birth_date
  * @property string $sex
- * @property string|null $phone
+ * @property string|null $phone Decrypted on read; encrypted on write.
  * @property string|null $address
  * @property string|null $blood_type
  * @property string|null $allergies
@@ -31,6 +34,7 @@ use Illuminate\Support\Carbon;
 #[Fillable([
     'document_type',
     'document_number',
+    'email',
     'first_names',
     'last_names',
     'birth_date',
@@ -53,7 +57,24 @@ class Patient extends Model
         return [
             'birth_date' => 'date',
             'is_active' => 'boolean',
+            'email' => 'encrypted',
+            'phone' => 'encrypted',
         ];
+    }
+
+    /**
+     * Encrypt document_number on write and compute its HMAC-SHA256 hash
+     * for the unique index. Decrypt transparently on read.
+     */
+    protected function documentNumber(): Attribute
+    {
+        return Attribute::make(
+            get: fn (string $value) => decrypt($value),
+            set: fn (string $value) => [
+                'document_number' => encrypt($value),
+                'document_number_hash' => hash_hmac('sha256', $value, config('app.key')),
+            ],
+        );
     }
 
     public function getFullNameAttribute(): string

@@ -21,11 +21,11 @@ class RegistroController extends Controller
         $patients = Patient::query()
             ->when($request->filled('q'), function ($query) use ($request) {
                 $q = (string) $request->string('q');
-                $query->where(function ($inner) use ($q) {
-                    $inner->where('document_number', 'like', "%{$q}%")
+                $docHash = hash_hmac('sha256', $q, config('app.key'));
+                $query->where(function ($inner) use ($q, $docHash) {
+                    $inner->where('document_number_hash', $docHash)
                         ->orWhere('first_names', 'like', "%{$q}%")
-                        ->orWhere('last_names', 'like', "%{$q}%")
-                        ->orWhere('phone', 'like', "%{$q}%");
+                        ->orWhere('last_names', 'like', "%{$q}%");
                 });
             })
             ->orderBy('last_names')
@@ -59,12 +59,15 @@ class RegistroController extends Controller
             return response()->json([]);
         }
 
+        // document_number is encrypted – search by HMAC hash for exact match.
+        // phone is also encrypted – cannot be searched via LIKE.
+        $docHash = hash_hmac('sha256', $q, config('app.key'));
+
         $patients = Patient::query()
-            ->where(function ($query) use ($q) {
-                $query->where('document_number', 'like', "%{$q}%")
+            ->where(function ($query) use ($q, $docHash) {
+                $query->where('document_number_hash', $docHash)
                     ->orWhere('first_names', 'like', "%{$q}%")
-                    ->orWhere('last_names', 'like', "%{$q}%")
-                    ->orWhere('phone', 'like', "%{$q}%");
+                    ->orWhere('last_names', 'like', "%{$q}%");
             })
             ->limit(10)
             ->get()
@@ -79,6 +82,7 @@ class RegistroController extends Controller
                 'birth_date' => $p->birth_date->format('Y-m-d'),
                 'age' => $p->age,
                 'sex' => $p->sex,
+                'email' => $p->email,
                 'phone' => $p->phone,
                 'address' => $p->address,
                 'blood_type' => $p->blood_type,
