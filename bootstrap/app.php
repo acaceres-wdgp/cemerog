@@ -24,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        // Without a 'dashboard'/'home' route, the guest middleware falls back to '/', which loops back to /login
+        $middleware->redirectUsersTo(fn () => route('inicio'));
+
         $middleware->alias([
             'ensure.password.changed' => EnsurePasswordChanged::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,

@@ -28,7 +28,7 @@ use App\Http\Controllers\Modules\TemaController;
 use Illuminate\Support\Facades\Route;
 
 // Root redirect
-Route::get('/', fn () => redirect()->route('login'));
+Route::get('/', fn () => redirect()->route(auth()->check() ? 'inicio' : 'login'));
 
 // Auth routes
 Route::middleware('guest')->group(function () {

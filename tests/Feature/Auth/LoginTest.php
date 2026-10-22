@@ -87,3 +87,27 @@ test('authenticated user can logout', function () {
 
     $this->assertGuest();
 });
+
+test('guest visiting root is redirected to login', function () {
+    $this->get('/')->assertRedirect(route('login'));
+});
+
+test('authenticated user visiting root is redirected to inicio', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->get('/')->assertRedirect(route('inicio'));
+});
+
+test('authenticated user visiting login is redirected to inicio', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->get('/login')->assertRedirect(route('inicio'));
+});
+
+test('authenticated user posting to login is redirected to inicio', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/login', ['username' => $user->username, 'password' => 'password'])
+        ->assertRedirect(route('inicio'));
+});
