@@ -32,7 +32,6 @@ import {
     Bell,
     Search,
     LogOut,
-    KeyRound,
     Menu,
 } from 'lucide-react';
 import type { PageProps } from '@/types/global';
@@ -315,14 +314,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
                                             )}
                                         </div>
                                         <div className="p-1">
-                                            <Link
-                                                href="/password/change-required"
-                                                className="flex items-center gap-2 rounded px-3 py-2 text-sm text-[#333333] hover:bg-[#F3F7F2] transition-colors"
-                                                onClick={() => setShowUserMenu(false)}
-                                            >
-                                                <KeyRound className="h-4 w-4 text-[#71717a]" />
-                                                Cambiar contraseña
-                                            </Link>
                                             <button
                                                 onClick={handleLogout}
                                                 className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm text-[#b91c1c] hover:bg-[#fef2f2] transition-colors"
