@@ -33,6 +33,16 @@ class RegistroController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        $patients->getCollection()->transform(fn (Patient $p) => array_merge($p->toArray(), [
+            'full_name' => $p->full_name,
+            'initials' => $p->initials,
+            'age' => $p->age,
+            'document_number' => $p->document_number,
+            'email' => $p->email,
+            'phone' => $p->phone,
+            'photo_url' => $p->photo_url,
+        ]));
+
         return Inertia::render('registro/index', [
             'patients' => $patients,
             'filters' => $request->only('q'),
