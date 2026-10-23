@@ -123,6 +123,6 @@ Desinstalar `laravel/fortify`, que venía con el starter kit, junto con sus depe
 - Fortify ya tenía sus rutas desactivadas (`ignoreRoutes()`), pero su configuración mantenía activados el registro y la recuperación. Bastaba quitar esa línea para abrirlos.
 - Sin la dependencia, esas funciones no pueden reactivarse por accidente. `NoPublicAuthRoutesTest` verifica que Fortify no está instalado y que sus rutas dan 404.
 
-### Pendiente
+### Limpieza
 - La migración `drop_passkeys_and_two_factor_columns` elimina la tabla `passkeys` y las 3 columnas de 2FA de `users`. Su `down()` las restaura, y `DropPasskeysAndTwoFactorTest` verifica ambos sentidos.
-- `@laravel/passkeys` sigue en `package.json` sin uso.
+- `@laravel/passkeys` también se desinstaló de npm.
