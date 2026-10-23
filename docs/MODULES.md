@@ -48,3 +48,18 @@ Formato: `module.<clave>.access`
 Cada permiso se verifica:
 1. En el controlador: `middleware('permission:module.<clave>.access')`
 2. En la navegación: filtrado por la lista de permisos del usuario
+
+## Página de inicio por rol
+
+Tras iniciar sesión, cada usuario aterriza en el primer módulo al que tiene acceso, siguiendo el orden de la columna "Orden impl.". Lo calcula `App\Actions\ResolveHomeRoute`. Un usuario sin módulos aterriza en `/settings/profile`.
+
+Al agregar un módulo nuevo, añádelo en `resources/js/lib/navigation.ts` y también en la lista de `ResolveHomeRoute`.
+
+## Usuarios y contraseñas
+
+Solo el administrador gestiona los accesos y las contraseñas. Los usuarios no tienen ajustes de seguridad propios.
+
+- **Toda contraseña que asigna el administrador es temporal.** Al crear un usuario y al cambiarle la contraseña desde `/admin/usuarios`, se guarda `must_change_password = true`.
+- Con `must_change_password = true`, el middleware `ensure.password.changed` lleva al usuario a `/password/change-required` en su siguiente petición, aunque ya tenga la sesión abierta. No puede usar ningún módulo ni `/settings` hasta cambiarla.
+- El usuario solo cambia su contraseña en ese momento. `/password/change-required` redirige a su página de inicio si no tiene una contraseña temporal.
+- Así, el administrador controla quién entra pero no conoce la contraseña definitiva de nadie.
