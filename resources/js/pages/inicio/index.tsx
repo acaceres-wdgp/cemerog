@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { Activity, Clock, DollarSign, Users } from 'lucide-react';
 import StatCard from '@/components/cemerog/StatCard';
 import StatusBadge from '@/components/cemerog/StatusBadge';
-import { caja, lab, registro, tablero } from '@/routes';
+import { useCan } from '@/hooks/use-can';
+import { caja, citas, lab, registro, tablero } from '@/routes';
 
 const MOCK_ATENCIONES = [
     { no: 'A-MG01-000234', paciente: 'María García', edad: 42, estado: 'consulta' as const, medico: 'Dra. Ana Rodríguez', hora: '08:15', motivo: 'Control ginecológico' },
@@ -28,6 +29,7 @@ const thStyle: React.CSSProperties = {
 
 export default function InicioIndex() {
     const [activeRole] = useState<'admin'>('admin');
+    const can = useCan();
 
     return (
         <div className="flex flex-col gap-5">
@@ -55,7 +57,9 @@ export default function InicioIndex() {
                 <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14, flex: '1 1 420px', minWidth: 0, overflow: 'hidden' }}>
                     <div style={{ padding: '14px 20px', borderBottom: '1px solid #eef0ec', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 16, color: '#1f2d22' }}>Últimas atenciones del día</span>
-                        <a href="/tablero" style={{ color: '#2E8B3E', fontWeight: 500, fontSize: 13 }}>Ver tablero →</a>
+                        {can('module.tablero.access') && (
+                            <Link href={tablero()} style={{ color: '#2E8B3E', fontWeight: 500, fontSize: 13 }}>Ver tablero →</Link>
+                        )}
                     </div>
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -92,7 +96,9 @@ export default function InicioIndex() {
                 <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14, flex: '1 1 320px', minWidth: 0, overflow: 'hidden' }}>
                     <div style={{ padding: '14px 20px', borderBottom: '1px solid #eef0ec', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 16, color: '#1f2d22' }}>Citas de hoy</span>
-                        <a href="/citas" style={{ color: '#2E8B3E', fontWeight: 500, fontSize: 13 }}>Ver agenda →</a>
+                        {can('module.citas.access') && (
+                            <Link href={citas()} style={{ color: '#2E8B3E', fontWeight: 500, fontSize: 13 }}>Ver agenda →</Link>
+                        )}
                     </div>
                     {MOCK_CITAS.map((c, i) => (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: '1px solid #f1f3ef' }}>
@@ -115,11 +121,11 @@ export default function InicioIndex() {
             {/* Quick actions */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {[
-                    { label: 'Nueva atención', href: registro.url() },
-                    { label: 'Tablero', href: tablero.url() },
-                    { label: 'Caja', href: caja.url() },
-                    { label: 'Laboratorio', href: lab.url() },
-                ].map((a) => (
+                    { label: 'Nueva atención', href: registro.url(), permission: 'module.registro.access' },
+                    { label: 'Tablero', href: tablero.url(), permission: 'module.tablero.access' },
+                    { label: 'Caja', href: caja.url(), permission: 'module.caja.access' },
+                    { label: 'Laboratorio', href: lab.url(), permission: 'module.lab.access' },
+                ].filter((a) => can(a.permission)).map((a) => (
                     <Link key={a.href} href={a.href} style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', height: 36, padding: '0 14px', borderRadius: 10, border: '1px solid #dfe7df', background: '#F6F9F5', fontWeight: 500, color: '#333', textDecoration: 'none', fontSize: 14 }}>
                         {a.label}
                     </Link>
