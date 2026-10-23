@@ -34,7 +34,7 @@
 |---|---|---|
 | administrador | Acceso total | Todos |
 | medico | Atención médica completa | inicio, tablero, citas, consulta, emergencia, internamiento, cirugia, lab, img, impresos |
-| enfermeria | Atención clínica de apoyo | tablero, emergencia, internamiento, cirugia |
+| enfermeria | Atención clínica de apoyo | tablero, emergencia, internamiento, cirugia, impresos |
 | secretaria | Recepción y agendamiento | inicio, tablero, registro, citas, impresos |
 | bioanalista | Laboratorio | lab, impresos |
 | imagenes | Estudios de imagen | img |

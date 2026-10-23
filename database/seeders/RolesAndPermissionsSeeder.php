@@ -25,7 +25,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'internamiento', 'cirugia', 'lab', 'img', 'impresos',
         ],
         'enfermeria' => [
-            'tablero', 'emergencia', 'internamiento', 'cirugia',
+            'tablero', 'emergencia', 'internamiento', 'cirugia', 'impresos',
         ],
         'secretaria' => [
             'inicio', 'tablero', 'registro', 'citas', 'impresos',
