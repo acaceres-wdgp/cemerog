@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,11 +17,15 @@ type Props = {
 };
 
 export default function Login({ status }: Props) {
-    const { data, setData, post, processing, errors } = useForm<LoginForm>({
+    const { data, setData, post, processing, errors: formErrors } = useForm<LoginForm>({
         username: '',
         password: '',
         remember: false,
     });
+
+    // Errors flashed by a redirect (e.g. a deactivated account) arrive as page props
+    const pageErrors = usePage().props.errors as Partial<Record<keyof LoginForm, string>>;
+    const errors = { ...pageErrors, ...formErrors };
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
