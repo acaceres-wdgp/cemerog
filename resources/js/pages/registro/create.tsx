@@ -26,7 +26,6 @@ const DOCUMENT_TYPES: { value: DocumentType; label: string }[] = [
     { value: 'cedula', label: 'Cédula dominicana' },
     { value: 'pasaporte', label: 'Pasaporte' },
     { value: 'cedula_extranjera', label: 'Cédula extranjera' },
-    { value: 'rnc', label: 'RNC' },
     { value: 'no_tiene', label: 'No tiene identificación' },
 ];
 
@@ -110,12 +109,10 @@ export default function RegistroCreate() {
         const labels: Partial<Record<DocumentType, string>> = {
             pasaporte: 'No. de pasaporte *',
             cedula_extranjera: 'No. de identificación *',
-            rnc: 'RNC *',
         };
         const placeholders: Partial<Record<DocumentType, string>> = {
             pasaporte: 'Ej. AB123456',
             cedula_extranjera: 'Número de identificación',
-            rnc: '1-00-00000-0',
         };
 
         return (
