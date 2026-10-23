@@ -107,3 +107,22 @@ Usar `spatie/laravel-permission` para gestión de roles y permisos.
 - 8 roles predefinidos cubren todos los casos de uso.
 - Permisos granulares `module.<key>.access` permiten control fino.
 - Idempotente mediante `firstOrCreate` en seeders.
+
+---
+
+## ADR-008: Sin Laravel Fortify
+
+**Fecha**: 2026-10  
+**Estado**: Aceptado
+
+### Decisión
+Desinstalar `laravel/fortify`, que venía con el starter kit, junto con sus dependencias de passkeys y 2FA. La autenticación es código propio: `LoginController`, `LoginRequest` y `ChangePasswordController`.
+
+### Justificación
+- Solo el administrador gestiona accesos y contraseñas. No hay registro público, recuperación de contraseña, verificación de email, 2FA ni passkeys.
+- Fortify ya tenía sus rutas desactivadas (`ignoreRoutes()`), pero su configuración mantenía activados el registro y la recuperación. Bastaba quitar esa línea para abrirlos.
+- Sin la dependencia, esas funciones no pueden reactivarse por accidente. `NoPublicAuthRoutesTest` verifica que Fortify no está instalado y que sus rutas dan 404.
+
+### Pendiente
+- Las migraciones `create_passkeys_table` y `add_two_factor_columns_to_users_table` siguen aplicadas. Su tabla y sus columnas no se usan. Quitarlas requiere una migración nueva con su test de reversión.
+- `@laravel/passkeys` sigue en `package.json` sin uso.
