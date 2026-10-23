@@ -2,7 +2,13 @@
  * FormField – label + input/textarea/select + error message + optional help text.
  */
 
-import { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes, forwardRef } from 'react';
+import {
+    InputHTMLAttributes,
+    ReactNode,
+    SelectHTMLAttributes,
+    TextareaHTMLAttributes,
+    forwardRef,
+} from 'react';
 
 interface FormFieldBaseProps {
     label: string;
@@ -14,22 +20,50 @@ interface FormFieldBaseProps {
     children?: ReactNode;
 }
 
-interface InputFieldProps extends FormFieldBaseProps, InputHTMLAttributes<HTMLInputElement> {
+// HTML attributes minus the keys FormField defines itself
+type HtmlProps<T> = Omit<T, keyof FormFieldBaseProps>;
+
+interface InputFieldProps
+    extends
+        FormFieldBaseProps,
+        HtmlProps<InputHTMLAttributes<HTMLInputElement>> {
     as?: 'input';
 }
 
-interface TextareaFieldProps extends FormFieldBaseProps, TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface TextareaFieldProps
+    extends
+        FormFieldBaseProps,
+        HtmlProps<TextareaHTMLAttributes<HTMLTextAreaElement>> {
     as: 'textarea';
 }
 
-interface SelectFieldProps extends FormFieldBaseProps, SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectFieldProps
+    extends
+        FormFieldBaseProps,
+        HtmlProps<SelectHTMLAttributes<HTMLSelectElement>> {
     as: 'select';
 }
 
 type FormFieldProps = InputFieldProps | TextareaFieldProps | SelectFieldProps;
 
-const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, FormFieldProps>(
-    ({ label, name, error, help, required, className = '', as: Component = 'input', children, ...rest }, ref) => {
+const FormField = forwardRef<
+    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement,
+    FormFieldProps
+>(
+    (
+        {
+            label,
+            name,
+            error,
+            help,
+            required,
+            className = '',
+            as: Component = 'input',
+            children,
+            ...rest
+        },
+        ref,
+    ) => {
         const inputClasses = `w-full rounded-md border px-3 py-2 text-sm text-[#333333] placeholder:text-[#71717a] focus:outline-none focus:ring-2 focus:ring-[#2E8B3E] focus:border-[#2E8B3E] transition-colors ${
             error
                 ? 'border-[#fecaca] bg-[#fef2f2]'
@@ -38,7 +72,10 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelect
 
         return (
             <div className={`flex flex-col gap-1.5 ${className}`}>
-                <label htmlFor={name} className="text-sm font-medium text-[#1f2d22]">
+                <label
+                    htmlFor={name}
+                    className="text-sm font-medium text-[#1f2d22]"
+                >
                     {label}
                     {required && <span className="ml-1 text-[#b91c1c]">*</span>}
                 </label>
@@ -72,7 +109,9 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelect
                 )}
 
                 {error && (
-                    <p className="text-xs text-[#b91c1c]" role="alert">{error}</p>
+                    <p className="text-xs text-[#b91c1c]" role="alert">
+                        {error}
+                    </p>
                 )}
                 {help && !error && (
                     <p className="text-xs text-[#71717a]">{help}</p>
