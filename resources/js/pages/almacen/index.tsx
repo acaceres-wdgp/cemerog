@@ -1,4 +1,6 @@
+import { Link } from '@inertiajs/react';
 import { useState } from 'react';
+import { entrada } from '@/routes';
 
 const PRODUCTOS = [
     { code: 'MED-001', nombre: 'Amoxicilina 500mg cap.', cat: 'Antibióticos', stock: 45, min: 20, precio: 'RD$28.00', vence: '31/03/2027', bajo: false, proxVence: false },
@@ -33,9 +35,9 @@ export default function AlmacenIndex() {
                     <p style={{ margin: '4px 0 0', color: '#5f6b64' }}>{PRODUCTOS.length} productos · {lowStock.length} con stock bajo</p>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                    <a href="/entrada" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 14px', borderRadius: 10, border: '1px solid #dfe7df', background: '#F6F9F5', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, color: '#333', textDecoration: 'none' }}>
+                    <Link href={entrada()} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 14px', borderRadius: 10, border: '1px solid #dfe7df', background: '#F6F9F5', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, color: '#333', textDecoration: 'none' }}>
                         📦 Nueva entrada
-                    </a>
+                    </Link>
                     <button style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 14px', borderRadius: 10, border: 'none', background: '#2E8B3E', color: '#fff', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14 }}>
                         + Nuevo producto
                     </button>

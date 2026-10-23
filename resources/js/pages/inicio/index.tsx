@@ -1,7 +1,9 @@
+import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { Activity, Clock, DollarSign, Users } from 'lucide-react';
 import StatCard from '@/components/cemerog/StatCard';
 import StatusBadge from '@/components/cemerog/StatusBadge';
+import { caja, lab, registro, tablero } from '@/routes';
 
 const MOCK_ATENCIONES = [
     { no: 'A-MG01-000234', paciente: 'María García', edad: 42, estado: 'consulta' as const, medico: 'Dra. Ana Rodríguez', hora: '08:15', motivo: 'Control ginecológico' },
@@ -113,14 +115,14 @@ export default function InicioIndex() {
             {/* Quick actions */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {[
-                    { label: 'Nueva atención', href: '/registro' },
-                    { label: 'Tablero', href: '/tablero' },
-                    { label: 'Caja', href: '/caja' },
-                    { label: 'Laboratorio', href: '/lab' },
+                    { label: 'Nueva atención', href: registro.url() },
+                    { label: 'Tablero', href: tablero.url() },
+                    { label: 'Caja', href: caja.url() },
+                    { label: 'Laboratorio', href: lab.url() },
                 ].map((a) => (
-                    <a key={a.href} href={a.href} style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', height: 36, padding: '0 14px', borderRadius: 10, border: '1px solid #dfe7df', background: '#F6F9F5', fontWeight: 500, color: '#333', textDecoration: 'none', fontSize: 14 }}>
+                    <Link key={a.href} href={a.href} style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', height: 36, padding: '0 14px', borderRadius: 10, border: '1px solid #dfe7df', background: '#F6F9F5', fontWeight: 500, color: '#333', textDecoration: 'none', fontSize: 14 }}>
                         {a.label}
-                    </a>
+                    </Link>
                 ))}
             </div>
         </div>
