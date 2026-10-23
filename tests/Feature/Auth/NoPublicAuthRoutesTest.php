@@ -1,11 +1,13 @@
 <?php
 
+use Laravel\Fortify\Fortify;
+
 /**
  * CEMEROG has no public registration, password recovery, email
  * verification or 2FA: only the administrator manages accounts.
  */
 test('fortify is not installed', function () {
-    expect(class_exists(\Laravel\Fortify\Fortify::class))->toBeFalse();
+    expect(class_exists(Fortify::class))->toBeFalse();
 });
 
 test('public auth routes do not exist', function (string $method, string $url) {
