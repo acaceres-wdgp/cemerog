@@ -1,15 +1,10 @@
 <?php
 
 use App\Models\User;
-use Database\Seeders\RolesAndPermissionsSeeder;
 
 /**
  * Deactivating a user ends any session they already have open.
  */
-beforeEach(function () {
-    $this->seed(RolesAndPermissionsSeeder::class);
-});
-
 dataset('authenticated_pages', [
     'module' => ['/inicio'],
     'settings' => ['/settings/profile'],
@@ -45,11 +40,11 @@ test('active user keeps their session', function () {
     $user = User::factory()->create();
     $user->assignRole('administrador');
 
-    $this->withoutVite()->actingAs($user)->get('/inicio')->assertOk();
+    $this->actingAs($user)->get('/inicio')->assertOk();
 
     $this->assertAuthenticatedAs($user);
 });
 
 test('guest pages are unaffected', function () {
-    $this->withoutVite()->get('/login')->assertOk();
+    $this->get('/login')->assertOk();
 });

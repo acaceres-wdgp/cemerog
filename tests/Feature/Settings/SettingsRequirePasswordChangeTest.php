@@ -34,6 +34,6 @@ test('user with temporary password cannot rename or delete their account', funct
 test('user with changed password can open settings', function () {
     $user = User::factory()->create();
 
-    $this->withoutVite()->actingAs($user)->get('/settings/profile')->assertOk();
-    $this->withoutVite()->actingAs($user)->get('/settings/appearance')->assertOk();
+    $this->actingAs($user)->get('/settings/profile')->assertOk();
+    $this->actingAs($user)->get('/settings/appearance')->assertOk();
 });

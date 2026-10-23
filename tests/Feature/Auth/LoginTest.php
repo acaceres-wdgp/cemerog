@@ -1,11 +1,6 @@
 <?php
 
 use App\Models\User;
-use Database\Seeders\RolesAndPermissionsSeeder;
-
-beforeEach(function () {
-    $this->seed(RolesAndPermissionsSeeder::class);
-});
 
 test('login page renders', function () {
     $this->get('/login')
@@ -97,4 +92,17 @@ test('authenticated user can logout', function () {
 
 test('guest visiting root is redirected to login', function () {
     $this->get('/')->assertRedirect(route('login'));
+});
+
+test('login is rate limited after five failed attempts', function () {
+    $user = User::factory()->create(['username' => 'limited', 'password' => bcrypt('correct')]);
+
+    foreach (range(1, 5) as $attempt) {
+        $this->post('/login', ['username' => 'limited', 'password' => 'wrong']);
+    }
+
+    $this->post('/login', ['username' => 'limited', 'password' => 'correct'])
+        ->assertSessionHasErrors('username');
+
+    $this->assertGuest();
 });

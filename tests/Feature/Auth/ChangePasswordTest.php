@@ -1,21 +1,16 @@
 <?php
 
 use App\Models\User;
-use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Facades\Hash;
 
 /**
  * Only the administrator manages passwords: users change theirs only
  * when it is a temporary one.
  */
-beforeEach(function () {
-    $this->seed(RolesAndPermissionsSeeder::class);
-});
-
 test('user with temporary password can open the change form', function () {
     $user = User::factory()->mustChangePassword()->create();
 
-    $this->withoutVite()->actingAs($user)
+    $this->actingAs($user)
         ->get('/password/change-required')
         ->assertOk();
 });

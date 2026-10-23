@@ -2,15 +2,10 @@
 
 use App\Actions\ResolveHomeRoute;
 use App\Models\User;
-use Database\Seeders\RolesAndPermissionsSeeder;
 
 /**
  * Users land on the first module they can access, in sidebar order.
  */
-beforeEach(function () {
-    $this->seed(RolesAndPermissionsSeeder::class);
-});
-
 dataset('role_homes', [
     'administrador' => ['administrador', 'inicio'],
     'medico' => ['medico', 'inicio'],
@@ -47,7 +42,7 @@ test('home of each role is reachable after login', function (string $role, strin
     $user = User::factory()->create();
     $user->assignRole($role);
 
-    $this->withoutVite()->actingAs($user)->get(route($routeName))->assertOk();
+    $this->actingAs($user)->get(route($routeName))->assertOk();
 })->with('role_homes');
 
 test('changing a required password redirects to the role home', function () {
