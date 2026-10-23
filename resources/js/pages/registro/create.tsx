@@ -59,8 +59,25 @@ export default function RegistroCreate() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [photoError, setPhotoError] = useState<string | null>(null);
+
+    const MAX_PHOTO_BYTES = 20 * 1024 * 1024; // 20 MB
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 
     const handleFileSelect = (file: File | null) => {
+        setPhotoError(null);
+        if (file) {
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                setPhotoError('Solo se aceptan imágenes (JPG, PNG, WEBP) o PDF.');
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                return;
+            }
+            if (file.size > MAX_PHOTO_BYTES) {
+                setPhotoError(`El archivo pesa ${(file.size / 1024 / 1024).toFixed(1)} MB. El máximo permitido es 20 MB.`);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                return;
+            }
+        }
         setData('photo', file);
         if (file && file.type.startsWith('image/')) {
             const reader = new FileReader();
@@ -313,7 +330,9 @@ export default function RegistroCreate() {
                                         Quitar archivo
                                     </button>
                                 )}
-                                {errors.photo && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.photo}</span>}
+                                {(photoError ?? errors.photo) && (
+                                    <span style={{ color: '#b91c1c', fontSize: 12 }}>{photoError ?? errors.photo}</span>
+                                )}
                             </div>
                         </div>
 
