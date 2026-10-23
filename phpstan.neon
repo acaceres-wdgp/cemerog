@@ -11,6 +11,3 @@ parameters:
         - routes/
 
     level: 6
-
-    ignoreErrors:
-        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::#'

@@ -6,22 +6,29 @@ use App\Models\User;
  * Verify that module routes enforce authentication and permissions.
  */
 dataset('modules', [
-    'inicio'        => ['/inicio', 'inicio'],
-    'tablero'       => ['/tablero', 'tablero'],
-    'registro'      => ['/registro', 'registro'],
-    'citas'         => ['/citas', 'citas'],
-    'consulta'      => ['/consulta', 'consulta'],
-    'emergencia'    => ['/emergencia', 'emergencia'],
+    'inicio' => ['/inicio', 'inicio'],
+    'tablero' => ['/tablero', 'tablero'],
+    'registro' => ['/registro', 'registro'],
+    'citas' => ['/citas', 'citas'],
+    'consulta' => ['/consulta', 'consulta'],
+    'emergencia' => ['/emergencia', 'emergencia'],
     'internamiento' => ['/internamiento', 'internamiento'],
-    'cirugia'       => ['/cirugia', 'cirugia'],
-    'laboratorio'   => ['/laboratorio', 'lab'],
-    'imagenes'      => ['/imagenes', 'img'],
-    'impresos'      => ['/impresos', 'impresos'],
-    'caja'          => ['/facturacion', 'caja'],
-    'cxc'           => ['/cuentas-por-cobrar', 'cxc'],
-    'cuadre'        => ['/cuadre-de-caja', 'cuadre'],
-    'almacen'       => ['/almacen', 'almacen'],
-    'entrada'       => ['/entrada-mercancia', 'entrada'],
+    'cirugia' => ['/cirugia', 'cirugia'],
+    'laboratorio' => ['/laboratorio', 'lab'],
+    'imagenes' => ['/imagenes', 'img'],
+    'impresos' => ['/impresos', 'impresos'],
+    'caja' => ['/facturacion', 'caja'],
+    'cxc' => ['/cuentas-por-cobrar', 'cxc'],
+    'cuadre' => ['/cuadre-de-caja', 'cuadre'],
+    'almacen' => ['/almacen', 'almacen'],
+    'entrada' => ['/entrada-mercancia', 'entrada'],
+    'admin' => ['/admin/usuarios', 'admin'],
+    'doctores' => ['/admin/doctores', 'doctores'],
+    'analisis' => ['/admin/analisis', 'analisis'],
+    'imgcat' => ['/admin/imagenes-catalogo', 'imgcat'],
+    'precios' => ['/admin/precios', 'precios'],
+    'habs' => ['/admin/habitaciones', 'habs'],
+    'tema' => ['/admin/tema', 'tema'],
 ]);
 
 test('unauthenticated user is redirected to login', function (string $url, string $key) {
@@ -51,6 +58,8 @@ test('administrator can access all modules', function () {
         '/laboratorio', '/imagenes', '/impresos', '/facturacion',
         '/cuentas-por-cobrar', '/cuadre-de-caja',
         '/almacen', '/entrada-mercancia',
+        '/admin/usuarios', '/admin/doctores', '/admin/analisis',
+        '/admin/imagenes-catalogo', '/admin/precios', '/admin/habitaciones', '/admin/tema',
     ])->each(function (string $url) use ($admin) {
         $this->actingAs($admin)->get($url)->assertOk();
     });

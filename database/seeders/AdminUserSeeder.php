@@ -13,8 +13,8 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        $username = env('ADMIN_USERNAME', 'admin');
-        $password = env('ADMIN_PASSWORD', 'Admin123!');
+        $username = config('cemerog.admin.username');
+        $password = config('cemerog.admin.password');
 
         $user = User::firstOrCreate(
             ['username' => $username],

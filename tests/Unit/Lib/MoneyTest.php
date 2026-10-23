@@ -4,7 +4,6 @@
  * PHP-side money validation tests.
  * The JS formatMoney() function is tested separately in Vitest.
  */
-
 test('centavo amounts are positive integers', function () {
     $amounts = [150050, 0, 10000, 28450000];
 

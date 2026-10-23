@@ -43,7 +43,9 @@ export default function ConfirmDialog({
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
-                    {description && <DialogDescription>{description}</DialogDescription>}
+                    {description && (
+                        <DialogDescription>{description}</DialogDescription>
+                    )}
                 </DialogHeader>
 
                 {children && <div className="py-2">{children}</div>}
@@ -57,10 +59,18 @@ export default function ConfirmDialog({
                         {cancelLabel}
                     </Button>
                     <Button
-                        variant={variant === 'destructive' ? 'destructive' : 'default'}
+                        variant={
+                            variant === 'destructive'
+                                ? 'destructive'
+                                : 'default'
+                        }
                         onClick={onConfirm}
                         disabled={isLoading}
-                        style={variant === 'default' ? { backgroundColor: '#2E8B3E' } : undefined}
+                        style={
+                            variant === 'default'
+                                ? { backgroundColor: '#2E8B3E' }
+                                : undefined
+                        }
                     >
                         {confirmLabel}
                     </Button>

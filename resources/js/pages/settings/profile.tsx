@@ -1,6 +1,5 @@
 import { Form, Head, usePage } from '@inertiajs/react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
-import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -47,7 +46,10 @@ export default function Profile() {
                                     autoComplete="name"
                                     placeholder="Nombre completo"
                                 />
-                                <InputError className="mt-2" message={errors.name} />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.name}
+                                />
                             </div>
 
                             <div className="flex items-center gap-4">
@@ -57,8 +59,6 @@ export default function Profile() {
                     )}
                 </Form>
             </div>
-
-            <DeleteUser />
         </>
     );
 }

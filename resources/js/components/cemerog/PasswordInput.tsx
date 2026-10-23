@@ -12,12 +12,19 @@ interface PasswordInputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 function generatePassword(length = 16): string {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
-    return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+    return Array.from(
+        { length },
+        () => chars[Math.floor(Math.random() * chars.length)],
+    ).join('');
 }
 
 const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
-    ({ error, showGenerator = false, onGenerate, className = '', ...props }, ref) => {
+    (
+        { error, showGenerator = false, onGenerate, className = '', ...props },
+        ref,
+    ) => {
         const [show, setShow] = useState(false);
 
         const handleGenerate = () => {
@@ -30,8 +37,10 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
                 <input
                     ref={ref}
                     type={show ? 'text' : 'password'}
-                    className={`w-full rounded-md border pr-10 px-3 py-2 text-sm text-[#333333] placeholder:text-[#71717a] focus:outline-none focus:ring-2 focus:ring-[#2E8B3E] focus:border-[#2E8B3E] transition-colors ${
-                        error ? 'border-[#fecaca] bg-[#fef2f2]' : 'border-[#e4e4e7] bg-white'
+                    className={`w-full rounded-md border px-3 py-2 pr-10 text-sm text-[#333333] transition-colors placeholder:text-[#71717a] focus:border-[#2E8B3E] focus:ring-2 focus:ring-[#2E8B3E] focus:outline-none ${
+                        error
+                            ? 'border-[#fecaca] bg-[#fef2f2]'
+                            : 'border-[#e4e4e7] bg-white'
                     } ${showGenerator ? 'pr-20' : 'pr-10'} ${className}`}
                     {...props}
                 />
@@ -39,7 +48,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
                     <button
                         type="button"
                         onClick={handleGenerate}
-                        className="absolute right-8 p-1 text-[#71717a] hover:text-[#2E8B3E] transition-colors"
+                        className="absolute right-8 p-1 text-[#71717a] transition-colors hover:text-[#2E8B3E]"
                         tabIndex={-1}
                         title="Generar contraseña"
                         aria-label="Generar contraseña segura"
@@ -50,11 +59,17 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
                 <button
                     type="button"
                     onClick={() => setShow((v) => !v)}
-                    className="absolute right-2 p-1 text-[#71717a] hover:text-[#2E8B3E] transition-colors"
+                    className="absolute right-2 p-1 text-[#71717a] transition-colors hover:text-[#2E8B3E]"
                     tabIndex={-1}
-                    aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    aria-label={
+                        show ? 'Ocultar contraseña' : 'Mostrar contraseña'
+                    }
                 >
-                    {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {show ? (
+                        <EyeOff className="h-4 w-4" />
+                    ) : (
+                        <Eye className="h-4 w-4" />
+                    )}
                 </button>
             </div>
         );

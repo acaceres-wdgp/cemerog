@@ -4,14 +4,14 @@
 
 ### Patrones
 
-| Capa | Propósito | Ejemplo |
-|---|---|---|
-| `Actions/` | Lógica de negocio de un solo propósito | `CreatePatientAction`, `GenerateInvoiceAction` |
-| `Http/Requests/` | Validación y autorización de formularios | `StorePatientRequest` |
-| `Policies/` | Autorización por modelo | `PatientPolicy`, `InvoicePolicy` |
-| `Enums/` | Valores de dominio tipados | `PatientStatus`, `TriageLevel` |
-| `DTOs/` | Objetos de transferencia de datos | `PatientData`, `VitalSignsData` |
-| `Controllers/` | Orquestación HTTP (thin) | delegan a Actions |
+| Capa             | Propósito                                | Ejemplo                                        |
+| ---------------- | ---------------------------------------- | ---------------------------------------------- |
+| `Actions/`       | Lógica de negocio de un solo propósito   | `CreatePatientAction`, `GenerateInvoiceAction` |
+| `Http/Requests/` | Validación y autorización de formularios | `StorePatientRequest`                          |
+| `Policies/`      | Autorización por modelo                  | `PatientPolicy`, `InvoicePolicy`               |
+| `Enums/`         | Valores de dominio tipados               | `PatientStatus`, `TriageLevel`                 |
+| `DTOs/`          | Objetos de transferencia de datos        | `PatientData`, `VitalSignsData`                |
+| `Controllers/`   | Orquestación HTTP (thin)                 | delegan a Actions                              |
 
 ### Reglas de backend
 

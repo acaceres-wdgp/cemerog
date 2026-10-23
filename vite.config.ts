@@ -7,6 +7,12 @@ import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 
+// laravel-vite-plugin refuses to start Vite's dev server when CI is set,
+// which Vitest needs; the check only matters for `vite dev`
+if (process.env.VITEST) {
+    process.env.LARAVEL_BYPASS_ENV_CHECK = '1';
+}
+
 export default defineConfig({
     test: {
         environment: 'jsdom',
@@ -55,6 +61,7 @@ export default defineConfig({
             'node_modules/**',
             'public/**',
             'bootstrap/ssr/**',
+            'design/**',
             'tailwind.config.js',
             'resources/js/actions/**',
             'resources/js/components/ui/*',
@@ -76,6 +83,7 @@ export default defineConfig({
         ignorePatterns: [
             '.github/**',
             'composer.json',
+            'design/**',
             'resources/js/components/ui/*',
             'resources/views/mail/*',
         ],

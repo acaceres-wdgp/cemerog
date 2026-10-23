@@ -17,12 +17,22 @@ Tests usan SQLite `:memory:`. El archivo `phpunit.xml` ya tiene:
 <env name="DB_DATABASE" value=":memory:"/>
 ```
 
+### Base común (`tests/TestCase.php`)
+
+Todos los tests heredan de `Tests\TestCase`, que ya:
+
+- **Siembra roles y permisos** (`RolesAndPermissionsSeeder`) tras cada refresco de la base, así que `assignRole()` y `givePermissionTo()` funcionan sin preparar nada.
+- **Desactiva Vite** (`withoutVite()`), así que las páginas Inertia se renderizan sin `npm run build` ni `npm run dev`.
+- **Se niega a tocar una base que no sea SQLite en memoria.** Si un test con `RefreshDatabase` apunta a otra base, falla antes de ejecutar `migrate:fresh`.
+
+`phpunit.xml` fuerza (`force="true"`) el entorno `testing` y SQLite en memoria, tanto en `<env>` como en `<server>`. Los tests usan siempre esa base, con `vendor/bin/pest`, `php artisan test` o `php artisan test --env=testing` (el de la CI). Sin ese forzado, `php artisan test` hereda el `.env` local y `RefreshDatabase` borraría la base MySQL de desarrollo.
+
 ### Tipos de test
 
-| Tipo | Carpeta | Cuándo |
-|---|---|---|
-| Unit | `tests/Unit/` | Clases de dominio, Actions, helpers |
-| Feature | `tests/Feature/` | HTTP, auth, flujos completos |
+| Tipo    | Carpeta          | Cuándo                              |
+| ------- | ---------------- | ----------------------------------- |
+| Unit    | `tests/Unit/`    | Clases de dominio, Actions, helpers |
+| Feature | `tests/Feature/` | HTTP, auth, flujos completos        |
 
 ### Ejemplos Pest
 

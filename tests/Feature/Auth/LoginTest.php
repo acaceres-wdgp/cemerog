@@ -15,6 +15,7 @@ test('user can login with username and password', function () {
         'is_active' => true,
         'must_change_password' => false,
     ]);
+    $user->assignRole('administrador');
 
     $this->post('/login', [
         'username' => 'testuser',
@@ -69,6 +70,7 @@ test('username is case insensitive', function () {
         'is_active' => true,
         'must_change_password' => false,
     ]);
+    $user->assignRole('administrador');
 
     $this->post('/login', [
         'username' => 'TESTUSER',
@@ -84,6 +86,23 @@ test('authenticated user can logout', function () {
     $this->actingAs($user)
         ->post('/logout')
         ->assertRedirect('/');
+
+    $this->assertGuest();
+});
+
+test('guest visiting root is redirected to login', function () {
+    $this->get('/')->assertRedirect(route('login'));
+});
+
+test('login is rate limited after five failed attempts', function () {
+    $user = User::factory()->create(['username' => 'limited', 'password' => bcrypt('correct')]);
+
+    foreach (range(1, 5) as $attempt) {
+        $this->post('/login', ['username' => 'limited', 'password' => 'wrong']);
+    }
+
+    $this->post('/login', ['username' => 'limited', 'password' => 'correct'])
+        ->assertSessionHasErrors('username');
 
     $this->assertGuest();
 });
