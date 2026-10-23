@@ -1,4 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
+import { useRef, useState } from 'react';
 import { MaskedInput } from '@/components/cemerog/masked-input';
 import type { BloodType, DocumentType, PatientSearchResult, Sex } from '@/types/patient';
 
@@ -16,6 +17,8 @@ type PatientForm = {
     allergies: string;
     emergency_contact_name: string;
     emergency_contact_phone: string;
+    photo: File | null;
+    remove_photo: boolean;
 };
 
 type Props = { patient: PatientSearchResult };
@@ -54,7 +57,35 @@ export default function RegistroEdit({ patient }: Props) {
         allergies: patient.allergies ?? '',
         emergency_contact_name: patient.emergency_contact_name ?? '',
         emergency_contact_phone: patient.emergency_contact_phone ?? '',
+        photo: null,
+        remove_photo: false,
     });
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(patient.photo_url);
+    const [isDragging, setIsDragging] = useState(false);
+
+    const handleFileSelect = (file: File | null) => {
+        setData('photo', file);
+        setData('remove_photo', false);
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = e => setPreviewUrl(e.target?.result as string);
+            reader.readAsDataURL(file);
+        } else if (file) {
+            setPreviewUrl(null);
+        }
+    };
+
+    const handleRemovePhoto = () => {
+        setData('photo', null);
+        setData('remove_photo', true);
+        setPreviewUrl(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const hasPhoto = previewUrl || (data.photo && !data.remove_photo);
+    const isPdf = data.photo?.type === 'application/pdf' || (patient.photo_url?.endsWith('.pdf') && !data.photo && !data.remove_photo);
 
     const handleDocumentTypeChange = (type: DocumentType) => {
         setData('document_type', type);
@@ -252,28 +283,97 @@ export default function RegistroEdit({ patient }: Props) {
                         </div>
                     </div>
 
-                    {/* Info sidebar */}
-                    <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14 }}>
-                        <div style={{ padding: '16px 20px', borderBottom: '1px solid #eef0ec', fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 16, color: '#1f2d22' }}>Paciente</div>
-                        <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                                <span style={{ width: 40, height: 40, borderRadius: '50%', background: '#EEF6E2', color: '#2f4a17', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14 }}>
-                                    {patient.initials}
-                                </span>
-                                <div>
-                                    <div style={{ fontWeight: 600, color: '#1f2d22' }}>{patient.full_name}</div>
-                                    <div style={{ fontSize: 12, color: '#71717a' }}>{patient.age} años · {patient.sex === 'F' ? 'Femenino' : 'Masculino'}</div>
-                                </div>
+                    {/* Sidebar */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        {/* Photo card */}
+                        <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14 }}>
+                            <div style={{ padding: '16px 20px', borderBottom: '1px solid #eef0ec', fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 16, color: '#1f2d22' }}>
+                                Foto / Identificación
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '6px 12px', fontSize: 13 }}>
-                                <span style={{ color: '#71717a' }}>Documento</span>
-                                <span style={{ textAlign: 'right' }}>{patient.document_number}</span>
-                                <span style={{ color: '#71717a' }}>Sangre</span>
-                                <span style={{ textAlign: 'right' }}>{patient.blood_type ?? '—'}</span>
-                                <span style={{ color: '#71717a' }}>Alergias</span>
-                                <span style={{ textAlign: 'right', color: patient.allergies ? '#b91c1c' : '#c4c9c4' }}>
-                                    {patient.allergies ?? 'Ninguna'}
-                                </span>
+                            <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                <div
+                                    onClick={() => fileInputRef.current?.click()}
+                                    onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+                                    onDragLeave={() => setIsDragging(false)}
+                                    onDrop={e => {
+                                        e.preventDefault();
+                                        setIsDragging(false);
+                                        const file = e.dataTransfer.files[0] ?? null;
+                                        if (file) handleFileSelect(file);
+                                    }}
+                                    style={{
+                                        border: `2px dashed ${isDragging ? '#2E8B3E' : '#d4d4d8'}`,
+                                        borderRadius: 12,
+                                        background: isDragging ? '#F3F9EC' : '#fafafa',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        minHeight: 160,
+                                        gap: 8,
+                                        overflow: 'hidden',
+                                        transition: 'border-color .15s, background .15s',
+                                    }}
+                                >
+                                    {hasPhoto && !isPdf && previewUrl ? (
+                                        <img src={previewUrl} alt="Foto del paciente" style={{ width: '100%', height: 160, objectFit: 'cover' }} />
+                                    ) : hasPhoto && isPdf ? (
+                                        <div style={{ textAlign: 'center', color: '#5f6b64', fontSize: 13 }}>
+                                            <div style={{ fontSize: 36, marginBottom: 4 }}>📄</div>
+                                            <div style={{ fontWeight: 500 }}>{data.photo?.name ?? 'Documento PDF'}</div>
+                                        </div>
+                                    ) : (
+                                        <div style={{ textAlign: 'center', color: '#71717a', padding: '0 12px' }}>
+                                            <div style={{ fontSize: 32, marginBottom: 8 }}>📷</div>
+                                            <div style={{ fontSize: 13, fontWeight: 500 }}>Haz clic o arrastra un archivo</div>
+                                            <div style={{ fontSize: 12, marginTop: 4 }}>JPG, PNG, WEBP o PDF · máx. 5 MB</div>
+                                        </div>
+                                    )}
+                                </div>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                                    style={{ display: 'none' }}
+                                    onChange={e => handleFileSelect(e.target.files?.[0] ?? null)}
+                                />
+                                {hasPhoto && (
+                                    <button
+                                        type="button"
+                                        onClick={handleRemovePhoto}
+                                        style={{ height: 32, padding: '0 12px', borderRadius: 8, border: '1px solid #fecaca', background: '#fef2f2', color: '#b91c1c', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}
+                                    >
+                                        Eliminar foto
+                                    </button>
+                                )}
+                                {errors.photo && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.photo}</span>}
+                            </div>
+                        </div>
+
+                        {/* Patient info card */}
+                        <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14 }}>
+                            <div style={{ padding: '16px 20px', borderBottom: '1px solid #eef0ec', fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 16, color: '#1f2d22' }}>Paciente</div>
+                            <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                                    <span style={{ width: 40, height: 40, borderRadius: '50%', background: '#EEF6E2', color: '#2f4a17', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14 }}>
+                                        {patient.initials}
+                                    </span>
+                                    <div>
+                                        <div style={{ fontWeight: 600, color: '#1f2d22' }}>{patient.full_name}</div>
+                                        <div style={{ fontSize: 12, color: '#71717a' }}>{patient.age} años · {patient.sex === 'F' ? 'Femenino' : 'Masculino'}</div>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '6px 12px', fontSize: 13 }}>
+                                    <span style={{ color: '#71717a' }}>Documento</span>
+                                    <span style={{ textAlign: 'right' }}>{patient.document_number}</span>
+                                    <span style={{ color: '#71717a' }}>Sangre</span>
+                                    <span style={{ textAlign: 'right' }}>{patient.blood_type ?? '—'}</span>
+                                    <span style={{ color: '#71717a' }}>Alergias</span>
+                                    <span style={{ textAlign: 'right', color: patient.allergies ? '#b91c1c' : '#c4c9c4' }}>
+                                        {patient.allergies ?? 'Ninguna'}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -47,7 +47,15 @@ class RegistroController extends Controller
     public function edit(Patient $patient): Response
     {
         return Inertia::render('registro/edit', [
-            'patient' => $patient,
+            'patient' => array_merge($patient->toArray(), [
+                'full_name' => $patient->full_name,
+                'initials' => $patient->initials,
+                'age' => $patient->age,
+                'document_number' => $patient->document_number,
+                'email' => $patient->email,
+                'phone' => $patient->phone,
+                'photo_url' => $patient->photo_url,
+            ]),
         ]);
     }
 
@@ -89,6 +97,7 @@ class RegistroController extends Controller
                 'allergies' => $p->allergies,
                 'emergency_contact_name' => $p->emergency_contact_name,
                 'emergency_contact_phone' => $p->emergency_contact_phone,
+                'photo_url' => $p->photo_url,
             ]);
 
         return response()->json($patients);

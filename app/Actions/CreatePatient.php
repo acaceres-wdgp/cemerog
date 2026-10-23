@@ -3,6 +3,8 @@
 namespace App\Actions;
 
 use App\Models\Patient;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class CreatePatient
@@ -16,6 +18,11 @@ class CreatePatient
             } while (Patient::where('document_number_hash', $hash)->exists());
 
             $data['document_number'] = $generated;
+        }
+
+        $file = Arr::pull($data, 'photo');
+        if ($file instanceof UploadedFile) {
+            $data['photo_path'] = $file->store('patients/photos', 'public');
         }
 
         return Patient::create($data);

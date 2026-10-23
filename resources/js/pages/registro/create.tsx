@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import { useRef, useState } from 'react';
 import { MaskedInput } from '@/components/cemerog/masked-input';
 import type { BloodType, DocumentType, Sex } from '@/types/patient';
 
@@ -16,6 +17,7 @@ type PatientForm = {
     allergies: string;
     emergency_contact_name: string;
     emergency_contact_phone: string;
+    photo: File | null;
 };
 
 const BLOOD_TYPES: BloodType[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -52,7 +54,23 @@ export default function RegistroCreate() {
         allergies: '',
         emergency_contact_name: '',
         emergency_contact_phone: '',
+        photo: null,
     });
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+
+    const handleFileSelect = (file: File | null) => {
+        setData('photo', file);
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = e => setPreviewUrl(e.target?.result as string);
+            reader.readAsDataURL(file);
+        } else {
+            setPreviewUrl(null);
+        }
+    };
 
     const handleDocumentTypeChange = (type: DocumentType) => {
         setData('document_type', type);
@@ -233,24 +251,94 @@ export default function RegistroCreate() {
                         </div>
                     </div>
 
-                    {/* Summary sidebar */}
-                    <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14 }}>
-                        <div style={{ padding: '16px 20px', borderBottom: '1px solid #eef0ec', fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 16, color: '#1f2d22' }}>Resumen</div>
-                        <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px 12px', fontSize: 13 }}>
-                            <span style={{ color: '#71717a' }}>Nombre</span>
-                            <span style={{ fontWeight: 500, textAlign: 'right' }}>
-                                {(data.first_names || data.last_names) ? `${data.first_names} ${data.last_names}`.trim() : '—'}
-                            </span>
-                            <span style={{ color: '#71717a' }}>Documento</span>
-                            <span style={{ textAlign: 'right' }}>
-                                {data.document_type === 'no_tiene' ? 'Auto-generado' : (data.document_number || '—')}
-                            </span>
-                            <span style={{ color: '#71717a' }}>Tipo de sangre</span>
-                            <span style={{ textAlign: 'right' }}>{data.blood_type || '—'}</span>
-                            <span style={{ color: '#71717a' }}>Alergias</span>
-                            <span style={{ textAlign: 'right', color: data.allergies ? '#b91c1c' : '#c4c9c4' }}>
-                                {data.allergies || 'Ninguna'}
-                            </span>
+                    {/* Sidebar */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        {/* Photo upload card */}
+                        <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14 }}>
+                            <div style={{ padding: '16px 20px', borderBottom: '1px solid #eef0ec', fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 16, color: '#1f2d22' }}>
+                                Foto / Identificación
+                            </div>
+                            <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                <div
+                                    onClick={() => fileInputRef.current?.click()}
+                                    onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+                                    onDragLeave={() => setIsDragging(false)}
+                                    onDrop={e => {
+                                        e.preventDefault();
+                                        setIsDragging(false);
+                                        const file = e.dataTransfer.files[0] ?? null;
+                                        if (file) handleFileSelect(file);
+                                    }}
+                                    style={{
+                                        border: `2px dashed ${isDragging ? '#2E8B3E' : '#d4d4d8'}`,
+                                        borderRadius: 12,
+                                        background: isDragging ? '#F3F9EC' : '#fafafa',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        minHeight: 160,
+                                        gap: 8,
+                                        overflow: 'hidden',
+                                        transition: 'border-color .15s, background .15s',
+                                    }}
+                                >
+                                    {data.photo && data.photo.type.startsWith('image/') && previewUrl ? (
+                                        <img src={previewUrl} alt="Preview" style={{ width: '100%', height: 160, objectFit: 'cover' }} />
+                                    ) : data.photo ? (
+                                        <div style={{ textAlign: 'center', color: '#5f6b64', fontSize: 13 }}>
+                                            <div style={{ fontSize: 36, marginBottom: 4 }}>📄</div>
+                                            <div style={{ fontWeight: 500 }}>{data.photo.name}</div>
+                                            <div style={{ color: '#71717a' }}>{(data.photo.size / 1024).toFixed(0)} KB</div>
+                                        </div>
+                                    ) : (
+                                        <div style={{ textAlign: 'center', color: '#71717a', padding: '0 12px' }}>
+                                            <div style={{ fontSize: 32, marginBottom: 8 }}>📷</div>
+                                            <div style={{ fontSize: 13, fontWeight: 500 }}>Haz clic o arrastra un archivo</div>
+                                            <div style={{ fontSize: 12, marginTop: 4 }}>JPG, PNG, WEBP o PDF · máx. 5 MB</div>
+                                        </div>
+                                    )}
+                                </div>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                                    style={{ display: 'none' }}
+                                    onChange={e => handleFileSelect(e.target.files?.[0] ?? null)}
+                                />
+                                {data.photo && (
+                                    <button
+                                        type="button"
+                                        onClick={() => { handleFileSelect(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                                        style={{ height: 32, padding: '0 12px', borderRadius: 8, border: '1px solid #fecaca', background: '#fef2f2', color: '#b91c1c', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}
+                                    >
+                                        Quitar archivo
+                                    </button>
+                                )}
+                                {errors.photo && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.photo}</span>}
+                            </div>
+                        </div>
+
+                        {/* Summary card */}
+                        <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14 }}>
+                            <div style={{ padding: '16px 20px', borderBottom: '1px solid #eef0ec', fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 16, color: '#1f2d22' }}>Resumen</div>
+                            <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px 12px', fontSize: 13 }}>
+                                <span style={{ color: '#71717a' }}>Nombre</span>
+                                <span style={{ fontWeight: 500, textAlign: 'right' }}>
+                                    {(data.first_names || data.last_names) ? `${data.first_names} ${data.last_names}`.trim() : '—'}
+                                </span>
+                                <span style={{ color: '#71717a' }}>Documento</span>
+                                <span style={{ textAlign: 'right' }}>
+                                    {data.document_type === 'no_tiene' ? 'Auto-generado' : (data.document_number || '—')}
+                                </span>
+                                <span style={{ color: '#71717a' }}>Tipo de sangre</span>
+                                <span style={{ textAlign: 'right' }}>{data.blood_type || '—'}</span>
+                                <span style={{ color: '#71717a' }}>Alergias</span>
+                                <span style={{ textAlign: 'right', color: data.allergies ? '#b91c1c' : '#c4c9c4' }}>
+                                    {data.allergies || 'Ninguna'}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>

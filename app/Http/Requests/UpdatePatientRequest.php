@@ -31,6 +31,8 @@ class UpdatePatientRequest extends FormRequest
             'allergies' => ['nullable', 'string'],
             'emergency_contact_name' => ['nullable', 'string', 'max:100'],
             'emergency_contact_phone' => ['nullable', 'string', 'max:20'],
+            'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
+            'remove_photo' => ['nullable', 'boolean'],
         ];
     }
 }

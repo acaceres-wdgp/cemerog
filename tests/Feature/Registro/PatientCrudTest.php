@@ -2,6 +2,8 @@
 
 use App\Models\Patient;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     $this->secretaria = User::factory()->create();
@@ -285,6 +287,139 @@ test('update returns 404 for non-existent patient', function () {
             'sex' => 'M',
         ])
         ->assertNotFound();
+});
+
+// ─── Photo upload ────────────────────────────────────────────────────────────
+
+test('store saves photo when image is provided', function () {
+    Storage::fake('public');
+
+    $image = UploadedFile::fake()->image('cedula.jpg', 400, 300);
+
+    $this->actingAs($this->secretaria)
+        ->post('/registro/pacientes', [
+            'document_type' => 'cedula',
+            'document_number' => '001-1234567-8',
+            'first_names' => 'Ana',
+            'last_names' => 'Pérez',
+            'birth_date' => '1990-01-01',
+            'sex' => 'F',
+            'photo' => $image,
+        ])
+        ->assertRedirect('/registro');
+
+    $patient = Patient::where('first_names', 'Ana')->first();
+
+    expect($patient->photo_path)->not->toBeNull();
+    Storage::disk('public')->assertExists($patient->photo_path);
+});
+
+test('store saves photo when PDF is provided', function () {
+    Storage::fake('public');
+
+    $pdf = UploadedFile::fake()->create('cedula.pdf', 512, 'application/pdf');
+
+    $this->actingAs($this->secretaria)
+        ->post('/registro/pacientes', [
+            'document_type' => 'cedula',
+            'document_number' => '001-1234567-8',
+            'first_names' => 'Ana',
+            'last_names' => 'Pérez',
+            'birth_date' => '1990-01-01',
+            'sex' => 'F',
+            'photo' => $pdf,
+        ])
+        ->assertRedirect('/registro');
+
+    $patient = Patient::where('first_names', 'Ana')->first();
+    Storage::disk('public')->assertExists($patient->photo_path);
+});
+
+test('store rejects photo exceeding 5 MB', function () {
+    Storage::fake('public');
+
+    $big = UploadedFile::fake()->create('foto.jpg', 6000, 'image/jpeg');
+
+    $this->actingAs($this->secretaria)
+        ->post('/registro/pacientes', [
+            'document_type' => 'cedula',
+            'document_number' => '001-1234567-8',
+            'first_names' => 'Ana',
+            'last_names' => 'Pérez',
+            'birth_date' => '1990-01-01',
+            'sex' => 'F',
+            'photo' => $big,
+        ])
+        ->assertSessionHasErrors(['photo']);
+});
+
+test('store rejects invalid file type for photo', function () {
+    Storage::fake('public');
+
+    $exe = UploadedFile::fake()->create('virus.exe', 100, 'application/octet-stream');
+
+    $this->actingAs($this->secretaria)
+        ->post('/registro/pacientes', [
+            'document_type' => 'cedula',
+            'document_number' => '001-1234567-8',
+            'first_names' => 'Ana',
+            'last_names' => 'Pérez',
+            'birth_date' => '1990-01-01',
+            'sex' => 'F',
+            'photo' => $exe,
+        ])
+        ->assertSessionHasErrors(['photo']);
+});
+
+test('update replaces photo and deletes old file', function () {
+    Storage::fake('public');
+
+    $patient = Patient::factory()->create();
+    $oldPath = 'patients/photos/old.jpg';
+    Storage::disk('public')->put($oldPath, 'old content');
+    $patient->update(['photo_path' => $oldPath]);
+
+    $newImage = UploadedFile::fake()->image('new.jpg', 400, 300);
+
+    $this->actingAs($this->secretaria)
+        ->put("/registro/pacientes/{$patient->id}", [
+            'document_type' => $patient->document_type,
+            'document_number' => $patient->document_number,
+            'first_names' => $patient->first_names,
+            'last_names' => $patient->last_names,
+            'birth_date' => $patient->birth_date->format('Y-m-d'),
+            'sex' => $patient->sex,
+            'photo' => $newImage,
+        ])
+        ->assertRedirect('/registro');
+
+    Storage::disk('public')->assertMissing($oldPath);
+    $patient->refresh();
+    Storage::disk('public')->assertExists($patient->photo_path);
+});
+
+test('update removes photo when remove_photo flag is set', function () {
+    Storage::fake('public');
+
+    $patient = Patient::factory()->create();
+    $oldPath = 'patients/photos/old.jpg';
+    Storage::disk('public')->put($oldPath, 'old content');
+    $patient->update(['photo_path' => $oldPath]);
+
+    $this->actingAs($this->secretaria)
+        ->put("/registro/pacientes/{$patient->id}", [
+            'document_type' => $patient->document_type,
+            'document_number' => $patient->document_number,
+            'first_names' => $patient->first_names,
+            'last_names' => $patient->last_names,
+            'birth_date' => $patient->birth_date->format('Y-m-d'),
+            'sex' => $patient->sex,
+            'remove_photo' => true,
+        ])
+        ->assertRedirect('/registro');
+
+    Storage::disk('public')->assertMissing($oldPath);
+    expect($patient->fresh()->photo_path)->toBeNull();
 });
 
 // ─── Destroy ─────────────────────────────────────────────────────────────────
