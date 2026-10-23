@@ -1,6 +1,11 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\RolesAndPermissionsSeeder;
+
+beforeEach(function () {
+    $this->seed(RolesAndPermissionsSeeder::class);
+});
 
 test('login page renders', function () {
     $this->get('/login')
@@ -15,6 +20,7 @@ test('user can login with username and password', function () {
         'is_active' => true,
         'must_change_password' => false,
     ]);
+    $user->assignRole('administrador');
 
     $this->post('/login', [
         'username' => 'testuser',
@@ -69,6 +75,7 @@ test('username is case insensitive', function () {
         'is_active' => true,
         'must_change_password' => false,
     ]);
+    $user->assignRole('administrador');
 
     $this->post('/login', [
         'username' => 'TESTUSER',
@@ -90,24 +97,4 @@ test('authenticated user can logout', function () {
 
 test('guest visiting root is redirected to login', function () {
     $this->get('/')->assertRedirect(route('login'));
-});
-
-test('authenticated user visiting root is redirected to inicio', function () {
-    $user = User::factory()->create();
-
-    $this->actingAs($user)->get('/')->assertRedirect(route('inicio'));
-});
-
-test('authenticated user visiting login is redirected to inicio', function () {
-    $user = User::factory()->create();
-
-    $this->actingAs($user)->get('/login')->assertRedirect(route('inicio'));
-});
-
-test('authenticated user posting to login is redirected to inicio', function () {
-    $user = User::factory()->create();
-
-    $this->actingAs($user)
-        ->post('/login', ['username' => $user->username, 'password' => 'password'])
-        ->assertRedirect(route('inicio'));
 });

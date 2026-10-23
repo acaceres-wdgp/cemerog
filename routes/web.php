@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\ResolveHomeRoute;
 use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Modules\AdminController;
@@ -25,10 +26,13 @@ use App\Http\Controllers\Modules\PreciosController;
 use App\Http\Controllers\Modules\RegistroController;
 use App\Http\Controllers\Modules\TableroController;
 use App\Http\Controllers\Modules\TemaController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Root redirect
-Route::get('/', fn () => redirect()->route(auth()->check() ? 'inicio' : 'login'));
+Route::get('/', fn (Request $request, ResolveHomeRoute $resolveHomeRoute) => $request->user()
+    ? redirect($resolveHomeRoute->handle($request->user()))
+    : redirect()->route('login'));
 
 // Auth routes
 Route::middleware('guest')->group(function () {

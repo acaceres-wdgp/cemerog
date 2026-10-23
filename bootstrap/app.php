@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\ResolveHomeRoute;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -25,7 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         // Without a 'dashboard'/'home' route, the guest middleware falls back to '/', which loops back to /login
-        $middleware->redirectUsersTo(fn () => route('inicio'));
+        $middleware->redirectUsersTo(fn (Request $request) => app(ResolveHomeRoute::class)->handle($request->user()));
 
         $middleware->alias([
             'ensure.password.changed' => EnsurePasswordChanged::class,
