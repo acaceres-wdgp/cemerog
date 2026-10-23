@@ -124,5 +124,5 @@ Desinstalar `laravel/fortify`, que venía con el starter kit, junto con sus depe
 - Sin la dependencia, esas funciones no pueden reactivarse por accidente. `NoPublicAuthRoutesTest` verifica que Fortify no está instalado y que sus rutas dan 404.
 
 ### Pendiente
-- Las migraciones `create_passkeys_table` y `add_two_factor_columns_to_users_table` siguen aplicadas. Su tabla y sus columnas no se usan. Quitarlas requiere una migración nueva con su test de reversión.
+- La migración `drop_passkeys_and_two_factor_columns` elimina la tabla `passkeys` y las 3 columnas de 2FA de `users`. Su `down()` las restaura, y `DropPasskeysAndTwoFactorTest` verifica ambos sentidos.
 - `@laravel/passkeys` sigue en `package.json` sin uso.
