@@ -1,8 +1,9 @@
 import { useForm } from '@inertiajs/react';
-import type { BloodType, Sex } from '@/types/patient';
+import { MaskedInput } from '@/components/cemerog/masked-input';
+import type { BloodType, DocumentType, Sex } from '@/types/patient';
 
 type PatientForm = {
-    document_type: string;
+    document_type: DocumentType;
     document_number: string;
     email: string;
     first_names: string;
@@ -18,6 +19,17 @@ type PatientForm = {
 };
 
 const BLOOD_TYPES: BloodType[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+const DOCUMENT_TYPES: { value: DocumentType; label: string }[] = [
+    { value: 'cedula', label: 'Cédula dominicana' },
+    { value: 'pasaporte', label: 'Pasaporte' },
+    { value: 'cedula_extranjera', label: 'Cédula extranjera' },
+    { value: 'rnc', label: 'RNC' },
+    { value: 'no_tiene', label: 'No tiene identificación' },
+];
+
+const CEDULA_MASK = '000-0000000-0';
+const PHONE_MASK = '000-000-0000';
 
 const inputStyle: React.CSSProperties = {
     height: 36, padding: '0 12px', border: '1px solid #e4e4e7', borderRadius: 10,
@@ -42,9 +54,64 @@ export default function RegistroCreate() {
         emergency_contact_phone: '',
     });
 
+    const handleDocumentTypeChange = (type: DocumentType) => {
+        setData('document_type', type);
+        setData('document_number', '');
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post('/registro/pacientes');
+    };
+
+    const docNumberField = () => {
+        if (data.document_type === 'no_tiene') {
+            return (
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 12px', border: '1px solid #cfe3b8', borderRadius: 10, fontSize: 13, background: '#F3F9EC', gridColumn: 'span 2' }}>
+                    <span style={{ fontSize: 16, color: '#2E8B3E', marginTop: 1 }}>ℹ</span>
+                    <span>El sistema asignará un <strong>código identificador</strong> automáticamente al guardar.</span>
+                </div>
+            );
+        }
+
+        if (data.document_type === 'cedula') {
+            return (
+                <label style={labelStyle}>
+                    <span>No. de cédula *</span>
+                    <MaskedInput
+                        mask={CEDULA_MASK}
+                        value={data.document_number}
+                        onChange={v => setData('document_number', v)}
+                        style={{ ...inputStyle, borderColor: errors.document_number ? '#fecaca' : undefined }}
+                    />
+                    {errors.document_number && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.document_number}</span>}
+                </label>
+            );
+        }
+
+        const labels: Partial<Record<DocumentType, string>> = {
+            pasaporte: 'No. de pasaporte *',
+            cedula_extranjera: 'No. de identificación *',
+            rnc: 'RNC *',
+        };
+        const placeholders: Partial<Record<DocumentType, string>> = {
+            pasaporte: 'Ej. AB123456',
+            cedula_extranjera: 'Número de identificación',
+            rnc: '1-00-00000-0',
+        };
+
+        return (
+            <label style={labelStyle}>
+                <span>{labels[data.document_type] ?? 'No. de documento *'}</span>
+                <input
+                    value={data.document_number}
+                    onChange={e => setData('document_number', e.target.value)}
+                    placeholder={placeholders[data.document_type]}
+                    style={{ ...inputStyle, borderColor: errors.document_number ? '#fecaca' : undefined }}
+                />
+                {errors.document_number && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.document_number}</span>}
+            </label>
+        );
     };
 
     return (
@@ -69,18 +136,20 @@ export default function RegistroCreate() {
                         <div style={{ padding: '16px 20px 20px', display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: '14px 16px' }}>
                             <label style={labelStyle}>
                                 <span>Tipo de documento *</span>
-                                <select value={data.document_type} onChange={e => setData('document_type', e.target.value)} style={inputStyle}>
-                                    <option value="cedula">Cédula</option>
-                                    <option value="pasaporte">Pasaporte</option>
-                                    <option value="rnc">RNC</option>
+                                <select
+                                    value={data.document_type}
+                                    onChange={e => handleDocumentTypeChange(e.target.value as DocumentType)}
+                                    style={inputStyle}
+                                >
+                                    {DOCUMENT_TYPES.map(dt => (
+                                        <option key={dt.value} value={dt.value}>{dt.label}</option>
+                                    ))}
                                 </select>
                                 {errors.document_type && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.document_type}</span>}
                             </label>
-                            <label style={labelStyle}>
-                                <span>No. de documento *</span>
-                                <input value={data.document_number} onChange={e => setData('document_number', e.target.value)} placeholder="000-0000000-0" style={{ ...inputStyle, borderColor: errors.document_number ? '#fecaca' : undefined }} />
-                                {errors.document_number && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.document_number}</span>}
-                            </label>
+
+                            {docNumberField()}
+
                             <label style={labelStyle}>
                                 <span>Fecha de nacimiento *</span>
                                 <input type="date" value={data.birth_date} onChange={e => setData('birth_date', e.target.value)} style={{ ...inputStyle, borderColor: errors.birth_date ? '#fecaca' : undefined }} />
@@ -117,7 +186,12 @@ export default function RegistroCreate() {
                             </div>
                             <label style={labelStyle}>
                                 <span>Teléfono</span>
-                                <input value={data.phone} onChange={e => setData('phone', e.target.value)} placeholder="809-000-0000" style={inputStyle} />
+                                <MaskedInput
+                                    mask={PHONE_MASK}
+                                    value={data.phone}
+                                    onChange={v => setData('phone', v)}
+                                    style={inputStyle}
+                                />
                             </label>
                             <label style={{ ...labelStyle, gridColumn: 'span 2' }}>
                                 <span>Dirección</span>
@@ -129,7 +203,12 @@ export default function RegistroCreate() {
                             </label>
                             <label style={labelStyle}>
                                 <span>Tel. de contacto</span>
-                                <input value={data.emergency_contact_phone} onChange={e => setData('emergency_contact_phone', e.target.value)} placeholder="809-000-0000" style={inputStyle} />
+                                <MaskedInput
+                                    mask={PHONE_MASK}
+                                    value={data.emergency_contact_phone}
+                                    onChange={v => setData('emergency_contact_phone', v)}
+                                    style={inputStyle}
+                                />
                             </label>
                             <label style={labelStyle}>
                                 <span>Tipo de sangre</span>
@@ -163,7 +242,9 @@ export default function RegistroCreate() {
                                 {(data.first_names || data.last_names) ? `${data.first_names} ${data.last_names}`.trim() : '—'}
                             </span>
                             <span style={{ color: '#71717a' }}>Documento</span>
-                            <span style={{ textAlign: 'right' }}>{data.document_number || '—'}</span>
+                            <span style={{ textAlign: 'right' }}>
+                                {data.document_type === 'no_tiene' ? 'Auto-generado' : (data.document_number || '—')}
+                            </span>
                             <span style={{ color: '#71717a' }}>Tipo de sangre</span>
                             <span style={{ textAlign: 'right' }}>{data.blood_type || '—'}</span>
                             <span style={{ color: '#71717a' }}>Alergias</span>

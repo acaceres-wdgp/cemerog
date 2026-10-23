@@ -131,6 +131,55 @@ test('store validates required fields', function () {
         ]);
 });
 
+test('store creates a patient with cedula_extranjera type', function () {
+    $this->actingAs($this->secretaria)
+        ->post('/registro/pacientes', [
+            'document_type' => 'cedula_extranjera',
+            'document_number' => 'CE-123456789',
+            'first_names' => 'John',
+            'last_names' => 'Smith',
+            'birth_date' => '1990-06-15',
+            'sex' => 'M',
+        ])
+        ->assertRedirect('/registro');
+
+    $this->assertDatabaseHas('patients', [
+        'document_type' => 'cedula_extranjera',
+        'first_names' => 'John',
+    ]);
+});
+
+test('store creates a patient with no_tiene type and auto-assigns document number', function () {
+    $this->actingAs($this->secretaria)
+        ->post('/registro/pacientes', [
+            'document_type' => 'no_tiene',
+            'first_names' => 'Sin',
+            'last_names' => 'Documento',
+            'birth_date' => '2000-01-01',
+            'sex' => 'M',
+        ])
+        ->assertRedirect('/registro');
+
+    $patient = Patient::where('first_names', 'Sin')->first();
+
+    expect($patient)->not->toBeNull()
+        ->and($patient->document_number)->toStartWith('GEN-')
+        ->and(strlen($patient->document_number))->toBe(12); // GEN- (4) + 8 chars
+});
+
+test('store rejects invalid document type', function () {
+    $this->actingAs($this->secretaria)
+        ->post('/registro/pacientes', [
+            'document_type' => 'dni_invalido',
+            'document_number' => '12345',
+            'first_names' => 'X',
+            'last_names' => 'X',
+            'birth_date' => '1990-01-01',
+            'sex' => 'M',
+        ])
+        ->assertSessionHasErrors(['document_type']);
+});
+
 test('store rejects invalid sex value', function () {
     $this->actingAs($this->secretaria)
         ->post('/registro/pacientes', [

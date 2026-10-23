@@ -13,7 +13,8 @@ const pages = import.meta.glob('./pages/**/*.tsx');
 
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, pages),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, pages) as any,
     layout: (name) => {
         switch (true) {
             case name.startsWith('auth/'):

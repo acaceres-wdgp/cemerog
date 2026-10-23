@@ -18,8 +18,8 @@ class UpdatePatientRequest extends FormRequest
         $patientId = $this->route('patient')?->id;
 
         return [
-            'document_type' => ['required', 'string', Rule::in(['cedula', 'pasaporte', 'rnc'])],
-            'document_number' => ['required', 'string', 'max:30', new UniqueDocumentNumber($patientId)],
+            'document_type' => ['required', 'string', Rule::in(['cedula', 'pasaporte', 'rnc', 'cedula_extranjera', 'no_tiene'])],
+            'document_number' => ['required_unless:document_type,no_tiene', 'nullable', 'string', 'max:50', new UniqueDocumentNumber($patientId)],
             'email' => ['nullable', 'string', 'email', 'max:150'],
             'first_names' => ['required', 'string', 'max:100'],
             'last_names' => ['required', 'string', 'max:100'],
