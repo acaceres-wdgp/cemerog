@@ -33,6 +33,16 @@ class RegistroController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        $patients->getCollection()->transform(fn (Patient $p) => array_merge($p->toArray(), [
+            'full_name' => $p->full_name,
+            'initials' => $p->initials,
+            'age' => $p->age,
+            'document_number' => $p->document_number,
+            'email' => $p->email,
+            'phone' => $p->phone,
+            'photo_url' => $p->photo_url,
+        ]));
+
         return Inertia::render('registro/index', [
             'patients' => $patients,
             'filters' => $request->only('q'),
@@ -47,7 +57,15 @@ class RegistroController extends Controller
     public function edit(Patient $patient): Response
     {
         return Inertia::render('registro/edit', [
-            'patient' => $patient,
+            'patient' => array_merge($patient->toArray(), [
+                'full_name' => $patient->full_name,
+                'initials' => $patient->initials,
+                'age' => $patient->age,
+                'document_number' => $patient->document_number,
+                'email' => $patient->email,
+                'phone' => $patient->phone,
+                'photo_url' => $patient->photo_url,
+            ]),
         ]);
     }
 
@@ -89,6 +107,7 @@ class RegistroController extends Controller
                 'allergies' => $p->allergies,
                 'emergency_contact_name' => $p->emergency_contact_name,
                 'emergency_contact_phone' => $p->emergency_contact_phone,
+                'photo_url' => $p->photo_url,
             ]);
 
         return response()->json($patients);

@@ -1,4 +1,4 @@
-export type DocumentType = 'cedula' | 'pasaporte' | 'rnc';
+export type DocumentType = 'cedula' | 'pasaporte' | 'cedula_extranjera' | 'no_tiene';
 export type Sex = 'M' | 'F';
 export type BloodType = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
 
@@ -20,4 +20,5 @@ export type PatientSearchResult = {
     allergies: string | null;
     emergency_contact_name: string | null;
     emergency_contact_phone: string | null;
+    photo_url: string | null;
 };

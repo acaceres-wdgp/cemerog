@@ -114,9 +114,12 @@ export default function RegistroIndex({ patients, filters }: Props) {
                                 >
                                     <td style={tdStyle}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                            <span style={{ flexShrink: 0, width: 32, height: 32, borderRadius: '50%', background: '#EEF6E2', color: '#2f4a17', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 12 }}>
-                                                {p.initials}
-                                            </span>
+                                            {p.photo_url
+                                                ? <img src={p.photo_url} alt={p.full_name} style={{ flexShrink: 0, width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+                                                : <span style={{ flexShrink: 0, width: 32, height: 32, borderRadius: '50%', background: '#EEF6E2', color: '#2f4a17', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 12 }}>
+                                                    {p.initials}
+                                                </span>
+                                            }
                                             <div>
                                                 <div style={{ fontWeight: 500, color: '#1f2d22' }}>{p.full_name}</div>
                                                 <div style={{ fontSize: 12, color: '#71717a' }}>{p.sex === 'F' ? 'Femenina' : 'Masculino'}</div>

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @property int $id
@@ -26,6 +27,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $allergies
  * @property string|null $emergency_contact_name
  * @property string|null $emergency_contact_phone
+ * @property string|null $photo_path Path relative to the public disk.
+ * @property-read string|null $photo_url Public URL for the photo, or null.
  * @property bool $is_active
  * @property Carbon|null $deleted_at
  * @property Carbon|null $created_at
@@ -46,6 +49,7 @@ use Illuminate\Support\Carbon;
     'emergency_contact_name',
     'emergency_contact_phone',
     'is_active',
+    'photo_path',
 ])]
 class Patient extends Model
 {
@@ -93,5 +97,12 @@ class Patient extends Model
     public function getAgeAttribute(): int
     {
         return $this->birth_date->age;
+    }
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        return $this->photo_path
+            ? Storage::disk('public')->url($this->photo_path)
+            : null;
     }
 }

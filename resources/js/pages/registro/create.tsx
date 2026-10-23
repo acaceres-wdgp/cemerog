@@ -1,8 +1,10 @@
 import { useForm } from '@inertiajs/react';
-import type { BloodType, Sex } from '@/types/patient';
+import { useRef, useState } from 'react';
+import { MaskedInput } from '@/components/cemerog/masked-input';
+import type { BloodType, DocumentType, Sex } from '@/types/patient';
 
 type PatientForm = {
-    document_type: string;
+    document_type: DocumentType;
     document_number: string;
     email: string;
     first_names: string;
@@ -15,9 +17,20 @@ type PatientForm = {
     allergies: string;
     emergency_contact_name: string;
     emergency_contact_phone: string;
+    photo: File | null;
 };
 
 const BLOOD_TYPES: BloodType[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+const DOCUMENT_TYPES: { value: DocumentType; label: string }[] = [
+    { value: 'cedula', label: 'Cédula dominicana' },
+    { value: 'pasaporte', label: 'Pasaporte' },
+    { value: 'cedula_extranjera', label: 'Cédula extranjera' },
+    { value: 'no_tiene', label: 'No tiene identificación' },
+];
+
+const CEDULA_MASK = '000-0000000-0';
+const PHONE_MASK = '000-000-0000';
 
 const inputStyle: React.CSSProperties = {
     height: 36, padding: '0 12px', border: '1px solid #e4e4e7', borderRadius: 10,
@@ -40,11 +53,97 @@ export default function RegistroCreate() {
         allergies: '',
         emergency_contact_name: '',
         emergency_contact_phone: '',
+        photo: null,
     });
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [photoError, setPhotoError] = useState<string | null>(null);
+
+    const MAX_PHOTO_BYTES = 20 * 1024 * 1024; // 20 MB
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+
+    const handleFileSelect = (file: File | null) => {
+        setPhotoError(null);
+        if (file) {
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                setPhotoError('Solo se aceptan imágenes (JPG, PNG, WEBP) o PDF.');
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                return;
+            }
+            if (file.size > MAX_PHOTO_BYTES) {
+                setPhotoError(`El archivo pesa ${(file.size / 1024 / 1024).toFixed(1)} MB. El máximo permitido es 20 MB.`);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                return;
+            }
+        }
+        setData('photo', file);
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = e => setPreviewUrl(e.target?.result as string);
+            reader.readAsDataURL(file);
+        } else {
+            setPreviewUrl(null);
+        }
+    };
+
+    const handleDocumentTypeChange = (type: DocumentType) => {
+        setData('document_type', type);
+        setData('document_number', '');
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post('/registro/pacientes');
+    };
+
+    const docNumberField = () => {
+        if (data.document_type === 'no_tiene') {
+            return (
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 12px', border: '1px solid #cfe3b8', borderRadius: 10, fontSize: 13, background: '#F3F9EC', gridColumn: 'span 2' }}>
+                    <span style={{ fontSize: 16, color: '#2E8B3E', marginTop: 1 }}>ℹ</span>
+                    <span>El sistema asignará un <strong>código identificador</strong> automáticamente al guardar.</span>
+                </div>
+            );
+        }
+
+        if (data.document_type === 'cedula') {
+            return (
+                <label style={labelStyle}>
+                    <span>No. de cédula *</span>
+                    <MaskedInput
+                        mask={CEDULA_MASK}
+                        value={data.document_number}
+                        onChange={v => setData('document_number', v)}
+                        style={{ ...inputStyle, borderColor: errors.document_number ? '#fecaca' : undefined }}
+                    />
+                    {errors.document_number && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.document_number}</span>}
+                </label>
+            );
+        }
+
+        const labels: Partial<Record<DocumentType, string>> = {
+            pasaporte: 'No. de pasaporte *',
+            cedula_extranjera: 'No. de identificación *',
+        };
+        const placeholders: Partial<Record<DocumentType, string>> = {
+            pasaporte: 'Ej. AB123456',
+            cedula_extranjera: 'Número de identificación',
+        };
+
+        return (
+            <label style={labelStyle}>
+                <span>{labels[data.document_type] ?? 'No. de documento *'}</span>
+                <input
+                    value={data.document_number}
+                    onChange={e => setData('document_number', e.target.value)}
+                    placeholder={placeholders[data.document_type]}
+                    style={{ ...inputStyle, borderColor: errors.document_number ? '#fecaca' : undefined }}
+                />
+                {errors.document_number && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.document_number}</span>}
+            </label>
+        );
     };
 
     return (
@@ -69,18 +168,20 @@ export default function RegistroCreate() {
                         <div style={{ padding: '16px 20px 20px', display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: '14px 16px' }}>
                             <label style={labelStyle}>
                                 <span>Tipo de documento *</span>
-                                <select value={data.document_type} onChange={e => setData('document_type', e.target.value)} style={inputStyle}>
-                                    <option value="cedula">Cédula</option>
-                                    <option value="pasaporte">Pasaporte</option>
-                                    <option value="rnc">RNC</option>
+                                <select
+                                    value={data.document_type}
+                                    onChange={e => handleDocumentTypeChange(e.target.value as DocumentType)}
+                                    style={inputStyle}
+                                >
+                                    {DOCUMENT_TYPES.map(dt => (
+                                        <option key={dt.value} value={dt.value}>{dt.label}</option>
+                                    ))}
                                 </select>
                                 {errors.document_type && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.document_type}</span>}
                             </label>
-                            <label style={labelStyle}>
-                                <span>No. de documento *</span>
-                                <input value={data.document_number} onChange={e => setData('document_number', e.target.value)} placeholder="000-0000000-0" style={{ ...inputStyle, borderColor: errors.document_number ? '#fecaca' : undefined }} />
-                                {errors.document_number && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.document_number}</span>}
-                            </label>
+
+                            {docNumberField()}
+
                             <label style={labelStyle}>
                                 <span>Fecha de nacimiento *</span>
                                 <input type="date" value={data.birth_date} onChange={e => setData('birth_date', e.target.value)} style={{ ...inputStyle, borderColor: errors.birth_date ? '#fecaca' : undefined }} />
@@ -117,7 +218,12 @@ export default function RegistroCreate() {
                             </div>
                             <label style={labelStyle}>
                                 <span>Teléfono</span>
-                                <input value={data.phone} onChange={e => setData('phone', e.target.value)} placeholder="809-000-0000" style={inputStyle} />
+                                <MaskedInput
+                                    mask={PHONE_MASK}
+                                    value={data.phone}
+                                    onChange={v => setData('phone', v)}
+                                    style={inputStyle}
+                                />
                             </label>
                             <label style={{ ...labelStyle, gridColumn: 'span 2' }}>
                                 <span>Dirección</span>
@@ -129,7 +235,12 @@ export default function RegistroCreate() {
                             </label>
                             <label style={labelStyle}>
                                 <span>Tel. de contacto</span>
-                                <input value={data.emergency_contact_phone} onChange={e => setData('emergency_contact_phone', e.target.value)} placeholder="809-000-0000" style={inputStyle} />
+                                <MaskedInput
+                                    mask={PHONE_MASK}
+                                    value={data.emergency_contact_phone}
+                                    onChange={v => setData('emergency_contact_phone', v)}
+                                    style={inputStyle}
+                                />
                             </label>
                             <label style={labelStyle}>
                                 <span>Tipo de sangre</span>
@@ -154,22 +265,96 @@ export default function RegistroCreate() {
                         </div>
                     </div>
 
-                    {/* Summary sidebar */}
-                    <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14 }}>
-                        <div style={{ padding: '16px 20px', borderBottom: '1px solid #eef0ec', fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 16, color: '#1f2d22' }}>Resumen</div>
-                        <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px 12px', fontSize: 13 }}>
-                            <span style={{ color: '#71717a' }}>Nombre</span>
-                            <span style={{ fontWeight: 500, textAlign: 'right' }}>
-                                {(data.first_names || data.last_names) ? `${data.first_names} ${data.last_names}`.trim() : '—'}
-                            </span>
-                            <span style={{ color: '#71717a' }}>Documento</span>
-                            <span style={{ textAlign: 'right' }}>{data.document_number || '—'}</span>
-                            <span style={{ color: '#71717a' }}>Tipo de sangre</span>
-                            <span style={{ textAlign: 'right' }}>{data.blood_type || '—'}</span>
-                            <span style={{ color: '#71717a' }}>Alergias</span>
-                            <span style={{ textAlign: 'right', color: data.allergies ? '#b91c1c' : '#c4c9c4' }}>
-                                {data.allergies || 'Ninguna'}
-                            </span>
+                    {/* Sidebar */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        {/* Photo upload card */}
+                        <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14 }}>
+                            <div style={{ padding: '16px 20px', borderBottom: '1px solid #eef0ec', fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 16, color: '#1f2d22' }}>
+                                Foto / Identificación
+                            </div>
+                            <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                <div
+                                    onClick={() => fileInputRef.current?.click()}
+                                    onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+                                    onDragLeave={() => setIsDragging(false)}
+                                    onDrop={e => {
+                                        e.preventDefault();
+                                        setIsDragging(false);
+                                        const file = e.dataTransfer.files[0] ?? null;
+                                        if (file) handleFileSelect(file);
+                                    }}
+                                    style={{
+                                        border: `2px dashed ${isDragging ? '#2E8B3E' : '#d4d4d8'}`,
+                                        borderRadius: 12,
+                                        background: isDragging ? '#F3F9EC' : '#fafafa',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        minHeight: 160,
+                                        gap: 8,
+                                        overflow: 'hidden',
+                                        transition: 'border-color .15s, background .15s',
+                                    }}
+                                >
+                                    {data.photo && data.photo.type.startsWith('image/') && previewUrl ? (
+                                        <img src={previewUrl} alt="Preview" style={{ width: '100%', height: 160, objectFit: 'cover' }} />
+                                    ) : data.photo ? (
+                                        <div style={{ textAlign: 'center', color: '#5f6b64', fontSize: 13 }}>
+                                            <div style={{ fontSize: 36, marginBottom: 4 }}>📄</div>
+                                            <div style={{ fontWeight: 500 }}>{data.photo.name}</div>
+                                            <div style={{ color: '#71717a' }}>{(data.photo.size / 1024).toFixed(0)} KB</div>
+                                        </div>
+                                    ) : (
+                                        <div style={{ textAlign: 'center', color: '#71717a', padding: '0 12px' }}>
+                                            <div style={{ fontSize: 32, marginBottom: 8 }}>📷</div>
+                                            <div style={{ fontSize: 13, fontWeight: 500 }}>Haz clic o arrastra un archivo</div>
+                                            <div style={{ fontSize: 12, marginTop: 4 }}>JPG, PNG, WEBP o PDF · máx. 5 MB</div>
+                                        </div>
+                                    )}
+                                </div>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                                    style={{ display: 'none' }}
+                                    onChange={e => handleFileSelect(e.target.files?.[0] ?? null)}
+                                />
+                                {data.photo && (
+                                    <button
+                                        type="button"
+                                        onClick={() => { handleFileSelect(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                                        style={{ height: 32, padding: '0 12px', borderRadius: 8, border: '1px solid #fecaca', background: '#fef2f2', color: '#b91c1c', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}
+                                    >
+                                        Quitar archivo
+                                    </button>
+                                )}
+                                {(photoError ?? errors.photo) && (
+                                    <span style={{ color: '#b91c1c', fontSize: 12 }}>{photoError ?? errors.photo}</span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Summary card */}
+                        <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14 }}>
+                            <div style={{ padding: '16px 20px', borderBottom: '1px solid #eef0ec', fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 16, color: '#1f2d22' }}>Resumen</div>
+                            <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px 12px', fontSize: 13 }}>
+                                <span style={{ color: '#71717a' }}>Nombre</span>
+                                <span style={{ fontWeight: 500, textAlign: 'right' }}>
+                                    {(data.first_names || data.last_names) ? `${data.first_names} ${data.last_names}`.trim() : '—'}
+                                </span>
+                                <span style={{ color: '#71717a' }}>Documento</span>
+                                <span style={{ textAlign: 'right' }}>
+                                    {data.document_type === 'no_tiene' ? 'Auto-generado' : (data.document_number || '—')}
+                                </span>
+                                <span style={{ color: '#71717a' }}>Tipo de sangre</span>
+                                <span style={{ textAlign: 'right' }}>{data.blood_type || '—'}</span>
+                                <span style={{ color: '#71717a' }}>Alergias</span>
+                                <span style={{ textAlign: 'right', color: data.allergies ? '#b91c1c' : '#c4c9c4' }}>
+                                    {data.allergies || 'Ninguna'}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
