@@ -11,7 +11,5 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
 });
 
 Route::middleware(['auth', 'ensure.password.changed', 'verified'])->group(function () {
-    Route::delete('settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
 });

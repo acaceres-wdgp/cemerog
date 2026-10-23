@@ -64,39 +64,15 @@ class ProfileUpdateTest extends TestCase
         $this->assertSame('original@example.com', $user->refresh()->email);
     }
 
-    public function test_user_can_delete_their_account()
+    public function test_user_cannot_delete_their_account()
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->delete(route('profile.destroy'), [
-                'password' => 'password',
-            ]);
-
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/');
-
-        $this->assertGuest();
-        $this->assertNull($user->fresh());
-    }
-
-    public function test_correct_password_must_be_provided_to_delete_account()
-    {
-        $user = User::factory()->create();
-
-        $response = $this
-            ->actingAs($user)
-            ->from(route('profile.edit'))
-            ->delete(route('profile.destroy'), [
-                'password' => 'wrong-password',
-            ]);
-
-        $response
-            ->assertSessionHasErrors('password')
-            ->assertRedirect(route('profile.edit'));
+        $this->actingAs($user)
+            ->delete('/settings/profile', ['password' => 'password'])
+            ->assertMethodNotAllowed();
 
         $this->assertNotNull($user->fresh());
+        $this->assertAuthenticatedAs($user);
     }
 }

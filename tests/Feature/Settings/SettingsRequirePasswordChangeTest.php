@@ -9,7 +9,6 @@ dataset('settings_requests', [
     'settings redirect' => ['get', '/settings'],
     'profile page' => ['get', '/settings/profile'],
     'profile update' => ['patch', '/settings/profile'],
-    'profile delete' => ['delete', '/settings/profile'],
     'appearance page' => ['get', '/settings/appearance'],
 ]);
 
@@ -21,14 +20,12 @@ test('user with temporary password is sent to change it', function (string $meth
         ->assertRedirect(route('password.change-required'));
 })->with('settings_requests');
 
-test('user with temporary password cannot rename or delete their account', function () {
+test('user with temporary password cannot rename themselves', function () {
     $user = User::factory()->mustChangePassword()->create(['name' => 'Original']);
 
     $this->actingAs($user)->patch('/settings/profile', ['name' => 'Changed']);
-    $this->actingAs($user)->delete('/settings/profile', ['password' => 'password']);
 
-    expect($user->fresh())->not->toBeNull()
-        ->and($user->fresh()->name)->toBe('Original');
+    expect($user->fresh()->name)->toBe('Original');
 });
 
 test('user with changed password can open settings', function () {
