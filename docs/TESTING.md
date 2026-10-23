@@ -29,10 +29,10 @@ Todos los tests heredan de `Tests\TestCase`, que ya:
 
 ### Tipos de test
 
-| Tipo | Carpeta | Cuándo |
-|---|---|---|
-| Unit | `tests/Unit/` | Clases de dominio, Actions, helpers |
-| Feature | `tests/Feature/` | HTTP, auth, flujos completos |
+| Tipo    | Carpeta          | Cuándo                              |
+| ------- | ---------------- | ----------------------------------- |
+| Unit    | `tests/Unit/`    | Clases de dominio, Actions, helpers |
+| Feature | `tests/Feature/` | HTTP, auth, flujos completos        |
 
 ### Ejemplos Pest
 

@@ -23,7 +23,7 @@ export default function SegmentedControl<T extends string = string>({
 }: SegmentedControlProps<T>) {
     return (
         <div
-            className={`inline-flex rounded-lg border border-[#e4e4e7] bg-[#f4f4f5] p-1 gap-1 ${className}`}
+            className={`inline-flex gap-1 rounded-lg border border-[#e4e4e7] bg-[#f4f4f5] p-1 ${className}`}
             role="tablist"
         >
             {segments.map((seg) => {
@@ -44,7 +44,9 @@ export default function SegmentedControl<T extends string = string>({
                         {seg.count !== undefined && (
                             <span
                                 className={`rounded-full px-1.5 py-0.5 text-xs font-semibold ${
-                                    active ? 'bg-[#EEF6E2] text-[#2E8B3E]' : 'bg-[#e4e4e7] text-[#71717a]'
+                                    active
+                                        ? 'bg-[#EEF6E2] text-[#2E8B3E]'
+                                        : 'bg-[#e4e4e7] text-[#71717a]'
                                 }`}
                             >
                                 {seg.count}

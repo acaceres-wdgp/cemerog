@@ -7,6 +7,7 @@
 ```
 
 Ejemplo:
+
 ```
 /feature Crear formulario de registro de pacientes con validación de cédula
 ```
@@ -33,6 +34,7 @@ php artisan make:test Feature/<Modulo>/<NombreTest>
 ```
 
 Incluir:
+
 - Test de acceso sin autenticación → 401/redirect
 - Test de acceso sin permiso → 403
 - Test del caso feliz
@@ -47,6 +49,7 @@ touch resources/js/components/cemerog/__tests__/<Componente>.test.tsx
 ```
 
 Incluir:
+
 - Render básico sin crash
 - Interacciones de usuario
 - Estados (loading, error, empty)
@@ -66,6 +69,7 @@ Los tests deben **fallar** antes de implementar.
 ### 4. Implementar el mínimo necesario
 
 **Backend**:
+
 - Migration (si corresponde)
 - Model + Factory actualizada
 - Form Request con validación
@@ -75,6 +79,7 @@ Los tests deben **fallar** antes de implementar.
 - Ruta en `routes/web.php`
 
 **Frontend**:
+
 - Componente(s) en `components/cemerog/` si son reutilizables
 - Página en `pages/<modulo>/`
 - Usar `AppLayout` como wrapper

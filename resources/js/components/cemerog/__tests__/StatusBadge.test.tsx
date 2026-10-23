@@ -25,8 +25,15 @@ describe('StatusBadge', () => {
 
     it('renders all 9 states without error', () => {
         const states = [
-            'espera', 'consulta', 'emergencia', 'internado',
-            'cirugia', 'pendiente', 'balance', 'saldada', 'cancelada',
+            'espera',
+            'consulta',
+            'emergencia',
+            'internado',
+            'cirugia',
+            'pendiente',
+            'balance',
+            'saldada',
+            'cancelada',
         ] as const;
 
         states.forEach((state) => {

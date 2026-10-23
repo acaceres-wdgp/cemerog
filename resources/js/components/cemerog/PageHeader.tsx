@@ -11,11 +11,18 @@ interface PageHeaderProps {
     className?: string;
 }
 
-export default function PageHeader({ title, subtitle, actions, className = '' }: PageHeaderProps) {
+export default function PageHeader({
+    title,
+    subtitle,
+    actions,
+    className = '',
+}: PageHeaderProps) {
     return (
         <div className={`flex items-start justify-between py-4 ${className}`}>
             <div>
-                <h1 className="text-xl font-semibold text-[#1f2d22]">{title}</h1>
+                <h1 className="text-xl font-semibold text-[#1f2d22]">
+                    {title}
+                </h1>
                 {subtitle && (
                     <p className="mt-0.5 text-sm text-[#71717a]">{subtitle}</p>
                 )}

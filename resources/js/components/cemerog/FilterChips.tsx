@@ -55,7 +55,9 @@ export default function FilterChips<T extends string = string>({
                     >
                         {chip.label}
                         {chip.count !== undefined && (
-                            <span className={`font-semibold ${active ? 'text-[#2E8B3E]' : ''}`}>
+                            <span
+                                className={`font-semibold ${active ? 'text-[#2E8B3E]' : ''}`}
+                            >
                                 {chip.count}
                             </span>
                         )}

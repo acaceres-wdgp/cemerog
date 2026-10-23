@@ -12,7 +12,11 @@ interface MoneyTextProps {
     colorize?: boolean;
 }
 
-export default function MoneyText({ centavos, className = '', colorize = false }: MoneyTextProps) {
+export default function MoneyText({
+    centavos,
+    className = '',
+    colorize = false,
+}: MoneyTextProps) {
     const isNegative = centavos < 0;
     const colorClass = colorize ? (isNegative ? 'text-[#b91c1c]' : '') : '';
 

@@ -46,7 +46,10 @@ export default function Profile() {
                                     autoComplete="name"
                                     placeholder="Nombre completo"
                                 />
-                                <InputError className="mt-2" message={errors.name} />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.name}
+                                />
                             </div>
 
                             <div className="flex items-center gap-4">

@@ -41,10 +41,16 @@ export default function FormDialog({
 }: FormDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={`flex max-h-[90vh] flex-col p-0 ${maxWidth}`}>
+            <DialogContent
+                className={`flex max-h-[90vh] flex-col p-0 ${maxWidth}`}
+            >
                 <DialogHeader className="border-b border-[#e3e9e3] px-6 py-4">
-                    <DialogTitle className="text-[#1f2d22]">{title}</DialogTitle>
-                    {description && <DialogDescription>{description}</DialogDescription>}
+                    <DialogTitle className="text-[#1f2d22]">
+                        {title}
+                    </DialogTitle>
+                    {description && (
+                        <DialogDescription>{description}</DialogDescription>
+                    )}
                 </DialogHeader>
 
                 <form
