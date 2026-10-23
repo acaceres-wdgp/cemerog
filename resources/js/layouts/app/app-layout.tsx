@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import type { PageProps } from '@/types/global';
 import { NAV_GROUPS } from '@/lib/navigation';
+import { useCurrentUrl } from '@/hooks/use-current-url';
 
 // Icon registry
 const ICONS: Record<string, React.ElementType> = {
@@ -100,8 +101,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
         setShowThemePicker(false);
     };
 
-    // Current route name for active state
-    const currentRouteName = usePage().component?.toLowerCase().replace(/\//g, '.');
+    // A nav item is active on its own URL and on its sub-pages (e.g. /citas/123)
+    const { currentUrl, isCurrentUrl } = useCurrentUrl();
+    const isActiveItem = (href: string) => isCurrentUrl(href) || currentUrl.startsWith(`${href}/`);
 
     const permissions: string[] = (usePage<PageProps>().props as unknown as { permissions?: string[] }).permissions ?? [];
 
@@ -163,7 +165,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                                 )}
                                 {visibleItems.map((item) => {
                                     const Icon = ICONS[item.icon] ?? House;
-                                    const isActive = currentRouteName?.includes(item.key);
+                                    const isActive = isActiveItem(item.href);
                                     return (
                                         <Link
                                             key={item.key}
@@ -179,6 +181,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                                                     : undefined
                                             }
                                             title={collapsed ? item.label : undefined}
+                                            aria-current={isActive ? 'page' : undefined}
                                         >
                                             <Icon
                                                 className="h-4 w-4 shrink-0"
