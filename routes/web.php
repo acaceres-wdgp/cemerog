@@ -128,13 +128,22 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         ->name('entrada');
 
     // Administracion
-    Route::get('/admin/usuarios', [AdminController::class, 'index'])
-        ->middleware('permission:module.admin.access')
-        ->name('admin');
+    Route::prefix('/admin/usuarios')->middleware('permission:module.admin.access')->group(function () {
+        Route::get('/', [AdminController::class, 'index'])->name('admin');
+        Route::post('/', [AdminController::class, 'store'])->name('admin.users.store');
+        Route::put('/{user}', [AdminController::class, 'update'])->name('admin.users.update');
+        Route::patch('/{user}/toggle', [AdminController::class, 'toggleActive'])->name('admin.users.toggle');
+        Route::patch('/{user}/password', [AdminController::class, 'changePassword'])->name('admin.users.password');
+    });
 
-    Route::get('/admin/doctores', [DoctoresController::class, 'index'])
-        ->middleware('permission:module.doctores.access')
-        ->name('doctores');
+    Route::prefix('/admin/doctores')->middleware('permission:module.doctores.access')->group(function () {
+        Route::get('/', [DoctoresController::class, 'index'])->name('doctores');
+        Route::post('/especialidades', [DoctoresController::class, 'storeSpecialty'])->name('doctores.specialties.store');
+        Route::put('/especialidades/{specialty}', [DoctoresController::class, 'updateSpecialty'])->name('doctores.specialties.update');
+        Route::post('/', [DoctoresController::class, 'storeDoctor'])->name('doctores.store');
+        Route::put('/{doctor}', [DoctoresController::class, 'updateDoctor'])->name('doctores.update');
+        Route::patch('/{doctor}/toggle', [DoctoresController::class, 'toggleDoctor'])->name('doctores.toggle');
+    });
 
     Route::get('/admin/analisis', [AnalisisController::class, 'index'])
         ->middleware('permission:module.analisis.access')
