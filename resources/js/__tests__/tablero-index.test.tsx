@@ -25,10 +25,11 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
 // No Dialog mock needed - tablero uses a custom inline modal
 
 import TableroIndex from '@/pages/tablero/index';
+import type { TurnRow, CitaRow } from '@/pages/tablero/types';
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
-const makeTurn = (overrides: Partial<(typeof TURNS)[0]> = {}) => ({
+const makeTurn = (overrides: Partial<TurnRow> = {}): TurnRow => ({
     id: 1,
     turn_number: 1,
     turn_order: 1,
@@ -41,12 +42,12 @@ const makeTurn = (overrides: Partial<(typeof TURNS)[0]> = {}) => ({
     doctor_name: 'Dra. García',
     doctor_specialty: 'Medicina Interna',
     arrived_at: '08:30',
-    status: 'espera' as const,
+    status: 'espera',
     appointment_id: null,
     ...overrides,
 });
 
-const makeCita = (overrides: Partial<(typeof APPOINTMENTS)[0]> = {}) => ({
+const makeCita = (overrides: Partial<CitaRow> = {}): CitaRow => ({
     id: 10,
     appointment_time: '09:00',
     patient_id: 5,
@@ -57,18 +58,18 @@ const makeCita = (overrides: Partial<(typeof APPOINTMENTS)[0]> = {}) => ({
     doctor_name: 'Dra. García',
     doctor_specialty: 'Medicina Interna',
     type: 'consulta',
-    status: 'pendiente' as const,
+    status: 'pendiente',
     notes: null,
     turn_number: null,
     has_turn: false,
     ...overrides,
 });
 
-const TURNS = [
+const TURNS: TurnRow[] = [
     makeTurn(),
     makeTurn({ id: 2, turn_number: 2, status: 'en_consulta' }),
 ];
-const APPOINTMENTS = [
+const APPOINTMENTS: CitaRow[] = [
     makeCita(),
     makeCita({ id: 11, has_turn: true, turn_number: 3 }),
 ];
