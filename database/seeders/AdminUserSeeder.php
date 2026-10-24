@@ -27,6 +27,8 @@ class AdminUserSeeder extends Seeder
             ]
         );
 
+        app()['cache']->forget('spatie.permission.cache');
+        $user->syncPermissions([]);
         $user->syncRoles(['administrador']);
 
         $this->command->info("Admin user '{$username}' seeded successfully.");
