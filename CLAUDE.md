@@ -90,8 +90,6 @@ resources/js/
 Referencia visual en `design/CEMEROG v6.dc.html`. Ábrelo en un navegador.
 No modificar nada dentro de `design/`.
 
-> La carpeta `design_handoff_cemerog/` contiene la versión más reciente del handoff (incluye pantalla Pacientes).
-> Sus archivos se sincronizan sobre `design/` con cada entrega; `design/` es la referencia activa.
 
 ## Lo que NO hacer
 
