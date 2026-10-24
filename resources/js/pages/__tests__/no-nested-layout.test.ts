@@ -18,11 +18,18 @@ describe('no-nested-layout', () => {
     it('no page imports layouts/app-layout', () => {
         const violations: string[] = [];
         for (const [path, src] of Object.entries(pages)) {
-            if (/import[^'"]+from\s+['"][^'"]*layouts\/app[/-]?[^'"]*layout['"]/.test(src as string)) {
+            if (
+                /import[^'"]+from\s+['"][^'"]*layouts\/app[/-]?[^'"]*layout['"]/.test(
+                    src as string,
+                )
+            ) {
                 violations.push(path);
             }
         }
-        expect(violations, `Páginas que importan AppLayout: ${violations.join(', ')}`).toEqual([]);
+        expect(
+            violations,
+            `Páginas que importan AppLayout: ${violations.join(', ')}`,
+        ).toEqual([]);
     });
 
     it('no page renders <AppLayout', () => {
@@ -32,7 +39,10 @@ describe('no-nested-layout', () => {
                 violations.push(path);
             }
         }
-        expect(violations, `Páginas que renderizan <AppLayout: ${violations.join(', ')}`).toEqual([]);
+        expect(
+            violations,
+            `Páginas que renderizan <AppLayout: ${violations.join(', ')}`,
+        ).toEqual([]);
     });
 
     it('no page sets .layout to a component or array (only data objects allowed)', () => {
@@ -40,10 +50,13 @@ describe('no-nested-layout', () => {
         for (const [path, src] of Object.entries(pages)) {
             // Flag .layout = AppLayout (uppercase) or .layout = [ (array)
             // .layout = { ... }  is a data object (settings breadcrumbs) and is allowed
-            if (/\.layout\s*=\s*[A-Z\[]/.test(src as string)) {
+            if (/\.layout\s*=\s*[A-Z[]/.test(src as string)) {
                 violations.push(path);
             }
         }
-        expect(violations, `Páginas que asignan .layout a un componente: ${violations.join(', ')}`).toEqual([]);
+        expect(
+            violations,
+            `Páginas que asignan .layout a un componente: ${violations.join(', ')}`,
+        ).toEqual([]);
     });
 });

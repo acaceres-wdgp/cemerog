@@ -128,21 +128,30 @@ export default function AppLayout({ children }: AppLayoutProps) {
     // Compute breadcrumb: for /registro, add 3rd level from page props + URL
     const basePath = currentUrl.split('?')[0];
     const pageProps = usePage().props as unknown as { patient?: unknown };
-    const registroBreadcrumbFallback = basePath === '/registro'
-        ? {
-              section: 'Recepción',
-              page: 'Pacientes',
-              subPage: pageProps.patient != null ? 'Nueva atención' : 'Nuevo paciente',
-          }
-        : undefined;
-    const breadcrumb = resolveBreadcrumb(basePath, NAV_GROUPS, registroBreadcrumbFallback);
+    const registroBreadcrumbFallback =
+        basePath === '/registro'
+            ? {
+                  section: 'Recepción',
+                  page: 'Pacientes',
+                  subPage:
+                      pageProps.patient != null
+                          ? 'Nueva atención'
+                          : 'Nuevo paciente',
+              }
+            : undefined;
+    const breadcrumb = resolveBreadcrumb(
+        basePath,
+        NAV_GROUPS,
+        registroBreadcrumbFallback,
+    );
     const todayLabel = formatTopbarDate(new Date());
     const isActiveItem = (item: NavItem) =>
         isCurrentUrl(item.href) ||
         currentUrl.startsWith(`${item.href}/`) ||
         (item.activeFor?.some(
             (path) => currentUrl === path || currentUrl.startsWith(`${path}/`),
-        ) ?? false);
+        ) ??
+            false);
 
     const permissions: string[] =
         (usePage<PageProps>().props as unknown as { permissions?: string[] })
@@ -348,16 +357,22 @@ export default function AppLayout({ children }: AppLayoutProps) {
                                     <>
                                         <span>{breadcrumb.page}</span>
                                         <span aria-hidden="true">›</span>
-                                        <span className="font-medium text-[#1f2d22]">{breadcrumb.subPage}</span>
+                                        <span className="font-medium text-[#1f2d22]">
+                                            {breadcrumb.subPage}
+                                        </span>
                                     </>
                                 ) : (
-                                    <span className="font-medium text-[#1f2d22]">{breadcrumb.page}</span>
+                                    <span className="font-medium text-[#1f2d22]">
+                                        {breadcrumb.page}
+                                    </span>
                                 )}
                                 <span aria-hidden="true">·</span>
                                 <span>{todayLabel}</span>
                             </>
                         ) : (
-                            <span className="font-medium text-[#1f2d22]">CEMEROG</span>
+                            <span className="font-medium text-[#1f2d22]">
+                                CEMEROG
+                            </span>
                         )}
                     </div>
 
@@ -436,7 +451,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 </header>
 
                 {/* Page content */}
-                <main className="flex-1 overflow-y-auto" style={{ padding: '28px 32px 48px' }}>{children}</main>
+                <main
+                    className="flex-1 overflow-y-auto"
+                    style={{ padding: '28px 32px 48px' }}
+                >
+                    {children}
+                </main>
             </div>
         </div>
     );

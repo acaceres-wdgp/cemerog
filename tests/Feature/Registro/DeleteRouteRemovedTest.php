@@ -16,10 +16,10 @@ test('DELETE /registro/pacientes/{id} no existe (404 o 405)', function () {
     expect($response->status())->toBeIn([404, 405]);
 });
 
-// B2 – patients table has no deleted_at or is_active
-test('la tabla patients no tiene columnas deleted_at ni is_active', function () {
+// B2 – patients table has deleted_at (soft deletes restored per ADR-012) but no is_active
+test('la tabla patients tiene deleted_at y no tiene is_active', function () {
     $columns = Schema::getColumnListing('patients');
-    expect($columns)->not->toContain('deleted_at');
+    expect($columns)->toContain('deleted_at');
     expect($columns)->not->toContain('is_active');
 });
 

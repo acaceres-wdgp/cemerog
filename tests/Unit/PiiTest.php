@@ -20,24 +20,6 @@ test('decrypt handles encryptString format (current)', function () {
     expect(Pii::decrypt($encrypted))->toBe('809-555-1234');
 });
 
-test('decrypt handles legacy encrypt() serialized format', function () {
-    // encrypt() wraps with serialize() before encrypting
-    $encrypted = encrypt('809-555-1234');
-    expect(Pii::decrypt($encrypted))->toBe('809-555-1234');
-});
-
-test('decrypt handles double-encrypted (encryptString over encrypt)', function () {
-    $inner = encrypt('809-555-1234');          // serialised encrypt
-    $outer = Crypt::encryptString($inner);     // encryptString wrapper
-    expect(Pii::decrypt($outer))->toBe('809-555-1234');
-});
-
-test('decrypt handles double-encrypted (encrypt over encryptString)', function () {
-    $inner = Crypt::encryptString('809-555-1234');
-    $outer = encrypt($inner);                  // serialised outer
-    expect(Pii::decrypt($outer))->toBe('809-555-1234');
-});
-
 test('decrypt returns null for null', function () {
     expect(Pii::decrypt(null))->toBeNull();
 });

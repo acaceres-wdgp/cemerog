@@ -11,6 +11,30 @@ beforeEach(function () {
     $this->user->givePermissionTo('module.pacientes.access');
 });
 
+// A1 – filters object with defaults when no params
+test('GET /pacientes sin parámetros devuelve filters con claves y valores por defecto', function () {
+    $this->actingAs($this->user)
+        ->get('/pacientes')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('pacientes/index')
+            ->where('filters.q', '')
+            ->where('filters.filter', 'todos')
+            ->where('filters.sort', 'ultima_atencion')
+        );
+});
+
+// A1b – invalid filter value falls back to default
+test('filtro inválido se normaliza al valor por defecto', function () {
+    $this->actingAs($this->user)
+        ->get('/pacientes?filter=invalid&sort=invalid')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('filters.filter', 'todos')
+            ->where('filters.sort', 'ultima_atencion')
+        );
+});
+
 // A2 – pagination 15 per page
 test('lista pagina 15 pacientes por página', function () {
     Patient::factory()->count(20)->create();

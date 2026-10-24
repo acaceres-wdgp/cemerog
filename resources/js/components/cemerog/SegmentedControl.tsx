@@ -46,7 +46,7 @@ export default function SegmentedControl<T extends string = string>({
                         {seg.label}
                         {seg.count !== undefined && (
                             <span
-                                className="text-[12px] tabular-nums text-[#8a948e]"
+                                className="text-[12px] text-[#8a948e] tabular-nums"
                                 aria-label={`${seg.count}`}
                             >
                                 {seg.count}

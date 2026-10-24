@@ -107,10 +107,17 @@ class PacientesController extends Controller
             ];
         });
 
+        $validFilters = ['todos', 'atendidos_hoy', 'con_alergias', 'sin_atenciones'];
+        $validSorts = ['ultima_atencion', 'nombre', 'registro'];
+
         return Inertia::render('pacientes/index', [
             'patients' => $paginator,
             'counts' => $counts,
-            'filters' => $request->only(['q', 'filter', 'sort']),
+            'filters' => [
+                'q' => $q,
+                'filter' => in_array($filter, $validFilters) ? $filter : 'todos',
+                'sort' => in_array($sort, $validSorts) ? $sort : 'ultima_atencion',
+            ],
             'selected' => $this->resolveSelected($request),
         ]);
     }

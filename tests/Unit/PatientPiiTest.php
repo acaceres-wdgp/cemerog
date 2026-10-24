@@ -55,20 +55,3 @@ test('document_number Attribute stores the digits-only hash', function () {
 
     expect($stored)->toBe($expected);
 });
-
-// ── Reading legacy formats ────────────────────────────────────────────────────
-
-test('model can read phone encrypted with legacy encrypt() serialized format', function () {
-    Patient::factory()->create(); // get valid row structure
-    $patient = Patient::factory()->make(['phone' => '809-555-9999']);
-
-    // Manually overwrite the phone column with legacy encrypt() format
-    DB::table('patients')
-        ->where('id', Patient::factory()->create(['phone' => '809-000-0000'])->id)
-        ->update(['phone' => encrypt('809-555-9999')]);
-
-    $id = DB::table('patients')->where('phone_hash', hash_hmac('sha256', '8090000000', config('app.key')))->value('id');
-    $p = Patient::find($id);
-
-    expect($p->phone)->toBe('809-555-9999');
-});

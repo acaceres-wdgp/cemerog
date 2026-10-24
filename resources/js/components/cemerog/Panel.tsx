@@ -33,13 +33,19 @@ export default function Panel({
                         {title && (
                             <h2
                                 className="font-semibold text-[#1f2d22]"
-                                style={{ fontFamily: 'Bitter, serif', fontSize: '16px' }}
+                                style={{
+                                    fontFamily: 'Bitter, serif',
+                                    fontSize: '16px',
+                                }}
                             >
                                 {title}
                             </h2>
                         )}
                         {description && (
-                            <p className="mt-0.5 text-[#71717a]" style={{ fontSize: '13px' }}>
+                            <p
+                                className="mt-0.5 text-[#71717a]"
+                                style={{ fontSize: '13px' }}
+                            >
                                 {description}
                             </p>
                         )}
