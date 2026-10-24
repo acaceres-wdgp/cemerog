@@ -16,19 +16,3 @@ export const DOC_PALETTES = [
 
 export const docPalette = (id: number) =>
     DOC_PALETTES[id % DOC_PALETTES.length];
-
-// Dynamic cita status badge colors — keyed by cita.status at runtime
-export const CITA_STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
-    pendiente: { bg: '#FEF3C7', fg: '#92400E' },
-    confirmada: { bg: '#DBEAFE', fg: '#1E40AF' },
-    no_asistio: { bg: '#F4F4F5', fg: '#52525B' },
-    cancelada: { bg: '#F4F4F5', fg: '#52525B' },
-    atendida: { bg: '#DCFCE7', fg: '#166534' },
-    en_lista: { bg: '#DBEAFE', fg: '#1E40AF' },
-};
-
-// Fallback badge color for unknown statuses
-export const BADGE_FALLBACK: { bg: string; fg: string } = {
-    bg: '#F4F4F5',
-    fg: '#52525B',
-};

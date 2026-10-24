@@ -1,22 +1,12 @@
 import { router } from '@inertiajs/react';
 import type { CitaRow, DoctorOption } from '../types';
-import {
-    docPalette,
-    CITA_STATUS_COLORS,
-    BADGE_FALLBACK,
-} from '@/components/cemerog/palettes';
+import { docPalette } from '@/components/cemerog/palettes';
+import StatusBadge from '@/components/cemerog/StatusBadge';
 
 const TYPE_LABELS: Record<string, string> = {
     consulta: 'Consulta',
     seguimiento: 'Seguimiento',
     primera_vez: 'Primera vez',
-};
-
-const CITA_STATUS_LABELS: Record<string, string> = {
-    pendiente: 'Pendiente',
-    confirmada: 'Confirmada',
-    no_asistio: 'No asistió',
-    cancelada: 'Cancelada',
 };
 
 interface CitasHoyPanelProps {
@@ -131,11 +121,6 @@ export function CitasHoyPanel({
                             </tr>
                         ) : (
                             visibleCitas.map((c) => {
-                                // dynamic-style: cita status badge — bg/fg vary per c.status at runtime
-                                const stColor =
-                                    CITA_STATUS_COLORS[c.status] ??
-                                    BADGE_FALLBACK;
-                                // dynamic-style: doctor avatar bg/fg from palette indexed by c.doctor_id at runtime
                                 const pal = docPalette(c.doctor_id);
                                 return (
                                     <tr
@@ -190,8 +175,8 @@ export function CitasHoyPanel({
                                         <td className="border-b border-divider p-[10px_12px] whitespace-nowrap">
                                             <div className="flex items-center gap-2">
                                                 <span
+                                                    // dynamic-style: doctor avatar bg/fg from DOC_PALETTES indexed by doctor_id at runtime
                                                     style={{
-                                                        // dynamic-style: doctor avatar bg/fg from DOC_PALETTES indexed by doctor_id at runtime
                                                         backgroundColor: pal.bg,
                                                         color: pal.fg,
                                                     }}
@@ -218,27 +203,30 @@ export function CitasHoyPanel({
                                         </td>
                                         <td className="border-b border-divider p-[10px_12px]">
                                             {c.has_turn ? (
-                                                <span className="inline-flex items-center rounded-full bg-cita-atendida-bg px-[9px] py-[2px] text-xs font-semibold whitespace-nowrap text-cita-atendida-fg">
-                                                    ✓ T-
-                                                    {String(
-                                                        c.turn_number,
-                                                    ).padStart(2, '0')}{' '}
-                                                    · En cola
-                                                </span>
+                                                <StatusBadge
+                                                    state="cita-atendida"
+                                                    label={`✓ T-${String(c.turn_number).padStart(2, '0')} · En cola`}
+                                                />
                                             ) : (
-                                                <span
-                                                    style={{
-                                                        // dynamic-style: cita status badge — bg/fg vary per c.status at runtime
-                                                        backgroundColor:
-                                                            stColor.bg,
-                                                        color: stColor.fg,
-                                                    }}
-                                                    className="inline-flex items-center rounded-full px-[9px] py-[2px] text-xs font-semibold whitespace-nowrap"
-                                                >
-                                                    {CITA_STATUS_LABELS[
-                                                        c.status
-                                                    ] ?? c.status}
-                                                </span>
+                                                <StatusBadge
+                                                    state={
+                                                        c.status === 'pendiente'
+                                                            ? 'cita-pendiente'
+                                                            : c.status ===
+                                                                'confirmada'
+                                                              ? 'cita-en_lista'
+                                                              : c.status ===
+                                                                  'no_asistio'
+                                                                ? 'cita-no_asistio'
+                                                                : 'cita-cancelada'
+                                                    }
+                                                    label={
+                                                        c.status ===
+                                                        'confirmada'
+                                                            ? 'Confirmada'
+                                                            : undefined
+                                                    }
+                                                />
                                             )}
                                         </td>
                                         <td className="border-b border-divider p-[10px_12px] text-right">

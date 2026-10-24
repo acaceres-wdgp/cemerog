@@ -11,7 +11,13 @@ type AttentionState =
     | 'pendiente'
     | 'balance'
     | 'saldada'
-    | 'cancelada';
+    | 'cancelada'
+    | 'cita-pendiente'
+    | 'cita-confirmada'
+    | 'cita-en_lista'
+    | 'cita-atendida'
+    | 'cita-no_asistio'
+    | 'cita-cancelada';
 
 interface StatusBadgeProps {
     state: AttentionState;
@@ -21,7 +27,13 @@ interface StatusBadgeProps {
 
 const STATE_CONFIG: Record<
     AttentionState,
-    { label: string; bg: string; text: string; border: string }
+    {
+        label: string;
+        bg: string;
+        text: string;
+        border: string;
+        noBorder?: boolean;
+    }
 > = {
     espera: {
         label: 'En espera',
@@ -77,6 +89,48 @@ const STATE_CONFIG: Record<
         text: '#52525B',
         border: '#A1A1AA',
     },
+    'cita-pendiente': {
+        label: 'Pendiente',
+        bg: '#FEF3C7',
+        text: '#92400E',
+        border: '#FEF3C7',
+        noBorder: true,
+    },
+    'cita-confirmada': {
+        label: 'Confirmada',
+        bg: '#F3F7F2',
+        text: '#2E8B3E',
+        border: '#F3F7F2',
+        noBorder: true,
+    },
+    'cita-en_lista': {
+        label: 'En lista',
+        bg: '#DBEAFE',
+        text: '#1E40AF',
+        border: '#DBEAFE',
+        noBorder: true,
+    },
+    'cita-atendida': {
+        label: 'Atendida',
+        bg: '#DCFCE7',
+        text: '#166534',
+        border: '#DCFCE7',
+        noBorder: true,
+    },
+    'cita-no_asistio': {
+        label: 'No asistió',
+        bg: '#F4F4F5',
+        text: '#52525B',
+        border: '#F4F4F5',
+        noBorder: true,
+    },
+    'cita-cancelada': {
+        label: 'Cancelada',
+        bg: '#F4F4F5',
+        text: '#52525B',
+        border: '#F4F4F5',
+        noBorder: true,
+    },
 };
 
 export default function StatusBadge({
@@ -88,11 +142,11 @@ export default function StatusBadge({
 
     return (
         <span
-            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${className}`}
+            className={`inline-flex items-center rounded-full text-xs font-semibold ${config.noBorder ? 'px-[9px] py-[2px]' : 'border px-2.5 py-0.5'} ${className}`}
             style={{
                 backgroundColor: config.bg,
                 color: config.text,
-                borderColor: config.border,
+                ...(config.noBorder ? {} : { borderColor: config.border }),
             }}
         >
             {label ?? config.label}
