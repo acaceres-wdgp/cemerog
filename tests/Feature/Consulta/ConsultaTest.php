@@ -100,7 +100,7 @@ test('authorized user can store a consultation', function () {
     ]);
 });
 
-test('store consultation marks turn as atendido', function () {
+test('store consultation does NOT auto-mark turn as atendido', function () {
     $turn = Turn::factory()->create([
         'doctor_id' => $this->doctor->id,
         'patient_id' => $this->patient->id,
@@ -116,7 +116,7 @@ test('store consultation marks turn as atendido', function () {
         ])
         ->assertRedirect();
 
-    expect($turn->fresh()->status)->toBe('atendido');
+    expect($turn->fresh()->status)->toBe('en_consulta');
 });
 
 test('store consultation without turn_id still works', function () {
@@ -163,14 +163,14 @@ test('store consultation redirects with flash success', function () {
 
 // ─── Historial ────────────────────────────────────────────────────────────────
 
-test('authorized user can GET patient consultation history', function () {
+test('index loads historial when patient_id is provided', function () {
     Consultation::factory()->count(3)->create([
         'patient_id' => $this->patient->id,
         'doctor_id' => $this->doctor->id,
     ]);
 
     $this->actingAs($this->user)
-        ->get("/consulta/historial/{$this->patient->id}")
+        ->get("/consulta?patient_id={$this->patient->id}")
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('consulta/index')
@@ -214,5 +214,46 @@ test('unauthorized user gets 403 on PATCH /consulta/antecedentes/{patient}', fun
     $noPerms = User::factory()->create();
     $this->actingAs($noPerms)
         ->patch("/consulta/antecedentes/{$this->patient->id}", ['personales' => 'HTA'])
+        ->assertForbidden();
+});
+
+// ─── Alta ─────────────────────────────────────────────────────────────────────
+
+test('authorized user can give alta and turn becomes atendido', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+    ]);
+
+    $this->actingAs($this->user)
+        ->patch("/consulta/turnos/{$turn->id}/alta")
+        ->assertRedirect(route('consulta'));
+
+    expect($turn->fresh()->status)->toBe('atendido');
+});
+
+test('alta redirects with flash success', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+    ]);
+
+    $this->actingAs($this->user)
+        ->patch("/consulta/turnos/{$turn->id}/alta")
+        ->assertRedirect()
+        ->assertSessionHas('flash');
+});
+
+test('unauthorized user gets 403 on PATCH /consulta/turnos/{turn}/alta', function () {
+    $noPerms = User::factory()->create();
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+    ]);
+
+    $this->actingAs($noPerms)
+        ->patch("/consulta/turnos/{$turn->id}/alta")
         ->assertForbidden();
 });

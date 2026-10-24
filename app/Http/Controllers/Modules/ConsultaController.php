@@ -10,12 +10,13 @@ use App\Models\Patient;
 use App\Models\PatientAntecedent;
 use App\Models\Turn;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ConsultaController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $turnsEnConsulta = Turn::with(['patient', 'doctor.specialty'])
             ->whereDate('arrived_at', today())
@@ -31,9 +32,23 @@ class ConsultaController extends Controller
             ->get()
             ->map(fn (Turn $t) => $this->formatTurn($t));
 
+        $historial = [];
+        $historialPatient = null;
+
+        $patientId = $request->integer('patient_id');
+        if ($patientId) {
+            $patient = Patient::find($patientId);
+            if ($patient) {
+                $historial = $this->loadHistorial($patient);
+                $historialPatient = $this->formatHistorialPatient($patient);
+            }
+        }
+
         return Inertia::render('consulta/index', [
             'turns_en_consulta' => $turnsEnConsulta,
             'turns_en_espera' => $turnsEnEspera,
+            'historial' => $historial,
+            'historial_patient' => $historialPatient,
         ]);
     }
 
@@ -41,21 +56,38 @@ class ConsultaController extends Controller
     {
         $data = $request->validated();
 
-        $consultation = Consultation::create($data);
+        Consultation::create($data);
 
-        if ($consultation->turn_id) {
-            Turn::find($consultation->turn_id)?->update(['status' => 'atendido']);
-        }
+        return redirect()
+            ->to(route('consulta', ['patient_id' => $data['patient_id']]))
+            ->with('flash', ['type' => 'success', 'message' => 'Consulta guardada exitosamente.']);
+    }
 
-        return redirect()->route('consulta')->with('flash', [
+    public function alta(Turn $turn): RedirectResponse
+    {
+        $turn->update(['status' => 'atendido']);
+
+        return redirect()
+            ->to(route('consulta'))
+            ->with('flash', ['type' => 'success', 'message' => 'Paciente dado de alta.']);
+    }
+
+    public function updateAntecedents(UpdateAntecedentRequest $request, Patient $patient): RedirectResponse
+    {
+        PatientAntecedent::updateOrCreate(
+            ['patient_id' => $patient->id],
+            $request->validated(),
+        );
+
+        return redirect()->back()->with('flash', [
             'type' => 'success',
-            'message' => 'Consulta guardada exitosamente.',
+            'message' => 'Antecedentes actualizados.',
         ]);
     }
 
-    public function historial(Patient $patient): Response
+    private function loadHistorial(Patient $patient): array
     {
-        $historial = Consultation::with(['doctor.specialty'])
+        return Consultation::with(['doctor.specialty'])
             ->where('patient_id', $patient->id)
             ->orderByDesc('consulted_at')
             ->get()
@@ -82,48 +114,20 @@ class ConsultaController extends Controller
                     'saturacion_o2' => $c->saturacion_o2,
                     'glucemia' => $c->glucemia,
                 ],
-            ]);
-
-        $turnsEnConsulta = Turn::with(['patient', 'doctor.specialty'])
-            ->whereDate('arrived_at', today())
-            ->where('status', 'en_consulta')
-            ->orderBy('turn_order')
-            ->get()
-            ->map(fn (Turn $t) => $this->formatTurn($t));
-
-        $turnsEnEspera = Turn::with(['patient', 'doctor.specialty'])
-            ->whereDate('arrived_at', today())
-            ->where('status', 'espera')
-            ->orderBy('turn_order')
-            ->get()
-            ->map(fn (Turn $t) => $this->formatTurn($t));
-
-        return Inertia::render('consulta/index', [
-            'turns_en_consulta' => $turnsEnConsulta,
-            'turns_en_espera' => $turnsEnEspera,
-            'historial' => $historial,
-            'historial_patient' => [
-                'id' => $patient->id,
-                'full_name' => $patient->full_name,
-                'age' => $patient->age,
-                'sex' => $patient->sex,
-                'allergies' => $patient->allergies,
-                'antecedents' => $patient->antecedent,
-            ],
-        ]);
+            ])
+            ->all();
     }
 
-    public function updateAntecedents(UpdateAntecedentRequest $request, Patient $patient): RedirectResponse
+    private function formatHistorialPatient(Patient $patient): array
     {
-        PatientAntecedent::updateOrCreate(
-            ['patient_id' => $patient->id],
-            $request->validated(),
-        );
-
-        return redirect()->back()->with('flash', [
-            'type' => 'success',
-            'message' => 'Antecedentes actualizados.',
-        ]);
+        return [
+            'id' => $patient->id,
+            'full_name' => $patient->full_name,
+            'age' => $patient->age,
+            'sex' => $patient->sex,
+            'allergies' => $patient->allergies,
+            'antecedents' => $patient->antecedent,
+        ];
     }
 
     private function formatTurn(Turn $turn): array

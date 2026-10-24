@@ -87,7 +87,7 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
     Route::prefix('/consulta')->middleware('permission:module.consulta.access')->group(function () {
         Route::get('/', [ConsultaController::class, 'index'])->name('consulta');
         Route::post('/', [ConsultaController::class, 'store'])->name('consulta.store');
-        Route::get('/historial/{patient}', [ConsultaController::class, 'historial'])->name('consulta.historial');
+        Route::patch('/turnos/{turn}/alta', [ConsultaController::class, 'alta'])->name('consulta.alta');
         Route::patch('/antecedentes/{patient}', [ConsultaController::class, 'updateAntecedents'])->name('consulta.antecedentes');
     });
 

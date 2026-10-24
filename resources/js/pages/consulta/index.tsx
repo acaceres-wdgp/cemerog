@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -190,9 +190,6 @@ function PatientHeader({ turn }: { turn: TurnItem }) {
     return (
         <div
             style={{
-                position: 'sticky',
-                top: 80,
-                zIndex: 20,
                 background: '#fff',
                 border: '1px solid #e3e9e3',
                 borderRadius: 16,
@@ -385,7 +382,7 @@ function NotaClinica({
         quirurgicos: antecedents?.quirurgicos ?? '',
         medicamentos: antecedents?.medicamentos ?? '',
         familiares: antecedents?.familiares ?? '',
-        alergias: antecedents?.alergias ?? '',
+        alergias: antecedents?.alergias ?? turn.patient.allergies ?? '',
     });
 
     const imc = computeImc(form.peso ? Number(form.peso) * 10 : null, form.talla ? Number(form.talla) : null);
@@ -437,6 +434,10 @@ function NotaClinica({
             peso: form.peso ? Math.round(Number(form.peso) * 10) : null,
             talla: form.talla ? Number(form.talla) : null,
             diagnosticos: form.diagnosticos.length ? form.diagnosticos : null,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            only: ['historial', 'historial_patient'],
         });
     }
 
@@ -758,14 +759,14 @@ function NotaClinica({
                                 { label: 'Medicamentos', val: antecedents?.medicamentos },
                                 { label: 'Familiares', val: antecedents?.familiares },
                             ].map((row) => (
-                                <>
-                                    <span key={row.label + '-l'} style={{ color: '#71717a' }}>{row.label}</span>
-                                    <span key={row.label + '-v'}>{row.val || <span style={{ color: '#a1a1aa' }}>—</span>}</span>
-                                </>
+                                <React.Fragment key={row.label}>
+                                    <span style={{ color: '#71717a' }}>{row.label}</span>
+                                    <span>{row.val || <span style={{ color: '#a1a1aa' }}>—</span>}</span>
+                                </React.Fragment>
                             ))}
                             <span style={{ color: '#71717a' }}>Alergias</span>
-                            <span style={{ color: antecedents?.alergias ? '#b91c1c' : '#a1a1aa', fontWeight: antecedents?.alergias ? 600 : 400 }}>
-                                {antecedents?.alergias || '—'}
+                            <span style={{ color: (antecedents?.alergias ?? turn.patient.allergies) ? '#b91c1c' : '#a1a1aa', fontWeight: (antecedents?.alergias ?? turn.patient.allergies) ? 600 : 400 }}>
+                                {antecedents?.alergias ?? turn.patient.allergies ?? '—'}
                             </span>
                         </div>
                     )}
@@ -810,6 +811,24 @@ function NotaClinica({
 function HistorialPanel({ historial }: { historial: HistorialEntry[] }) {
     const [selId, setSelId] = useState<number | null>(historial[0]?.id ?? null);
     const sel = historial.find((h) => h.id === selId);
+
+    if (historial.length === 0) {
+        return (
+            <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14, overflow: 'hidden', marginTop: 8 }}>
+                <div style={{ padding: '14px 20px', borderBottom: '1px solid #eef0ec' }}>
+                    <div style={{ fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 16, color: '#1f2d22' }}>
+                        Historial en la clínica
+                    </div>
+                    <div style={{ fontSize: 13, color: '#71717a' }}>0 registros</div>
+                </div>
+                <div style={{ padding: '48px 24px', textAlign: 'center', color: '#71717a' }}>
+                    <div style={{ fontSize: 32, marginBottom: 10 }}>📋</div>
+                    <div style={{ fontWeight: 600, fontSize: 14, color: '#52605a', marginBottom: 4 }}>Sin historial registrado</div>
+                    <p style={{ margin: 0, fontSize: 13 }}>Las consultas guardadas de este paciente aparecerán aquí.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14, overflow: 'hidden', marginTop: 8 }}>
@@ -1003,7 +1022,15 @@ export default function ConsultaIndex({ turns_en_consulta, turns_en_espera, hist
                         turnsEspera={turns_en_espera}
                         turnsConsulta={turns_en_consulta}
                         activeTurnId={activeTurn?.id ?? null}
-                        onSelect={(t) => { setActiveTurn(t); setShowQueue(false); }}
+                        onSelect={(t) => {
+                            setActiveTurn(t);
+                            setShowQueue(false);
+                            router.get('/consulta', { patient_id: String(t.patient.id) }, {
+                                preserveState: true,
+                                preserveScroll: true,
+                                only: ['historial', 'historial_patient'],
+                            });
+                        }}
                     />
                 </div>
             )}
@@ -1048,33 +1075,33 @@ export default function ConsultaIndex({ turns_en_consulta, turns_en_espera, hist
                                 </button>
                             ))}
                         </div>
-                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                            <button
-                                onClick={() => router.get(`/consulta/historial/${activeTurn.patient.id}`)}
-                                style={{
-                                    whiteSpace: 'nowrap',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 8,
-                                    height: 36,
-                                    padding: '0 14px',
-                                    borderRadius: 10,
-                                    border: '1px solid #dfe7df',
-                                    background: '#F6F9F5',
-                                    fontWeight: 500,
-                                    cursor: 'pointer',
-                                    fontFamily: 'inherit',
-                                    fontSize: 14,
-                                }}
-                            >
-                                📋 Ver historial
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => router.patch(`/consulta/turnos/${activeTurn.id}/alta`, {})}
+                            style={{
+                                whiteSpace: 'nowrap',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                height: 36,
+                                padding: '0 16px',
+                                borderRadius: 10,
+                                border: 'none',
+                                background: '#2E8B3E',
+                                color: '#fff',
+                                fontWeight: 500,
+                                cursor: 'pointer',
+                                fontFamily: 'inherit',
+                                fontSize: 14,
+                            }}
+                        >
+                            ✓ Dar alta
+                        </button>
                     </div>
 
                     {/* NOTA */}
                     {activeTab === 'nota' && (
                         <NotaClinica
+                            key={activeTurn.patient.id}
                             turn={activeTurn}
                             antecedents={antecedents}
                             patientId={activeTurn.patient.id}
@@ -1280,9 +1307,7 @@ export default function ConsultaIndex({ turns_en_consulta, turns_en_espera, hist
             )}
 
             {/* Historial clínico */}
-            {displayedHistorial.length > 0 && (
-                <HistorialPanel historial={displayedHistorial} />
-            )}
+            <HistorialPanel historial={displayedHistorial} />
         </div>
     );
 }
