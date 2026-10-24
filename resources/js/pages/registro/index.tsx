@@ -101,6 +101,7 @@ function PatientAvatar({
     return (
         <div
             className="flex shrink-0 items-center justify-center rounded-full bg-accent-bg font-semibold text-accent-fg"
+            // dynamic-style: avatar size and font-size are computed from runtime prop
             style={{ width: size, height: size, fontSize: size * 0.37 }}
         >
             {initials}
@@ -450,12 +451,12 @@ export default function RegistroIndex({
 
                 {/* Main grid */}
                 <div
-                    className="flex flex-wrap gap-4"
-                    style={{ alignItems: 'flex-start' }}
+                    className="flex flex-wrap items-start gap-4"
                 >
                     {/* ── Left column ───────────────────────────────────── */}
                     <div
                         className="flex min-w-0 flex-col gap-4"
+                        // dynamic-style: non-standard flex ratio (1.6) not available as Tailwind class
                         style={{ flex: '1.6 1 560px' }}
                     >
                         {/* Card 1: Datos del paciente */}
@@ -1119,7 +1120,10 @@ export default function RegistroIndex({
                     </div>
 
                     {/* ── Right column: Resumen ─────────────────────────── */}
-                    <div style={{ flex: '1 1 300px' }}>
+                    <div
+                        // dynamic-style: flex basis 300px not available as standard Tailwind class
+                        style={{ flex: '1 1 300px' }}
+                    >
                         <Panel title="Resumen" noPadding>
                             <dl className="divide-y divide-divider text-[13px]">
                                 <div className="flex justify-between px-5 py-3">

@@ -108,6 +108,7 @@ function PatientAvatar({
                 src={photoUrl}
                 alt=""
                 className="rounded-full object-cover"
+                // dynamic-style: avatar size is a runtime prop (number in px)
                 style={{ width: size, height: size }}
             />
         );
@@ -115,6 +116,7 @@ function PatientAvatar({
     return (
         <div
             className="flex items-center justify-center rounded-full bg-accent-bg font-semibold text-accent-fg"
+            // dynamic-style: avatar size and font-size are computed from runtime prop
             style={{ width: size, height: size, fontSize: size * 0.37 }}
         >
             {initials}
@@ -525,8 +527,7 @@ export default function PacientesIndex({
                 {/* Page header */}
                 <div className="flex items-center justify-between">
                     <p
-                        className="text-text-secondary"
-                        style={{ fontSize: '14px' }}
+                        className="text-sm text-text-secondary"
                     >
                         {counts.total} pacientes registrados ·{' '}
                         {counts.attended_today} atendidos hoy
