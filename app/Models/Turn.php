@@ -15,7 +15,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $appointment_id
  * @property int $turn_number
  * @property int $turn_order
- * @property string $status   espera | en_consulta | atendido | no_asistio
+ * @property string $status espera | en_consulta | atendido | no_asistio
  * @property Carbon $arrived_at
  * @property string|null $notes
  * @property Carbon|null $created_at
@@ -44,8 +44,8 @@ class Turn extends Model
     {
         return [
             'turn_number' => 'integer',
-            'turn_order'  => 'integer',
-            'arrived_at'  => 'datetime',
+            'turn_order' => 'integer',
+            'arrived_at' => 'datetime',
         ];
     }
 

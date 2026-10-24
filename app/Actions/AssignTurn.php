@@ -25,14 +25,14 @@ class AssignTurn
         $turnNumber = $maxTurn + 1;
 
         return Turn::create([
-            'patient_id'     => $data['patient_id'],
-            'doctor_id'      => $data['doctor_id'],
+            'patient_id' => $data['patient_id'],
+            'doctor_id' => $data['doctor_id'],
             'appointment_id' => $data['appointment_id'] ?? null,
-            'turn_number'    => $turnNumber,
-            'turn_order'     => $turnNumber * 10,
-            'status'         => 'espera',
-            'arrived_at'     => now(),
-            'notes'          => $data['notes'] ?? null,
+            'turn_number' => $turnNumber,
+            'turn_order' => $turnNumber * 10,
+            'status' => 'espera',
+            'arrived_at' => now(),
+            'notes' => $data['notes'] ?? null,
         ]);
     }
 }

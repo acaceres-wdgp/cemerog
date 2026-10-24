@@ -13,7 +13,7 @@ class ReorderTurn
             ->where('id', '!=', $turn->id);
 
         $adjacent = match ($direction) {
-            'up'   => $query->where('turn_order', '<', $turn->turn_order)->orderBy('turn_order', 'desc')->first(),
+            'up' => $query->where('turn_order', '<', $turn->turn_order)->orderBy('turn_order', 'desc')->first(),
             'down' => $query->where('turn_order', '>', $turn->turn_order)->orderBy('turn_order', 'asc')->first(),
             default => null,
         };

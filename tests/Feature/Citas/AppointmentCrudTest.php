@@ -41,7 +41,7 @@ test('user without permission gets 403 on GET /citas', function () {
 });
 
 test('index filters appointments by date', function () {
-    $today    = Carbon::today()->toDateString();
+    $today = Carbon::today()->toDateString();
     $tomorrow = Carbon::tomorrow()->toDateString();
 
     Appointment::factory()->create([
@@ -64,30 +64,30 @@ test('index filters appointments by date', function () {
 test('authorized user can store an appointment', function () {
     $this->actingAs($this->user)
         ->post('/citas', [
-            'patient_id'       => $this->patient->id,
-            'doctor_id'        => $this->doctor->id,
+            'patient_id' => $this->patient->id,
+            'doctor_id' => $this->doctor->id,
             'appointment_date' => Carbon::tomorrow()->toDateString(),
             'appointment_time' => '09:00',
-            'type'             => 'consulta',
-            'notes'            => null,
+            'type' => 'consulta',
+            'notes' => null,
         ])
         ->assertRedirect();
 
     $this->assertDatabaseHas('appointments', [
         'patient_id' => $this->patient->id,
-        'doctor_id'  => $this->doctor->id,
-        'type'       => 'consulta',
-        'status'     => 'pendiente',
+        'doctor_id' => $this->doctor->id,
+        'type' => 'consulta',
+        'status' => 'pendiente',
     ]);
 });
 
 test('store always creates appointment as pendiente, even for today', function () {
     $this->actingAs($this->user)
         ->post('/citas', [
-            'patient_id'       => $this->patient->id,
-            'doctor_id'        => $this->doctor->id,
+            'patient_id' => $this->patient->id,
+            'doctor_id' => $this->doctor->id,
             'appointment_date' => Carbon::today()->toDateString(),
-            'type'             => 'consulta',
+            'type' => 'consulta',
         ])
         ->assertRedirect();
 
@@ -98,10 +98,10 @@ test('store always creates appointment as pendiente, even for today', function (
 test('store does not create a turn', function () {
     $this->actingAs($this->user)
         ->post('/citas', [
-            'patient_id'       => $this->patient->id,
-            'doctor_id'        => $this->doctor->id,
+            'patient_id' => $this->patient->id,
+            'doctor_id' => $this->doctor->id,
             'appointment_date' => Carbon::today()->toDateString(),
-            'type'             => 'consulta',
+            'type' => 'consulta',
         ])
         ->assertRedirect();
 
@@ -111,11 +111,11 @@ test('store does not create a turn', function () {
 test('store redirects with flash success', function () {
     $this->actingAs($this->user)
         ->post('/citas', [
-            'patient_id'       => $this->patient->id,
-            'doctor_id'        => $this->doctor->id,
+            'patient_id' => $this->patient->id,
+            'doctor_id' => $this->doctor->id,
             'appointment_date' => Carbon::tomorrow()->toDateString(),
             'appointment_time' => '10:00',
-            'type'             => 'seguimiento',
+            'type' => 'seguimiento',
         ])
         ->assertRedirect()
         ->assertSessionHas('flash');
@@ -175,11 +175,11 @@ test('authorized user can update an appointment', function () {
 
     $this->actingAs($this->user)
         ->put("/citas/{$appointment->id}", [
-            'patient_id'       => $this->patient->id,
-            'doctor_id'        => $this->doctor->id,
+            'patient_id' => $this->patient->id,
+            'doctor_id' => $this->doctor->id,
             'appointment_date' => Carbon::tomorrow()->toDateString(),
-            'type'             => 'seguimiento',
-            'notes'            => 'Actualización de prueba',
+            'type' => 'seguimiento',
+            'notes' => 'Actualización de prueba',
         ])
         ->assertRedirect();
 

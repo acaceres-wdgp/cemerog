@@ -12,8 +12,8 @@ beforeEach(function () {
     $this->user->givePermissionTo('module.tablero.access');
 
     $this->specialty = Specialty::factory()->create(['name' => 'Medicina General']);
-    $this->doctor    = Doctor::factory()->create(['specialty_id' => $this->specialty->id, 'is_active' => true]);
-    $this->patient   = Patient::factory()->create();
+    $this->doctor = Doctor::factory()->create(['specialty_id' => $this->specialty->id, 'is_active' => true]);
+    $this->patient = Patient::factory()->create();
 });
 
 // ─── Tablero index ────────────────────────────────────────────────────────────
@@ -40,58 +40,58 @@ test('unauthenticated user is redirected from /tablero', function () {
 test('authorized user can assign a walk-in turn without appointment', function () {
     $this->actingAs($this->user)
         ->post('/tablero/turnos', [
-            'patient_id'     => $this->patient->id,
-            'doctor_id'      => $this->doctor->id,
+            'patient_id' => $this->patient->id,
+            'doctor_id' => $this->doctor->id,
             'appointment_id' => null,
         ])
         ->assertRedirect(route('tablero'));
 
     $this->assertDatabaseHas('turns', [
-        'patient_id'     => $this->patient->id,
-        'doctor_id'      => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'doctor_id' => $this->doctor->id,
         'appointment_id' => null,
-        'turn_number'    => 1,
-        'turn_order'     => 10,
-        'status'         => 'espera',
+        'turn_number' => 1,
+        'turn_order' => 10,
+        'status' => 'espera',
     ]);
 });
 
 test('authorized user can assign a turn linked to an appointment', function () {
     $appointment = Appointment::factory()->create([
-        'doctor_id'        => $this->doctor->id,
-        'patient_id'       => $this->patient->id,
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
         'appointment_date' => now()->toDateString(),
-        'status'           => 'pendiente',
+        'status' => 'pendiente',
     ]);
 
     $this->actingAs($this->user)
         ->post('/tablero/turnos', [
-            'patient_id'     => $this->patient->id,
-            'doctor_id'      => $this->doctor->id,
+            'patient_id' => $this->patient->id,
+            'doctor_id' => $this->doctor->id,
             'appointment_id' => $appointment->id,
         ])
         ->assertRedirect(route('tablero'));
 
     $this->assertDatabaseHas('turns', [
-        'patient_id'     => $this->patient->id,
+        'patient_id' => $this->patient->id,
         'appointment_id' => $appointment->id,
-        'turn_number'    => 1,
+        'turn_number' => 1,
     ]);
 });
 
 test('turn_number increments for same doctor on same day', function () {
     Turn::factory()->create([
-        'doctor_id'   => $this->doctor->id,
+        'doctor_id' => $this->doctor->id,
         'turn_number' => 3,
-        'turn_order'  => 30,
-        'arrived_at'  => now(),
+        'turn_order' => 30,
+        'arrived_at' => now(),
     ]);
 
     $patient2 = Patient::factory()->create();
     $this->actingAs($this->user)
         ->post('/tablero/turnos', [
             'patient_id' => $patient2->id,
-            'doctor_id'  => $this->doctor->id,
+            'doctor_id' => $this->doctor->id,
         ])
         ->assertRedirect();
 
@@ -102,15 +102,15 @@ test('turn_number increments for same doctor on same day', function () {
 
 test('turn_number resets per day: yesterday turn does not affect today count', function () {
     Turn::factory()->create([
-        'doctor_id'   => $this->doctor->id,
+        'doctor_id' => $this->doctor->id,
         'turn_number' => 5,
-        'arrived_at'  => now()->subDay(),
+        'arrived_at' => now()->subDay(),
     ]);
 
     $this->actingAs($this->user)
         ->post('/tablero/turnos', [
             'patient_id' => $this->patient->id,
-            'doctor_id'  => $this->doctor->id,
+            'doctor_id' => $this->doctor->id,
         ])
         ->assertRedirect();
 
@@ -129,7 +129,7 @@ test('unauthorized user gets 403 on POST /tablero/turnos', function () {
     $this->actingAs($noPerms)
         ->post('/tablero/turnos', [
             'patient_id' => $this->patient->id,
-            'doctor_id'  => $this->doctor->id,
+            'doctor_id' => $this->doctor->id,
         ])
         ->assertForbidden();
 });
@@ -138,7 +138,7 @@ test('store turn redirects with flash success', function () {
     $this->actingAs($this->user)
         ->post('/tablero/turnos', [
             'patient_id' => $this->patient->id,
-            'doctor_id'  => $this->doctor->id,
+            'doctor_id' => $this->doctor->id,
         ])
         ->assertRedirect()
         ->assertSessionHas('flash');
@@ -148,9 +148,9 @@ test('store turn redirects with flash success', function () {
 
 test('authorized user can update turn status to en_consulta', function () {
     $turn = Turn::factory()->create([
-        'doctor_id'  => $this->doctor->id,
+        'doctor_id' => $this->doctor->id,
         'patient_id' => $this->patient->id,
-        'status'     => 'espera',
+        'status' => 'espera',
     ]);
 
     $this->actingAs($this->user)
@@ -162,9 +162,9 @@ test('authorized user can update turn status to en_consulta', function () {
 
 test('authorized user can mark turn as atendido', function () {
     $turn = Turn::factory()->create([
-        'doctor_id'  => $this->doctor->id,
+        'doctor_id' => $this->doctor->id,
         'patient_id' => $this->patient->id,
-        'status'     => 'en_consulta',
+        'status' => 'en_consulta',
     ]);
 
     $this->actingAs($this->user)
