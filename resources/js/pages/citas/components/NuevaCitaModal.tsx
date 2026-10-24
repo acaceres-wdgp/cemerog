@@ -77,7 +77,7 @@ export function NuevaCitaModal({
                 {/* Paciente field */}
                 <div className="flex flex-col gap-1.5">
                     <label className="text-sm font-medium text-text-heading">
-                        Paciente <span className="text-error">*</span>
+                        Paciente *
                     </label>
                     <PatientSearch
                         selected={selectedPatient}
@@ -101,7 +101,7 @@ export function NuevaCitaModal({
                         htmlFor="doctor_id"
                         className="text-sm font-medium text-text-heading"
                     >
-                        Médico <span className="text-error">*</span>
+                        Médico *
                     </label>
                     <select
                         id="doctor_id"
@@ -130,7 +130,7 @@ export function NuevaCitaModal({
                             htmlFor="appointment_date"
                             className="text-sm font-medium text-text-heading"
                         >
-                            Fecha <span className="text-error">*</span>
+                            Fecha *
                         </label>
                         <input
                             id="appointment_date"

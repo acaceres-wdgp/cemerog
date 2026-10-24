@@ -98,6 +98,9 @@
     /* ── Empty appointment slot dashed border ────────── */
     --color-slot-empty-border: #d6e2d0;
 
+    /* ── Modal overlay ──────────────────────────── */
+    --color-overlay: rgba(0, 0, 0, 0.4);
+
     /* ── Sidebar Themes ──────────────────────────── */
     --color-sidebar-carbon: #2a2e2c;
     --color-sidebar-slate: #1f2b33;
