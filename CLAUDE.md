@@ -34,7 +34,7 @@ vendor/bin/phpstan analyse --level=6  # Análisis estático
 1. Escribe el test (fallando)
 2. Implementa el código mínimo para pasar
 3. Refactoriza manteniendo verde
-4. Abre un PR – CI debe estar verde
+4. Abre un PR – tests y checks locales en verde (`vendor/bin/pest`, `npm run test`, `npm run types:check`, `npm run lint`)
 
 ## Arquitectura (resumen)
 
@@ -100,7 +100,7 @@ No modificar nada dentro de `design/`.
 - No guardar dinero como float (siempre centavos enteros)
 - No usar `make:auth` de Laravel (ya configurado)
 - No crear migraciones sin sus tests de reversión
-- No mergear a `main` sin CI verde
+- No mergear a `main` sin tests y checks locales en verde (`vendor/bin/pest`, `npm run test`, `npm run types:check`, `npm run lint`)
 - No instalar dependencias sin documentarlas aquí o en `docs/DECISIONS.md`
 - No envolver páginas en `<AppLayout>`: el layout se aplica globalmente en `app.tsx` mediante `createInertiaApp({ layout })`
 

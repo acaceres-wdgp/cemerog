@@ -3,7 +3,7 @@
 ## Filosofía
 
 - **TDD obligatorio**: tests primero, siempre.
-- Un PR sin tests será rechazado en CI.
+- Un PR sin tests será rechazado.
 - Coverage target: 80 % de líneas en `app/`.
 
 ## Backend (Pest)
@@ -186,7 +186,16 @@ test: {
 
 ## CI
 
-Los tests corren automáticamente en cada push/PR. Ver `.github/workflows/ci.yml`.
+No hay CI en GitHub Actions: el despliegue lo hace Laravel Forge (ver `docs/DEPLOYMENT.md`). Antes de abrir o mergear un PR, corre localmente:
+
+```bash
+vendor/bin/pint --test
+vendor/bin/phpstan analyse --level=6
+vendor/bin/pest
+npm run types:check
+npm run lint
+npm run test
+```
 
 ## Smoke tests / E2E
 

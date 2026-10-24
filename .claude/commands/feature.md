@@ -137,4 +137,4 @@ git commit -m "feat(<modulo>): <descripción concisa en inglés>"
 - **Nunca** modificar `design/` (es solo referencia).
 - **Nunca** usar `any` en TypeScript.
 - Dinero = centavos enteros siempre.
-- Crear PR hacia `main` cuando CI esté verde.
+- Crear PR hacia `main` cuando los tests y checks locales estén en verde.
