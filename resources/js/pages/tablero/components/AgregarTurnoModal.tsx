@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
-import type { DoctorOption, PatientResult } from '../types';
-import { PatientSearch } from './PatientSearch';
+import PatientSearch from '@/components/cemerog/PatientSearch';
+import type { PatientResult } from '@/components/cemerog/PatientSearch';
+import type { DoctorOption } from '../types';
 
 const inputStyle: React.CSSProperties = {
     height: 36,
@@ -168,6 +169,7 @@ export function AgregarTurnoModal({
                                     setPatientQuery('');
                                 }}
                                 error={errors.patient_id}
+                                endpoint="/citas/pacientes/buscar"
                             />
                         </label>
                         <label

@@ -1,6 +1,23 @@
-// Temporary copy of the inline PatientSearch - will be replaced by shared component in step 3
+/**
+ * PatientSearch – shared patient search widget used by Citas and Tablero.
+ */
 import { useEffect, useRef, useState } from 'react';
-import type { PatientResult } from '../types';
+
+export type PatientResult = {
+    id: number;
+    full_name: string;
+    document_number: string;
+};
+
+interface PatientSearchProps {
+    selected: PatientResult | null;
+    query: string;
+    onQueryChange: (v: string) => void;
+    onSelect: (p: PatientResult) => void;
+    onClear: () => void;
+    error?: string;
+    endpoint: string; // e.g. '/citas/pacientes/buscar'
+}
 
 const inputStyle: React.CSSProperties = {
     height: 36,
@@ -14,21 +31,15 @@ const inputStyle: React.CSSProperties = {
     boxSizing: 'border-box',
 };
 
-export function PatientSearch({
+export default function PatientSearch({
     selected,
     query,
     onQueryChange,
     onSelect,
     onClear,
     error,
-}: {
-    selected: PatientResult | null;
-    query: string;
-    onQueryChange: (v: string) => void;
-    onSelect: (p: PatientResult) => void;
-    onClear: () => void;
-    error?: string;
-}) {
+    endpoint,
+}: PatientSearchProps) {
     const [results, setResults] = useState<PatientResult[]>([]);
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
@@ -46,7 +57,7 @@ export function PatientSearch({
         const t = setTimeout(async () => {
             try {
                 const res = await fetch(
-                    `/citas/pacientes/buscar?q=${encodeURIComponent(query)}`,
+                    `${endpoint}?q=${encodeURIComponent(query)}`,
                 );
                 if (!res.ok) {
                     setResults([]);
@@ -62,7 +73,7 @@ export function PatientSearch({
             }
         }, 300);
         return () => clearTimeout(t);
-    }, [query, selected]);
+    }, [query, selected, endpoint]);
 
     useEffect(() => {
         const handler = (e: MouseEvent) => {
@@ -133,6 +144,7 @@ export function PatientSearch({
                         justifyContent: 'center',
                         fontSize: 12,
                         color: '#56693f',
+                        lineHeight: 1,
                     }}
                 >
                     ✕
@@ -195,6 +207,7 @@ export function PatientSearch({
                                     onSelect(p);
                                     setOpen(false);
                                 }}
+                                className="hover:bg-table-header-bg"
                                 style={{
                                     display: 'block',
                                     width: '100%',
@@ -206,13 +219,6 @@ export function PatientSearch({
                                     borderBottom: '1px solid #f3f4f6',
                                     fontFamily: 'inherit',
                                 }}
-                                onMouseEnter={(e) =>
-                                    (e.currentTarget.style.background =
-                                        '#F6FAF1')
-                                }
-                                onMouseLeave={(e) =>
-                                    (e.currentTarget.style.background = 'none')
-                                }
                             >
                                 <div style={{ fontWeight: 500, fontSize: 14 }}>
                                     {p.full_name}
