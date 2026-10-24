@@ -2,7 +2,7 @@
 
 Sistema de gestión clínica para el Centro Médico Dres. Rodríguez & Guzmán (República Dominicana).
 
-**Stack:** Laravel 12 · Inertia 2 · React 19 · TypeScript · Tailwind CSS 4 · shadcn/ui
+**Stack:** Laravel 13 · Inertia 3 · React 19 · TypeScript · Tailwind CSS 4 · shadcn/ui
 
 ---
 

@@ -4,8 +4,8 @@ Sistema de gestión clínica para Dres. Rodríguez & Guzmán (República Dominic
 
 ## Stack
 
-- **Backend**: Laravel 12, PHP 8.4, MySQL 8 (SQLite en tests)
-- **Frontend**: Inertia 2, React 19, TypeScript, Tailwind CSS 4, shadcn/ui
+- **Backend**: Laravel 13, PHP 8.3+, MySQL 8 (SQLite en tests)
+- **Frontend**: Inertia 3, React 19, TypeScript, Tailwind CSS 4, shadcn/ui
 - **Auth**: username + password (sin email, sin registro público)
 - **Roles**: spatie/laravel-permission – 8 roles
 - **Tests**: Pest (backend) + Vitest + RTL (frontend)
@@ -100,6 +100,8 @@ No modificar nada dentro de `design/`.
 - No mergear a `main` sin tests y checks locales en verde (`vendor/bin/pest`, `npm run test`, `npm run types:check`, `npm run lint`)
 - No instalar dependencias sin documentarlas aquí o en `docs/DECISIONS.md`
 - No envolver páginas en `<AppLayout>`: el layout se aplica globalmente en `app.tsx` mediante `createInertiaApp({ layout })`
+- No combinar un cast `encrypted` con un `Attribute` sobre la misma columna en Eloquent — produce doble cifrado o fallo al descifrar (ver ADR-010)
+- No borrar pacientes con `forceDelete` ni `DB::delete`; usar siempre `$patient->delete()` (soft delete) para preservar integridad referencial con turns y citas (ver ADR-012)
 
 ## Módulos y permisos
 

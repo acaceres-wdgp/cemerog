@@ -8,7 +8,7 @@
 | tablero       | /tablero                 | tablero/index       | admin, medico, enfermeria, secretaria, caja              | Terminado              | 2           |
 | pacientes     | /pacientes               | pacientes/index     | admin, medico, secretaria                                | Terminado              | 2b          |
 | registro      | /registro                | registro/index      | admin, secretaria                                        | Sin entrada en sidebar | 3           |
-| citas         | /citas                   | citas/index         | admin, medico, secretaria                                | Esqueleto              | 4           |
+| citas         | /citas                   | citas/index         | admin, medico, secretaria                                | Terminado              | 4           |
 | consulta      | /consulta                | consulta/index      | admin, medico                                            | Terminado              | 5           |
 | emergencia    | /emergencia              | emergencia/index    | admin, medico, enfermeria                                | Esqueleto              | 6           |
 | internamiento | /internamiento           | internamiento/index | admin, medico, enfermeria                                | Esqueleto              | 7           |
