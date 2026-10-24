@@ -64,21 +64,34 @@ const makeCita = (overrides: Partial<(typeof APPOINTMENTS)[0]> = {}) => ({
     ...overrides,
 });
 
-const TURNS = [makeTurn(), makeTurn({ id: 2, turn_number: 2, status: 'en_consulta' })];
-const APPOINTMENTS = [makeCita(), makeCita({ id: 11, has_turn: true, turn_number: 3 })];
+const TURNS = [
+    makeTurn(),
+    makeTurn({ id: 2, turn_number: 2, status: 'en_consulta' }),
+];
+const APPOINTMENTS = [
+    makeCita(),
+    makeCita({ id: 11, has_turn: true, turn_number: 3 }),
+];
 const DOCTORS = [
-    { id: 1, name: 'Dra. García', specialty: 'Medicina Interna', initials: 'GR' },
+    {
+        id: 1,
+        name: 'Dra. García',
+        specialty: 'Medicina Interna',
+        initials: 'GR',
+    },
     { id: 2, name: 'Dr. Pérez', specialty: 'Cardiología', initials: 'PR' },
 ];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function renderTablero(overrides: {
-    turns?: typeof TURNS;
-    appointments?: typeof APPOINTMENTS;
-    doctors?: typeof DOCTORS;
-    en_espera?: number;
-} = {}) {
+function renderTablero(
+    overrides: {
+        turns?: typeof TURNS;
+        appointments?: typeof APPOINTMENTS;
+        doctors?: typeof DOCTORS;
+        en_espera?: number;
+    } = {},
+) {
     return render(
         <TableroIndex
             turns={overrides.turns ?? TURNS}
@@ -155,11 +168,13 @@ describe('TableroIndex – turn tabs', () => {
     it('shows all tabs for turns', () => {
         renderTablero();
         // "Todas" tab appears for both turns AND citas sections
-        expect(screen.getAllByRole('button', { name: /todas/i }).length).toBeGreaterThan(0);
+        expect(
+            screen.getAllByRole('button', { name: /todas/i }).length,
+        ).toBeGreaterThan(0);
         // "En espera" tab exists
-        const esperaBtns = screen.getAllByRole('button').filter((b) =>
-            b.textContent?.includes('En espera'),
-        );
+        const esperaBtns = screen
+            .getAllByRole('button')
+            .filter((b) => b.textContent?.includes('En espera'));
         expect(esperaBtns.length).toBeGreaterThan(0);
     });
 
@@ -167,7 +182,9 @@ describe('TableroIndex – turn tabs', () => {
         renderTablero();
         // Click the "En espera" tab
         const tabs = screen.getAllByRole('button');
-        const esperaTab = tabs.find((b) => b.textContent?.includes('En espera'));
+        const esperaTab = tabs.find((b) =>
+            b.textContent?.includes('En espera'),
+        );
         expect(esperaTab).toBeTruthy();
         fireEvent.click(esperaTab!);
         // The turn with status 'en_consulta' should not show in the table (only espera)
@@ -179,7 +196,9 @@ describe('TableroIndex – turn tabs', () => {
 describe('TableroIndex – cita tabs', () => {
     it('shows Sin turno tab with pending count', () => {
         renderTablero();
-        expect(screen.getByRole('button', { name: /sin turno/i })).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: /sin turno/i }),
+        ).toBeInTheDocument();
     });
 
     it('shows Todas tab for citas', () => {
@@ -192,7 +211,12 @@ describe('TableroIndex – cita tabs', () => {
     it('filters citas: "Sin turno" tab shows only those without turn', () => {
         const citas = [
             makeCita({ id: 1, patient_name: 'Sin Turno Pac', has_turn: false }),
-            makeCita({ id: 2, patient_name: 'Con Turno Pac', has_turn: true, turn_number: 5 }),
+            makeCita({
+                id: 2,
+                patient_name: 'Con Turno Pac',
+                has_turn: true,
+                turn_number: 5,
+            }),
         ];
         renderTablero({ appointments: citas });
         // By default we're on "pendientes" (Sin turno) tab
@@ -252,7 +276,9 @@ describe('TableroIndex – reorderTurn', () => {
         renderTablero({ turns: [turn] });
 
         // title attribute used as accessible name via aria - use title selector
-        const upBtn = document.querySelector('button[title="Subir en cola"]') as HTMLElement;
+        const upBtn = document.querySelector(
+            'button[title="Subir en cola"]',
+        ) as HTMLElement;
         expect(upBtn).toBeTruthy();
         fireEvent.click(upBtn);
 
@@ -267,7 +293,9 @@ describe('TableroIndex – reorderTurn', () => {
         const turn = makeTurn({ id: 5, status: 'espera' });
         renderTablero({ turns: [turn] });
 
-        const downBtn = document.querySelector('button[title="Bajar en cola"]') as HTMLElement;
+        const downBtn = document.querySelector(
+            'button[title="Bajar en cola"]',
+        ) as HTMLElement;
         expect(downBtn).toBeTruthy();
         fireEvent.click(downBtn);
 
@@ -289,7 +317,9 @@ describe('TableroIndex – assignTurnFromCita', () => {
         });
         renderTablero({ appointments: [cita] });
 
-        const asignarBtn = screen.getByRole('button', { name: /asignar turno/i });
+        const asignarBtn = screen.getByRole('button', {
+            name: /asignar turno/i,
+        });
         fireEvent.click(asignarBtn);
 
         expect(mockPost).toHaveBeenCalledWith(
@@ -303,10 +333,16 @@ describe('TableroIndex – assignTurnFromCita', () => {
 describe('TableroIndex – markNoShow', () => {
     it('calls router.patch after confirm', () => {
         const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-        const cita = makeCita({ id: 30, patient_name: 'Test Patient', has_turn: false });
+        const cita = makeCita({
+            id: 30,
+            patient_name: 'Test Patient',
+            has_turn: false,
+        });
         renderTablero({ appointments: [cita] });
 
-        const noAsistioBtn = screen.getByRole('button', { name: /no asistió/i });
+        const noAsistioBtn = screen.getByRole('button', {
+            name: /no asistió/i,
+        });
         fireEvent.click(noAsistioBtn);
 
         expect(confirmSpy).toHaveBeenCalled();
@@ -324,7 +360,9 @@ describe('TableroIndex – markNoShow', () => {
         const cita = makeCita({ id: 31, has_turn: false });
         renderTablero({ appointments: [cita] });
 
-        const noAsistioBtn = screen.getByRole('button', { name: /no asistió/i });
+        const noAsistioBtn = screen.getByRole('button', {
+            name: /no asistió/i,
+        });
         fireEvent.click(noAsistioBtn);
 
         expect(confirmSpy).toHaveBeenCalled();
@@ -346,9 +384,7 @@ describe('TableroIndex – AgregarTurnoModal', () => {
         fireEvent.click(btn);
 
         // After clicking, the modal info tip text should appear
-        expect(
-            screen.getByText(/Turno sin cita previa/i),
-        ).toBeInTheDocument();
+        expect(screen.getByText(/Turno sin cita previa/i)).toBeInTheDocument();
     });
 
     it('shows doctor select inside the modal', () => {
@@ -357,7 +393,9 @@ describe('TableroIndex – AgregarTurnoModal', () => {
         fireEvent.click(btn);
 
         expect(screen.getByRole('combobox')).toBeInTheDocument();
-        expect(screen.getByText('Dra. García — Medicina Interna')).toBeInTheDocument();
+        expect(
+            screen.getByText('Dra. García — Medicina Interna'),
+        ).toBeInTheDocument();
     });
 
     it('does not call router.post without a patient selected in modal', () => {
@@ -372,7 +410,9 @@ describe('TableroIndex – AgregarTurnoModal', () => {
         fireEvent.change(select, { target: { value: '1' } });
 
         // Submit without a patient - should show validation error
-        const submitBtn = screen.getByRole('button', { name: /\+ Asignar turno/i });
+        const submitBtn = screen.getByRole('button', {
+            name: /\+ Asignar turno/i,
+        });
         fireEvent.click(submitBtn);
 
         // router.post should NOT be called without a patient
@@ -402,8 +442,6 @@ describe('TableroIndex – empty states', () => {
 
     it('shows empty state for citas when no appointments', () => {
         renderTablero({ appointments: [] });
-        expect(
-            screen.getByText(/no hay citas/i),
-        ).toBeInTheDocument();
+        expect(screen.getByText(/no hay citas/i)).toBeInTheDocument();
     });
 });

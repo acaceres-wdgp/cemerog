@@ -63,53 +63,20 @@ export default function TableroIndex({ turns, appointments, doctors }: Props) {
     return (
         <div className="flex flex-col gap-5">
             {/* ── Header ── */}
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    justifyContent: 'space-between',
-                    gap: 16,
-                    flexWrap: 'wrap',
-                }}
-            >
+            <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1
-                        style={{
-                            margin: 0,
-                            fontFamily: 'Bitter,Georgia,serif',
-                            fontSize: 28,
-                            fontWeight: 600,
-                            color: '#1f2d22',
-                            lineHeight: 1.2,
-                        }}
-                    >
+                    <h1 className="m-0 font-serif text-[28px] leading-tight font-semibold text-text-heading">
                         Tablero de atenciones
                     </h1>
-                    <p style={{ margin: '4px 0 0', color: '#5f6b64' }}>
+                    <p className="mt-1 text-text-secondary">
                         Pacientes en la clínica y su estado actual.
                     </p>
                 </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div className="flex items-center gap-2">
                     {nextTurn && (
-                        <div
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 8,
-                                height: 36,
-                                padding: '0 12px',
-                                border: '1px solid #e4e4e7',
-                                borderRadius: 10,
-                                fontSize: 13,
-                            }}
-                        >
-                            <span style={{ color: '#71717a' }}>Siguiente</span>
-                            <strong
-                                style={{
-                                    fontSize: 15,
-                                    fontVariantNumeric: 'tabular-nums',
-                                }}
-                            >
+                        <div className="flex h-9 items-center gap-2 rounded-[10px] border border-input-border px-3 text-[13px]">
+                            <span className="text-muted">Siguiente</span>
+                            <strong className="text-[15px] tabular-nums">
                                 T-
                                 {String(nextTurn.turn_number).padStart(2, '0')}
                             </strong>
@@ -117,22 +84,7 @@ export default function TableroIndex({ turns, appointments, doctors }: Props) {
                     )}
                     <button
                         onClick={() => setShowWalkIn(true)}
-                        style={{
-                            whiteSpace: 'nowrap',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            height: 36,
-                            padding: '0 14px',
-                            borderRadius: 10,
-                            border: 'none',
-                            background: '#2E8B3E',
-                            color: '#fff',
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                            fontFamily: 'inherit',
-                            fontSize: 14,
-                        }}
+                        className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border-0 bg-primary px-[14px] font-[inherit] text-sm font-medium whitespace-nowrap text-white"
                     >
                         + Agregar turno
                     </button>

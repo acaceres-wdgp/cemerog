@@ -4,11 +4,13 @@ import PatientSearch, { type PatientResult } from '../PatientSearch';
 
 const ENDPOINT = '/citas/pacientes/buscar';
 
-function renderSearch(overrides: {
-    selected?: PatientResult | null;
-    query?: string;
-    error?: string;
-} = {}) {
+function renderSearch(
+    overrides: {
+        selected?: PatientResult | null;
+        query?: string;
+        error?: string;
+    } = {},
+) {
     const onQueryChange = vi.fn();
     const onSelect = vi.fn();
     const onClear = vi.fn();
@@ -76,14 +78,26 @@ describe('PatientSearch', () => {
         renderSearch({ query: 'zz' });
 
         expect(
-            await screen.findByText('No se encontraron pacientes.', {}, { timeout: 1000 }),
+            await screen.findByText(
+                'No se encontraron pacientes.',
+                {},
+                { timeout: 1000 },
+            ),
         ).toBeInTheDocument();
     });
 
     it('shows results when returned', async () => {
         const patients: PatientResult[] = [
-            { id: 1, full_name: 'Juan Pérez', document_number: '001-0000001-1' },
-            { id: 2, full_name: 'María López', document_number: '001-0000002-2' },
+            {
+                id: 1,
+                full_name: 'Juan Pérez',
+                document_number: '001-0000001-1',
+            },
+            {
+                id: 2,
+                full_name: 'María López',
+                document_number: '001-0000002-2',
+            },
         ];
 
         vi.spyOn(global, 'fetch').mockResolvedValue({
@@ -93,13 +107,19 @@ describe('PatientSearch', () => {
 
         renderSearch({ query: 'ju' });
 
-        expect(await screen.findByText('Juan Pérez', {}, { timeout: 1000 })).toBeInTheDocument();
+        expect(
+            await screen.findByText('Juan Pérez', {}, { timeout: 1000 }),
+        ).toBeInTheDocument();
         expect(screen.getByText('María López')).toBeInTheDocument();
     });
 
     it('calls onSelect when a result is clicked', async () => {
         const patients: PatientResult[] = [
-            { id: 1, full_name: 'Juan Pérez', document_number: '001-0000001-1' },
+            {
+                id: 1,
+                full_name: 'Juan Pérez',
+                document_number: '001-0000001-1',
+            },
         ];
 
         vi.spyOn(global, 'fetch').mockResolvedValue({
@@ -109,7 +129,11 @@ describe('PatientSearch', () => {
 
         const { onSelect } = renderSearch({ query: 'ju' });
 
-        const btn = await screen.findByText('Juan Pérez', {}, { timeout: 1000 });
+        const btn = await screen.findByText(
+            'Juan Pérez',
+            {},
+            { timeout: 1000 },
+        );
         fireEvent.click(btn);
 
         expect(onSelect).toHaveBeenCalledWith(patients[0]);
@@ -170,9 +194,7 @@ describe('PatientSearch', () => {
 
         await waitFor(
             () =>
-                expect(fetchSpy).toHaveBeenCalledWith(
-                    `${customEndpoint}?q=ab`,
-                ),
+                expect(fetchSpy).toHaveBeenCalledWith(`${customEndpoint}?q=ab`),
             { timeout: 1000 },
         );
 

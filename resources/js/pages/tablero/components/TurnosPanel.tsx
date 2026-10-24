@@ -1,22 +1,5 @@
 import type { TurnRow } from '../types';
 
-const ESPERA_BAR = '#D97706';
-const CONSULTA_BAR = '#2563EB';
-
-const thStyle: React.CSSProperties = {
-    textAlign: 'left',
-    fontWeight: 600,
-    fontSize: 11.5,
-    letterSpacing: '.05em',
-    textTransform: 'uppercase',
-    color: '#56693f',
-    padding: '0 12px',
-    height: 40,
-    background: '#F6FAF1',
-    borderBottom: '1px solid #DCEBC9',
-    whiteSpace: 'nowrap',
-};
-
 interface TurnosPanelProps {
     turns: TurnRow[];
     activeTab: string;
@@ -25,6 +8,14 @@ interface TurnosPanelProps {
     onReorder: (id: number, dir: 'up' | 'down') => void;
 }
 
+const TURN_TABS_STATIC = [
+    { key: 'todas', label: 'Todas' },
+    { key: 'espera', label: 'En espera' },
+    { key: 'consulta', label: 'En consulta' },
+    { key: 'emergencia', label: 'Emergencia' },
+    { key: 'internados', label: 'Internados' },
+];
+
 export function TurnosPanel({
     turns,
     activeTab,
@@ -32,21 +23,17 @@ export function TurnosPanel({
     onPatchStatus,
     onReorder,
 }: TurnosPanelProps) {
-    const TURN_TABS = [
-        { key: 'todas', label: 'Todas', n: turns.length },
-        {
-            key: 'espera',
-            label: 'En espera',
-            n: turns.filter((t) => t.status === 'espera').length,
-        },
-        {
-            key: 'consulta',
-            label: 'En consulta',
-            n: turns.filter((t) => t.status === 'en_consulta').length,
-        },
-        { key: 'emergencia', label: 'Emergencia', n: 0 },
-        { key: 'internados', label: 'Internados', n: 0 },
-    ];
+    const TURN_TABS = TURN_TABS_STATIC.map((t) => ({
+        ...t,
+        n:
+            t.key === 'todas'
+                ? turns.length
+                : t.key === 'espera'
+                  ? turns.filter((r) => r.status === 'espera').length
+                  : t.key === 'consulta'
+                    ? turns.filter((r) => r.status === 'en_consulta').length
+                    : 0,
+    }));
 
     const filteredTurns =
         activeTab === 'todas'
@@ -58,128 +45,58 @@ export function TurnosPanel({
                 : [];
 
     return (
-        <div
-            style={{
-                background: '#fff',
-                border: '1px solid #e3e9e3',
-                borderRadius: 14,
-                overflow: 'hidden',
-            }}
-        >
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '16px 20px',
-                    gap: 16,
-                    flexWrap: 'wrap',
-                }}
-            >
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                    }}
-                >
-                    <span
-                        style={{
-                            fontFamily: 'Bitter,Georgia,serif',
-                            fontSize: 18,
-                            fontWeight: 600,
-                            color: '#1f2d22',
-                        }}
-                    >
+        <div className="overflow-hidden rounded-[14px] border border-card-border bg-card-bg">
+            {/* Header + tabs */}
+            <div className="flex flex-wrap items-center justify-between gap-4 p-[16px_20px]">
+                <div className="flex items-center gap-2.5">
+                    <span className="font-serif text-[18px] font-semibold text-text-heading">
                         Atenciones
                     </span>
-                    <span
-                        style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minWidth: 24,
-                            height: 22,
-                            padding: '0 7px',
-                            borderRadius: 999,
-                            background: '#F3F7F2',
-                            border: '1px solid #e3e9e3',
-                            fontSize: 12,
-                            fontWeight: 600,
-                        }}
-                    >
+                    <span className="inline-flex h-[22px] min-w-[24px] items-center justify-center rounded-full border border-card-border bg-app-bg px-[7px] text-xs font-semibold">
                         {filteredTurns.length}
                     </span>
                 </div>
-                <div
-                    style={{
-                        display: 'inline-flex',
-                        background: '#F3F7F2',
-                        border: '1px solid #e3e9e3',
-                        borderRadius: 11,
-                        padding: 3,
-                        gap: 2,
-                    }}
-                >
+                <div className="inline-flex gap-0.5 rounded-[11px] border border-card-border bg-app-bg p-[3px]">
                     {TURN_TABS.map((t) => (
                         <button
                             key={t.key}
                             onClick={() => onTabChange(t.key)}
-                            style={{
-                                whiteSpace: 'nowrap',
-                                height: 30,
-                                padding: '0 12px',
-                                border: 'none',
-                                borderRadius: 10,
-                                cursor: 'pointer',
-                                fontWeight: 500,
-                                background:
-                                    activeTab === t.key
-                                        ? '#fff'
-                                        : 'transparent',
-                                color:
-                                    activeTab === t.key
-                                        ? '#1f2d22'
-                                        : '#52605a',
-                                boxShadow:
-                                    activeTab === t.key
-                                        ? '0 1px 3px rgba(0,0,0,.1)'
-                                        : 'none',
-                                fontFamily: 'inherit',
-                                fontSize: 14,
-                            }}
+                            className={`h-[30px] cursor-pointer rounded-[10px] border-0 px-3 font-[inherit] text-sm font-medium whitespace-nowrap ${
+                                activeTab === t.key
+                                    ? 'bg-card-bg text-text-heading shadow-[0_1px_3px_rgba(0,0,0,.1)]'
+                                    : 'bg-transparent text-secondary-fg'
+                            }`}
                         >
                             {t.label}{' '}
-                            <span
-                                style={{
-                                    color: '#71717a',
-                                    fontWeight: 400,
-                                }}
-                            >
+                            <span className="font-normal text-muted">
                                 {t.n}
                             </span>
                         </button>
                     ))}
                 </div>
             </div>
-            <div style={{ overflowX: 'auto' }}>
-                <table
-                    style={{
-                        width: '100%',
-                        borderCollapse: 'collapse',
-                        minWidth: 800,
-                    }}
-                >
+
+            {/* Table */}
+            <div className="overflow-x-auto">
+                <table className="w-full min-w-[800px] border-collapse">
                     <thead>
                         <tr>
-                            <th style={{ ...thStyle, paddingLeft: 16 }}>
+                            <th className="h-10 border-b border-success-border bg-table-header-bg pr-3 pl-4 text-left text-[11.5px] font-semibold tracking-[.05em] whitespace-nowrap text-table-header-text uppercase">
                                 Turno
                             </th>
-                            <th style={thStyle}>Paciente</th>
-                            <th style={thStyle}>Médico</th>
-                            <th style={thStyle}>Especialidad</th>
-                            <th style={thStyle}>Llegada</th>
-                            <th style={{ ...thStyle, textAlign: 'right' }}>
+                            <th className="h-10 border-b border-success-border bg-table-header-bg px-3 text-left text-[11.5px] font-semibold tracking-[.05em] whitespace-nowrap text-table-header-text uppercase">
+                                Paciente
+                            </th>
+                            <th className="h-10 border-b border-success-border bg-table-header-bg px-3 text-left text-[11.5px] font-semibold tracking-[.05em] whitespace-nowrap text-table-header-text uppercase">
+                                Médico
+                            </th>
+                            <th className="h-10 border-b border-success-border bg-table-header-bg px-3 text-left text-[11.5px] font-semibold tracking-[.05em] whitespace-nowrap text-table-header-text uppercase">
+                                Especialidad
+                            </th>
+                            <th className="h-10 border-b border-success-border bg-table-header-bg px-3 text-left text-[11.5px] font-semibold tracking-[.05em] whitespace-nowrap text-table-header-text uppercase">
+                                Llegada
+                            </th>
+                            <th className="h-10 border-b border-success-border bg-table-header-bg px-3 text-right text-[11.5px] font-semibold tracking-[.05em] whitespace-nowrap text-table-header-text uppercase">
                                 Acciones
                             </th>
                         </tr>
@@ -189,284 +106,116 @@ export function TurnosPanel({
                             <tr>
                                 <td
                                     colSpan={6}
-                                    style={{
-                                        padding: '32px 20px',
-                                        textAlign: 'center',
-                                        color: '#8a948e',
-                                        fontSize: 13,
-                                    }}
+                                    className="p-[32px_20px] text-center text-[13px] text-text-tertiary"
                                 >
-                                    No hay pacientes en espera en este
-                                    momento.
+                                    No hay pacientes en espera en este momento.
                                 </td>
                             </tr>
                         ) : (
-                            filteredTurns.map((r) => {
-                                const bar =
-                                    r.status === 'en_consulta'
-                                        ? CONSULTA_BAR
-                                        : ESPERA_BAR;
-                                return (
-                                    <tr
-                                        key={r.id}
-                                        style={{ background: '#fff' }}
+                            filteredTurns.map((r) => (
+                                <tr key={r.id} className="bg-card-bg">
+                                    <td
+                                        className={`border-b border-l-[3px] border-divider p-[12px_16px_12px_13px] font-semibold tabular-nums ${r.status === 'en_consulta' ? 'border-l-consulta-dot' : 'border-l-espera-dot'}`}
                                     >
-                                        <td
-                                            style={{
-                                                padding:
-                                                    '12px 16px 12px 13px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                                borderLeft: `3px solid ${bar}`,
-                                                fontWeight: 600,
-                                                fontVariantNumeric:
-                                                    'tabular-nums',
-                                            }}
-                                        >
-                                            T-
-                                            {String(r.turn_number).padStart(
-                                                2,
-                                                '0',
-                                            )}
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                            }}
-                                        >
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 10,
-                                                }}
-                                            >
-                                                <span
-                                                    style={{
-                                                        width: 34,
-                                                        height: 34,
-                                                        flexShrink: 0,
-                                                        borderRadius: '50%',
-                                                        background:
-                                                            '#EEF6E2',
-                                                        color: '#2E8B3E',
-                                                        display:
-                                                            'inline-flex',
-                                                        alignItems:
-                                                            'center',
-                                                        justifyContent:
-                                                            'center',
-                                                        fontSize: 12,
-                                                        fontWeight: 600,
-                                                    }}
-                                                >
-                                                    {r.patient_initials}
-                                                </span>
-                                                <div>
-                                                    <div
-                                                        style={{
-                                                            fontWeight: 600,
-                                                        }}
-                                                    >
-                                                        {r.patient_name}
-                                                    </div>
-                                                    <div
-                                                        style={{
-                                                            fontSize: 12,
-                                                            color: '#71717a',
-                                                        }}
-                                                    >
-                                                        {r.patient_document}{' '}
-                                                        · {r.patient_age}{' '}
-                                                        años ·{' '}
-                                                        {r.patient_sex}
-                                                    </div>
+                                        T-
+                                        {String(r.turn_number).padStart(2, '0')}
+                                    </td>
+                                    <td className="border-b border-divider p-3">
+                                        <div className="flex items-center gap-2.5">
+                                            <span className="inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-accent-bg text-xs font-semibold text-primary">
+                                                {r.patient_initials}
+                                            </span>
+                                            <div>
+                                                <div className="font-semibold">
+                                                    {r.patient_name}
+                                                </div>
+                                                <div className="text-xs text-muted">
+                                                    {r.patient_document} ·{' '}
+                                                    {r.patient_age} años ·{' '}
+                                                    {r.patient_sex}
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                                color: '#52525b',
-                                            }}
-                                        >
-                                            {r.doctor_name}
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                                color: '#71717a',
-                                                fontSize: 13,
-                                            }}
-                                        >
-                                            {r.doctor_specialty}
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                                fontVariantNumeric:
-                                                    'tabular-nums',
-                                                color: '#52525b',
-                                            }}
-                                        >
-                                            {r.arrived_at}
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                                textAlign: 'right',
-                                            }}
-                                        >
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    justifyContent:
-                                                        'flex-end',
-                                                    gap: 4,
-                                                }}
-                                            >
-                                                {r.status === 'espera' && (
-                                                    <>
-                                                        <button
-                                                            onClick={() =>
-                                                                onReorder(
-                                                                    r.id,
-                                                                    'up',
-                                                                )
-                                                            }
-                                                            title="Subir en cola"
-                                                            style={{
-                                                                height: 28,
-                                                                width: 28,
-                                                                borderRadius: 7,
-                                                                border: '1px solid #dfe7df',
-                                                                background:
-                                                                    '#F6F9F5',
-                                                                cursor: 'pointer',
-                                                                fontSize: 13,
-                                                                fontFamily:
-                                                                    'inherit',
-                                                            }}
-                                                        >
-                                                            ↑
-                                                        </button>
-                                                        <button
-                                                            onClick={() =>
-                                                                onReorder(
-                                                                    r.id,
-                                                                    'down',
-                                                                )
-                                                            }
-                                                            title="Bajar en cola"
-                                                            style={{
-                                                                height: 28,
-                                                                width: 28,
-                                                                borderRadius: 7,
-                                                                border: '1px solid #dfe7df',
-                                                                background:
-                                                                    '#F6F9F5',
-                                                                cursor: 'pointer',
-                                                                fontSize: 13,
-                                                                fontFamily:
-                                                                    'inherit',
-                                                            }}
-                                                        >
-                                                            ↓
-                                                        </button>
-                                                        <button
-                                                            onClick={() =>
-                                                                onPatchStatus(
-                                                                    r.id,
-                                                                    'en_consulta',
-                                                                )
-                                                            }
-                                                            style={{
-                                                                height: 28,
-                                                                padding:
-                                                                    '0 10px',
-                                                                borderRadius: 7,
-                                                                border: 'none',
-                                                                background:
-                                                                    '#2563EB',
-                                                                color: '#fff',
-                                                                fontWeight: 500,
-                                                                fontSize: 12,
-                                                                cursor: 'pointer',
-                                                                fontFamily:
-                                                                    'inherit',
-                                                            }}
-                                                        >
-                                                            Llamar
-                                                        </button>
-                                                    </>
-                                                )}
-                                                {r.status ===
-                                                    'en_consulta' && (
+                                        </div>
+                                    </td>
+                                    <td className="border-b border-divider p-3 text-text-dim">
+                                        {r.doctor_name}
+                                    </td>
+                                    <td className="border-b border-divider p-3 text-[13px] text-muted">
+                                        {r.doctor_specialty}
+                                    </td>
+                                    <td className="border-b border-divider p-3 text-text-dim tabular-nums">
+                                        {r.arrived_at}
+                                    </td>
+                                    <td className="border-b border-divider p-3 text-right">
+                                        <div className="flex justify-end gap-1">
+                                            {r.status === 'espera' && (
+                                                <>
+                                                    <button
+                                                        onClick={() =>
+                                                            onReorder(
+                                                                r.id,
+                                                                'up',
+                                                            )
+                                                        }
+                                                        title="Subir en cola"
+                                                        className="h-[28px] w-[28px] cursor-pointer rounded-[7px] border border-secondary-border bg-secondary-bg font-[inherit] text-[13px]"
+                                                    >
+                                                        ↑
+                                                    </button>
+                                                    <button
+                                                        onClick={() =>
+                                                            onReorder(
+                                                                r.id,
+                                                                'down',
+                                                            )
+                                                        }
+                                                        title="Bajar en cola"
+                                                        className="h-[28px] w-[28px] cursor-pointer rounded-[7px] border border-secondary-border bg-secondary-bg font-[inherit] text-[13px]"
+                                                    >
+                                                        ↓
+                                                    </button>
                                                     <button
                                                         onClick={() =>
                                                             onPatchStatus(
                                                                 r.id,
-                                                                'atendido',
+                                                                'en_consulta',
                                                             )
                                                         }
-                                                        style={{
-                                                            height: 28,
-                                                            padding:
-                                                                '0 10px',
-                                                            borderRadius: 7,
-                                                            border: 'none',
-                                                            background:
-                                                                '#2E8B3E',
-                                                            color: '#fff',
-                                                            fontWeight: 500,
-                                                            fontSize: 12,
-                                                            cursor: 'pointer',
-                                                            fontFamily:
-                                                                'inherit',
-                                                        }}
+                                                        className="h-[28px] cursor-pointer rounded-[7px] border-0 bg-consulta-dot px-[10px] font-[inherit] text-xs font-medium text-white"
                                                     >
-                                                        ✓ Atendido
+                                                        Llamar
                                                     </button>
-                                                )}
+                                                </>
+                                            )}
+                                            {r.status === 'en_consulta' && (
                                                 <button
                                                     onClick={() =>
                                                         onPatchStatus(
                                                             r.id,
-                                                            'no_asistio',
+                                                            'atendido',
                                                         )
                                                     }
-                                                    title="No asistió"
-                                                    style={{
-                                                        height: 28,
-                                                        width: 28,
-                                                        borderRadius: 7,
-                                                        border: '1px solid #dfe7df',
-                                                        background:
-                                                            '#F6F9F5',
-                                                        color: '#71717a',
-                                                        cursor: 'pointer',
-                                                        fontSize: 12,
-                                                        fontFamily:
-                                                            'inherit',
-                                                    }}
+                                                    className="h-[28px] cursor-pointer rounded-[7px] border-0 bg-primary px-[10px] font-[inherit] text-xs font-medium text-white"
                                                 >
-                                                    ✕
+                                                    ✓ Atendido
                                                 </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })
+                                            )}
+                                            <button
+                                                onClick={() =>
+                                                    onPatchStatus(
+                                                        r.id,
+                                                        'no_asistio',
+                                                    )
+                                                }
+                                                title="No asistió"
+                                                className="h-[28px] w-[28px] cursor-pointer rounded-[7px] border border-secondary-border bg-secondary-bg font-[inherit] text-xs text-muted"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
                         )}
                     </tbody>
                 </table>

@@ -16,12 +16,7 @@ const PAGES_DIR = join(import.meta.dirname, '../pages');
  * Pages / directories that have been fully migrated to design tokens.
  * Add new entries here after migrating a page.
  */
-const CLEAN_PAGES = [
-    'pacientes/index.tsx',
-    'registro/index.tsx',
-    'citas/',
-    'tablero/',
-];
+const CLEAN_PAGES = ['pacientes/index.tsx', 'registro/index.tsx', 'tablero/'];
 
 // Matches a 3- or 6-digit hex color, e.g. #2E8B3E or #333
 const HEX_COLOR_RE = /#[0-9a-fA-F]{3,6}\b/;

@@ -1,5 +1,10 @@
 import { router } from '@inertiajs/react';
 import type { CitaRow, DoctorOption } from '../types';
+import {
+    docPalette,
+    CITA_STATUS_COLORS,
+    BADGE_FALLBACK,
+} from '@/components/cemerog/palettes';
 
 const TYPE_LABELS: Record<string, string> = {
     consulta: 'Consulta',
@@ -7,40 +12,11 @@ const TYPE_LABELS: Record<string, string> = {
     primera_vez: 'Primera vez',
 };
 
-const CITA_STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
-    pendiente: { bg: '#FEF3C7', fg: '#92400E' },
-    confirmada: { bg: '#DBEAFE', fg: '#1E40AF' },
-    no_asistio: { bg: '#F4F4F5', fg: '#52525B' },
-};
-
 const CITA_STATUS_LABELS: Record<string, string> = {
     pendiente: 'Pendiente',
     confirmada: 'Confirmada',
     no_asistio: 'No asistió',
-};
-
-const DOC_PALETTES = [
-    { bg: '#EEF6E2', fg: '#2E8B3E' },
-    { bg: '#DBEAFE', fg: '#1E40AF' },
-    { bg: '#EDE9FE', fg: '#5B21B6' },
-    { bg: '#FCE7F3', fg: '#9D174D' },
-    { bg: '#CFFAFE', fg: '#155E75' },
-    { bg: '#FEF3C7', fg: '#92400E' },
-];
-const docPalette = (id: number) => DOC_PALETTES[id % DOC_PALETTES.length];
-
-const thStyle: React.CSSProperties = {
-    textAlign: 'left',
-    fontWeight: 600,
-    fontSize: 11.5,
-    letterSpacing: '.05em',
-    textTransform: 'uppercase',
-    color: '#56693f',
-    padding: '0 12px',
-    height: 40,
-    background: '#F6FAF1',
-    borderBottom: '1px solid #DCEBC9',
-    whiteSpace: 'nowrap',
+    cancelada: 'Cancelada',
 };
 
 interface CitasHoyPanelProps {
@@ -64,58 +40,21 @@ export function CitasHoyPanel({
     const visibleCitas = citaTab === 'pendientes' ? pendingCitas : appointments;
 
     return (
-        <div
-            style={{
-                background: '#fff',
-                border: '1px solid #e3e9e3',
-                borderRadius: 14,
-                overflow: 'hidden',
-            }}
-        >
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '14px 16px',
-                    gap: 12,
-                    flexWrap: 'wrap',
-                }}
-            >
+        <div className="overflow-hidden rounded-[14px] border border-card-border bg-card-bg">
+            {/* Header */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-[14px_16px]">
                 <div>
-                    <div
-                        style={{
-                            fontFamily: 'Bitter,Georgia,serif',
-                            fontWeight: 600,
-                            fontSize: 16,
-                            color: '#1f2d22',
-                        }}
-                    >
+                    <div className="font-serif text-[16px] font-semibold text-text-heading">
                         Citas de hoy
                     </div>
-                    <div style={{ fontSize: 13, color: '#71717a' }}>
+                    <div className="text-[13px] text-muted">
                         {appointments.length}{' '}
                         {appointments.length === 1 ? 'cita' : 'citas'} ·{' '}
                         {pendingCitas.length} sin turno asignado
                     </div>
                 </div>
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                    }}
-                >
-                    <div
-                        style={{
-                            display: 'inline-flex',
-                            background: '#F3F7F2',
-                            border: '1px solid #e3e9e3',
-                            borderRadius: 11,
-                            padding: 3,
-                            gap: 2,
-                        }}
-                    >
+                <div className="flex items-center gap-2.5">
+                    <div className="inline-flex gap-0.5 rounded-[11px] border border-card-border bg-app-bg p-[3px]">
                         {[
                             {
                                 key: 'pendientes',
@@ -131,37 +70,14 @@ export function CitasHoyPanel({
                             <button
                                 key={t.key}
                                 onClick={() => onCitaTabChange(t.key)}
-                                style={{
-                                    whiteSpace: 'nowrap',
-                                    height: 30,
-                                    padding: '0 12px',
-                                    border: 'none',
-                                    borderRadius: 8,
-                                    cursor: 'pointer',
-                                    fontWeight: 500,
-                                    fontSize: 13,
-                                    background:
-                                        citaTab === t.key
-                                            ? '#fff'
-                                            : 'transparent',
-                                    color:
-                                        citaTab === t.key
-                                            ? '#1f2d22'
-                                            : '#52605a',
-                                    boxShadow:
-                                        citaTab === t.key
-                                            ? '0 1px 3px rgba(0,0,0,.1)'
-                                            : 'none',
-                                    fontFamily: 'inherit',
-                                }}
+                                className={`h-[30px] cursor-pointer rounded-[8px] border-0 px-3 font-[inherit] text-[13px] font-medium whitespace-nowrap ${
+                                    citaTab === t.key
+                                        ? 'bg-card-bg text-text-heading shadow-[0_1px_3px_rgba(0,0,0,.1)]'
+                                        : 'bg-transparent text-secondary-fg'
+                                }`}
                             >
                                 {t.label}{' '}
-                                <span
-                                    style={{
-                                        color: '#a1a1aa',
-                                        fontVariantNumeric: 'tabular-nums',
-                                    }}
-                                >
+                                <span className="text-muted-light tabular-nums">
                                     {t.n}
                                 </span>
                             </button>
@@ -169,35 +85,16 @@ export function CitasHoyPanel({
                     </div>
                     <button
                         onClick={() => router.visit('/citas')}
-                        style={{
-                            whiteSpace: 'nowrap',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            height: 36,
-                            padding: '0 14px',
-                            borderRadius: 10,
-                            border: '1px solid #dfe7df',
-                            background: '#F6F9F5',
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                            fontFamily: 'inherit',
-                            fontSize: 14,
-                        }}
+                        className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-[inherit] text-sm font-medium whitespace-nowrap"
                     >
                         📅 Ver agenda
                     </button>
                 </div>
             </div>
-            <div style={{ overflowX: 'auto' }}>
-                <table
-                    style={{
-                        width: '100%',
-                        borderCollapse: 'collapse',
-                        fontSize: 13.5,
-                        minWidth: 860,
-                    }}
-                >
+
+            {/* Table */}
+            <div className="overflow-x-auto">
+                <table className="w-full min-w-[860px] border-collapse text-[13.5px]">
                     <thead>
                         <tr>
                             {[
@@ -211,13 +108,7 @@ export function CitasHoyPanel({
                             ].map((h) => (
                                 <th
                                     key={h}
-                                    style={{
-                                        ...thStyle,
-                                        textAlign:
-                                            h === 'Acciones'
-                                                ? 'right'
-                                                : 'left',
-                                    }}
+                                    className={`h-10 border-b border-success-border bg-table-header-bg px-3 text-[11.5px] font-semibold tracking-[.05em] whitespace-nowrap text-table-header-text uppercase ${h === 'Acciones' ? 'text-right' : 'text-left'}`}
                                 >
                                     {h}
                                 </th>
@@ -229,12 +120,7 @@ export function CitasHoyPanel({
                             <tr>
                                 <td
                                     colSpan={7}
-                                    style={{
-                                        padding: '32px 20px',
-                                        textAlign: 'center',
-                                        color: '#8a948e',
-                                        fontSize: 13,
-                                    }}
+                                    className="p-[32px_20px] text-center text-[13px] text-text-tertiary"
                                 >
                                     No hay citas{' '}
                                     {citaTab === 'pendientes'
@@ -245,215 +131,94 @@ export function CitasHoyPanel({
                             </tr>
                         ) : (
                             visibleCitas.map((c) => {
-                                const stColor = CITA_STATUS_COLORS[
-                                    c.status
-                                ] ?? { bg: '#F4F4F5', fg: '#52525B' };
-                                const rowBg = c.has_turn
-                                    ? '#F8FBF6'
-                                    : '#fff';
+                                // dynamic-style: cita status badge — bg/fg vary per c.status at runtime
+                                const stColor =
+                                    CITA_STATUS_COLORS[c.status] ??
+                                    BADGE_FALLBACK;
+                                // dynamic-style: doctor avatar bg/fg from palette indexed by c.doctor_id at runtime
                                 const pal = docPalette(c.doctor_id);
                                 return (
                                     <tr
                                         key={c.id}
-                                        style={{ background: rowBg }}
+                                        className={
+                                            c.has_turn
+                                                ? 'bg-list-row-bg'
+                                                : 'bg-card-bg'
+                                        }
                                     >
                                         <td
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                                fontWeight: 600,
-                                                fontVariantNumeric:
-                                                    'tabular-nums',
-                                                color: c.has_turn
-                                                    ? '#71717a'
-                                                    : '#1f2d22',
-                                            }}
+                                            className={`border-b border-divider p-[10px_12px] font-semibold tabular-nums ${c.has_turn ? 'text-muted' : 'text-text-heading'}`}
                                         >
                                             {c.appointment_time ?? '—'}
                                         </td>
-                                        <td
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                            }}
-                                        >
+                                        <td className="border-b border-divider p-[10px_12px]">
                                             <div
-                                                style={{
-                                                    fontWeight: 500,
-                                                    color: c.has_turn
-                                                        ? '#71717a'
-                                                        : '#1f2d22',
-                                                }}
+                                                className={`font-medium ${c.has_turn ? 'text-muted' : 'text-text-heading'}`}
                                             >
                                                 {c.patient_name}
                                             </div>
                                             {c.notes && (
-                                                <div
-                                                    style={{
-                                                        fontSize: 12,
-                                                        color: '#71717a',
-                                                    }}
-                                                >
+                                                <div className="text-xs text-muted">
                                                     {c.notes.length > 40
-                                                        ? c.notes.slice(
-                                                              0,
-                                                              40,
-                                                          ) + '…'
+                                                        ? c.notes.slice(0, 40) +
+                                                          '…'
                                                         : c.notes}
                                                 </div>
                                             )}
                                         </td>
-                                        <td
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                                whiteSpace: 'nowrap',
-                                            }}
-                                        >
+                                        <td className="border-b border-divider p-[10px_12px] whitespace-nowrap">
                                             {c.patient_phone ? (
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems:
-                                                            'center',
-                                                        gap: 6,
-                                                    }}
-                                                >
+                                                <div className="flex items-center gap-1.5">
                                                     <span
-                                                        style={{
-                                                            fontVariantNumeric:
-                                                                'tabular-nums',
-                                                            color: c.has_turn
-                                                                ? '#71717a'
-                                                                : '#1f2d22',
-                                                        }}
+                                                        className={`tabular-nums ${c.has_turn ? 'text-muted' : 'text-text-heading'}`}
                                                     >
                                                         {c.patient_phone}
                                                     </span>
                                                     <a
                                                         href={`tel:${c.patient_phone}`}
-                                                        style={{
-                                                            width: 28,
-                                                            height: 28,
-                                                            borderRadius: 8,
-                                                            border: '1px solid #e4e4e7',
-                                                            display:
-                                                                'inline-flex',
-                                                            alignItems:
-                                                                'center',
-                                                            justifyContent:
-                                                                'center',
-                                                            fontSize: 14,
-                                                        }}
+                                                        className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-[8px] border border-input-border text-sm"
                                                     >
                                                         📞
                                                     </a>
                                                 </div>
                                             ) : (
-                                                <span
-                                                    style={{
-                                                        color: '#a1a1aa',
-                                                    }}
-                                                >
+                                                <span className="text-muted-light">
                                                     —
                                                 </span>
                                             )}
                                         </td>
-                                        <td
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                                whiteSpace: 'nowrap',
-                                            }}
-                                        >
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 8,
-                                                }}
-                                            >
+                                        <td className="border-b border-divider p-[10px_12px] whitespace-nowrap">
+                                            <div className="flex items-center gap-2">
                                                 <span
-                                                    // dynamic-style: doctor avatar bg/fg from palette indexed by doctor_id at runtime
                                                     style={{
-                                                        width: 22,
-                                                        height: 22,
-                                                        flexShrink: 0,
-                                                        borderRadius: '50%',
-                                                        background: pal.bg,
+                                                        // dynamic-style: doctor avatar bg/fg from DOC_PALETTES indexed by doctor_id at runtime
+                                                        backgroundColor: pal.bg,
                                                         color: pal.fg,
-                                                        display:
-                                                            'inline-flex',
-                                                        alignItems:
-                                                            'center',
-                                                        justifyContent:
-                                                            'center',
-                                                        fontSize: 10,
-                                                        fontWeight: 600,
                                                     }}
+                                                    className="inline-flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full text-[10px] font-semibold"
                                                 >
                                                     {(() => {
-                                                        const d =
-                                                            doctors.find(
-                                                                (x) =>
-                                                                    x.id ===
-                                                                    c.doctor_id,
-                                                            );
+                                                        const d = doctors.find(
+                                                            (x) =>
+                                                                x.id ===
+                                                                c.doctor_id,
+                                                        );
                                                         return (
-                                                            d?.initials ??
-                                                            '?'
+                                                            d?.initials ?? '?'
                                                         );
                                                     })()}
                                                 </span>
-                                                <span
-                                                    style={{
-                                                        color: '#52525b',
-                                                    }}
-                                                >
+                                                <span className="text-text-dim">
                                                     {c.doctor_name}
                                                 </span>
                                             </div>
                                         </td>
-                                        <td
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                                whiteSpace: 'nowrap',
-                                                color: '#52525b',
-                                            }}
-                                        >
+                                        <td className="border-b border-divider p-[10px_12px] whitespace-nowrap text-text-dim">
                                             {TYPE_LABELS[c.type] ?? c.type}
                                         </td>
-                                        <td
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                            }}
-                                        >
+                                        <td className="border-b border-divider p-[10px_12px]">
                                             {c.has_turn ? (
-                                                <span
-                                                    style={{
-                                                        display:
-                                                            'inline-flex',
-                                                        alignItems:
-                                                            'center',
-                                                        whiteSpace:
-                                                            'nowrap',
-                                                        padding: '2px 9px',
-                                                        borderRadius: 999,
-                                                        fontSize: 12,
-                                                        fontWeight: 600,
-                                                        background:
-                                                            '#DCFCE7',
-                                                        color: '#166534',
-                                                    }}
-                                                >
+                                                <span className="inline-flex items-center rounded-full bg-cita-atendida-bg px-[9px] py-[2px] text-xs font-semibold whitespace-nowrap text-cita-atendida-fg">
                                                     ✓ T-
                                                     {String(
                                                         c.turn_number,
@@ -462,22 +227,13 @@ export function CitasHoyPanel({
                                                 </span>
                                             ) : (
                                                 <span
-                                                    // dynamic-style: cita status badge color from CITA_STATUS_COLORS map at runtime
                                                     style={{
-                                                        display:
-                                                            'inline-flex',
-                                                        alignItems:
-                                                            'center',
-                                                        whiteSpace:
-                                                            'nowrap',
-                                                        padding: '2px 9px',
-                                                        borderRadius: 999,
-                                                        fontSize: 12,
-                                                        fontWeight: 600,
-                                                        background:
+                                                        // dynamic-style: cita status badge — bg/fg vary per c.status at runtime
+                                                        backgroundColor:
                                                             stColor.bg,
                                                         color: stColor.fg,
                                                     }}
+                                                    className="inline-flex items-center rounded-full px-[9px] py-[2px] text-xs font-semibold whitespace-nowrap"
                                                 >
                                                     {CITA_STATUS_LABELS[
                                                         c.status
@@ -485,49 +241,14 @@ export function CitasHoyPanel({
                                                 </span>
                                             )}
                                         </td>
-                                        <td
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                                textAlign: 'right',
-                                            }}
-                                        >
+                                        <td className="border-b border-divider p-[10px_12px] text-right">
                                             {!c.has_turn && (
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        justifyContent:
-                                                            'flex-end',
-                                                        gap: 6,
-                                                    }}
-                                                >
+                                                <div className="flex justify-end gap-1.5">
                                                     <button
                                                         onClick={() =>
                                                             onAssign(c)
                                                         }
-                                                        style={{
-                                                            whiteSpace:
-                                                                'nowrap',
-                                                            display:
-                                                                'inline-flex',
-                                                            alignItems:
-                                                                'center',
-                                                            gap: 6,
-                                                            height: 30,
-                                                            padding:
-                                                                '0 10px',
-                                                            borderRadius: 8,
-                                                            border: 'none',
-                                                            background:
-                                                                '#2E8B3E',
-                                                            color: '#fff',
-                                                            fontWeight: 500,
-                                                            fontSize: 12.5,
-                                                            cursor: 'pointer',
-                                                            fontFamily:
-                                                                'inherit',
-                                                        }}
+                                                        className="inline-flex h-[30px] cursor-pointer items-center gap-1.5 rounded-[8px] border-0 bg-primary px-[10px] font-[inherit] text-[12.5px] font-medium whitespace-nowrap text-white"
                                                     >
                                                         + Asignar turno
                                                     </button>
@@ -535,28 +256,7 @@ export function CitasHoyPanel({
                                                         onClick={() =>
                                                             onNoShow(c)
                                                         }
-                                                        style={{
-                                                            whiteSpace:
-                                                                'nowrap',
-                                                            display:
-                                                                'inline-flex',
-                                                            alignItems:
-                                                                'center',
-                                                            gap: 6,
-                                                            height: 30,
-                                                            padding:
-                                                                '0 10px',
-                                                            borderRadius: 8,
-                                                            border: '1px solid #dfe7df',
-                                                            background:
-                                                                '#F6F9F5',
-                                                            color: '#52525b',
-                                                            fontWeight: 500,
-                                                            fontSize: 12.5,
-                                                            cursor: 'pointer',
-                                                            fontFamily:
-                                                                'inherit',
-                                                        }}
+                                                        className="inline-flex h-[30px] cursor-pointer items-center gap-1.5 rounded-[8px] border border-secondary-border bg-secondary-bg px-[10px] font-[inherit] text-[12.5px] font-medium whitespace-nowrap text-text-dim"
                                                     >
                                                         ✕ No asistió
                                                     </button>

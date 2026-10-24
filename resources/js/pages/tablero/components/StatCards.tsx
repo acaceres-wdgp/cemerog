@@ -4,85 +4,72 @@ interface StatCardsProps {
     turns: TurnRow[];
 }
 
+type StatConfig = {
+    label: string;
+    n: number;
+    dotClass: string;
+    numClass: string;
+    sub: string;
+};
+
 export function StatCards({ turns }: StatCardsProps) {
-    const STATS = [
+    const STATS: StatConfig[] = [
         {
             label: 'En espera',
             n: turns.filter((t) => t.status === 'espera').length,
-            dot: '#D97706',
-            nc: '#92400E',
+            dotClass: 'bg-espera-dot',
+            numClass: 'text-espera-num',
             sub: 'Sala de espera',
         },
         {
             label: 'En consulta',
             n: turns.filter((t) => t.status === 'en_consulta').length,
-            dot: '#2563EB',
-            nc: '#1E40AF',
+            dotClass: 'bg-consulta-dot',
+            numClass: 'text-consulta-num',
             sub: '—',
         },
-        { label: 'Emergencia', n: 0, dot: '#DC2626', nc: '#991B1B', sub: '—' },
-        { label: 'Internados', n: 0, dot: '#7C3AED', nc: '#5B21B6', sub: '—' },
-        { label: 'Total hoy', n: 0, dot: '#2E8B3E', nc: '#1f2d22', sub: '—' },
+        {
+            label: 'Emergencia',
+            n: 0,
+            dotClass: 'bg-emergencia-dot',
+            numClass: 'text-emergencia-num',
+            sub: '—',
+        },
+        {
+            label: 'Internados',
+            n: 0,
+            dotClass: 'bg-internado-dot',
+            numClass: 'text-internado-num',
+            sub: '—',
+        },
+        {
+            label: 'Total hoy',
+            n: 0,
+            dotClass: 'bg-primary',
+            numClass: 'text-text-heading',
+            sub: '—',
+        },
     ];
 
     return (
-        <div
-            style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))',
-                gap: 12,
-            }}
-        >
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3">
             {STATS.map((k) => (
                 <div
                     key={k.label}
-                    style={{
-                        background: '#fff',
-                        border: '1px solid #e3e9e3',
-                        borderRadius: 14,
-                        padding: '18px 20px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 6,
-                    }}
+                    className="flex flex-col gap-1.5 rounded-[14px] border border-card-border bg-card-bg p-[18px_20px]"
                 >
-                    <div
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            fontSize: 11.5,
-                            fontWeight: 600,
-                            letterSpacing: '.06em',
-                            textTransform: 'uppercase',
-                            color: '#52605a',
-                            whiteSpace: 'nowrap',
-                        }}
-                    >
+                    <div className="flex items-center gap-2 text-[11.5px] font-semibold tracking-[.06em] whitespace-nowrap text-secondary-fg uppercase">
                         <span
-                            style={{
-                                flexShrink: 0,
-                                width: 7,
-                                height: 7,
-                                borderRadius: '50%',
-                                background: k.dot,
-                            }}
+                            className={`h-[7px] w-[7px] shrink-0 rounded-full ${k.dotClass}`}
                         />
                         {k.label}
                     </div>
                     <div
-                        style={{
-                            fontFamily: 'Bitter,Georgia,serif',
-                            fontSize: 34,
-                            fontWeight: 700,
-                            lineHeight: 1.1,
-                            color: k.nc,
-                            fontVariantNumeric: 'tabular-nums',
-                        }}
+                        className={`font-serif text-[34px] leading-[1.1] font-bold tabular-nums ${k.numClass}`}
                     >
                         {k.n}
                     </div>
-                    <div style={{ fontSize: 12.5, color: '#8a948e' }}>
+                    <div className="text-[12.5px] text-text-tertiary">
                         {k.sub}
                     </div>
                 </div>

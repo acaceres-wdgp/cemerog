@@ -1,28 +1,19 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
+import FormDialog from '@/components/cemerog/FormDialog';
 import PatientSearch from '@/components/cemerog/PatientSearch';
 import type { PatientResult } from '@/components/cemerog/PatientSearch';
 import type { DoctorOption } from '../types';
 
-const inputStyle: React.CSSProperties = {
-    height: 36,
-    width: '100%',
-    padding: '0 12px',
-    border: '1px solid #e4e4e7',
-    borderRadius: 10,
-    outline: 'none',
-    fontFamily: 'inherit',
-    fontSize: 14,
-    boxSizing: 'border-box',
-};
+interface AgregarTurnoModalProps {
+    onClose: () => void;
+    doctors: DoctorOption[];
+}
 
 export function AgregarTurnoModal({
     onClose,
     doctors,
-}: {
-    onClose: () => void;
-    doctors: DoctorOption[];
-}) {
+}: AgregarTurnoModalProps) {
     const [patientQuery, setPatientQuery] = useState('');
     const [selectedPatient, setSelectedPatient] =
         useState<PatientResult | null>(null);
@@ -62,234 +53,76 @@ export function AgregarTurnoModal({
     }
 
     return (
-        <>
-            <div
-                onClick={onClose}
-                style={{
-                    position: 'fixed',
-                    inset: 0,
-                    zIndex: 40,
-                    background: 'rgba(0,0,0,.4)',
-                }}
-            />
-            <div
-                style={{
-                    position: 'fixed',
-                    zIndex: 41,
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%,-50%)',
-                    width: 460,
-                    maxWidth: '95vw',
-                    background: '#fff',
-                    borderRadius: 16,
-                    boxShadow: '0 24px 64px -16px rgba(16,40,24,.35)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'hidden',
-                }}
-            >
-                <div
-                    style={{
-                        padding: '16px 20px',
-                        borderBottom: '1px solid #eef0ec',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                    }}
-                >
-                    <span
-                        style={{
-                            fontFamily: 'Bitter,Georgia,serif',
-                            fontWeight: 600,
-                            fontSize: 17,
-                            color: '#1f2d22',
-                        }}
-                    >
-                        Agregar turno
-                    </span>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        style={{
-                            width: 30,
-                            height: 30,
-                            border: 'none',
-                            borderRadius: 8,
-                            background: '#F3F7F2',
-                            cursor: 'pointer',
-                            fontSize: 16,
-                        }}
-                    >
-                        ✕
-                    </button>
+        <FormDialog
+            open={true}
+            onOpenChange={(open) => {
+                if (!open) onClose();
+            }}
+            title="Agregar turno"
+            onSubmit={handleSubmit}
+            isLoading={processing}
+            submitLabel={processing ? 'Asignando…' : '+ Asignar turno'}
+            maxWidth="max-w-[460px] w-[95vw]"
+        >
+            <div className="flex flex-col gap-3.5">
+                <div className="rounded-[10px] border border-accent-tip-border bg-accent-bg px-[14px] py-[10px] text-[13px] text-primary">
+                    Turno sin cita previa. El paciente se agrega directamente a
+                    la cola de espera.
                 </div>
-                <form onSubmit={handleSubmit}>
-                    <div
-                        style={{
-                            padding: '16px 20px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 14,
+                <label className="flex flex-col gap-1.5 text-sm font-medium">
+                    <span>Paciente *</span>
+                    <PatientSearch
+                        selected={selectedPatient}
+                        query={patientQuery}
+                        onQueryChange={(v) => setPatientQuery(v)}
+                        onSelect={(p) => {
+                            setSelectedPatient(p);
+                            setPatientQuery('');
                         }}
-                    >
-                        <div
-                            style={{
-                                padding: '10px 14px',
-                                background: '#EEF6E2',
-                                border: '1px solid #c6e5a8',
-                                borderRadius: 10,
-                                fontSize: 13,
-                                color: '#2E8B3E',
-                            }}
-                        >
-                            Turno sin cita previa. El paciente se agrega
-                            directamente a la cola de espera.
-                        </div>
-                        <label
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 6,
-                                fontWeight: 500,
-                                fontSize: 14,
-                            }}
-                        >
-                            <span>Paciente *</span>
-                            <PatientSearch
-                                selected={selectedPatient}
-                                query={patientQuery}
-                                onQueryChange={(v) => setPatientQuery(v)}
-                                onSelect={(p) => {
-                                    setSelectedPatient(p);
-                                    setPatientQuery('');
-                                }}
-                                onClear={() => {
-                                    setSelectedPatient(null);
-                                    setPatientQuery('');
-                                }}
-                                error={errors.patient_id}
-                                endpoint="/citas/pacientes/buscar"
-                            />
-                        </label>
-                        <label
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 6,
-                                fontWeight: 500,
-                                fontSize: 14,
-                            }}
-                        >
-                            <span>Médico *</span>
-                            <select
-                                value={doctorId}
-                                onChange={(e) => setDoctorId(e.target.value)}
-                                style={{
-                                    ...inputStyle,
-                                    borderColor: errors.doctor_id
-                                        ? '#b91c1c'
-                                        : '#e4e4e7',
-                                    cursor: 'pointer',
-                                }}
-                            >
-                                <option value="">Seleccionar médico…</option>
-                                {doctors.map((d) => (
-                                    <option key={d.id} value={d.id}>
-                                        {d.name} — {d.specialty}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.doctor_id && (
-                                <span
-                                    style={{ color: '#b91c1c', fontSize: 12 }}
-                                >
-                                    {errors.doctor_id}
-                                </span>
-                            )}
-                        </label>
-                        <label
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 6,
-                                fontWeight: 500,
-                                fontSize: 14,
-                            }}
-                        >
-                            <span>
-                                Notas{' '}
-                                <span
-                                    style={{
-                                        fontWeight: 400,
-                                        color: '#71717a',
-                                    }}
-                                >
-                                    (opcional)
-                                </span>
-                            </span>
-                            <textarea
-                                value={notes}
-                                onChange={(e) => setNotes(e.target.value)}
-                                rows={2}
-                                placeholder="Motivo de consulta…"
-                                style={{
-                                    ...inputStyle,
-                                    height: 'auto',
-                                    padding: '8px 12px',
-                                    resize: 'vertical',
-                                    lineHeight: 1.5,
-                                }}
-                            />
-                        </label>
-                    </div>
-                    <div
-                        style={{
-                            padding: '14px 20px',
-                            borderTop: '1px solid #eef0ec',
-                            display: 'flex',
-                            justifyContent: 'flex-end',
-                            gap: 8,
+                        onClear={() => {
+                            setSelectedPatient(null);
+                            setPatientQuery('');
                         }}
+                        error={errors.patient_id}
+                        endpoint="/citas/pacientes/buscar"
+                    />
+                </label>
+                <label className="flex flex-col gap-1.5 text-sm font-medium">
+                    <span>Médico *</span>
+                    <select
+                        value={doctorId}
+                        onChange={(e) => setDoctorId(e.target.value)}
+                        className={`box-border h-9 w-full cursor-pointer rounded-[10px] border px-3 font-[inherit] text-sm outline-none ${errors.doctor_id ? 'border-error' : 'border-input-border'}`}
                     >
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            style={{
-                                height: 36,
-                                padding: '0 14px',
-                                borderRadius: 10,
-                                border: '1px solid #dfe7df',
-                                background: '#F6F9F5',
-                                fontWeight: 500,
-                                cursor: 'pointer',
-                                fontFamily: 'inherit',
-                                fontSize: 14,
-                            }}
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            style={{
-                                height: 36,
-                                padding: '0 16px',
-                                borderRadius: 10,
-                                border: 'none',
-                                background: processing ? '#7cb987' : '#2E8B3E',
-                                color: '#fff',
-                                fontWeight: 500,
-                                cursor: processing ? 'not-allowed' : 'pointer',
-                                fontFamily: 'inherit',
-                                fontSize: 14,
-                            }}
-                        >
-                            {processing ? 'Asignando…' : '+ Asignar turno'}
-                        </button>
-                    </div>
-                </form>
+                        <option value="">Seleccionar médico…</option>
+                        {doctors.map((d) => (
+                            <option key={d.id} value={d.id}>
+                                {d.name} — {d.specialty}
+                            </option>
+                        ))}
+                    </select>
+                    {errors.doctor_id && (
+                        <span className="text-xs text-error">
+                            {errors.doctor_id}
+                        </span>
+                    )}
+                </label>
+                <label className="flex flex-col gap-1.5 text-sm font-medium">
+                    <span>
+                        Notas{' '}
+                        <span className="font-normal text-muted">
+                            (opcional)
+                        </span>
+                    </span>
+                    <textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        rows={2}
+                        placeholder="Motivo de consulta…"
+                        className="box-border w-full resize-y rounded-[10px] border border-input-border px-3 py-2 font-[inherit] text-sm leading-relaxed outline-none"
+                    />
+                </label>
             </div>
-        </>
+        </FormDialog>
     );
 }
