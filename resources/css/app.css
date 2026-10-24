@@ -50,10 +50,24 @@
     --color-table-header-bg: #f6faf1;
     --color-table-header-text: #56693f;
 
+    /* ── Text secondary ─────────────────────────── */
+    --color-muted-light: #a1a1aa;
+    --color-text-secondary: #5f6b64;
+    --color-text-tertiary: #8a948e;
+
+    /* ── Surface / Divider ───────────────────────── */
+    --color-surface: #f3f5f1;
+    --color-divider: #eef0ec;
+
     /* ── Error ───────────────────────────────────── */
     --color-error: #b91c1c;
+    --color-error-strong: #991b1b;
     --color-error-bg: #fef2f2;
     --color-error-border: #fecaca;
+
+    /* ── Success ─────────────────────────────────── */
+    --color-success-fg: #1f4a1a;
+    --color-success-border: #dcebc9;
 
     /* ── Sidebar Themes ──────────────────────────── */
     --color-sidebar-carbon: #2a2e2c;
