@@ -91,7 +91,9 @@ export default function DataTable<TData extends RowData>({
     const to = paginator?.to ?? 0;
     const total = paginator?.total ?? 0;
 
-    const pageNumbers = paginator ? buildPageNumbers(currentPage, lastPage) : [];
+    const pageNumbers = paginator
+        ? buildPageNumbers(currentPage, lastPage)
+        : [];
 
     return (
         <div className="flex flex-col">
@@ -107,13 +109,14 @@ export default function DataTable<TData extends RowData>({
                                 {headerGroup.headers.map((header, idx) => (
                                     <th
                                         key={header.id}
-                                        className={`whitespace-nowrap py-0 text-left font-semibold tracking-[.05em] text-[#56693f] uppercase ${idx === 0 ? 'pl-5 pr-3' : 'px-3'}`}
+                                        className={`py-0 text-left font-semibold tracking-[.05em] whitespace-nowrap text-[#56693f] uppercase ${idx === 0 ? 'pr-3 pl-5' : 'px-3'}`}
                                         style={{ fontSize: '11.5px' }}
                                     >
                                         {header.isPlaceholder
                                             ? null
                                             : flexRender(
-                                                  header.column.columnDef.header,
+                                                  header.column.columnDef
+                                                      .header,
                                                   header.getContext(),
                                               )}
                                     </th>
@@ -144,7 +147,8 @@ export default function DataTable<TData extends RowData>({
                             table.getRowModel().rows.map((row) => {
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 const rowId = (row.original as any)?.id;
-                                const isSelected = selectedRowId !== undefined &&
+                                const isSelected =
+                                    selectedRowId !== undefined &&
                                     selectedRowId !== null &&
                                     rowId === selectedRowId;
 
@@ -153,9 +157,15 @@ export default function DataTable<TData extends RowData>({
                                         key={row.id}
                                         role={onRowClick ? 'button' : undefined}
                                         tabIndex={onRowClick ? 0 : undefined}
-                                        onClick={() => onRowClick?.(row.original)}
+                                        onClick={() =>
+                                            onRowClick?.(row.original)
+                                        }
                                         onKeyDown={(e) => {
-                                            if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
+                                            if (
+                                                onRowClick &&
+                                                (e.key === 'Enter' ||
+                                                    e.key === ' ')
+                                            ) {
                                                 e.preventDefault();
                                                 onRowClick(row.original);
                                             }
@@ -171,7 +181,7 @@ export default function DataTable<TData extends RowData>({
                                         {row.getAllCells().map((cell, idx) => (
                                             <td
                                                 key={cell.id}
-                                                className={`py-3 text-[#333333] ${idx === 0 ? 'pl-5 pr-3' : 'px-3'}`}
+                                                className={`py-3 text-[#333333] ${idx === 0 ? 'pr-3 pl-5' : 'px-3'}`}
                                             >
                                                 {flexRender(
                                                     cell.column.columnDef.cell,
@@ -225,7 +235,11 @@ export default function DataTable<TData extends RowData>({
                                                 ? 'border-[#2E8B3E] bg-[#2E8B3E] text-white'
                                                 : 'border-[#e3e9e3] bg-white text-[#71717a] hover:bg-[#F3F7F2]'
                                         }`}
-                                        aria-current={p === currentPage ? 'page' : undefined}
+                                        aria-current={
+                                            p === currentPage
+                                                ? 'page'
+                                                : undefined
+                                        }
                                     >
                                         {p}
                                     </button>

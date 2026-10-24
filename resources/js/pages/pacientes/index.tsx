@@ -22,10 +22,19 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-type FilterValue = 'todos' | 'atendidos_hoy' | 'con_alergias' | 'sin_atenciones';
+type FilterValue =
+    | 'todos'
+    | 'atendidos_hoy'
+    | 'con_alergias'
+    | 'sin_atenciones';
 type SortValue = 'ultima_atencion' | 'nombre' | 'registro';
 
-const VALID_FILTERS: FilterValue[] = ['todos', 'atendidos_hoy', 'con_alergias', 'sin_atenciones'];
+const VALID_FILTERS: FilterValue[] = [
+    'todos',
+    'atendidos_hoy',
+    'con_alergias',
+    'sin_atenciones',
+];
 const VALID_SORTS: SortValue[] = ['ultima_atencion', 'nombre', 'registro'];
 
 interface PatientRow {
@@ -142,9 +151,12 @@ const columns: DataTableColumn<PatientRow>[] = [
                     photoUrl={row.original.photo_url}
                 />
                 <div>
-                    <p className="font-semibold text-[#1f2d22]">{row.original.full_name}</p>
+                    <p className="font-semibold text-[#1f2d22]">
+                        {row.original.full_name}
+                    </p>
                     <p className="text-[12.5px] text-[#71717a]">
-                        {row.original.sex === 'F' ? 'Femenino' : 'Masculino'} · {row.original.age} años
+                        {row.original.sex === 'F' ? 'Femenino' : 'Masculino'} ·{' '}
+                        {row.original.age} años
                     </p>
                 </div>
             </div>
@@ -155,9 +167,12 @@ const columns: DataTableColumn<PatientRow>[] = [
         header: 'Documento',
         cell: ({ row }) => (
             <div>
-                <p className="tabular-nums text-[#333]">{row.original.document_number}</p>
+                <p className="text-[#333] tabular-nums">
+                    {row.original.document_number}
+                </p>
                 <p className="text-[12px] text-[#71717a]">
-                    {DOC_LABELS[row.original.document_type] ?? row.original.document_type}
+                    {DOC_LABELS[row.original.document_type] ??
+                        row.original.document_type}
                 </p>
             </div>
         ),
@@ -166,7 +181,7 @@ const columns: DataTableColumn<PatientRow>[] = [
         id: 'phone',
         header: 'Teléfono',
         cell: ({ row }) => (
-            <span className="tabular-nums text-[#333]">
+            <span className="text-[#333] tabular-nums">
                 {row.original.phone ?? '—'}
             </span>
         ),
@@ -193,7 +208,9 @@ const columns: DataTableColumn<PatientRow>[] = [
                     {row.original.allergies}
                 </span>
             ) : (
-                <span className="text-[13px] text-[#8a948e]">Ninguna conocida</span>
+                <span className="text-[13px] text-[#8a948e]">
+                    Ninguna conocida
+                </span>
             ),
     },
     {
@@ -202,10 +219,13 @@ const columns: DataTableColumn<PatientRow>[] = [
         cell: ({ row }) =>
             row.original.last_attended_at ? (
                 <div>
-                    <p className="text-[#333]">{row.original.last_attended_at}</p>
+                    <p className="text-[#333]">
+                        {row.original.last_attended_at}
+                    </p>
                     {row.original.last_turn_doctor && (
                         <p className="text-[12px] text-[#71717a]">
-                            {row.original.last_turn_type} · {row.original.last_turn_doctor}
+                            {row.original.last_turn_type} ·{' '}
+                            {row.original.last_turn_doctor}
                         </p>
                     )}
                 </div>
@@ -238,13 +258,18 @@ function DetailPanel({
         <div className="flex h-full flex-col">
             {/* Header */}
             <div className="flex items-start gap-4 border-b border-[#eef0ec] px-6 py-5">
-                <PatientAvatar initials={patient.initials} photoUrl={patient.photo_url} size={48} />
-                <div className="flex-1 min-w-0">
-                    <p className="font-['Bitter'] text-[19px] font-semibold text-[#1f2d22] leading-tight">
+                <PatientAvatar
+                    initials={patient.initials}
+                    photoUrl={patient.photo_url}
+                    size={48}
+                />
+                <div className="min-w-0 flex-1">
+                    <p className="font-['Bitter'] text-[19px] leading-tight font-semibold text-[#1f2d22]">
                         {patient.full_name}
                     </p>
                     <p className="mt-0.5 text-[13px] text-[#71717a]">
-                        {sexLabel} · {patient.age} años · Expediente {patient.expediente_number}
+                        {sexLabel} · {patient.age} años · Expediente{' '}
+                        {patient.expediente_number}
                     </p>
                 </div>
                 <button
@@ -257,10 +282,10 @@ function DetailPanel({
             </div>
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto space-y-5 px-6 py-5">
+            <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
                 {/* Allergy banner */}
                 {patient.allergies && (
-                    <div className="flex items-start gap-2 rounded-xl border border-[#FECACA] bg-[#FEF2F2] px-4 py-3 text-[#991B1B] text-[13px]">
+                    <div className="flex items-start gap-2 rounded-xl border border-[#FECACA] bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#991B1B]">
                         <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
                         <p>
                             <strong>Alergia:</strong> {patient.allergies}
@@ -270,15 +295,18 @@ function DetailPanel({
 
                 {/* Personal data */}
                 <section>
-                    <p className="mb-3 text-[11.5px] font-semibold uppercase tracking-[.05em] text-[#56693f]">
+                    <p className="mb-3 text-[11.5px] font-semibold tracking-[.05em] text-[#56693f] uppercase">
                         Datos personales
                     </p>
                     <dl className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-2 text-[13px]">
                         <dt className="text-[#71717a]">Documento</dt>
-                        <dd className="tabular-nums text-[#333]">
+                        <dd className="text-[#333] tabular-nums">
                             {patient.document_number}{' '}
                             <span className="text-[#71717a]">
-                                ({DOC_LABELS[patient.document_type] ?? patient.document_type})
+                                (
+                                {DOC_LABELS[patient.document_type] ??
+                                    patient.document_type}
+                                )
                             </span>
                         </dd>
                         <dt className="text-[#71717a]">Nacimiento</dt>
@@ -286,34 +314,48 @@ function DetailPanel({
                             {patient.birth_date} ({patient.age} años)
                         </dd>
                         <dt className="text-[#71717a]">Sangre</dt>
-                        <dd className="text-[#333]">{patient.blood_type ?? 'No registrado'}</dd>
+                        <dd className="text-[#333]">
+                            {patient.blood_type ?? 'No registrado'}
+                        </dd>
                         <dt className="text-[#71717a]">Teléfono</dt>
-                        <dd className="tabular-nums text-[#333]">{patient.phone ?? '—'}</dd>
+                        <dd className="text-[#333] tabular-nums">
+                            {patient.phone ?? '—'}
+                        </dd>
                         {patient.address && (
                             <>
                                 <dt className="text-[#71717a]">Dirección</dt>
-                                <dd className="text-[#333]">{patient.address}</dd>
+                                <dd className="text-[#333]">
+                                    {patient.address}
+                                </dd>
                             </>
                         )}
-                        {(patient.emergency_contact_name || patient.emergency_contact_phone) && (
+                        {(patient.emergency_contact_name ||
+                            patient.emergency_contact_phone) && (
                             <>
-                                <dt className="text-[#71717a]">Contacto emerg.</dt>
+                                <dt className="text-[#71717a]">
+                                    Contacto emerg.
+                                </dt>
                                 <dd className="text-[#333]">
-                                    {[patient.emergency_contact_name, patient.emergency_contact_phone]
+                                    {[
+                                        patient.emergency_contact_name,
+                                        patient.emergency_contact_phone,
+                                    ]
                                         .filter(Boolean)
                                         .join(' · ')}
                                 </dd>
                             </>
                         )}
                         <dt className="text-[#71717a]">Registrado</dt>
-                        <dd className="text-[#333]">{patient.created_at ?? '—'}</dd>
+                        <dd className="text-[#333]">
+                            {patient.created_at ?? '—'}
+                        </dd>
                     </dl>
                 </section>
 
                 {/* Recent visits */}
                 <section>
                     <div className="mb-3 flex items-center justify-between">
-                        <p className="text-[11.5px] font-semibold uppercase tracking-[.05em] text-[#56693f]">
+                        <p className="text-[11.5px] font-semibold tracking-[.05em] text-[#56693f] uppercase">
                             Últimas atenciones
                         </p>
                         <span className="text-[12px] text-[#71717a]">
@@ -327,7 +369,10 @@ function DetailPanel({
                     ) : (
                         <ul className="divide-y divide-[#eef0ec] rounded-xl border border-[#eef0ec]">
                             {patient.recent_turns.map((t) => (
-                                <li key={t.id} className="flex items-start justify-between gap-3 px-4 py-3">
+                                <li
+                                    key={t.id}
+                                    className="flex items-start justify-between gap-3 px-4 py-3"
+                                >
                                     <div className="min-w-0">
                                         <p className="text-[13px] font-medium text-[#1f2d22]">
                                             {t.type} · T-{t.turn_number}
@@ -337,7 +382,7 @@ function DetailPanel({
                                             {t.notes ? ` · ${t.notes}` : ''}
                                         </p>
                                     </div>
-                                    <span className="shrink-0 text-[12px] tabular-nums text-[#8a948e]">
+                                    <span className="shrink-0 text-[12px] text-[#8a948e] tabular-nums">
                                         {t.arrived_at}
                                     </span>
                                 </li>
@@ -375,7 +420,9 @@ export default function PacientesIndex({
     filters,
     selected,
 }: Props) {
-    const [search, setSearch] = useState(typeof filters.q === 'string' ? filters.q : '');
+    const [search, setSearch] = useState(
+        typeof filters.q === 'string' ? filters.q : '',
+    );
     const [activeFilter, setActiveFilter] = useState<FilterValue>(
         VALID_FILTERS.includes(filters.filter) ? filters.filter : 'todos',
     );
@@ -383,12 +430,21 @@ export default function PacientesIndex({
         VALID_SORTS.includes(filters.sort) ? filters.sort : 'ultima_atencion',
     );
     const [panelOpen, setPanelOpen] = useState(selected !== null);
-    const [selectedPatient, setSelectedPatient] = useState<SelectedPatient | null>(selected);
+    const [selectedPatient, setSelectedPatient] =
+        useState<SelectedPatient | null>(selected);
 
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const navigate = useCallback(
-        (overrides: Partial<{ q: string; filter: FilterValue; sort: SortValue; page: number; paciente?: number | null }>) => {
+        (
+            overrides: Partial<{
+                q: string;
+                filter: FilterValue;
+                sort: SortValue;
+                page: number;
+                paciente?: number | null;
+            }>,
+        ) => {
             const params: Record<string, string | number | undefined> = {
                 q: 'q' in overrides ? overrides.q : search,
                 filter: 'filter' in overrides ? overrides.filter : activeFilter,
@@ -422,7 +478,9 @@ export default function PacientesIndex({
                 replace: true,
                 only: ['selected'],
                 onSuccess: (page) => {
-                    const sel = (page.props as { selected?: SelectedPatient | null }).selected;
+                    const sel = (
+                        page.props as { selected?: SelectedPatient | null }
+                    ).selected;
                     if (sel) {
                         setSelectedPatient(sel);
                         setPanelOpen(true);
@@ -451,9 +509,21 @@ export default function PacientesIndex({
 
     const filterSegments = [
         { value: 'todos' as FilterValue, label: 'Todos', count: counts.total },
-        { value: 'atendidos_hoy' as FilterValue, label: 'Atendidos hoy', count: counts.attended_today },
-        { value: 'con_alergias' as FilterValue, label: 'Con alergias', count: counts.con_alergias },
-        { value: 'sin_atenciones' as FilterValue, label: 'Sin atenciones', count: counts.sin_atenciones },
+        {
+            value: 'atendidos_hoy' as FilterValue,
+            label: 'Atendidos hoy',
+            count: counts.attended_today,
+        },
+        {
+            value: 'con_alergias' as FilterValue,
+            label: 'Con alergias',
+            count: counts.con_alergias,
+        },
+        {
+            value: 'sin_atenciones' as FilterValue,
+            label: 'Sin atenciones',
+            count: counts.sin_atenciones,
+        },
     ];
 
     return (
@@ -464,7 +534,8 @@ export default function PacientesIndex({
                 {/* Page header */}
                 <div className="flex items-center justify-between">
                     <p style={{ color: '#5f6b64', fontSize: '14px' }}>
-                        {counts.total} pacientes registrados · {counts.attended_today} atendidos hoy
+                        {counts.total} pacientes registrados ·{' '}
+                        {counts.attended_today} atendidos hoy
                     </p>
                     <Link
                         href={registro.url()}
@@ -481,13 +552,13 @@ export default function PacientesIndex({
                     <div className="flex flex-wrap items-center gap-3 border-b border-[#eef0ec] px-5 py-3.5">
                         {/* Search */}
                         <div className="relative min-w-[280px] flex-1">
-                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#71717a]" />
+                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#71717a]" />
                             <input
                                 type="search"
                                 value={search}
                                 onChange={(e) => handleSearch(e.target.value)}
                                 placeholder="Buscar por cédula, nombre o teléfono…"
-                                className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white pl-9 pr-3 text-sm text-[#333] placeholder-[#a1a1aa] outline-none focus:border-[#2E8B3E] focus:ring-1 focus:ring-[#2E8B3E]"
+                                className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white pr-3 pl-9 text-sm text-[#333] placeholder-[#a1a1aa] outline-none focus:border-[#2E8B3E] focus:ring-1 focus:ring-[#2E8B3E]"
                             />
                         </div>
 
@@ -511,7 +582,9 @@ export default function PacientesIndex({
                             }}
                             className="h-9 rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm text-[#333] outline-none focus:border-[#2E8B3E]"
                         >
-                            <option value="ultima_atencion">Última atención (reciente)</option>
+                            <option value="ultima_atencion">
+                                Última atención (reciente)
+                            </option>
                             <option value="nombre">Nombre (A–Z)</option>
                             <option value="registro">Fecha de registro</option>
                         </select>
@@ -533,25 +606,33 @@ export default function PacientesIndex({
                         }
                     />
 
-                    {patients.data.length === 0 && !search && activeFilter === 'todos' && (
-                        <div className="flex justify-center py-6">
-                            <Link
-                                href={registro.url()}
-                                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#e3e9e3] bg-white px-3.5 text-sm font-medium text-[#333] hover:bg-[#F3F7F2]"
-                            >
-                                <Plus className="h-4 w-4" />
-                                Registrar paciente nuevo
-                            </Link>
-                        </div>
-                    )}
+                    {patients.data.length === 0 &&
+                        !search &&
+                        activeFilter === 'todos' && (
+                            <div className="flex justify-center py-6">
+                                <Link
+                                    href={registro.url()}
+                                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#e3e9e3] bg-white px-3.5 text-sm font-medium text-[#333] hover:bg-[#F3F7F2]"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    Registrar paciente nuevo
+                                </Link>
+                            </div>
+                        )}
                 </div>
             </div>
 
             {/* Detail sheet */}
-            <Sheet open={panelOpen} onOpenChange={(open) => !open && handleClosePanel()}>
+            <Sheet
+                open={panelOpen}
+                onOpenChange={(open) => !open && handleClosePanel()}
+            >
                 <SheetContent side="right" className="w-[460px] max-w-full p-0">
                     {selectedPatient && (
-                        <DetailPanel patient={selectedPatient} onClose={handleClosePanel} />
+                        <DetailPanel
+                            patient={selectedPatient}
+                            onClose={handleClosePanel}
+                        />
                     )}
                 </SheetContent>
             </Sheet>

@@ -9,8 +9,18 @@ import type { LaravelPaginator } from '@/components/cemerog/DataTable';
 vi.mock('@inertiajs/react', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@inertiajs/react')>()),
     Head: () => null,
-    Link: ({ children, href, ...props }: { children: React.ReactNode; href: string; [k: string]: unknown }) => (
-        <a href={href} {...props}>{children}</a>
+    Link: ({
+        children,
+        href,
+        ...props
+    }: {
+        children: React.ReactNode;
+        href: string;
+        [k: string]: unknown;
+    }) => (
+        <a href={href} {...props}>
+            {children}
+        </a>
     ),
     router: { get: vi.fn() },
 }));
@@ -26,7 +36,11 @@ vi.mock('@/routes/registro/pacientes', () => ({
 
 // Mock SegmentedControl to expose value via data-testid
 vi.mock('@/components/cemerog/SegmentedControl', () => ({
-    default: ({ segments, value, onChange }: {
+    default: ({
+        segments,
+        value,
+        onChange,
+    }: {
         segments: Array<{ value: string; label: string; count: number }>;
         value: string;
         onChange: (v: string) => void;
@@ -52,13 +66,21 @@ vi.mock('@/components/cemerog/DataTable', () => ({
 
 // Mock Sheet (shadcn) to avoid portal issues
 vi.mock('@/components/ui/sheet', () => ({
-    Sheet: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    SheetContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+    Sheet: ({ children }: { children: React.ReactNode }) => (
+        <div>{children}</div>
+    ),
+    SheetContent: ({ children }: { children: React.ReactNode }) => (
+        <div>{children}</div>
+    ),
 }));
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-type FilterValue = 'todos' | 'atendidos_hoy' | 'con_alergias' | 'sin_atenciones';
+type FilterValue =
+    | 'todos'
+    | 'atendidos_hoy'
+    | 'con_alergias'
+    | 'sin_atenciones';
 type SortValue = 'ultima_atencion' | 'nombre' | 'registro';
 
 interface PatientRow {
@@ -142,7 +164,11 @@ describe('PacientesIndex – inicialización de estado con filters completo', ()
             <PacientesIndex
                 patients={emptyPaginator}
                 counts={emptyCounts}
-                filters={{ q: '', filter: 'con_alergias' as FilterValue, sort: 'nombre' as SortValue }}
+                filters={{
+                    q: '',
+                    filter: 'con_alergias' as FilterValue,
+                    sort: 'nombre' as SortValue,
+                }}
                 selected={null}
             />,
         );

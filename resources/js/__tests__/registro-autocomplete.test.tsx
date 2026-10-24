@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
-import { fireEvent, render, screen, waitFor, act } from '@testing-library/react';
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    act,
+} from '@testing-library/react';
 import RegistroIndex from '@/pages/registro/index';
 
 // Mock @inertiajs/react
@@ -37,17 +43,33 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
 
 // Mock AppLayout
 vi.mock('@/layouts/app/app-layout', () => ({
-    default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+    default: ({ children }: { children: React.ReactNode }) => (
+        <div>{children}</div>
+    ),
 }));
 
 // Mock MaskedInput
 vi.mock('@/components/cemerog/masked-input', () => ({
-    default: ({ value, onChange, ...props }: { value: string; onChange: (v: string) => void; [k: string]: unknown }) => (
-        <input value={value} onChange={(e) => onChange(e.target.value)} {...props} />
+    default: ({
+        value,
+        onChange,
+        ...props
+    }: {
+        value: string;
+        onChange: (v: string) => void;
+        [k: string]: unknown;
+    }) => (
+        <input
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            {...props}
+        />
     ),
 }));
 
-const mockDoctors = [{ id: 1, name: 'Dr. García', specialty: 'Medicina General' }];
+const mockDoctors = [
+    { id: 1, name: 'Dr. García', specialty: 'Medicina General' },
+];
 
 const mockPatients = [
     {
@@ -134,7 +156,9 @@ describe('RegistroIndex autocomplete', () => {
         fireEvent.change(input, { target: { value: 'Mar' } });
 
         await waitFor(() => {
-            expect(screen.getByText('Registrar como paciente nuevo')).toBeTruthy();
+            expect(
+                screen.getByText('Registrar como paciente nuevo'),
+            ).toBeTruthy();
         });
     });
 
@@ -150,8 +174,12 @@ describe('RegistroIndex autocomplete', () => {
         fireEvent.change(input, { target: { value: 'xyz' } });
 
         await waitFor(() => {
-            expect(screen.getByText(/Ningún paciente coincide con/)).toBeTruthy();
-            expect(screen.getByText('Registrar como paciente nuevo')).toBeTruthy();
+            expect(
+                screen.getByText(/Ningún paciente coincide con/),
+            ).toBeTruthy();
+            expect(
+                screen.getByText('Registrar como paciente nuevo'),
+            ).toBeTruthy();
         });
     });
 
@@ -267,7 +295,9 @@ describe('RegistroIndex with existing patient pre-loaded', () => {
 
     // L1 – Existing patient banner
     it('paciente existente muestra banner verde con CircleCheck', () => {
-        render(<RegistroIndex doctors={mockDoctors} patient={existingPatient} />);
+        render(
+            <RegistroIndex doctors={mockDoctors} patient={existingPatient} />,
+        );
         expect(screen.getByText(/Paciente existente/)).toBeTruthy();
         expect(screen.getByText(/P-00042/)).toBeTruthy();
     });
@@ -279,15 +309,28 @@ describe('RegistroIndex with existing patient pre-loaded', () => {
             has_open_turn_today: true,
             open_turn: { id: 123, turn_number: 5, status: 'espera' },
         };
-        render(<RegistroIndex doctors={mockDoctors} patient={patientWithOpenTurn} />);
+        render(
+            <RegistroIndex
+                doctors={mockDoctors}
+                patient={patientWithOpenTurn}
+            />,
+        );
         expect(screen.getByText(/Ya tiene la atención/)).toBeTruthy();
         expect(screen.getByText(/A-123/)).toBeTruthy();
     });
 
     // L3 – Allergy banner for existing patient
     it('paciente con alergias muestra banner rojo de alérgico', () => {
-        const patientWithAllergy = { ...existingPatient, allergies: 'Ibuprofeno' };
-        render(<RegistroIndex doctors={mockDoctors} patient={patientWithAllergy} />);
+        const patientWithAllergy = {
+            ...existingPatient,
+            allergies: 'Ibuprofeno',
+        };
+        render(
+            <RegistroIndex
+                doctors={mockDoctors}
+                patient={patientWithAllergy}
+            />,
+        );
         expect(screen.getByText(/Alérgico\(a\) a:/)).toBeTruthy();
         expect(screen.getByText(/Ibuprofeno/)).toBeTruthy();
     });

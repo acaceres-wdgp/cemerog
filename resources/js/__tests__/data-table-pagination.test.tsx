@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
-import DataTable, { type LaravelPaginator } from '@/components/cemerog/DataTable';
+import DataTable, {
+    type LaravelPaginator,
+} from '@/components/cemerog/DataTable';
 import { type ColumnDef } from '@tanstack/react-table';
 
 interface Row {
@@ -102,7 +104,9 @@ describe('DataTable pagination', () => {
             />,
         );
         const ellipses = container.querySelectorAll('span');
-        const hasEllipsis = Array.from(ellipses).some((el) => el.textContent === '…');
+        const hasEllipsis = Array.from(ellipses).some(
+            (el) => el.textContent === '…',
+        );
         expect(hasEllipsis).toBe(true);
     });
 
@@ -117,7 +121,9 @@ describe('DataTable pagination', () => {
             />,
         );
         const ellipses = container.querySelectorAll('span');
-        const hasEllipsis = Array.from(ellipses).some((el) => el.textContent === '…');
+        const hasEllipsis = Array.from(ellipses).some(
+            (el) => el.textContent === '…',
+        );
         expect(hasEllipsis).toBe(true);
     });
 

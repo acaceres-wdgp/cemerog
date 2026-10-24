@@ -201,7 +201,7 @@ function PatientAutocomplete({ onSelect, searchPath }: AutocompleteProps) {
     return (
         <div className="relative">
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#71717a]" />
+                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#71717a]" />
                 <input
                     ref={inputRef}
                     id="patient-search-input"
@@ -219,17 +219,21 @@ function PatientAutocomplete({ onSelect, searchPath }: AutocompleteProps) {
                     aria-autocomplete="list"
                     aria-expanded={open}
                     aria-controls="patient-search-listbox"
-                    aria-activedescendant={activeIdx >= 0 ? `patient-option-${activeIdx}` : undefined}
+                    aria-activedescendant={
+                        activeIdx >= 0
+                            ? `patient-option-${activeIdx}`
+                            : undefined
+                    }
                     data-1p-ignore
                     data-lpignore="true"
                     data-form-type="other"
-                    className="h-10 w-full rounded-lg border border-[#e3e9e3] bg-white pl-9 pr-9 text-sm placeholder-[#a1a1aa] outline-none focus:border-[#2E8B3E] focus:ring-1 focus:ring-[#2E8B3E]"
+                    className="h-10 w-full rounded-lg border border-[#e3e9e3] bg-white pr-9 pl-9 text-sm placeholder-[#a1a1aa] outline-none focus:border-[#2E8B3E] focus:ring-1 focus:ring-[#2E8B3E]"
                 />
                 {query && (
                     <button
                         type="button"
                         onClick={handleClear}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#71717a] hover:text-[#333]"
+                        className="absolute top-1/2 right-3 -translate-y-1/2 text-[#71717a] hover:text-[#333]"
                         aria-label="Limpiar búsqueda"
                     >
                         <X className="h-4 w-4" />
@@ -346,10 +350,8 @@ export default function RegistroIndex({
         address: initialPatient?.address ?? '',
         blood_type: initialPatient?.blood_type ?? '',
         allergies: initialPatient?.allergies ?? '',
-        emergency_contact_name:
-            initialPatient?.emergency_contact_name ?? '',
-        emergency_contact_phone:
-            initialPatient?.emergency_contact_phone ?? '',
+        emergency_contact_name: initialPatient?.emergency_contact_name ?? '',
+        emergency_contact_phone: initialPatient?.emergency_contact_phone ?? '',
         attention_type: 'consulta',
         doctor_id: '' as number | string,
         notes: '',
@@ -423,11 +425,15 @@ export default function RegistroIndex({
         <>
             <Head title="Registro de pacientes" />
 
-            <form onSubmit={handleSubmit} autoComplete="off" className="flex flex-col gap-5">
+            <form
+                onSubmit={handleSubmit}
+                autoComplete="off"
+                className="flex flex-col gap-5"
+            >
                 {/* Intro */}
                 <p className="text-[13.5px]" style={{ color: '#5f6b64' }}>
-                    Busca primero por cédula. Si el paciente no existe,
-                    completa sus datos y crea la atención.
+                    Busca primero por cédula. Si el paciente no existe, completa
+                    sus datos y crea la atención.
                 </p>
 
                 {/* Main grid */}
@@ -471,8 +477,7 @@ export default function RegistroIndex({
                                                 {
                                                     existingPatient.expediente_number
                                                 }{' '}
-                                                ·{' '}
-                                                {existingPatient.total_turns}{' '}
+                                                · {existingPatient.total_turns}{' '}
                                                 atenciones
                                                 {existingPatient.last_attended_at
                                                     ? ` · última ${existingPatient.last_attended_at}`
@@ -509,8 +514,8 @@ export default function RegistroIndex({
                                                     </strong>{' '}
                                                     abierta hoy (
                                                     {
-                                                        existingPatient.open_turn
-                                                            .status
+                                                        existingPatient
+                                                            .open_turn.status
                                                     }
                                                     ). Evita duplicarla.
                                                 </div>
@@ -566,7 +571,10 @@ export default function RegistroIndex({
                             {/* Form fields – always visible, disabled when locked */}
                             <div className="px-5 py-4">
                                 {locked && (
-                                    <div className="mb-4 flex items-center gap-2 text-[13px]" style={{ color: '#71717a' }}>
+                                    <div
+                                        className="mb-4 flex items-center gap-2 text-[13px]"
+                                        style={{ color: '#71717a' }}
+                                    >
                                         <Info className="h-4 w-4 shrink-0" />
                                         Busca un paciente o elige «Registrar
                                         como paciente nuevo» para continuar.
@@ -874,9 +882,7 @@ export default function RegistroIndex({
                                         <input
                                             type="text"
                                             name="patient_emergency_phone"
-                                            value={
-                                                data.emergency_contact_phone
-                                            }
+                                            value={data.emergency_contact_phone}
                                             onChange={(e) =>
                                                 setData(
                                                     'emergency_contact_phone',
@@ -969,14 +975,16 @@ export default function RegistroIndex({
                                             label: 'Emergencia',
                                             desc: 'Atención inmediata, pasa a triaje.',
                                             disabled: true,
-                                            tooltip: 'Disponible cuando se implemente Emergencia',
+                                            tooltip:
+                                                'Disponible cuando se implemente Emergencia',
                                         },
                                         {
                                             value: 'analisis',
                                             label: 'Solo análisis o imágenes',
                                             desc: 'Sin consulta. Paga en caja.',
                                             disabled: true,
-                                            tooltip: 'Disponible cuando se implemente Laboratorio e Imágenes',
+                                            tooltip:
+                                                'Disponible cuando se implemente Laboratorio e Imágenes',
                                         },
                                     ].map((opt) => (
                                         <label
@@ -984,8 +992,9 @@ export default function RegistroIndex({
                                             title={opt.tooltip}
                                             className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition-colors ${
                                                 opt.disabled
-                                                    ? 'cursor-not-allowed opacity-50 border-[#e3e9e3]'
-                                                    : data.attention_type === opt.value
+                                                    ? 'cursor-not-allowed border-[#e3e9e3] opacity-50'
+                                                    : data.attention_type ===
+                                                        opt.value
                                                       ? 'border-[#2E8B3E] bg-[#EEF6E2]'
                                                       : 'border-[#e3e9e3] hover:bg-[#F6FAF1]'
                                             }`}
@@ -1152,7 +1161,7 @@ export default function RegistroIndex({
                                 </div>
                                 <div className="flex justify-between px-5 py-3">
                                     <dt className="text-[#71717a]">Llegada</dt>
-                                    <dd className="tabular-nums font-medium text-[#1f2d22]">
+                                    <dd className="font-medium text-[#1f2d22] tabular-nums">
                                         {new Date().toLocaleTimeString(
                                             'es-DO',
                                             {
