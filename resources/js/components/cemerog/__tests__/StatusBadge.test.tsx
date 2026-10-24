@@ -23,7 +23,7 @@ describe('StatusBadge', () => {
         expect(screen.getByText('Custom Label')).toBeInTheDocument();
     });
 
-    it('renders all 9 states without error', () => {
+    it('renders all 9 original states without error', () => {
         const states = [
             'espera',
             'consulta',
@@ -40,5 +40,49 @@ describe('StatusBadge', () => {
             const { unmount } = render(<StatusBadge state={state} />);
             unmount();
         });
+    });
+
+    it('renders cita-pendiente state', () => {
+        render(<StatusBadge state="cita-pendiente" />);
+        expect(screen.getByText('Pendiente')).toBeInTheDocument();
+    });
+
+    it('renders cita-confirmada state', () => {
+        render(<StatusBadge state="cita-confirmada" />);
+        expect(screen.getByText('Confirmada')).toBeInTheDocument();
+    });
+
+    it('renders cita-en_lista state', () => {
+        render(<StatusBadge state="cita-en_lista" />);
+        expect(screen.getByText('En lista')).toBeInTheDocument();
+    });
+
+    it('renders cita-atendida state', () => {
+        render(<StatusBadge state="cita-atendida" />);
+        expect(screen.getByText('Atendida')).toBeInTheDocument();
+    });
+
+    it('renders cita-no_asistio state', () => {
+        render(<StatusBadge state="cita-no_asistio" />);
+        expect(screen.getByText('No asistió')).toBeInTheDocument();
+    });
+
+    it('renders cita-cancelada state', () => {
+        render(<StatusBadge state="cita-cancelada" />);
+        expect(screen.getByText('Cancelada')).toBeInTheDocument();
+    });
+
+    it('renders cita-* states as a span with correct structure', () => {
+        const { container } = render(<StatusBadge state="cita-atendida" />);
+        const span = container.querySelector('span');
+        expect(span).not.toBeNull();
+        expect(span?.tagName).toBe('SPAN');
+        expect(span?.className).toContain('inline-flex');
+        expect(span?.className).toContain('rounded-full');
+    });
+
+    it('renders cita-en_lista with custom label override', () => {
+        render(<StatusBadge state="cita-en_lista" label="T-01 · En lista" />);
+        expect(screen.getByText('T-01 · En lista')).toBeInTheDocument();
     });
 });

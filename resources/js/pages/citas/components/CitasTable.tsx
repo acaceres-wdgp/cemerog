@@ -3,18 +3,15 @@ import { formatDateLong } from '../lib/dates';
 import { TodayRows } from './TodayRows';
 import { FutureRows } from './FutureRows';
 
+const thBaseClassName =
+    'text-left font-semibold text-table-header-text bg-table-header-bg border-b border-success-border whitespace-nowrap';
+
 const thStyle: React.CSSProperties = {
-    textAlign: 'left',
-    fontWeight: 600,
     fontSize: 11.5,
     letterSpacing: '.05em',
     textTransform: 'uppercase',
-    color: '#56693f',
     padding: '0 12px',
     height: 40,
-    background: '#F6FAF1',
-    borderBottom: '1px solid #DCEBC9',
-    whiteSpace: 'nowrap',
 };
 
 type CitasTableProps = {
@@ -45,22 +42,21 @@ export function CitasTable({
     return (
         <div
             style={{
-                background: '#fff',
-                border: '1px solid #e3e9e3',
                 borderRadius: 14,
                 overflow: 'hidden',
             }}
+            className="border border-card-border bg-white"
         >
             <div
                 style={{
                     padding: '14px 20px',
-                    borderBottom: '1px solid #eef0ec',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     gap: 12,
                     flexWrap: 'wrap',
                 }}
+                className="border-b border-divider"
             >
                 <div>
                     <div
@@ -68,13 +64,13 @@ export function CitasTable({
                             fontFamily: 'Bitter,Georgia,serif',
                             fontWeight: 600,
                             fontSize: 17,
-                            color: '#1f2d22',
                             textTransform: 'capitalize',
                         }}
+                        className="text-text-heading"
                     >
                         {formatDateLong(date)}
                     </div>
-                    <div style={{ fontSize: 13, color: '#71717a' }}>
+                    <div style={{ fontSize: 13 }} className="text-muted">
                         {filtered.length}{' '}
                         {filtered.length === 1 ? 'cita' : 'citas'} ·{' '}
                         {pendingCount} pendientes
@@ -94,15 +90,27 @@ export function CitasTable({
                 >
                     <thead>
                         <tr>
-                            <th style={{ ...thStyle, paddingLeft: 20 }}>
+                            <th
+                                style={{ ...thStyle, paddingLeft: 20 }}
+                                className={thBaseClassName}
+                            >
                                 {is_today ? 'Estado' : 'Hora'}
                             </th>
-                            <th style={thStyle}>Paciente</th>
-                            <th style={thStyle}>Médico</th>
-                            <th style={thStyle}>Tipo</th>
-                            <th style={thStyle}>Cita</th>
+                            <th style={thStyle} className={thBaseClassName}>
+                                Paciente
+                            </th>
+                            <th style={thStyle} className={thBaseClassName}>
+                                Médico
+                            </th>
+                            <th style={thStyle} className={thBaseClassName}>
+                                Tipo
+                            </th>
+                            <th style={thStyle} className={thBaseClassName}>
+                                Cita
+                            </th>
                             <th
                                 style={{ ...thStyle, textAlign: 'right' }}
+                                className={thBaseClassName}
                             ></th>
                         </tr>
                     </thead>

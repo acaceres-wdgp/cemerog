@@ -5,7 +5,6 @@ const inputStyle: React.CSSProperties = {
     height: 36,
     width: '100%',
     padding: '0 12px',
-    border: '1px solid #e4e4e7',
     borderRadius: 10,
     outline: 'none',
     fontFamily: 'inherit',
@@ -81,10 +80,9 @@ export function PatientSearch({
                     gap: 10,
                     height: 36,
                     padding: '0 10px 0 12px',
-                    border: '1px solid #B9DC8E',
                     borderRadius: 10,
-                    background: '#EEF6E2',
                 }}
+                className="border border-accent-border bg-accent-bg"
             >
                 <span
                     style={{
@@ -92,14 +90,13 @@ export function PatientSearch({
                         height: 22,
                         flexShrink: 0,
                         borderRadius: '50%',
-                        background: '#2E8B3E',
-                        color: '#fff',
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: 10,
                         fontWeight: 700,
                     }}
+                    className="bg-primary text-white"
                 >
                     ✓
                 </span>
@@ -108,12 +105,15 @@ export function PatientSearch({
                         flex: 1,
                         fontWeight: 500,
                         fontSize: 14,
-                        color: '#1f2d22',
                     }}
+                    className="text-text-heading"
                 >
                     {selected.full_name}
                 </span>
-                <span style={{ fontSize: 12, color: '#56693f' }}>
+                <span
+                    style={{ fontSize: 12 }}
+                    className="text-table-header-text"
+                >
                     {selected.document_number}
                 </span>
                 <button
@@ -131,9 +131,9 @@ export function PatientSearch({
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: 12,
-                        color: '#56693f',
                         lineHeight: 1,
                     }}
+                    className="text-table-header-text"
                 >
                     ✕
                 </button>
@@ -146,7 +146,7 @@ export function PatientSearch({
             <input
                 style={{
                     ...inputStyle,
-                    borderColor: error ? '#b91c1c' : '#e4e4e7',
+                    border: `1px solid ${error ? 'var(--color-error)' : 'var(--color-input-border)'}`,
                 }}
                 value={query}
                 onChange={(e) => {
@@ -158,7 +158,9 @@ export function PatientSearch({
                 autoFocus
             />
             {error && (
-                <span style={{ color: '#b91c1c', fontSize: 12 }}>{error}</span>
+                <span style={{ fontSize: 12 }} className="text-error">
+                    {error}
+                </span>
             )}
             {open && (
                 <div
@@ -168,21 +170,20 @@ export function PatientSearch({
                         left: 0,
                         right: 0,
                         zIndex: 200,
-                        background: '#fff',
-                        border: '1px solid #e3e9e3',
                         borderRadius: 10,
                         boxShadow: '0 8px 24px rgba(0,0,0,.1)',
                         marginTop: 4,
                         overflow: 'hidden',
                     }}
+                    className="border border-card-border bg-white"
                 >
                     {results.length === 0 ? (
                         <div
                             style={{
                                 padding: '10px 14px',
-                                color: '#71717a',
                                 fontSize: 13,
                             }}
+                            className="text-muted"
                         >
                             No se encontraron pacientes.
                         </div>
@@ -203,12 +204,12 @@ export function PatientSearch({
                                     border: 'none',
                                     background: 'none',
                                     cursor: 'pointer',
-                                    borderBottom: '1px solid #f3f4f6',
                                     fontFamily: 'inherit',
                                 }}
+                                className="border-b border-row-separator"
                                 onMouseEnter={(e) =>
                                     (e.currentTarget.style.background =
-                                        '#F6FAF1')
+                                        'var(--color-table-header-bg)')
                                 }
                                 onMouseLeave={(e) =>
                                     (e.currentTarget.style.background = 'none')
@@ -217,7 +218,10 @@ export function PatientSearch({
                                 <div style={{ fontWeight: 500, fontSize: 14 }}>
                                     {p.full_name}
                                 </div>
-                                <div style={{ color: '#71717a', fontSize: 12 }}>
+                                <div
+                                    style={{ fontSize: 12 }}
+                                    className="text-muted"
+                                >
                                     {p.document_number}
                                 </div>
                             </button>

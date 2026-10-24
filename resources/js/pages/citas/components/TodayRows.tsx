@@ -1,22 +1,6 @@
+import StatusBadge from '@/components/cemerog/StatusBadge';
 import { AppointmentRow, DoctorOption } from '../types';
-
-const ESTADO_COLORS: Record<string, { bg: string; fg: string }> = {
-    atendida: { bg: '#DCFCE7', fg: '#166534' },
-    en_lista: { bg: '#DBEAFE', fg: '#1E40AF' },
-    confirmada: { bg: '#F3F7F2', fg: '#2E8B3E' },
-    pendiente: { bg: '#FEF3C7', fg: '#92400E' },
-    no_asistio: { bg: '#F4F4F5', fg: '#52525B' },
-    cancelada: { bg: '#F4F4F5', fg: '#52525B' },
-};
-
-const ESTADO_LABELS: Record<string, string> = {
-    pendiente: 'Pendiente',
-    confirmada: 'Confirmada',
-    en_lista: 'En lista',
-    atendida: 'Atendida',
-    no_asistio: 'No asistió',
-    cancelada: 'Cancelada',
-};
+import { docPalette } from '../lib/palettes';
 
 const TYPE_LABELS: Record<string, string> = {
     consulta: 'Consulta',
@@ -24,15 +8,19 @@ const TYPE_LABELS: Record<string, string> = {
     primera_vez: 'Primera vez',
 };
 
-const DOC_PALETTES = [
-    { bg: '#EEF6E2', fg: '#2E8B3E' },
-    { bg: '#DBEAFE', fg: '#1E40AF' },
-    { bg: '#EDE9FE', fg: '#5B21B6' },
-    { bg: '#FCE7F3', fg: '#9D174D' },
-    { bg: '#CFFAFE', fg: '#155E75' },
-    { bg: '#FEF3C7', fg: '#92400E' },
-];
-const docPalette = (id: number) => DOC_PALETTES[id % DOC_PALETTES.length];
+function citaStatusToState(
+    status: AppointmentRow['status'],
+): Parameters<typeof StatusBadge>[0]['state'] {
+    const map = {
+        pendiente: 'cita-pendiente',
+        confirmada: 'cita-confirmada',
+        en_lista: 'cita-en_lista',
+        atendida: 'cita-atendida',
+        no_asistio: 'cita-no_asistio',
+        cancelada: 'cita-cancelada',
+    } as const;
+    return map[status] ?? 'cita-cancelada';
+}
 
 type TodayRowsProps = {
     rows: AppointmentRow[];
@@ -41,7 +29,12 @@ type TodayRowsProps = {
     onCancel: (id: number) => void;
 };
 
-export function TodayRows({ rows, doctors, onNewCita, onCancel }: TodayRowsProps) {
+export function TodayRows({
+    rows,
+    doctors,
+    onNewCita,
+    onCancel,
+}: TodayRowsProps) {
     if (rows.length === 0) {
         return (
             <tr>
@@ -49,8 +42,8 @@ export function TodayRows({ rows, doctors, onNewCita, onCancel }: TodayRowsProps
                     <div
                         style={{
                             padding: '6px 12px 6px 20px',
-                            borderBottom: '1px solid #f1f3ef',
                         }}
+                        className="border-b border-row-divider"
                     >
                         <div
                             style={{
@@ -60,11 +53,10 @@ export function TodayRows({ rows, doctors, onNewCita, onCancel }: TodayRowsProps
                                 padding: '0 4px',
                                 height: 44,
                                 borderRadius: 8,
-                                border: '1px dashed #d6e2d0',
-                                color: '#8a948e',
                                 cursor: 'pointer',
                                 fontSize: 13,
                             }}
+                            className="border border-dashed border-slot-empty-border text-text-tertiary"
                             onClick={onNewCita}
                         >
                             + Registrar primera cita del día
@@ -78,64 +70,57 @@ export function TodayRows({ rows, doctors, onNewCita, onCancel }: TodayRowsProps
     return (
         <>
             {rows.map((cita) => {
-                const stColor = ESTADO_COLORS[cita.status] ?? { bg: '#F4F4F5', fg: '#52525B' };
                 const isDone =
                     cita.status === 'atendida' ||
                     cita.status === 'no_asistio' ||
                     cita.status === 'cancelada';
                 const isInList = cita.status === 'en_lista';
                 const canCancel =
-                    cita.status === 'pendiente' ||
-                    cita.status === 'confirmada';
+                    cita.status === 'pendiente' || cita.status === 'confirmada';
                 const doc = doctors.find((d) => d.id === cita.doctor_id);
                 const pal = docPalette(cita.doctor_id);
                 return (
                     <tr
                         key={cita.id}
-                        style={{
-                            background: isDone
-                                ? '#FAFAFA'
+                        className={
+                            isDone
+                                ? 'bg-done-row-bg'
                                 : isInList
-                                  ? '#F8FBF6'
-                                  : '#fff',
-                        }}
+                                  ? 'bg-list-row-bg'
+                                  : 'bg-white'
+                        }
                     >
                         {/* Status / Turn column */}
                         <td
                             style={{
                                 padding: '10px 12px 10px 20px',
-                                borderBottom: '1px solid #eef0ec',
                             }}
+                            className="border-b border-divider"
                         >
-                            <span
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    whiteSpace: 'nowrap',
-                                    padding: '2px 9px',
-                                    borderRadius: 999,
-                                    fontSize: 12,
-                                    fontWeight: 600,
-                                    background: stColor.bg,
-                                    color: stColor.fg,
-                                }}
-                            >
-                                {isInList && cita.turn_number
-                                    ? `T-${String(cita.turn_number).padStart(2, '0')} · En lista`
-                                    : (ESTADO_LABELS[cita.status] ?? cita.status)}
-                            </span>
+                            <StatusBadge
+                                state={citaStatusToState(cita.status)}
+                                label={
+                                    isInList && cita.turn_number
+                                        ? `T-${String(cita.turn_number).padStart(2, '0')} · En lista`
+                                        : undefined
+                                }
+                            />
                         </td>
                         <td
                             style={{
                                 padding: '10px 12px',
-                                borderBottom: '1px solid #eef0ec',
                             }}
+                            className="border-b border-divider"
                         >
                             <div
                                 style={{
                                     fontWeight: 500,
-                                    color: isDone ? '#8a948e' : '#1f2d22',
                                 }}
+                                className={
+                                    isDone
+                                        ? 'text-text-tertiary'
+                                        : 'text-text-heading'
+                                }
                             >
                                 {cita.patient_name}
                             </div>
@@ -143,8 +128,8 @@ export function TodayRows({ rows, doctors, onNewCita, onCancel }: TodayRowsProps
                                 <div
                                     style={{
                                         fontSize: 12,
-                                        color: '#71717a',
                                     }}
+                                    className="text-muted"
                                 >
                                     {cita.notes.length > 40
                                         ? cita.notes.slice(0, 40) + '…'
@@ -155,8 +140,8 @@ export function TodayRows({ rows, doctors, onNewCita, onCancel }: TodayRowsProps
                         <td
                             style={{
                                 padding: '10px 12px',
-                                borderBottom: '1px solid #eef0ec',
                             }}
+                            className="border-b border-divider"
                         >
                             <div
                                 style={{
@@ -165,6 +150,7 @@ export function TodayRows({ rows, doctors, onNewCita, onCancel }: TodayRowsProps
                                     gap: 8,
                                 }}
                             >
+                                {/* Doctor palette: computed at runtime from doctor ID */}
                                 <span
                                     style={{
                                         width: 26,
@@ -185,8 +171,12 @@ export function TodayRows({ rows, doctors, onNewCita, onCancel }: TodayRowsProps
                                 <span
                                     style={{
                                         fontSize: 13,
-                                        color: isDone ? '#8a948e' : '#52525b',
                                     }}
+                                    className={
+                                        isDone
+                                            ? 'text-text-tertiary'
+                                            : 'text-text-dim'
+                                    }
                                 >
                                     {cita.doctor_name}
                                 </span>
@@ -195,30 +185,28 @@ export function TodayRows({ rows, doctors, onNewCita, onCancel }: TodayRowsProps
                         <td
                             style={{
                                 padding: '10px 12px',
-                                borderBottom: '1px solid #eef0ec',
-                                color: isDone ? '#8a948e' : '#52525b',
                                 fontSize: 13,
                             }}
+                            className={`border-b border-divider ${isDone ? 'text-text-tertiary' : 'text-text-dim'}`}
                         >
                             {TYPE_LABELS[cita.type] ?? cita.type}
                         </td>
                         <td
                             style={{
                                 padding: '10px 12px',
-                                borderBottom: '1px solid #eef0ec',
-                                color: '#71717a',
                                 fontSize: 13,
                                 fontVariantNumeric: 'tabular-nums',
                             }}
+                            className="border-b border-divider text-muted"
                         >
                             {cita.appointment_time ?? '—'}
                         </td>
                         <td
                             style={{
                                 padding: '10px 12px',
-                                borderBottom: '1px solid #eef0ec',
                                 textAlign: 'right',
                             }}
+                            className="border-b border-divider"
                         >
                             {canCancel && (
                                 <button
@@ -227,14 +215,12 @@ export function TodayRows({ rows, doctors, onNewCita, onCancel }: TodayRowsProps
                                         height: 28,
                                         padding: '0 10px',
                                         borderRadius: 8,
-                                        border: '1px solid #dfe7df',
-                                        background: '#F6F9F5',
-                                        color: '#52525b',
                                         fontWeight: 500,
                                         fontSize: 12,
                                         cursor: 'pointer',
                                         fontFamily: 'inherit',
                                     }}
+                                    className="border border-secondary-border bg-secondary-bg text-text-dim"
                                 >
                                     Cancelar
                                 </button>

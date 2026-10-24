@@ -117,7 +117,9 @@ describe('CitasIndex – date navigation', () => {
         fireEvent.click(hoyButtons[0]);
         expect(mockRouterGet).toHaveBeenCalledWith(
             '/citas',
-            expect.objectContaining({ date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) }),
+            expect.objectContaining({
+                date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+            }),
             expect.objectContaining({ preserveState: false }),
         );
     });
@@ -127,7 +129,9 @@ describe('CitasIndex – date navigation', () => {
         fireEvent.click(screen.getByText('Mañana'));
         expect(mockRouterGet).toHaveBeenCalledWith(
             '/citas',
-            expect.objectContaining({ date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) }),
+            expect.objectContaining({
+                date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+            }),
             expect.objectContaining({ preserveState: false }),
         );
     });
@@ -196,7 +200,9 @@ describe('CitasIndex – PatientSearch fetch', () => {
         render(<CitasIndex {...BASE_PROPS} />);
         fireEvent.click(screen.getByText('+ Nueva cita'));
 
-        const input = screen.getByPlaceholderText('Buscar por nombre o cédula…');
+        const input = screen.getByPlaceholderText(
+            'Buscar por nombre o cédula…',
+        );
         fireEvent.change(input, { target: { value: 'A' } });
 
         await new Promise((r) => setTimeout(r, 400));
@@ -206,13 +212,21 @@ describe('CitasIndex – PatientSearch fetch', () => {
     it('dispara fetch con 2 o más caracteres', async () => {
         (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: true,
-            json: async () => [{ id: 1, full_name: 'Ana Torres', document_number: '001-1111111-1' }],
+            json: async () => [
+                {
+                    id: 1,
+                    full_name: 'Ana Torres',
+                    document_number: '001-1111111-1',
+                },
+            ],
         });
 
         render(<CitasIndex {...BASE_PROPS} />);
         fireEvent.click(screen.getByText('+ Nueva cita'));
 
-        const input = screen.getByPlaceholderText('Buscar por nombre o cédula…');
+        const input = screen.getByPlaceholderText(
+            'Buscar por nombre o cédula…',
+        );
         fireEvent.change(input, { target: { value: 'An' } });
 
         await waitFor(() => {
@@ -225,13 +239,21 @@ describe('CitasIndex – PatientSearch fetch', () => {
     it('muestra los resultados devueltos por el servidor', async () => {
         (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: true,
-            json: async () => [{ id: 1, full_name: 'Ana Torres', document_number: '001-1111111-1' }],
+            json: async () => [
+                {
+                    id: 1,
+                    full_name: 'Ana Torres',
+                    document_number: '001-1111111-1',
+                },
+            ],
         });
 
         render(<CitasIndex {...BASE_PROPS} />);
         fireEvent.click(screen.getByText('+ Nueva cita'));
 
-        const input = screen.getByPlaceholderText('Buscar por nombre o cédula…');
+        const input = screen.getByPlaceholderText(
+            'Buscar por nombre o cédula…',
+        );
         fireEvent.change(input, { target: { value: 'Ana' } });
 
         await waitFor(() => {
@@ -248,11 +270,15 @@ describe('CitasIndex – PatientSearch fetch', () => {
         render(<CitasIndex {...BASE_PROPS} />);
         fireEvent.click(screen.getByText('+ Nueva cita'));
 
-        const input = screen.getByPlaceholderText('Buscar por nombre o cédula…');
+        const input = screen.getByPlaceholderText(
+            'Buscar por nombre o cédula…',
+        );
         fireEvent.change(input, { target: { value: 'xyz' } });
 
         await waitFor(() => {
-            expect(screen.getByText('No se encontraron pacientes.')).toBeTruthy();
+            expect(
+                screen.getByText('No se encontraron pacientes.'),
+            ).toBeTruthy();
         });
     });
 });
@@ -272,14 +298,22 @@ describe('CitasIndex – submit nueva cita', () => {
     it('enviar el modal con paciente y médico seleccionados llama a router.post con el payload correcto', async () => {
         (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: true,
-            json: async () => [{ id: 5, full_name: 'Pedro Díaz', document_number: '001-9999999-9' }],
+            json: async () => [
+                {
+                    id: 5,
+                    full_name: 'Pedro Díaz',
+                    document_number: '001-9999999-9',
+                },
+            ],
         });
 
         render(<CitasIndex {...BASE_PROPS} />);
         fireEvent.click(screen.getByText('+ Nueva cita'));
 
         // Search and select patient
-        const input = screen.getByPlaceholderText('Buscar por nombre o cédula…');
+        const input = screen.getByPlaceholderText(
+            'Buscar por nombre o cédula…',
+        );
         fireEvent.change(input, { target: { value: 'Ped' } });
 
         await waitFor(() => screen.getByText('Pedro Díaz'));
@@ -317,13 +351,21 @@ describe('CitasIndex – submit nueva cita', () => {
     it('enviar sin médico muestra error de validación', async () => {
         (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: true,
-            json: async () => [{ id: 5, full_name: 'Pedro Díaz', document_number: '001-9999999-9' }],
+            json: async () => [
+                {
+                    id: 5,
+                    full_name: 'Pedro Díaz',
+                    document_number: '001-9999999-9',
+                },
+            ],
         });
 
         render(<CitasIndex {...BASE_PROPS} />);
         fireEvent.click(screen.getByText('+ Nueva cita'));
 
-        const input = screen.getByPlaceholderText('Buscar por nombre o cédula…');
+        const input = screen.getByPlaceholderText(
+            'Buscar por nombre o cédula…',
+        );
         fireEvent.change(input, { target: { value: 'Ped' } });
         await waitFor(() => screen.getByText('Pedro Díaz'));
         fireEvent.click(screen.getByText('Pedro Díaz'));

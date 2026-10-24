@@ -1,15 +1,6 @@
 import { DoctorOption } from '../types';
 import { todayStr, tomorrowStr, addDays } from '../lib/dates';
-
-const DOC_PALETTES = [
-    { bg: '#EEF6E2', fg: '#2E8B3E' },
-    { bg: '#DBEAFE', fg: '#1E40AF' },
-    { bg: '#EDE9FE', fg: '#5B21B6' },
-    { bg: '#FCE7F3', fg: '#9D174D' },
-    { bg: '#CFFAFE', fg: '#155E75' },
-    { bg: '#FEF3C7', fg: '#92400E' },
-];
-const docPalette = (id: number) => DOC_PALETTES[id % DOC_PALETTES.length];
+import { docPalette } from '../lib/palettes';
 
 type CitasToolbarProps = {
     doctors: DoctorOption[];
@@ -59,12 +50,16 @@ export function CitasToolbar({
                                 borderRadius: 12,
                                 cursor: 'pointer',
                                 textAlign: 'left',
-                                background: active ? '#EEF6E2' : '#fff',
-                                border: `1px solid ${active ? '#B9DC8E' : '#e3e9e3'}`,
                                 fontFamily: 'inherit',
                                 fontSize: 14,
                             }}
+                            className={
+                                active
+                                    ? 'border border-accent-border bg-accent-bg'
+                                    : 'border border-card-border bg-white'
+                            }
                         >
+                            {/* Doctor palette: computed at runtime from doctor ID */}
                             <span
                                 style={{
                                     width: 32,
@@ -87,9 +82,9 @@ export function CitasToolbar({
                                     style={{
                                         display: 'block',
                                         fontWeight: 600,
-                                        color: '#1f2d22',
                                         whiteSpace: 'nowrap',
                                     }}
+                                    className="text-text-heading"
                                 >
                                     {d.name}
                                 </span>
@@ -97,9 +92,9 @@ export function CitasToolbar({
                                     style={{
                                         display: 'block',
                                         fontSize: 12,
-                                        color: '#71717a',
                                         whiteSpace: 'nowrap',
                                     }}
+                                    className="text-muted"
                                 >
                                     {d.specialty}
                                 </span>
@@ -122,12 +117,11 @@ export function CitasToolbar({
                 <div
                     style={{
                         display: 'inline-flex',
-                        background: '#F3F7F2',
-                        border: '1px solid #e3e9e3',
                         borderRadius: 11,
                         padding: 3,
                         gap: 2,
                     }}
+                    className="border border-card-border bg-app-bg"
                 >
                     {(
                         [
@@ -154,16 +148,21 @@ export function CitasToolbar({
                                 borderRadius: 10,
                                 cursor: 'pointer',
                                 fontWeight: 500,
+                                /* active/inactive computed at runtime from navigation state */
                                 background: t.active
-                                    ? '#fff'
+                                    ? 'var(--color-card-bg)'
                                     : 'transparent',
-                                color: t.active ? '#1f2d22' : '#52605a',
                                 boxShadow: t.active
                                     ? '0 1px 3px rgba(0,0,0,.1)'
                                     : 'none',
                                 fontFamily: 'inherit',
                                 fontSize: 14,
                             }}
+                            className={
+                                t.active
+                                    ? 'text-text-heading'
+                                    : 'text-secondary-fg'
+                            }
                         >
                             {t.label}
                         </button>
@@ -182,13 +181,12 @@ export function CitasToolbar({
                         style={{
                             width: 36,
                             height: 36,
-                            border: '1px solid #dfe7df',
-                            background: '#F6F9F5',
                             borderRadius: 10,
                             cursor: 'pointer',
                             fontFamily: 'inherit',
                             fontSize: 16,
                         }}
+                        className="border border-secondary-border bg-secondary-bg"
                     >
                         ‹
                     </button>
@@ -197,14 +195,13 @@ export function CitasToolbar({
                         style={{
                             height: 36,
                             padding: '0 12px',
-                            border: '1px solid #dfe7df',
-                            background: '#F6F9F5',
                             borderRadius: 10,
                             cursor: 'pointer',
                             fontFamily: 'inherit',
                             fontSize: 14,
                             fontWeight: 500,
                         }}
+                        className="border border-secondary-border bg-secondary-bg"
                     >
                         Hoy
                     </button>
@@ -213,13 +210,12 @@ export function CitasToolbar({
                         style={{
                             width: 36,
                             height: 36,
-                            border: '1px solid #dfe7df',
-                            background: '#F6F9F5',
                             borderRadius: 10,
                             cursor: 'pointer',
                             fontFamily: 'inherit',
                             fontSize: 16,
                         }}
+                        className="border border-secondary-border bg-secondary-bg"
                     >
                         ›
                     </button>
@@ -235,13 +231,12 @@ export function CitasToolbar({
                         padding: '0 14px',
                         borderRadius: 10,
                         border: 'none',
-                        background: '#2E8B3E',
-                        color: '#fff',
                         fontWeight: 500,
                         cursor: 'pointer',
                         fontFamily: 'inherit',
                         fontSize: 14,
                     }}
+                    className="bg-primary text-white"
                 >
                     + Nueva cita
                 </button>

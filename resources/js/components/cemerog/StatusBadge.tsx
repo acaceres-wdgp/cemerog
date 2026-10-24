@@ -11,7 +11,13 @@ type AttentionState =
     | 'pendiente'
     | 'balance'
     | 'saldada'
-    | 'cancelada';
+    | 'cancelada'
+    | 'cita-pendiente'
+    | 'cita-confirmada'
+    | 'cita-en_lista'
+    | 'cita-atendida'
+    | 'cita-no_asistio'
+    | 'cita-cancelada';
 
 interface StatusBadgeProps {
     state: AttentionState;
@@ -72,6 +78,42 @@ const STATE_CONFIG: Record<
         border: '#2E8B3E',
     },
     cancelada: {
+        label: 'Cancelada',
+        bg: '#F4F4F5',
+        text: '#52525B',
+        border: '#A1A1AA',
+    },
+    'cita-pendiente': {
+        label: 'Pendiente',
+        bg: '#FEF3C7',
+        text: '#92400E',
+        border: '#D97706',
+    },
+    'cita-confirmada': {
+        label: 'Confirmada',
+        bg: '#F3F7F2',
+        text: '#2E8B3E',
+        border: '#2E8B3E',
+    },
+    'cita-en_lista': {
+        label: 'En lista',
+        bg: '#DBEAFE',
+        text: '#1E40AF',
+        border: '#2563EB',
+    },
+    'cita-atendida': {
+        label: 'Atendida',
+        bg: '#DCFCE7',
+        text: '#166534',
+        border: '#16A34A',
+    },
+    'cita-no_asistio': {
+        label: 'No asistió',
+        bg: '#F4F4F5',
+        text: '#52525B',
+        border: '#A1A1AA',
+    },
+    'cita-cancelada': {
         label: 'Cancelada',
         bg: '#F4F4F5',
         text: '#52525B',

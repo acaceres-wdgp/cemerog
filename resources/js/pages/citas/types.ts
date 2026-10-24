@@ -30,4 +30,8 @@ export type DoctorOption = {
     initials: string;
 };
 
-export type PatientResult = { id: number; full_name: string; document_number: string };
+export type PatientResult = {
+    id: number;
+    full_name: string;
+    document_number: string;
+};

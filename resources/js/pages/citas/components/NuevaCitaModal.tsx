@@ -8,7 +8,6 @@ const inputStyle: React.CSSProperties = {
     height: 36,
     width: '100%',
     padding: '0 12px',
-    border: '1px solid #e4e4e7',
     borderRadius: 10,
     outline: 'none',
     fontFamily: 'inherit',
@@ -93,31 +92,31 @@ export function NuevaCitaModal({
                     width: 480,
                     maxWidth: '95vw',
                     maxHeight: '90vh',
-                    background: '#fff',
                     borderRadius: 16,
                     boxShadow: '0 24px 64px -16px rgba(16,40,24,.35)',
                     display: 'flex',
                     flexDirection: 'column',
                     overflow: 'hidden',
                 }}
+                className="bg-white"
             >
                 <div
                     style={{
                         padding: '16px 20px',
-                        borderBottom: '1px solid #eef0ec',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         flexShrink: 0,
                     }}
+                    className="border-b border-divider"
                 >
                     <span
                         style={{
                             fontFamily: 'Bitter,Georgia,serif',
                             fontWeight: 600,
                             fontSize: 17,
-                            color: '#1f2d22',
                         }}
+                        className="text-text-heading"
                     >
                         Nueva cita
                     </span>
@@ -129,10 +128,10 @@ export function NuevaCitaModal({
                             height: 30,
                             border: 'none',
                             borderRadius: 8,
-                            background: '#F3F7F2',
                             cursor: 'pointer',
                             fontSize: 16,
                         }}
+                        className="bg-app-bg"
                     >
                         ✕
                     </button>
@@ -194,9 +193,7 @@ export function NuevaCitaModal({
                                 onChange={(e) => setDoctorId(e.target.value)}
                                 style={{
                                     ...inputStyle,
-                                    borderColor: errors.doctor_id
-                                        ? '#b91c1c'
-                                        : '#e4e4e7',
+                                    border: `1px solid ${errors.doctor_id ? 'var(--color-error)' : 'var(--color-input-border)'}`,
                                     cursor: 'pointer',
                                 }}
                             >
@@ -209,7 +206,8 @@ export function NuevaCitaModal({
                             </select>
                             {errors.doctor_id && (
                                 <span
-                                    style={{ color: '#b91c1c', fontSize: 12 }}
+                                    style={{ fontSize: 12 }}
+                                    className="text-error"
                                 >
                                     {errors.doctor_id}
                                 </span>
@@ -238,17 +236,15 @@ export function NuevaCitaModal({
                                     onChange={(e) => setFecha(e.target.value)}
                                     style={{
                                         ...inputStyle,
-                                        borderColor: errors.appointment_date
-                                            ? '#b91c1c'
-                                            : '#e4e4e7',
+                                        border: `1px solid ${errors.appointment_date ? 'var(--color-error)' : 'var(--color-input-border)'}`,
                                     }}
                                 />
                                 {errors.appointment_date && (
                                     <span
                                         style={{
-                                            color: '#b91c1c',
                                             fontSize: 12,
                                         }}
+                                        className="text-error"
                                     >
                                         {errors.appointment_date}
                                     </span>
@@ -268,8 +264,8 @@ export function NuevaCitaModal({
                                     <span
                                         style={{
                                             fontWeight: 400,
-                                            color: '#71717a',
                                         }}
+                                        className="text-muted"
                                     >
                                         (opcional)
                                     </span>
@@ -278,7 +274,10 @@ export function NuevaCitaModal({
                                     type="time"
                                     value={hora}
                                     onChange={(e) => setHora(e.target.value)}
-                                    style={inputStyle}
+                                    style={{
+                                        ...inputStyle,
+                                        border: `1px solid var(--color-input-border)`,
+                                    }}
                                 />
                             </label>
                         </div>
@@ -295,7 +294,11 @@ export function NuevaCitaModal({
                             <select
                                 value={tipo}
                                 onChange={(e) => setTipo(e.target.value)}
-                                style={{ ...inputStyle, cursor: 'pointer' }}
+                                style={{
+                                    ...inputStyle,
+                                    border: `1px solid var(--color-input-border)`,
+                                    cursor: 'pointer',
+                                }}
                             >
                                 <option value="consulta">Consulta</option>
                                 <option value="seguimiento">Seguimiento</option>
@@ -316,8 +319,8 @@ export function NuevaCitaModal({
                                 <span
                                     style={{
                                         fontWeight: 400,
-                                        color: '#71717a',
                                     }}
+                                    className="text-muted"
                                 >
                                     (opcional)
                                 </span>
@@ -333,6 +336,7 @@ export function NuevaCitaModal({
                                     padding: '8px 12px',
                                     resize: 'vertical',
                                     lineHeight: 1.5,
+                                    border: `1px solid var(--color-input-border)`,
                                 }}
                             />
                         </label>
@@ -340,12 +344,12 @@ export function NuevaCitaModal({
                     <div
                         style={{
                             padding: '14px 20px',
-                            borderTop: '1px solid #eef0ec',
                             display: 'flex',
                             justifyContent: 'flex-end',
                             gap: 8,
                             flexShrink: 0,
                         }}
+                        className="border-t border-divider"
                     >
                         <button
                             type="button"
@@ -354,13 +358,12 @@ export function NuevaCitaModal({
                                 height: 36,
                                 padding: '0 14px',
                                 borderRadius: 10,
-                                border: '1px solid #dfe7df',
-                                background: '#F6F9F5',
                                 fontWeight: 500,
                                 cursor: 'pointer',
                                 fontFamily: 'inherit',
                                 fontSize: 14,
                             }}
+                            className="border border-secondary-border bg-secondary-bg"
                         >
                             Cancelar
                         </button>
@@ -372,13 +375,16 @@ export function NuevaCitaModal({
                                 padding: '0 16px',
                                 borderRadius: 10,
                                 border: 'none',
-                                background: processing ? '#7cb987' : '#2E8B3E',
-                                color: '#fff',
+                                /* processing state: computed at runtime based on form state */
+                                background: processing
+                                    ? 'var(--color-primary-disabled)'
+                                    : 'var(--color-primary)',
                                 fontWeight: 500,
                                 cursor: processing ? 'not-allowed' : 'pointer',
                                 fontFamily: 'inherit',
                                 fontSize: 14,
                             }}
+                            className="text-white"
                         >
                             {processing ? 'Guardando…' : '✓ Registrar cita'}
                         </button>
