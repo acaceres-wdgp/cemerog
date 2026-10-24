@@ -1,12 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
-import {
-    fireEvent,
-    render,
-    screen,
-    waitFor,
-    act,
-} from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import RegistroIndex from '@/pages/registro/index';
 
 // Mock @inertiajs/react

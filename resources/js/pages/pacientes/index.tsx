@@ -1,16 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { registro, pacientes } from '@/routes';
+import { registro } from '@/routes';
 import { edit as editPaciente } from '@/routes/registro/pacientes';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import {
-    ChevronRight,
-    Contact,
-    Plus,
-    Search,
-    TriangleAlert,
-    X,
-} from 'lucide-react';
+import { ChevronRight, Plus, Search, TriangleAlert, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import DataTable, {
