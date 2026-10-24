@@ -38,11 +38,21 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 - Estados de atención: espera, consulta, emergencia, internado, cirugia, pendiente, balance, saldada, cancelada.
 - **Pendiente de implementar**: actualización en tiempo real con broadcasting.
 
+### Pacientes
+
+- Directorio permanente de todos los pacientes de la clínica.
+- Búsqueda por nombre (AND entre palabras) o por número de documento/teléfono (hash exacto).
+- Panel de detalle (Sheet) con datos personales, alergias, y últimas 4 atenciones.
+- **Los expedientes son permanentes**: no existe borrado ni desactivación de pacientes. Una vez registrado, el paciente forma parte del historial clínico para siempre. Ver ADR-009.
+
 ### Registro de pacientes
 
-- Datos personales, cédula única, contacto de emergencia.
-- Un paciente puede tener múltiples expedientes.
-- **Pendiente de implementar**: búsqueda por cédula y creación de nuevo expediente.
+- Flujo unificado: buscar primero → elegir paciente existente o registrar nuevo → crear turno de atención.
+- Búsqueda con autocompletar (mínimo 3 caracteres, debounce 300 ms).
+- Un paciente no puede tener más de una atención abierta el mismo día; el sistema muestra un aviso si intenta registrarse de nuevo.
+- La creación del paciente y la asignación del turno ocurren en una sola transacción (`RegisterArrival`).
+- `expediente_number` = `P-` + id con cero a la izquierda (5 dígitos mínimo).
+- `document_number` y `phone` se guardan cifrados; se indexan mediante hash HMAC-SHA256 de solo los dígitos para búsquedas exactas entre distintos formatos de entrada.
 
 ### Citas
 
@@ -148,3 +158,5 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 4. El cuadre solo lo puede cerrar un usuario con rol "caja".
 5. Los precios de servicios son configurables desde el catálogo de precios.
 6. ITBIS: los servicios médicos están exentos; medicamentos al 18 %.
+7. **Permanencia de pacientes**: los expedientes clínicos nunca se borran ni desactivan. Solo el administrador puede editar datos personales.
+8. **Atención única diaria**: un paciente no puede tener dos atenciones abiertas el mismo día. El intento genera un error de validación con referencia al turno existente.

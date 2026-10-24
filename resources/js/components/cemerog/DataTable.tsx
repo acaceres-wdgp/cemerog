@@ -1,6 +1,9 @@
 /**
- * DataTable – TanStack Table wrapper with server-side pagination support.
- * Pagination is controlled by the parent; the table only renders the rows it receives.
+ * DataTable – TanStack Table wrapper with server-side pagination, row-click
+ * support, and numbered pagination that matches the CEMEROG design spec.
+ *
+ * Pagination renders: first, active±1, last, with "…" at the gaps.
+ * The paginator prop accepts a Laravel LengthAwarePaginator shape directly.
  */
 
 import {
@@ -8,7 +11,6 @@ import {
     tableFeatures,
     useTable,
     type ColumnDef,
-    type PaginationState,
     type RowData,
 } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -22,48 +24,96 @@ export type DataTableColumn<TData extends RowData> = ColumnDef<
     any
 >;
 
+/** Shape of Laravel's LengthAwarePaginator as received from Inertia. */
+export interface LaravelPaginator<TData> {
+    data: TData[];
+    current_page: number;
+    last_page: number;
+    from: number | null;
+    to: number | null;
+    total: number;
+    per_page: number;
+    path: string;
+    links: Array<{ url: string | null; label: string; active: boolean }>;
+}
+
 interface DataTableProps<TData extends RowData> {
     data: TData[];
     columns: DataTableColumn<TData>[];
-    pagination?: PaginationState;
-    pageCount?: number;
-    onPaginationChange?: (pagination: PaginationState) => void;
+    /** Laravel paginator for numbered pagination footer */
+    paginator?: LaravelPaginator<TData>;
+    onPageChange?: (page: number) => void;
     isLoading?: boolean;
     emptyMessage?: string;
+    /** Called when a row is clicked */
+    onRowClick?: (row: TData) => void;
+    /** Id of the currently selected row (for highlight) */
+    selectedRowId?: number | string | null;
+    /** Singular noun for the "Mostrando X–Y de Z {noun}" footer text */
+    noun?: string;
+}
+
+function buildPageNumbers(current: number, last: number): (number | '...')[] {
+    const pages: (number | '...')[] = [];
+
+    const add = (n: number) => {
+        if (!pages.includes(n)) pages.push(n);
+    };
+
+    add(1);
+    if (current - 1 > 2) pages.push('...');
+    if (current - 1 > 1) add(current - 1);
+    add(current);
+    if (current + 1 < last) add(current + 1);
+    if (current + 1 < last - 1) pages.push('...');
+    add(last);
+
+    // Remove duplicate first/last if last === 1
+    return pages.filter((p, i, arr) => p !== '...' || arr[i - 1] !== '...');
 }
 
 export default function DataTable<TData extends RowData>({
     data,
     columns,
-    pagination,
-    pageCount,
-    onPaginationChange,
+    paginator,
+    onPageChange,
     isLoading = false,
     emptyMessage = 'No se encontraron registros.',
+    onRowClick,
+    selectedRowId,
+    noun = 'registros',
 }: DataTableProps<TData>) {
     const table = useTable({ features, columns, data });
 
+    const currentPage = paginator?.current_page ?? 1;
+    const lastPage = paginator?.last_page ?? 1;
+    const from = paginator?.from ?? 0;
+    const to = paginator?.to ?? 0;
+    const total = paginator?.total ?? 0;
+
+    const pageNumbers = paginator ? buildPageNumbers(currentPage, lastPage) : [];
+
     return (
-        <div className="flex flex-col gap-3">
-            <div className="overflow-x-auto rounded-lg border border-[#e3e9e3]">
+        <div className="flex flex-col">
+            {/* Table */}
+            <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                    <thead className="bg-[#F6FAF1]">
+                    <thead>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <tr
                                 key={headerGroup.id}
-                                className="border-b border-[#e3e9e3]"
+                                className="h-10 border-b border-[#DCEBC9] bg-[#F6FAF1]"
                             >
-                                {headerGroup.headers.map((header) => (
+                                {headerGroup.headers.map((header, idx) => (
                                     <th
                                         key={header.id}
-                                        className="px-4 py-3 text-left font-semibold tracking-wide text-[#56693f] uppercase"
+                                        className={`whitespace-nowrap py-0 text-left font-semibold tracking-[.05em] text-[#56693f] uppercase ${idx === 0 ? 'pl-5 pr-3' : 'px-3'}`}
                                         style={{ fontSize: '11.5px' }}
                                     >
                                         {header.isPlaceholder
                                             ? null
                                             : flexRender(
-                                                  header.column.columnDef
-                                                      .header,
+                                                  header.column.columnDef.header,
                                                   header.getContext(),
                                               )}
                                     </th>
@@ -91,62 +141,108 @@ export default function DataTable<TData extends RowData>({
                                 </td>
                             </tr>
                         ) : (
-                            table.getRowModel().rows.map((row) => (
-                                <tr
-                                    key={row.id}
-                                    className="border-b border-[#e3e9e3] transition-colors last:border-0 hover:bg-[#F3F7F2]"
-                                >
-                                    {row.getAllCells().map((cell) => (
-                                        <td
-                                            key={cell.id}
-                                            className="px-4 py-3 text-[#333333]"
-                                        >
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext(),
-                                            )}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))
+                            table.getRowModel().rows.map((row) => {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                const rowId = (row.original as any)?.id;
+                                const isSelected = selectedRowId !== undefined &&
+                                    selectedRowId !== null &&
+                                    rowId === selectedRowId;
+
+                                return (
+                                    <tr
+                                        key={row.id}
+                                        role={onRowClick ? 'button' : undefined}
+                                        tabIndex={onRowClick ? 0 : undefined}
+                                        onClick={() => onRowClick?.(row.original)}
+                                        onKeyDown={(e) => {
+                                            if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
+                                                e.preventDefault();
+                                                onRowClick(row.original);
+                                            }
+                                        }}
+                                        className={`border-b border-[#eef0ec] transition-colors last:border-0 ${
+                                            isSelected
+                                                ? 'bg-[#F3F9EC]'
+                                                : onRowClick
+                                                  ? 'cursor-pointer hover:bg-[#F6FAF1]'
+                                                  : ''
+                                        }`}
+                                    >
+                                        {row.getAllCells().map((cell, idx) => (
+                                            <td
+                                                key={cell.id}
+                                                className={`py-3 text-[#333333] ${idx === 0 ? 'pl-5 pr-3' : 'px-3'}`}
+                                            >
+                                                {flexRender(
+                                                    cell.column.columnDef.cell,
+                                                    cell.getContext(),
+                                                )}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>
             </div>
 
-            {pagination && onPaginationChange && pageCount !== undefined && (
-                <div className="flex items-center justify-between text-sm text-[#71717a]">
+            {/* Pagination footer */}
+            {paginator && onPageChange && (
+                <div className="flex items-center justify-between border-t border-[#eef0ec] px-5 py-3 text-sm text-[#71717a]">
                     <span>
-                        Página {pagination.pageIndex + 1} de {pageCount}
+                        {total > 0
+                            ? `Mostrando ${from}–${to} de ${total} ${noun}`
+                            : `0 ${noun}`}
                     </span>
-                    <div className="flex gap-1">
-                        <button
-                            onClick={() =>
-                                onPaginationChange({
-                                    ...pagination,
-                                    pageIndex: pagination.pageIndex - 1,
-                                })
-                            }
-                            disabled={pagination.pageIndex === 0}
-                            className="inline-flex items-center rounded border border-[#e4e4e7] bg-white px-2 py-1.5 hover:bg-[#F3F7F2] disabled:cursor-not-allowed disabled:opacity-40"
-                            aria-label="Página anterior"
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                        </button>
-                        <button
-                            onClick={() =>
-                                onPaginationChange({
-                                    ...pagination,
-                                    pageIndex: pagination.pageIndex + 1,
-                                })
-                            }
-                            disabled={pagination.pageIndex >= pageCount - 1}
-                            className="inline-flex items-center rounded border border-[#e4e4e7] bg-white px-2 py-1.5 hover:bg-[#F3F7F2] disabled:cursor-not-allowed disabled:opacity-40"
-                            aria-label="Página siguiente"
-                        >
-                            <ChevronRight className="h-4 w-4" />
-                        </button>
-                    </div>
+
+                    {lastPage > 1 && (
+                        <div className="flex items-center gap-1">
+                            {/* Previous */}
+                            <button
+                                onClick={() => onPageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e3e9e3] bg-white text-[#71717a] hover:bg-[#F3F7F2] disabled:cursor-not-allowed disabled:opacity-40"
+                                aria-label="Página anterior"
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </button>
+
+                            {pageNumbers.map((p, idx) =>
+                                p === '...' ? (
+                                    <span
+                                        key={`ellipsis-${idx}`}
+                                        className="flex h-8 w-8 items-center justify-center text-[#a1a1aa]"
+                                    >
+                                        …
+                                    </span>
+                                ) : (
+                                    <button
+                                        key={p}
+                                        onClick={() => onPageChange(p)}
+                                        className={`flex h-8 w-8 items-center justify-center rounded-lg border text-sm font-medium transition-colors ${
+                                            p === currentPage
+                                                ? 'border-[#2E8B3E] bg-[#2E8B3E] text-white'
+                                                : 'border-[#e3e9e3] bg-white text-[#71717a] hover:bg-[#F3F7F2]'
+                                        }`}
+                                        aria-current={p === currentPage ? 'page' : undefined}
+                                    >
+                                        {p}
+                                    </button>
+                                ),
+                            )}
+
+                            {/* Next */}
+                            <button
+                                onClick={() => onPageChange(currentPage + 1)}
+                                disabled={currentPage === lastPage}
+                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e3e9e3] bg-white text-[#71717a] hover:bg-[#F3F7F2] disabled:cursor-not-allowed disabled:opacity-40"
+                                aria-label="Página siguiente"
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

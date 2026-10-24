@@ -14,7 +14,7 @@ class ResolveHomeRoute
      */
     private const MODULES = [
         'inicio',
-        'tablero', 'registro', 'citas',
+        'tablero', 'pacientes', 'registro', 'citas',
         'consulta', 'emergencia', 'internamiento', 'cirugia',
         'lab', 'img', 'impresos',
         'caja', 'cxc', 'cuadre',

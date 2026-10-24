@@ -89,7 +89,7 @@ textarea{resize:vertical}
       <div onClick="{{ um.toggle }}" style="position:fixed;inset:0;z-index:40"></div>
       <div style="position:absolute;right:0;top:calc(100% + 6px);z-index:41;width:220px;background:#fff;border:1px solid #e3e9e3;border-radius:12px;box-shadow:0 12px 32px -8px rgba(16,24,16,.2);padding:6px;display:flex;flex-direction:column">
         <div style="padding:8px 10px 10px;border-bottom:1px solid #eef0ec;margin-bottom:4px"><div style="font-weight:600;color:#1f2d22">{{ um.nombre }}</div><div style="font-size:12px;color:#71717a;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">{{ um.usuario }}</div></div>
-        <button onClick="{{ um.pw }}" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border:none;background:transparent;border-radius:8px;cursor:pointer;text-align:left;font-weight:500" style-hover="background:#F3F7F2"><span style="display:inline-flex;font-size:15px;color:#52605a">{{ i.lock }}</span>Cambiar mi contraseña</button>
+        
         <button onClick="{{ um.salir }}" style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border:none;background:transparent;border-radius:8px;cursor:pointer;text-align:left;font-weight:500;color:#b91c1c" style-hover="background:#FEF2F2"><span style="display:inline-flex;font-size:15px">{{ um.icon }}</span>Cerrar sesión</button>
       </div>
     </sc-if>
@@ -334,6 +334,40 @@ textarea{resize:vertical}
             <sc-if value="{{ tc.empty }}"><tr><td colspan="7" style="padding:24px;text-align:center;color:#71717a">No hay citas pendientes para hoy.</td></tr></sc-if>
           </tbody>
         </table>
+      </div>
+    </sc-if>
+
+    <!-- PACIENTES -->
+    <sc-if value="{{ s.pacientes }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <p style="margin:0;color:#5f6b64">{{ pl.resumen }}</p>
+        <button onClick="{{ goRegistro }}" style="white-space:nowrap;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;border:none;background:#2E8B3E;color:#fff;font-weight:500;box-shadow:0 1px 2px rgba(46,139,62,.3),inset 0 1px 0 rgba(255,255,255,.15);cursor:pointer" style-hover="background:#277a35"><span style="display:inline-flex;font-size:16px">{{ i.plus }}</span>Nuevo paciente</button>
+      </div>
+      <div style="background:#fff;border:1px solid #e3e9e3;border-radius:14px;box-shadow:0 1px 2px rgba(16,40,24,.03);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid #eef0ec;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+          <div style="position:relative;flex:1 1 300px;min-width:0"><span style="position:absolute;left:10px;top:10px;display:inline-flex;font-size:16px;color:#71717a">{{ i.search }}</span><input value="{{ pl.q }}" onChange="{{ pl.setQ }}" placeholder="Buscar por cédula, nombre o teléfono…" style="height:36px;width:100%;padding:0 12px;border:1px solid #e4e4e7;border-radius:10px;outline:none;background:#fff;min-width:0;padding-left:34px" style-focus="border-color:#2E8B3E;box-shadow:0 0 0 3px rgba(46,139,62,.15)"></div>
+          <div style="display:inline-flex;flex-wrap:wrap;background:#F3F7F2;border:1px solid #e3e9e3;border-radius:11px;padding:3px;gap:2px"><sc-for list="{{ pl.filtros }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.go }}" style="white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 12px;border:none;border-radius:10px;cursor:pointer;font-weight:500;background:{{ t.bg }};color:{{ t.fg }};box-shadow:{{ t.sh }}">{{ t.label }}<span style="font-size:12px;color:#8a948e;font-variant-numeric:tabular-nums">{{ t.n }}</span></button></sc-for></div>
+          <select value="{{ pl.orden }}" onChange="{{ pl.setOrden }}" style="height:36px;padding:0 10px;border:1px solid #e4e4e7;border-radius:10px;outline:none;background:#fff;font-weight:500;flex:0 1 210px;min-width:0"><option value="reciente">Última atención (reciente)</option><option value="nombre">Nombre (A–Z)</option><option value="registro">Fecha de registro</option></select>
+        </div>
+        <div style="overflow-x:auto"><table><thead><tr><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap;padding-left:20px">Paciente</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Documento</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Teléfono</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Sangre</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Alergias</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Última atención</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap"></th></tr></thead>
+        <tbody><sc-for list="{{ pl.rows }}" as="p" hint-placeholder-count="12"><tr onClick="{{ p.open }}" style="cursor:pointer;background:{{ p.bg }}" style-hover="background:#F6FAF1">
+          <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;padding-left:20px;min-width:240px"><div style="display:flex;align-items:center;gap:10px"><span style="width:34px;height:34px;flex:none;border-radius:50%;background:#EEF6E2;color:#2f4a17;display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:12.5px">{{ p.ini }}</span><div style="min-width:0"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-weight:600;color:#1f2d22">{{ p.nombre }}</span></div><div style="font-size:12.5px;color:#71717a">{{ p.sexoEdad }}</div></div></div></td>
+          <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;white-space:nowrap"><div style="font-variant-numeric:tabular-nums">{{ p.doc }}</div><div style="font-size:12px;color:#71717a">{{ p.docTipo }}</div></td>
+          <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;white-space:nowrap;font-variant-numeric:tabular-nums">{{ p.tel }}</td>
+          <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle"><sc-if value="{{ p.hasSangre }}"><span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:7px;background:#F3F5F1;color:#3f3f46;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">{{ p.sangre }}</span></sc-if><sc-if value="{{ p.noSangre }}"><span style="color:#a1a1aa">—</span></sc-if></td>
+          <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;min-width:150px"><sc-if value="{{ p.hasAlergia }}"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:#FEF2F2;color:#B91C1C;font-size:12px;font-weight:500"><span style="display:inline-flex;font-size:13px">{{ i.alert }}</span>{{ p.alergia }}</span></sc-if><sc-if value="{{ p.noAlergia }}"><span style="color:#8a948e;font-size:13px">Ninguna conocida</span></sc-if></td>
+          <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;white-space:nowrap"><div style="font-variant-numeric:tabular-nums">{{ p.ult }}</div><div style="font-size:12px;color:#71717a">{{ p.ultTipo }}</div></td>
+          <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;padding-right:16px;text-align:right;color:#a1a1aa;font-size:16px"><span style="display:inline-flex">{{ i.chevR }}</span></td>
+        </tr></sc-for></tbody></table></div>
+        <sc-if value="{{ pl.empty }}"><div style="padding:40px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;color:#71717a"><span>{{ pl.emptyTxt }}</span><button onClick="{{ goRegistro }}" style="white-space:nowrap;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;border:1px solid #dfe7df;background:#F6F9F5;font-weight:500;cursor:pointer" style-hover="background:#ECF2EB"><span style="display:inline-flex;font-size:16px">{{ i.plus }}</span>Registrar paciente nuevo</button></div></sc-if>
+        <div style="padding:12px 20px;border-top:1px solid #eef0ec;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="font-size:13px;color:#71717a">{{ pl.rango }}</span>
+          <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+            <button onClick="{{ pl.prev }}" disabled="{{ pl.noPrev }}" style="width:32px;height:32px;border-radius:8px;border:1px solid #dfe7df;background:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#52605a;opacity:{{ pl.prevOp }};transform:rotate(180deg)">{{ i.chevR }}</button>
+            <sc-for list="{{ pl.pages }}" as="p" hint-placeholder-count="5"><button onClick="{{ p.go }}" style="min-width:32px;height:32px;padding:0 8px;border-radius:8px;border:{{ p.border }};background:{{ p.bg }};color:{{ p.fg }};font-weight:{{ p.w }};cursor:{{ p.cur }};font-variant-numeric:tabular-nums">{{ p.l }}</button></sc-for>
+            <button onClick="{{ pl.next }}" disabled="{{ pl.noNext }}" style="width:32px;height:32px;border-radius:8px;border:1px solid #dfe7df;background:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#52605a;opacity:{{ pl.nextOp }}">{{ i.chevR }}</button>
+          </div>
+        </div>
       </div>
     </sc-if>
 
@@ -1982,6 +2016,30 @@ textarea{resize:vertical}
     </div>
   </div>
 </sc-if>
+<sc-if value="{{ pd.open }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:50;display:flex;justify-content:flex-end">
+    <div onClick="{{ pd.close }}" style="position:absolute;inset:0;background:rgba(16,24,16,.35)"></div>
+    <div style="position:relative;width:460px;max-width:100%;height:100%;background:#fff;box-shadow:-24px 0 60px -12px rgba(16,24,16,.25);display:flex;flex-direction:column">
+      <div style="padding:20px 24px;border-bottom:1px solid #eef0ec;display:flex;gap:14px;align-items:flex-start">
+        <span style="width:48px;height:48px;flex:none;border-radius:50%;background:#EEF6E2;color:#2E8B3E;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;font-family:Bitter,Georgia,serif">{{ pd.ini }}</span>
+        <div style="flex:1;min-width:0"><div style="font-family:Bitter,Georgia,serif;font-weight:600;font-size:19px;color:#1f2d22">{{ pd.nombre }}</div><div style="font-size:13px;color:#71717a">{{ pd.sub }}</div></div>
+        <button onClick="{{ pd.close }}" style="border:none;background:transparent;cursor:pointer;font-size:16px;color:#71717a;display:inline-flex;padding:4px;border-radius:6px" style-hover="background:#f4f4f5">{{ i.x }}</button>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:18px 24px;display:flex;flex-direction:column;gap:18px">
+        <sc-if value="{{ pd.hasAlergia }}"><div style="display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;border:1px solid #FECACA;background:#FEF2F2;color:#991B1B;font-size:13.5px"><span style="display:inline-flex;font-size:16px">{{ i.alert }}</span><span><strong style="font-weight:600">Alergia:</strong> {{ pd.alergia }}</span></div></sc-if>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#56693f">Datos personales</div>
+          <div style="display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 16px;font-size:13.5px"><span style="color:#71717a">Documento</span><span style="text-align:right;min-width:0;overflow-wrap:anywhere">{{ pd.doc }}</span><span style="color:#71717a">Nacimiento</span><span style="text-align:right;min-width:0;overflow-wrap:anywhere">{{ pd.nac }}</span><span style="color:#71717a">Sangre</span><span style="text-align:right;min-width:0;overflow-wrap:anywhere">{{ pd.sangre }}</span><span style="color:#71717a">Teléfono</span><span style="text-align:right;min-width:0;overflow-wrap:anywhere">{{ pd.tel }}</span><span style="color:#71717a">Dirección</span><span style="text-align:right;min-width:0;overflow-wrap:anywhere">{{ pd.dir }}</span><span style="color:#71717a">Contacto de emergencia</span><span style="text-align:right;min-width:0;overflow-wrap:anywhere">{{ pd.emerg }}</span><span style="color:#71717a">Registrado</span><span style="text-align:right;min-width:0;overflow-wrap:anywhere">{{ pd.reg }}</span></div></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><div style="font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#56693f">Últimas atenciones</div><span style="font-size:12.5px;color:#71717a">{{ pd.nAt }}</span></div>
+          <sc-if value="{{ pd.noAt }}"><div style="font-size:13px;color:#71717a">Todavía no tiene atenciones.</div></sc-if>
+          <div style="display:flex;flex-direction:column;border:1px solid #eef0ec;border-radius:12px;overflow:hidden"><sc-for list="{{ pd.at }}" as="a" hint-placeholder-count="3"><div style="display:flex;gap:12px;align-items:center;padding:10px 12px;border-bottom:1px solid #f1f3ef"><div style="flex:1;min-width:0"><div style="font-weight:500">{{ a.tipo }} · <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:#52605a">{{ a.no }}</span></div><div style="font-size:12.5px;color:#71717a">{{ a.det }}</div></div><span style="font-size:12.5px;color:#52605a;white-space:nowrap;font-variant-numeric:tabular-nums">{{ a.f }}</span></div></sc-for></div></div>
+      </div>
+      <div style="padding:14px 24px;border-top:1px solid #eef0ec;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end">
+        <button onClick="{{ pd.editar }}" style="white-space:nowrap;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;border:1px solid #dfe7df;background:#F6F9F5;font-weight:500;cursor:pointer" style-hover="background:#ECF2EB"><span style="display:inline-flex;font-size:15px">{{ i.pencil }}</span>Editar</button>
+        <button onClick="{{ pd.atencion }}" style="white-space:nowrap;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;border:none;background:#2E8B3E;color:#fff;font-weight:500;box-shadow:0 1px 2px rgba(46,139,62,.3),inset 0 1px 0 rgba(255,255,255,.15);cursor:pointer" style-hover="background:#277a35"><span style="display:inline-flex;font-size:16px">{{ i.plus }}</span>Nueva atención</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
 <sc-if value="{{ dlg.imgForm }}" hint-placeholder-val="{{ false }}">
   <div style="position:fixed;inset:0;z-index:50;background:rgba(16,24,16,.45);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:16px">
     <div style="width:520px;max-width:100%;max-height:calc(100vh - 32px);background:#fff;border-radius:18px;border:1px solid #e3e9e3;box-shadow:0 24px 60px -12px rgba(16,24,16,.3);display:flex;flex-direction:column;position:relative;overflow:hidden">
@@ -2420,18 +2478,27 @@ const ROW = [
 ];
 const NAV = [
   {title:'General', items:[['inicio','Inicio','House']]},
-  {title:'Recepción', items:[['tablero','Tablero de atenciones','LayoutDashboard'],['registro','Registro de pacientes','UserPlus'],['citas','Citas','CalendarDays']]},
+  {title:'Recepción', items:[['tablero','Tablero de atenciones','LayoutDashboard'],['pacientes','Pacientes','Contact'],['registro','Registro de pacientes','UserPlus'],['citas','Citas','CalendarDays']]},
   {title:'Atención clínica', items:[['consulta','Consulta','Stethoscope'],['emergencia','Emergencia','Siren'],['internamiento','Internamiento','BedDouble'],['cirugia','Cirugía','Scissors']]},
   {title:'Servicios', items:[['lab','Laboratorio','FlaskConical'],['img','Imágenes','ScanLine'],['impresos','Documentos imprimibles','Printer']]},
   {title:'Caja', items:[['caja','Facturación','Wallet'],['cxc','Cuentas por cobrar','Receipt'],['cuadre','Cuadre de caja','Coins']]},
   {title:'Inventario', items:[['almacen','Catálogo','Package'],['entrada','Entrada de mercancía','PackagePlus']]},
   {title:'Administración', items:[['admin','Usuarios y roles','Users'],['doctores','Doctores y especialidades','Stethoscope'],['analisis','Catálogo de análisis','FlaskConical'],['imgcat','Catálogo de imágenes','ScanLine'],['precios','Catálogos de precios','Tag'],['habs','Habitaciones y camas','BedDouble'],['tema','Tema y estados','Palette']]},
 ];
+const PAC_DB = (()=>{ const N=[['Rafael Antonio','Cruz Bueno','M'],['Rosa María','Peña Almonte','F'],['Yokasta','Durán Peralta','F'],['Wilson','Ventura Liriano','M'],['Carmen Julia','Rosario Taveras','F'],['José Ramón','Tavárez Cruz','M'],['Luis Miguel','Estévez Pichardo','M'],['Ana Lucía','Gómez Reyes','F'],['Altagracia Mercedes','Polanco','F'],['Francisco Javier','Almonte Gil','M'],['Marisol','Hernández Vargas','F'],['Héctor Bienvenido','Mota','M'],['Clara Luz','Jiménez Paulino','F'],['Pedro Antonio','Batista Ureña','M'],['Yokasta','Rodríguez Lantigua','F'],['Wilson Antonio','Cruz Peralta','M'],['Ramón Emilio','Fernández Ortiz','M'],['Juana','Bautista Tejada','F'],['Milagros','Santos Encarnación','F'],['Félix María','Reyes Castillo','M'],['Dulce María','Abreu Núñez','F'],['Manuel de Jesús','Peralta Rosario','M'],['Josefina','Liriano Guzmán','F'],['Carlos Alberto','Mejía Santana','M'],['Esperanza','Taveras Marte','F'],['Domingo','Ureña Céspedes','M'],['Yaneris','Pichardo Toribio','F'],['Bienvenido','Almánzar Rojas','M'],['Ramona','Vargas De León','F'],['Junior Alexander','Medina Cabrera','M'],['Leidy Laura','Cepeda Mora','F'],['Ángel Miguel','Disla Fernández','M'],['Nelsy','García Pimentel','F'],['Teodoro','Arias Ventura','M'],['Mercedes','Rosado Batista','F'],['Elvin','Collado Brito','M'],['Paola Michel','Sosa Grullón','F'],['Rubén Darío','Holguín Paulino','M'],['Fiordaliza','Estrella Concepción','F'],['Andrés','Tejada Morel','M'],['Gisela','Martínez Ozuna','F'],['Ulises','Rodríguez Frías','M']];
+  const AL=['Penicilina','','','Ácido acetilsalicílico','','Sulfas','','','Ibuprofeno','','','','Mariscos','','','Látex',''], BT=['O+','A+','O+','B+','','O-','A+','AB+','O+',''], T=['Consulta','Consulta','Consulta','Emergencia','Solo análisis','Consulta','Internamiento','Solo imágenes'], DR=['Dr. F. Rodríguez','Dra. M. Guzmán'];
+  return N.map((n,k)=>{ const ed=4+((k*37)%78), sexo=n[2], dias=k<8?k%3:((k*11)%160)+2, d=new Date(2026,9,12-dias), dd=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+    const docT=ed<18&&k%3===0?'no_tiene':k%17===9?'pasaporte':'cedula', doc=docT==='no_tiene'?'—':docT==='pasaporte'?'RD'+(4410200+k*913):(k%2?'031':'044')+'-0'+String(100000+k*21347%900000).slice(0,6)+'-'+(k%10);
+    const reg=new Date(2024+(k%3),(k*5)%12,1+(k*7)%27), rs=String(reg.getDate()).padStart(2,'0')+'/'+String(reg.getMonth()+1).padStart(2,'0')+'/'+reg.getFullYear();
+    const nAt=k%13===5?0:1+((k*3)%9), tp=T[k%T.length];
+    return {id:k+1,nom:n[0],ape:n[1],sexo,ed,docT,doc,tel:k%11===7?'':'(809) '+(500+(k*37)%400)+'-'+String(1000+(k*7919)%9000),sangre:BT[k%BT.length],alergia:AL[k%AL.length],dias:nAt?dias:9999,ult:nAt?dd:'—',ultTipo:nAt?tp+' · '+(tp.startsWith('Solo')?'Ambulatorio':DR[k%2]):'Sin atenciones',nAt,regOrd:reg.getTime(),reg:rs,activo:k%19!==12,
+      dir:['C/ Duarte #45, Montecristi','C/ Benito Monción #12, San Fernando','Av. Mella #88, Montecristi','Las Matas de Santa Cruz','Castañuelas, Montecristi'][k%5],emerg:k%4===1?'—':['Ana Cruz (hija) · (809) 572-1104','Pedro Peña (esposo) · (829) 410-2290','María Durán (madre) · (809) 579-3381'][k%3],tipo:tp}; }); })();
+const DOC_T={cedula:'Cédula',pasaporte:'Pasaporte',cedula_extranjera:'Cédula extranjera',no_tiene:'Sin documento'};
 const ROLE_MODS = {
   'Administrador':null,
-  'Médico':['inicio','tablero','citas','consulta','emergencia','internamiento','cirugia','lab','img','impresos'],
+  'Médico':['inicio','tablero','pacientes','citas','consulta','emergencia','internamiento','cirugia','lab','img','impresos'],
   'Enfermería':['tablero','emergencia','internamiento','cirugia'],
-  'Secretaría/recepción':['inicio','tablero','registro','citas','impresos'],
+  'Secretaría/recepción':['inicio','tablero','pacientes','registro','citas','impresos'],
   'Bioanalista':['lab','impresos'],
   'Imágenes':['img'],
   'Caja':['inicio','tablero','caja','cxc','cuadre','impresos'],
@@ -3605,6 +3672,26 @@ class Component extends DCLogic {
               if(IM.some(r=>r[1].toLowerCase()===n.toLowerCase()&&r[0]!==F.orig)){ this.toast('Ya existe un estudio con ese nombre.'); return; }
               this.setState(st=>{ const L=st.precios.imagenes, ix=L.findIndex(r=>r[0]===F.cod); return {precios:{...st.precios,imagenes:ix>=0?L.map((r,y)=>y===ix?[F.cod,n,p]:r):[...L,[F.cod,n,p]]},imgMeta:{...(st.imgMeta||{}),[F.cod]:{mod:F.mod,prep:(F.prep||'').trim()}},dialog:null,ifS:null}; });
               this.toast(F.orig?'Estudio '+F.cod+' actualizado.':'Estudio '+F.cod+' · '+n+' creado.'); }}}; })(),
+      ...(()=>{ const db=PAC_DB, q=(S.plQ||'').trim().toLowerCase(), qd=q.replace(/\D/g,''), f=S.plF||'todos', ord=S.plOrd||'reciente', PS=15;
+        const match=p=>!q||(p.nom+' '+p.ape).toLowerCase().includes(q)||(qd.length>=3&&(p.doc.replace(/\D/g,'').includes(qd)||p.tel.replace(/\D/g,'').includes(qd)));
+        const base=db.filter(match), flt=(p,k)=>k==='todos'||(k==='alergia'&&!!p.alergia)||(k==='hoy'&&p.dias===0)||(k==='sinAt'&&!p.nAt), cnt=k=>base.filter(p=>flt(p,k)).length;
+        const all=base.filter(p=>flt(p,f)).sort((a,b)=>ord==='nombre'?(a.nom+a.ape).localeCompare(b.nom+b.ape,'es'):ord==='registro'?b.regOrd-a.regOrd:a.dias-b.dias);
+        const np=Math.max(1,Math.ceil(all.length/PS)), pg=Math.min(S.plPg||0,np-1), setPg=n=>this.setState({plPg:Math.max(0,Math.min(np-1,n))});
+        const nums=[...new Set([0,pg-1,pg,pg+1,np-1])].filter(n=>n>=0&&n<np).sort((a,b)=>a-b), pages=[]; nums.forEach((n,x)=>{ if(x&&n-nums[x-1]>1) pages.push({l:'…',go:()=>{},border:'1px solid transparent',bg:'transparent',fg:'#71717a',w:400,cur:'default'}); pages.push({l:String(n+1),go:()=>setPg(n),border:n===pg?'1px solid #2E8B3E':'1px solid #dfe7df',bg:n===pg?'#2E8B3E':'#fff',fg:n===pg?'#fff':'#333',w:n===pg?600:500,cur:'pointer'}); });
+        const ini=p=>(p.nom[0]+p.ape[0]).toUpperCase(), sx=p=>(p.sexo==='F'?'Femenino':'Masculino')+' · '+p.ed+' años';
+        const sel=db.find(p=>p.id===S.pdId), tot=db.length, hoy=db.filter(p=>p.dias===0).length;
+        const AT=sel?Array.from({length:Math.min(sel.nAt,4)},(_,x)=>{ const d=new Date(2026,9,12-sel.dias-x*23); const T2=['Consulta','Solo análisis','Consulta','Emergencia']; const t=x?T2[(sel.id+x)%4]:sel.tipo; return {tipo:t,no:'A-2026-00'+(1488-sel.id*7-x*31),det:t.startsWith('Solo')?'Ambulatorio · '+(t==='Solo análisis'?'Hemograma completo':'Radiografía de tórax PA'):(x%2?'Dra. M. Guzmán':'Dr. F. Rodríguez')+' · '+['Control de hipertensión','Cefalea tensional','Infección respiratoria','Dolor abdominal'][(sel.id+x)%4],f:String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()}; }):[];
+        return {pl:{resumen:tot+' pacientes registrados · '+hoy+' atendidos hoy',q:S.plQ||'',setQ:e=>this.setState({plQ:e.target.value,plPg:0}),orden:ord,setOrden:e=>this.setState({plOrd:e.target.value,plPg:0}),
+            filtros:[['todos','Todos'],['hoy','Atendidos hoy'],['alergia','Con alergias'],['sinAt','Sin atenciones']].map(([k,l])=>({label:l,n:cnt(k),go:()=>this.setState({plF:k,plPg:0}),bg:f===k?'#fff':'transparent',fg:f===k?'#333':'#71717a',sh:f===k?'0 1px 2px rgba(0,0,0,.08)':'none'})),
+            rows:all.slice(pg*PS,pg*PS+PS).map(p=>({ini:ini(p),nombre:p.nom+' '+p.ape,sexoEdad:sx(p),doc:p.doc,docTipo:DOC_T[p.docT],tel:p.tel||'—',hasSangre:!!p.sangre,noSangre:!p.sangre,sangre:p.sangre,hasAlergia:!!p.alergia,noAlergia:!p.alergia,alergia:p.alergia,ult:p.ult,ultTipo:p.ultTipo,bg:S.pdId===p.id?'#F3F9EC':'#fff',open:()=>this.setState({pdId:p.id})})),
+            empty:!all.length, emptyTxt:q?'Ningún paciente coincide con «'+(S.plQ||'').trim()+'».':'No hay pacientes en este filtro.',
+            rango:all.length?'Mostrando '+(pg*PS+1)+'–'+Math.min(all.length,pg*PS+PS)+' de '+all.length+' pacientes':'0 pacientes',
+            pages, prev:()=>setPg(pg-1), next:()=>setPg(pg+1), noPrev:pg===0, noNext:pg>=np-1, prevOp:pg===0?.4:1, nextOp:pg>=np-1?.4:1},
+          pd:{open:!!sel&&S.screen==='pacientes',close:()=>this.setState({pdId:null}),...(sel?{ini:ini(sel),nombre:sel.nom+' '+sel.ape,sub:sx(sel)+' · Expediente P-'+String(sel.id).padStart(5,'0'),
+            hasAlergia:!!sel.alergia,alergia:sel.alergia,doc:DOC_T[sel.docT]+(sel.doc!=='—'?' · '+sel.doc:''),nac:'—'.length&&String(1+(sel.id*7)%27).padStart(2,'0')+'/'+String(1+(sel.id*5)%12).padStart(2,'0')+'/'+(2026-sel.ed)+' ('+sel.ed+' años)',sangre:sel.sangre||'No registrado',tel:sel.tel||'—',dir:sel.dir,emerg:sel.emerg,reg:sel.reg,
+            nAt:sel.nAt?sel.nAt+(sel.nAt>1?' en total':' en total'):'',noAt:!sel.nAt,at:AT,
+            editar:()=>this.toast('Abriendo edición de '+sel.nom+' '+sel.ape+'…'),
+            atencion:()=>{ this.setState({pdId:null}); this.go('registro'); this.toast('Paciente seleccionado: '+sel.nom+' '+sel.ape+'. Elige el tipo de atención.'); }}:{})}}; })(),
       espNueva:()=>this.setState({dialog:'espForm',efS:{orig:null,nom:'',pc:true,precio:'1000'}}),
       ...(()=>{ const f=S.efS||{}, up=o=>this.setState(st=>({efS:{...st.efS,...o}})), nom=(f.nom||'').trim(), pcNom='Consulta de '+(nom||'…').toLowerCase();
         const dup=!!nom&&S.esps.some(e=>e.toLowerCase()===nom.toLowerCase()&&e!==f.orig), nd=f.orig?S.docs.filter(x=>x.esp.includes(f.orig)).length:0;

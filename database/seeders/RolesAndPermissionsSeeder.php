@@ -15,20 +15,20 @@ class RolesAndPermissionsSeeder extends Seeder
      */
     private const ROLE_MODULES = [
         'administrador' => [
-            'inicio', 'tablero', 'registro', 'citas', 'consulta', 'emergencia',
+            'inicio', 'tablero', 'pacientes', 'registro', 'citas', 'consulta', 'emergencia',
             'internamiento', 'cirugia', 'lab', 'img', 'impresos',
             'caja', 'cxc', 'cuadre', 'almacen', 'entrada',
             'admin', 'doctores', 'analisis', 'imgcat', 'precios', 'habs', 'tema',
         ],
         'medico' => [
-            'inicio', 'tablero', 'citas', 'consulta', 'emergencia',
+            'inicio', 'tablero', 'pacientes', 'citas', 'consulta', 'emergencia',
             'internamiento', 'cirugia', 'lab', 'img', 'impresos',
         ],
         'enfermeria' => [
             'tablero', 'emergencia', 'internamiento', 'cirugia', 'impresos',
         ],
         'secretaria' => [
-            'inicio', 'tablero', 'registro', 'citas', 'impresos',
+            'inicio', 'tablero', 'pacientes', 'registro', 'citas', 'impresos',
         ],
         'bioanalista' => [
             'lab', 'impresos',

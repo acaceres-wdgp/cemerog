@@ -28,12 +28,6 @@ class PatientFactory extends Factory
             'allergies' => fake()->boolean(20) ? fake()->words(3, true) : null,
             'emergency_contact_name' => fake()->name(),
             'emergency_contact_phone' => fake()->numerify('809-###-####'),
-            'is_active' => true,
         ];
-    }
-
-    public function inactive(): static
-    {
-        return $this->state(fn (array $attributes) => ['is_active' => false]);
     }
 }

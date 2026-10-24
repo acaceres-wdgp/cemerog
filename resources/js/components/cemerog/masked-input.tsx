@@ -66,3 +66,5 @@ export function MaskedInput({ mask, value, onChange, ...rest }: Props) {
         />
     );
 }
+
+export default MaskedInput;

@@ -1,5 +1,8 @@
 /**
- * SegmentedControl – pill-style tabs with optional count badges.
+ * SegmentedControl – pill-style tabs with optional count display.
+ * Design tokens: bg #F3F7F2, border #e3e9e3, radius 11px, padding 3px.
+ * Active: white background, shadow 0 1px 2px rgba(0,0,0,.08).
+ * Counter: plain text 12px #8a948e — no badge/pill.
  */
 
 interface Segment<T extends string = string> {
@@ -23,7 +26,7 @@ export default function SegmentedControl<T extends string = string>({
 }: SegmentedControlProps<T>) {
     return (
         <div
-            className={`inline-flex gap-1 rounded-lg border border-[#e4e4e7] bg-[#f4f4f5] p-1 ${className}`}
+            className={`inline-flex gap-0.5 rounded-[11px] border border-[#e3e9e3] bg-[#F3F7F2] p-[3px] ${className}`}
             role="tablist"
         >
             {segments.map((seg) => {
@@ -34,20 +37,17 @@ export default function SegmentedControl<T extends string = string>({
                         role="tab"
                         aria-selected={active}
                         onClick={() => onChange(seg.value)}
-                        className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+                        className={`inline-flex h-[30px] items-center gap-1.5 rounded-[10px] px-3 text-sm font-[500] transition-all ${
                             active
-                                ? 'bg-white text-[#1f2d22] shadow-sm'
-                                : 'text-[#71717a] hover:text-[#333333]'
+                                ? 'bg-white text-[#333] shadow-[0_1px_2px_rgba(0,0,0,.08)]'
+                                : 'bg-transparent text-[#71717a] hover:text-[#333333]'
                         }`}
                     >
                         {seg.label}
                         {seg.count !== undefined && (
                             <span
-                                className={`rounded-full px-1.5 py-0.5 text-xs font-semibold ${
-                                    active
-                                        ? 'bg-[#EEF6E2] text-[#2E8B3E]'
-                                        : 'bg-[#e4e4e7] text-[#71717a]'
-                                }`}
+                                className="text-[12px] tabular-nums text-[#8a948e]"
+                                aria-label={`${seg.count}`}
                             >
                                 {seg.count}
                             </span>

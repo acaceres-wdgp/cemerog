@@ -25,21 +25,21 @@ export default function Panel({
 
     return (
         <div
-            className={`rounded-lg border border-[#e3e9e3] bg-white shadow-sm ${className}`}
+            className={`rounded-[14px] border border-[#e3e9e3] bg-white shadow-[0_1px_2px_rgba(16,40,24,.03)] ${className}`}
         >
             {hasHeader && (
-                <div className="flex items-center justify-between border-b border-[#e3e9e3] bg-[#F6FAF1] px-5 py-3">
+                <div className="flex items-center justify-between border-b border-[#e3e9e3] px-5 py-4">
                     <div>
                         {title && (
                             <h2
-                                className="text-sm font-semibold tracking-wide text-[#56693f] uppercase"
-                                style={{ fontSize: '11.5px' }}
+                                className="font-semibold text-[#1f2d22]"
+                                style={{ fontFamily: 'Bitter, serif', fontSize: '16px' }}
                             >
                                 {title}
                             </h2>
                         )}
                         {description && (
-                            <p className="mt-0.5 text-xs text-[#71717a]">
+                            <p className="mt-0.5 text-[#71717a]" style={{ fontSize: '13px' }}>
                                 {description}
                             </p>
                         )}

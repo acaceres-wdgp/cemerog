@@ -34,15 +34,22 @@ export const NAV_GROUPS: NavGroup[] = [
         items: [
             {
                 key: 'tablero',
-                label: 'Tablero',
+                label: 'Tablero de atenciones',
                 icon: 'LayoutDashboard',
                 href: '/tablero',
                 permission: 'module.tablero.access',
             },
             {
+                key: 'pacientes',
+                label: 'Pacientes',
+                icon: 'Contact',
+                href: '/pacientes',
+                permission: 'module.pacientes.access',
+            },
+            {
                 key: 'registro',
-                label: 'Paciente',
-                icon: 'User',
+                label: 'Registro de pacientes',
+                icon: 'UserPlus',
                 href: '/registro',
                 permission: 'module.registro.access',
             },

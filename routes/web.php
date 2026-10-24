@@ -22,6 +22,7 @@ use App\Http\Controllers\Modules\ImpresosController;
 use App\Http\Controllers\Modules\InicioController;
 use App\Http\Controllers\Modules\InternamientoController;
 use App\Http\Controllers\Modules\LabController;
+use App\Http\Controllers\Modules\PacientesController;
 use App\Http\Controllers\Modules\PreciosController;
 use App\Http\Controllers\Modules\RegistroController;
 use App\Http\Controllers\Modules\TableroController;
@@ -65,19 +66,28 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::patch('/turnos/{turn}/reorder', [TurnosController::class, 'reorder'])->name('turnos.reorder');
     });
 
+    // Pacientes – listing and detail panel
+    Route::prefix('/pacientes')->middleware('permission:module.pacientes.access')->group(function () {
+        Route::get('/', [PacientesController::class, 'index'])->name('pacientes');
+        Route::get('/buscar', [PacientesController::class, 'search'])->name('pacientes.buscar');
+    });
+
+    // Registro – unified search + register + turn creation
     Route::prefix('/registro')->middleware('permission:module.registro.access')->group(function () {
-        Route::get('/', [RegistroController::class, 'index'])->name('registro');
-        Route::get('/nuevo', [RegistroController::class, 'create'])->name('registro.create');
-        Route::get('/pacientes/buscar', [RegistroController::class, 'search'])->name('registro.pacientes.buscar');
-        Route::post('/pacientes', [RegistroController::class, 'store'])->name('registro.pacientes.store');
+        Route::get('/', [RegistroController::class, 'create'])->name('registro');
+        Route::post('/', [RegistroController::class, 'store'])->name('registro.store');
+
+        // Patient search endpoint (shared with /citas)
+        Route::get('/pacientes/buscar', [PacientesController::class, 'search'])->name('registro.pacientes.buscar');
+
+        // Patient edit – accessible from Pacientes sheet
         Route::get('/pacientes/{patient}/editar', [RegistroController::class, 'edit'])->name('registro.pacientes.edit');
         Route::put('/pacientes/{patient}', [RegistroController::class, 'update'])->name('registro.pacientes.update');
-        Route::delete('/pacientes/{patient}', [RegistroController::class, 'destroy'])->name('registro.pacientes.destroy');
     });
 
     Route::prefix('/citas')->middleware('permission:module.citas.access')->group(function () {
         Route::get('/', [CitasController::class, 'index'])->name('citas');
-        Route::get('/pacientes/buscar', [RegistroController::class, 'search'])->name('citas.pacientes.buscar');
+        Route::get('/pacientes/buscar', [PacientesController::class, 'search'])->name('citas.pacientes.buscar');
         Route::post('/', [CitasController::class, 'store'])->name('citas.store');
         Route::put('/{appointment}', [CitasController::class, 'update'])->name('citas.update');
         Route::delete('/{appointment}', [CitasController::class, 'cancel'])->name('citas.cancel');

@@ -54,33 +54,30 @@ describe('DataTable', () => {
     });
 
     it('asks for the next and previous page', () => {
-        const onPaginationChange = vi.fn();
+        const onPageChange = vi.fn();
         render(
             <DataTable
                 data={data}
                 columns={columns}
-                pagination={{ pageIndex: 1, pageSize: 2 }}
-                pageCount={3}
-                onPaginationChange={onPaginationChange}
+                paginator={{
+                    data,
+                    current_page: 2,
+                    last_page: 3,
+                    from: 3,
+                    to: 4,
+                    total: 6,
+                    per_page: 2,
+                    path: '/test',
+                    links: [],
+                }}
+                onPageChange={onPageChange}
             />,
         );
 
-        expect(screen.getByText('Página 2 de 3')).toBeInTheDocument();
+        fireEvent.click(screen.getByLabelText('Página siguiente'));
+        expect(onPageChange).toHaveBeenLastCalledWith(3);
 
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Página siguiente' }),
-        );
-        expect(onPaginationChange).toHaveBeenLastCalledWith({
-            pageIndex: 2,
-            pageSize: 2,
-        });
-
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Página anterior' }),
-        );
-        expect(onPaginationChange).toHaveBeenLastCalledWith({
-            pageIndex: 0,
-            pageSize: 2,
-        });
+        fireEvent.click(screen.getByLabelText('Página anterior'));
+        expect(onPageChange).toHaveBeenLastCalledWith(1);
     });
 });

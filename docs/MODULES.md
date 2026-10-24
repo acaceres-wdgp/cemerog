@@ -4,11 +4,12 @@
 
 | Clave         | Ruta                     | Componente          | Roles con acceso                                         | Estado    | Orden impl. |
 | ------------- | ------------------------ | ------------------- | -------------------------------------------------------- | --------- | ----------- |
-| inicio        | /inicio                  | inicio/index        | admin, medico, secretaria, caja                          | Esqueleto | 1           |
-| tablero       | /tablero                 | tablero/index       | admin, medico, enfermeria, secretaria, caja              | Esqueleto | 2           |
-| registro      | /registro                | registro/index      | admin, secretaria                                        | Esqueleto | 3           |
-| citas         | /citas                   | citas/index         | admin, medico, secretaria                                | Esqueleto | 4           |
-| consulta      | /consulta                | consulta/index      | admin, medico                                            | Esqueleto | 5           |
+| inicio        | /inicio                  | inicio/index        | admin, medico, secretaria, caja                          | Esqueleto  | 1           |
+| tablero       | /tablero                 | tablero/index       | admin, medico, enfermeria, secretaria, caja              | Terminado  | 2           |
+| pacientes     | /pacientes               | pacientes/index     | admin, medico, secretaria                                | Terminado  | 2b          |
+| registro      | /registro                | registro/index      | admin, secretaria                                        | Terminado  | 3           |
+| citas         | /citas                   | citas/index         | admin, medico, secretaria                                | Esqueleto  | 4           |
+| consulta      | /consulta                | consulta/index      | admin, medico                                            | Terminado  | 5           |
 | emergencia    | /emergencia              | emergencia/index    | admin, medico, enfermeria                                | Esqueleto | 6           |
 | internamiento | /internamiento           | internamiento/index | admin, medico, enfermeria                                | Esqueleto | 7           |
 | cirugia       | /cirugia                 | cirugia/index       | admin, medico, enfermeria                                | Esqueleto | 8           |
@@ -33,9 +34,9 @@
 | Rol           | Descripción               | Módulos                                                                                  |
 | ------------- | ------------------------- | ---------------------------------------------------------------------------------------- |
 | administrador | Acceso total              | Todos                                                                                    |
-| medico        | Atención médica completa  | inicio, tablero, citas, consulta, emergencia, internamiento, cirugia, lab, img, impresos |
-| enfermeria    | Atención clínica de apoyo | tablero, emergencia, internamiento, cirugia, impresos                                    |
-| secretaria    | Recepción y agendamiento  | inicio, tablero, registro, citas, impresos                                               |
+| medico        | Atención médica completa  | inicio, tablero, pacientes, citas, consulta, emergencia, internamiento, cirugia, lab, img, impresos |
+| enfermeria    | Atención clínica de apoyo | tablero, emergencia, internamiento, cirugia, impresos                                               |
+| secretaria    | Recepción y agendamiento  | inicio, tablero, pacientes, registro, citas, impresos                                               |
 | bioanalista   | Laboratorio               | lab, impresos                                                                            |
 | imagenes      | Estudios de imagen        | img                                                                                      |
 | caja          | Facturación y cobros      | inicio, tablero, caja, cxc, cuadre, impresos                                             |

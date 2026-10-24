@@ -143,3 +143,54 @@ Desinstalar `laravel/fortify`, que venía con el starter kit, junto con sus depe
 
 - La migración `drop_passkeys_and_two_factor_columns` elimina la tabla `passkeys` y las 3 columnas de 2FA de `users`. Su `down()` las restaura, y `DropPasskeysAndTwoFactorTest` verifica ambos sentidos.
 - `@laravel/passkeys` también se desinstaló de npm.
+
+---
+
+## ADR-009: Los pacientes son expedientes permanentes
+
+**Fecha**: 2026-10  
+**Estado**: Aceptado
+
+### Decisión
+
+No existe borrado ni desactivación de pacientes. Una vez creado, un expediente es permanente.
+
+- Se eliminó `SoftDeletes` del modelo `Patient`.
+- Se eliminaron las columnas `deleted_at` e `is_active` de la tabla `patients`.
+- Se eliminó la ruta `DELETE /registro/pacientes/{patient}`.
+
+### Justificación
+
+- Los expedientes clínicos son documentos legales; borrarlos viola regulaciones de salud.
+- La desactivación genera inconsistencias: un turno o consulta sin paciente referenciado.
+- Si un paciente "deja de venir", simplemente no tiene atenciones nuevas; sigue visible en el historial.
+- Simplifica la lógica de búsqueda y el ORM (sin `withTrashed`, sin scopes de `is_active`).
+
+### Consecuencias
+
+- El administrador puede editar datos personales (nombre, documento, teléfono) si hay un error.
+- No hay forma de "archivar" o "desactivar" un paciente desde la interfaz.
+- Las búsquedas devuelven todos los pacientes registrados históricamente.
+
+---
+
+## ADR-010: Hash de dígitos para document_number y phone
+
+**Fecha**: 2026-10  
+**Estado**: Aceptado
+
+### Decisión
+
+`document_number` y `phone` se almacenan cifrados con `encrypted` cast. Para búsquedas exactas e índices únicos se guardan columnas `document_number_hash` y `phone_hash` (HMAC-SHA256 de `config('app.key')`), calculadas sobre solo los dígitos del valor.
+
+### Justificación
+
+- Los campos cifrados no son consultables con `LIKE` en la base de datos.
+- Al normalizar a solo dígitos antes de hashear, `031-0234567-8`, `03102345678` y `(031) 023-4567-8` producen el mismo hash → el sistema los reconoce como el mismo documento.
+- HMAC-SHA256 (no SHA simple) evita ataques de preimagen con rainbow tables, usando la clave de la app como secreto.
+
+### Consecuencias
+
+- Al guardar un paciente, el mutador calcula automáticamente el hash.
+- La regla `UniqueDocumentNumber` también normaliza a dígitos antes de hashear para consistencia.
+- El backfill se ejecuta en la migración `add_phone_hash_to_patients` para registros existentes.

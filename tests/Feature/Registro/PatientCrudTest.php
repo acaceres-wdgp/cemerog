@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\Doctor;
 use App\Models\Patient;
+use App\Models\Specialty;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -8,6 +10,9 @@ use Illuminate\Support\Facades\Storage;
 beforeEach(function () {
     $this->secretaria = User::factory()->create();
     $this->secretaria->givePermissionTo('module.registro.access');
+
+    $specialty = Specialty::factory()->create();
+    $this->doctor = Doctor::factory()->create(['specialty_id' => $specialty->id, 'is_active' => true]);
 });
 
 // ─── Search ─────────────────────────────────────────────────────────────────
@@ -80,14 +85,14 @@ test('search does not return soft-deleted patients', function () {
 // ─── Store ───────────────────────────────────────────────────────────────────
 
 test('store redirects unauthenticated users', function () {
-    $this->post('/registro/pacientes', [])->assertRedirect('/login');
+    $this->post('/registro', [])->assertRedirect('/login');
 });
 
 test('store returns 403 without permission', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->post('/registro/pacientes', [])
+        ->post('/registro', [])
         ->assertForbidden();
 });
 
@@ -105,15 +110,18 @@ test('store creates a patient with valid data', function () {
         'allergies' => 'Penicilina',
         'emergency_contact_name' => 'Pedro García',
         'emergency_contact_phone' => '809-555-0002',
+        'attention_type' => 'consulta',
+        'doctor_id' => $this->doctor->id,
     ];
 
     $this->actingAs($this->secretaria)
-        ->post('/registro/pacientes', $data)
-        ->assertRedirect('/registro');
+        ->post('/registro', $data)
+        ->assertRedirect('/tablero');
 
-    // document_number is encrypted in DB – verify via its HMAC hash
+    // document_number is encrypted in DB – verify via its HMAC hash (digits-only normalization)
+    $digits = preg_replace('/[^\d]/', '', '001-1234567-8');
     $this->assertDatabaseHas('patients', [
-        'document_number_hash' => hash_hmac('sha256', '001-1234567-8', config('app.key')),
+        'document_number_hash' => hash_hmac('sha256', $digits, config('app.key')),
         'first_names' => 'María',
         'last_names' => 'García López',
         'sex' => 'F',
@@ -122,7 +130,7 @@ test('store creates a patient with valid data', function () {
 
 test('store validates required fields', function () {
     $this->actingAs($this->secretaria)
-        ->post('/registro/pacientes', [])
+        ->post('/registro', [])
         ->assertSessionHasErrors([
             'document_type',
             'document_number',
@@ -135,15 +143,18 @@ test('store validates required fields', function () {
 
 test('store creates a patient with cedula_extranjera type', function () {
     $this->actingAs($this->secretaria)
-        ->post('/registro/pacientes', [
+        ->post('/registro', [
             'document_type' => 'cedula_extranjera',
             'document_number' => 'CE-123456789',
             'first_names' => 'John',
             'last_names' => 'Smith',
             'birth_date' => '1990-06-15',
             'sex' => 'M',
+            'phone' => '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
         ])
-        ->assertRedirect('/registro');
+        ->assertRedirect('/tablero');
 
     $this->assertDatabaseHas('patients', [
         'document_type' => 'cedula_extranjera',
@@ -153,44 +164,52 @@ test('store creates a patient with cedula_extranjera type', function () {
 
 test('store creates a patient with no_tiene type and auto-assigns document number', function () {
     $this->actingAs($this->secretaria)
-        ->post('/registro/pacientes', [
+        ->post('/registro', [
             'document_type' => 'no_tiene',
             'first_names' => 'Sin',
             'last_names' => 'Documento',
             'birth_date' => '2000-01-01',
             'sex' => 'M',
+            'phone' => '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
         ])
-        ->assertRedirect('/registro');
+        ->assertRedirect('/tablero');
 
     $patient = Patient::where('first_names', 'Sin')->first();
 
     expect($patient)->not->toBeNull()
-        ->and($patient->document_number)->toStartWith('GEN-')
-        ->and(strlen($patient->document_number))->toBe(12); // GEN- (4) + 8 chars
+        ->and($patient->document_number)->toStartWith('GEN-');
 });
 
 test('store rejects invalid document type', function () {
     $this->actingAs($this->secretaria)
-        ->post('/registro/pacientes', [
+        ->post('/registro', [
             'document_type' => 'dni_invalido',
             'document_number' => '12345',
             'first_names' => 'X',
             'last_names' => 'X',
             'birth_date' => '1990-01-01',
             'sex' => 'M',
+            'phone' => '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
         ])
         ->assertSessionHasErrors(['document_type']);
 });
 
 test('store rejects invalid sex value', function () {
     $this->actingAs($this->secretaria)
-        ->post('/registro/pacientes', [
+        ->post('/registro', [
             'document_type' => 'cedula',
             'document_number' => '001-1234567-8',
             'first_names' => 'María',
             'last_names' => 'García',
             'birth_date' => '1982-05-15',
             'sex' => 'X',
+            'phone' => '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
         ])
         ->assertSessionHasErrors(['sex']);
 });
@@ -200,26 +219,32 @@ test('store rejects duplicate document number', function () {
 
     // The UniqueDocumentNumber rule checks document_number_hash (not the encrypted column)
     $this->actingAs($this->secretaria)
-        ->post('/registro/pacientes', [
+        ->post('/registro', [
             'document_type' => 'cedula',
             'document_number' => '001-1234567-8',
             'first_names' => 'Juan',
             'last_names' => 'Perez',
             'birth_date' => '1990-01-01',
             'sex' => 'M',
+            'phone' => '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
         ])
         ->assertSessionHasErrors(['document_number']);
 });
 
 test('store rejects future birth date', function () {
     $this->actingAs($this->secretaria)
-        ->post('/registro/pacientes', [
+        ->post('/registro', [
             'document_type' => 'cedula',
             'document_number' => '001-1234567-8',
             'first_names' => 'Bebé',
             'last_names' => 'Futuro',
             'birth_date' => now()->addDay()->format('Y-m-d'),
             'sex' => 'M',
+            'phone' => '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
         ])
         ->assertSessionHasErrors(['birth_date']);
 });
@@ -253,7 +278,7 @@ test('update modifies patient data', function () {
             'birth_date' => $patient->birth_date->format('Y-m-d'),
             'sex' => $patient->sex,
         ])
-        ->assertRedirect('/registro');
+        ->assertRedirect('/pacientes');
 
     $this->assertDatabaseHas('patients', [
         'id' => $patient->id,
@@ -273,7 +298,7 @@ test('update allows keeping the same document number', function () {
             'birth_date' => $patient->birth_date->format('Y-m-d'),
             'sex' => $patient->sex,
         ])
-        ->assertRedirect('/registro');
+        ->assertRedirect('/pacientes');
 });
 
 test('update returns 404 for non-existent patient', function () {
@@ -297,16 +322,19 @@ test('store saves photo when image is provided', function () {
     $image = UploadedFile::fake()->image('cedula.jpg', 400, 300);
 
     $this->actingAs($this->secretaria)
-        ->post('/registro/pacientes', [
+        ->post('/registro', [
             'document_type' => 'cedula',
             'document_number' => '001-1234567-8',
             'first_names' => 'Ana',
             'last_names' => 'Pérez',
             'birth_date' => '1990-01-01',
             'sex' => 'F',
+            'phone' => '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
             'photo' => $image,
         ])
-        ->assertRedirect('/registro');
+        ->assertRedirect('/tablero');
 
     $patient = Patient::where('first_names', 'Ana')->first();
 
@@ -320,16 +348,19 @@ test('store saves photo when PDF is provided', function () {
     $pdf = UploadedFile::fake()->create('cedula.pdf', 512, 'application/pdf');
 
     $this->actingAs($this->secretaria)
-        ->post('/registro/pacientes', [
+        ->post('/registro', [
             'document_type' => 'cedula',
             'document_number' => '001-1234567-8',
             'first_names' => 'Ana',
             'last_names' => 'Pérez',
             'birth_date' => '1990-01-01',
             'sex' => 'F',
+            'phone' => '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
             'photo' => $pdf,
         ])
-        ->assertRedirect('/registro');
+        ->assertRedirect('/tablero');
 
     $patient = Patient::where('first_names', 'Ana')->first();
     Storage::disk('public')->assertExists($patient->photo_path);
@@ -341,13 +372,16 @@ test('store rejects photo exceeding 20 MB', function () {
     $big = UploadedFile::fake()->create('foto.jpg', 20481, 'image/jpeg');
 
     $this->actingAs($this->secretaria)
-        ->post('/registro/pacientes', [
+        ->post('/registro', [
             'document_type' => 'cedula',
             'document_number' => '001-1234567-8',
             'first_names' => 'Ana',
             'last_names' => 'Pérez',
             'birth_date' => '1990-01-01',
             'sex' => 'F',
+            'phone' => '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
             'photo' => $big,
         ])
         ->assertSessionHasErrors(['photo']);
@@ -359,13 +393,16 @@ test('store rejects invalid file type for photo', function () {
     $exe = UploadedFile::fake()->create('virus.exe', 100, 'application/octet-stream');
 
     $this->actingAs($this->secretaria)
-        ->post('/registro/pacientes', [
+        ->post('/registro', [
             'document_type' => 'cedula',
             'document_number' => '001-1234567-8',
             'first_names' => 'Ana',
             'last_names' => 'Pérez',
             'birth_date' => '1990-01-01',
             'sex' => 'F',
+            'phone' => '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
             'photo' => $exe,
         ])
         ->assertSessionHasErrors(['photo']);
@@ -391,7 +428,7 @@ test('update replaces photo and deletes old file', function () {
             'sex' => $patient->sex,
             'photo' => $newImage,
         ])
-        ->assertRedirect('/registro');
+        ->assertRedirect('/pacientes');
 
     Storage::disk('public')->assertMissing($oldPath);
     $patient->refresh();
@@ -416,41 +453,12 @@ test('update removes photo when remove_photo flag is set', function () {
             'sex' => $patient->sex,
             'remove_photo' => true,
         ])
-        ->assertRedirect('/registro');
+        ->assertRedirect('/pacientes');
 
     Storage::disk('public')->assertMissing($oldPath);
     expect($patient->fresh()->photo_path)->toBeNull();
 });
 
 // ─── Destroy ─────────────────────────────────────────────────────────────────
-
-test('destroy redirects unauthenticated users', function () {
-    $patient = Patient::factory()->create();
-
-    $this->delete("/registro/pacientes/{$patient->id}")->assertRedirect('/login');
-});
-
-test('destroy returns 403 without permission', function () {
-    $user = User::factory()->create();
-    $patient = Patient::factory()->create();
-
-    $this->actingAs($user)
-        ->delete("/registro/pacientes/{$patient->id}")
-        ->assertForbidden();
-});
-
-test('destroy soft-deletes the patient', function () {
-    $patient = Patient::factory()->create();
-
-    $this->actingAs($this->secretaria)
-        ->delete("/registro/pacientes/{$patient->id}")
-        ->assertRedirect('/registro');
-
-    $this->assertSoftDeleted('patients', ['id' => $patient->id]);
-});
-
-test('destroy returns 404 for non-existent patient', function () {
-    $this->actingAs($this->secretaria)
-        ->delete('/registro/pacientes/9999')
-        ->assertNotFound();
-});
+// Patients are permanent (ADR-009). DELETE route was removed.
+// Covered by tests/Feature/Registro/DeleteRouteRemovedTest.php

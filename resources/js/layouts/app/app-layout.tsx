@@ -27,14 +27,18 @@ import {
     Users,
     Tag,
     Palette,
+    Contact,
     ChevronLeft,
     ChevronRight,
     Bell,
     Search,
     LogOut,
 } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import type { PageProps } from '@/types/global';
 import { NAV_GROUPS } from '@/lib/navigation';
+import { resolveBreadcrumb } from '@/lib/breadcrumb';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 
 // Icon registry
@@ -58,6 +62,7 @@ const ICONS: Record<string, React.ElementType> = {
     Users,
     Tag,
     Palette,
+    Contact,
 };
 
 type SidebarTheme = 'carbon' | 'slate' | 'forest';
@@ -121,6 +126,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
     // A nav item is active on its own URL and on its sub-pages (e.g. /citas/123)
     const { currentUrl, isCurrentUrl } = useCurrentUrl();
+    const breadcrumb = resolveBreadcrumb(currentUrl, NAV_GROUPS);
+    const todayLabel = format(new Date(), "d 'de' MMMM, yyyy", { locale: es });
     const isActiveItem = (href: string) =>
         isCurrentUrl(href) || currentUrl.startsWith(`${href}/`);
 
@@ -320,7 +327,17 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 <header className="flex h-14 shrink-0 items-center justify-between border-b border-[#e3e9e3] bg-white px-4 shadow-sm">
                     {/* Left: breadcrumb */}
                     <div className="flex items-center gap-2 text-sm text-[#71717a]">
-                        <span className="text-[#333333]">CEMEROG</span>
+                        {breadcrumb ? (
+                            <>
+                                <span>{breadcrumb.section}</span>
+                                <span aria-hidden="true">›</span>
+                                <span className="font-medium text-[#1f2d22]">{breadcrumb.page}</span>
+                                <span aria-hidden="true">·</span>
+                                <span>{todayLabel}</span>
+                            </>
+                        ) : (
+                            <span className="font-medium text-[#1f2d22]">CEMEROG</span>
+                        )}
                     </div>
 
                     {/* Right: search, notifications, user */}
@@ -398,7 +415,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 </header>
 
                 {/* Page content */}
-                <main className="flex-1 overflow-y-auto p-6">{children}</main>
+                <main className="flex-1 overflow-y-auto" style={{ padding: '28px 32px 48px' }}>{children}</main>
             </div>
         </div>
     );

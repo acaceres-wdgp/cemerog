@@ -90,6 +90,9 @@ resources/js/
 Referencia visual en `design/CEMEROG v6.dc.html`. Ábrelo en un navegador.
 No modificar nada dentro de `design/`.
 
+> La carpeta `design_handoff_cemerog/` contiene la versión más reciente del handoff (incluye pantalla Pacientes).
+> Sus archivos se sincronizan sobre `design/` con cada entrega; `design/` es la referencia activa.
+
 ## Lo que NO hacer
 
 - No usar `email` como credencial de login
@@ -99,6 +102,7 @@ No modificar nada dentro de `design/`.
 - No crear migraciones sin sus tests de reversión
 - No mergear a `main` sin CI verde
 - No instalar dependencias sin documentarlas aquí o en `docs/DECISIONS.md`
+- No envolver páginas en `<AppLayout>`: el layout se aplica globalmente en `app.tsx` mediante `createInertiaApp({ layout })`
 
 ## Módulos y permisos
 
