@@ -86,3 +86,26 @@ describe('StatusBadge', () => {
         expect(screen.getByText('T-01 · En lista')).toBeInTheDocument();
     });
 });
+
+describe('StatusBadge — cita-* states have no border', () => {
+    const citaStates = [
+        'cita-pendiente',
+        'cita-confirmada',
+        'cita-en_lista',
+        'cita-atendida',
+        'cita-no_asistio',
+        'cita-cancelada',
+    ] as const;
+
+    it.each(citaStates)('%s does not have the border class', (state) => {
+        const { container } = render(<StatusBadge state={state} />);
+        const span = container.firstChild as HTMLElement;
+        const classes = span.className.split(' ');
+        expect(classes).not.toContain('border');
+    });
+
+    it.each(citaStates)('%s renders without errors', (state) => {
+        const { container } = render(<StatusBadge state={state} />);
+        expect(container.firstChild).not.toBeNull();
+    });
+});
