@@ -1,5 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { pacientes } from '@/routes';
+import { differenceInYears } from 'date-fns';
 import {
     Check,
     CircleCheck,
@@ -1135,10 +1136,10 @@ export default function RegistroIndex({
                                     <div className="flex justify-between px-5 py-3">
                                         <dt className="text-[#71717a]">Edad</dt>
                                         <dd className="font-medium text-[#1f2d22]">
-                                            {new Date().getFullYear() -
-                                                new Date(
-                                                    data.birth_date,
-                                                ).getFullYear()}{' '}
+                                            {differenceInYears(
+                                                new Date(),
+                                                new Date(data.birth_date),
+                                            )}{' '}
                                             años
                                         </dd>
                                     </div>
