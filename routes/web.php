@@ -10,6 +10,7 @@ use App\Http\Controllers\Modules\CajaController;
 use App\Http\Controllers\Modules\CirugiaController;
 use App\Http\Controllers\Modules\CitasController;
 use App\Http\Controllers\Modules\ConsultaController;
+use App\Http\Controllers\Modules\TurnosController;
 use App\Http\Controllers\Modules\CuadreController;
 use App\Http\Controllers\Modules\CxcController;
 use App\Http\Controllers\Modules\DoctoresController;
@@ -57,9 +58,12 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         ->name('inicio');
 
     // Recepcion
-    Route::get('/tablero', [TableroController::class, 'index'])
-        ->middleware('permission:module.tablero.access')
-        ->name('tablero');
+    Route::prefix('/tablero')->middleware('permission:module.tablero.access')->group(function () {
+        Route::get('/', [TableroController::class, 'index'])->name('tablero');
+        Route::post('/turnos', [TurnosController::class, 'store'])->name('turnos.store');
+        Route::patch('/turnos/{turn}/status', [TurnosController::class, 'updateStatus'])->name('turnos.status');
+        Route::patch('/turnos/{turn}/reorder', [TurnosController::class, 'reorder'])->name('turnos.reorder');
+    });
 
     Route::prefix('/registro')->middleware('permission:module.registro.access')->group(function () {
         Route::get('/', [RegistroController::class, 'index'])->name('registro');
@@ -71,9 +75,13 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::delete('/pacientes/{patient}', [RegistroController::class, 'destroy'])->name('registro.pacientes.destroy');
     });
 
-    Route::get('/citas', [CitasController::class, 'index'])
-        ->middleware('permission:module.citas.access')
-        ->name('citas');
+    Route::prefix('/citas')->middleware('permission:module.citas.access')->group(function () {
+        Route::get('/', [CitasController::class, 'index'])->name('citas');
+        Route::get('/pacientes/buscar', [RegistroController::class, 'search'])->name('citas.pacientes.buscar');
+        Route::post('/', [CitasController::class, 'store'])->name('citas.store');
+        Route::put('/{appointment}', [CitasController::class, 'update'])->name('citas.update');
+        Route::delete('/{appointment}', [CitasController::class, 'cancel'])->name('citas.cancel');
+    });
 
     // Atencion clinica
     Route::get('/consulta', [ConsultaController::class, 'index'])

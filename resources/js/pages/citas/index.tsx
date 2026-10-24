@@ -1,152 +1,92 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { router } from '@inertiajs/react';
 
-const DOCTORS = [
-    {
-        id: 1,
-        ini: 'AR',
-        nom: 'Dra. Ana Rodríguez',
-        esp: 'Medicina general',
-        abg: '#EEF6E2',
-        afg: '#2E8B3E',
-    },
-    {
-        id: 2,
-        ini: 'PG',
-        nom: 'Dr. Pedro Guzmán',
-        esp: 'Cardiología',
-        abg: '#DBEAFE',
-        afg: '#1E40AF',
-    },
-    {
-        id: 3,
-        ini: 'SC',
-        nom: 'Dra. Sofía Castro',
-        esp: 'Pediatría',
-        abg: '#EDE9FE',
-        afg: '#5B21B6',
-    },
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type AppointmentRow = {
+    id: number;
+    patient_id: number;
+    patient_name: string;
+    patient_initials: string;
+    doctor_id: number;
+    doctor_name: string;
+    doctor_specialty: string;
+    appointment_date: string;
+    appointment_time: string | null;
+    turn_number: number | null;
+    turn_order: number | null;
+    type: string;
+    status: 'pendiente' | 'confirmada' | 'en_lista' | 'atendida' | 'no_asistio' | 'cancelada';
+    notes: string | null;
+};
+
+type DoctorOption = { id: number; name: string; specialty: string; initials: string };
+type PatientResult = { id: number; full_name: string; document_number: string };
+
+type Props = {
+    appointments: AppointmentRow[];
+    doctors: DoctorOption[];
+    date: string;
+    is_today: boolean;
+};
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const SLOTS = [
+    '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
+    '11:00', '11:30', '12:00', '14:00', '14:30', '15:00',
 ];
 
-const MOCK_CITAS: Record<
-    string,
-    {
-        hora: string;
-        paciente: string;
-        motivo: string;
-        tipo: string;
-        estado: string;
-        doc: number;
-    }[]
-> = {
-    hoy: [
-        {
-            hora: '08:00',
-            paciente: 'María García',
-            motivo: 'Control ginecológico',
-            tipo: 'Consulta',
-            estado: 'Atendida',
-            doc: 1,
-        },
-        {
-            hora: '08:30',
-            paciente: 'Ana Gómez',
-            motivo: 'Control rutinario',
-            tipo: 'Consulta',
-            estado: 'Pendiente',
-            doc: 1,
-        },
-        {
-            hora: '09:00',
-            paciente: 'Juan Pérez',
-            motivo: 'Evaluación cardíaca',
-            tipo: 'Consulta',
-            estado: 'En lista',
-            doc: 2,
-        },
-        {
-            hora: '09:30',
-            paciente: 'Pedro Díaz',
-            motivo: 'Revisión eco',
-            tipo: 'Consulta',
-            estado: 'Confirmada',
-            doc: 2,
-        },
-        {
-            hora: '10:00',
-            paciente: 'Luisa Torres',
-            motivo: 'Vacuna niño 1 año',
-            tipo: 'Consulta',
-            estado: 'Confirmada',
-            doc: 3,
-        },
-        {
-            hora: '10:30',
-            paciente: 'Carlos Reyes',
-            motivo: 'Revisión tensión',
-            tipo: 'Consulta',
-            estado: 'Pendiente',
-            doc: 1,
-        },
-        {
-            hora: '11:00',
-            paciente: 'Rosa Fernández',
-            motivo: 'Seguimiento diabetes',
-            tipo: 'Consulta',
-            estado: 'Confirmada',
-            doc: 1,
-        },
-        {
-            hora: '14:00',
-            paciente: 'Marta Caba',
-            motivo: 'Primera consulta',
-            tipo: 'Consulta',
-            estado: 'Pendiente',
-            doc: 2,
-        },
-    ],
-    manana: [
-        {
-            hora: '08:00',
-            paciente: 'Luis Martínez',
-            motivo: 'Chequeo anual',
-            tipo: 'Consulta',
-            estado: 'Confirmada',
-            doc: 1,
-        },
-        {
-            hora: '09:00',
-            paciente: 'Carmen López',
-            motivo: 'Revisión medicamentos',
-            tipo: 'Consulta',
-            estado: 'Confirmada',
-            doc: 1,
-        },
-        {
-            hora: '10:00',
-            paciente: 'Ana Torres',
-            motivo: 'Evaluación cardiológica',
-            tipo: 'Consulta',
-            estado: 'Pendiente',
-            doc: 2,
-        },
-        {
-            hora: '11:00',
-            paciente: 'Pepe García',
-            motivo: 'Vacuna gripe',
-            tipo: 'Consulta',
-            estado: 'Pendiente',
-            doc: 3,
-        },
-    ],
+const ESTADO_COLORS: Record<string, { bg: string; fg: string }> = {
+    atendida:   { bg: '#DCFCE7', fg: '#166534' },
+    en_lista:   { bg: '#DBEAFE', fg: '#1E40AF' },
+    confirmada: { bg: '#F3F7F2', fg: '#2E8B3E' },
+    pendiente:  { bg: '#FEF3C7', fg: '#92400E' },
+    no_asistio: { bg: '#F4F4F5', fg: '#52525B' },
+    cancelada:  { bg: '#F4F4F5', fg: '#52525B' },
 };
 
-const ESTADO_COLORS: Record<string, { bg: string; fg: string }> = {
-    Atendida: { bg: '#DCFCE7', fg: '#166534' },
-    'En lista': { bg: '#DBEAFE', fg: '#1E40AF' },
-    Confirmada: { bg: '#F3F7F2', fg: '#2E8B3E' },
-    Pendiente: { bg: '#FEF3C7', fg: '#92400E' },
-    'No asistió': { bg: '#F4F4F5', fg: '#52525B' },
+const ESTADO_LABELS: Record<string, string> = {
+    pendiente: 'Pendiente', confirmada: 'Confirmada', en_lista: 'En lista',
+    atendida: 'Atendida', no_asistio: 'No asistió', cancelada: 'Cancelada',
 };
+
+const TYPE_LABELS: Record<string, string> = {
+    consulta: 'Consulta', seguimiento: 'Seguimiento', primera_vez: 'Primera vez',
+};
+
+const DOC_PALETTES = [
+    { bg: '#EEF6E2', fg: '#2E8B3E' },
+    { bg: '#DBEAFE', fg: '#1E40AF' },
+    { bg: '#EDE9FE', fg: '#5B21B6' },
+    { bg: '#FCE7F3', fg: '#9D174D' },
+    { bg: '#CFFAFE', fg: '#155E75' },
+    { bg: '#FEF3C7', fg: '#92400E' },
+];
+const docPalette = (id: number) => DOC_PALETTES[id % DOC_PALETTES.length];
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function todayStr() {
+    return new Date().toISOString().slice(0, 10);
+}
+function tomorrowStr() {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10);
+}
+function addDays(dateStr: string, n: number) {
+    const d = new Date(dateStr + 'T00:00:00');
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0, 10);
+}
+function formatDateLong(dateStr: string) {
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('es-DO', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    });
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const thStyle: React.CSSProperties = {
     textAlign: 'left',
@@ -162,566 +102,544 @@ const thStyle: React.CSSProperties = {
     whiteSpace: 'nowrap',
 };
 
-export default function CitasIndex() {
-    const [dayTab, setDayTab] = useState<'hoy' | 'manana'>('hoy');
+const inputStyle: React.CSSProperties = {
+    height: 36,
+    width: '100%',
+    padding: '0 12px',
+    border: '1px solid #e4e4e7',
+    borderRadius: 10,
+    outline: 'none',
+    fontFamily: 'inherit',
+    fontSize: 14,
+    boxSizing: 'border-box',
+};
+
+// ─── Patient search autocomplete ─────────────────────────────────────────────
+
+function PatientSearch({ selected, query, onQueryChange, onSelect, onClear, error }: {
+    selected: PatientResult | null;
+    query: string;
+    onQueryChange: (v: string) => void;
+    onSelect: (p: PatientResult) => void;
+    onClear: () => void;
+    error?: string;
+}) {
+    const [results, setResults] = useState<PatientResult[]>([]);
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (selected) { setOpen(false); return; }
+        if (query.length < 2) { setResults([]); setOpen(false); return; }
+        const t = setTimeout(async () => {
+            try {
+                const res = await fetch(`/citas/pacientes/buscar?q=${encodeURIComponent(query)}`);
+                if (!res.ok) { setResults([]); setOpen(true); return; }
+                const data: PatientResult[] = await res.json();
+                setResults(Array.isArray(data) ? data : []);
+                setOpen(true);
+            } catch {
+                setResults([]);
+                setOpen(true);
+            }
+        }, 300);
+        return () => clearTimeout(t);
+    }, [query, selected]);
+
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    if (selected) {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, height: 36, padding: '0 10px 0 12px', border: '1px solid #B9DC8E', borderRadius: 10, background: '#EEF6E2' }}>
+                <span style={{ width: 22, height: 22, flexShrink: 0, borderRadius: '50%', background: '#2E8B3E', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700 }}>✓</span>
+                <span style={{ flex: 1, fontWeight: 500, fontSize: 14, color: '#1f2d22' }}>{selected.full_name}</span>
+                <span style={{ fontSize: 12, color: '#56693f' }}>{selected.document_number}</span>
+                <button type="button" onClick={onClear} style={{ width: 22, height: 22, flexShrink: 0, border: 'none', borderRadius: 6, background: 'rgba(0,0,0,.08)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#56693f', lineHeight: 1 }}>✕</button>
+            </div>
+        );
+    }
+
+    return (
+        <div ref={ref} style={{ position: 'relative' }}>
+            <input
+                style={{ ...inputStyle, borderColor: error ? '#b91c1c' : '#e4e4e7' }}
+                value={query}
+                onChange={e => { onQueryChange(e.target.value); if (!e.target.value) setOpen(false); }}
+                placeholder="Buscar por nombre o cédula…"
+                autoComplete="off"
+                autoFocus
+            />
+            {error && <span style={{ color: '#b91c1c', fontSize: 12 }}>{error}</span>}
+            {open && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200, background: '#fff', border: '1px solid #e3e9e3', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,.1)', marginTop: 4, overflow: 'hidden' }}>
+                    {results.length === 0
+                        ? <div style={{ padding: '10px 14px', color: '#71717a', fontSize: 13 }}>No se encontraron pacientes.</div>
+                        : results.map(p => (
+                            <button key={p.id} type="button"
+                                onClick={() => { onSelect(p); setOpen(false); }}
+                                style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', border: 'none', background: 'none', cursor: 'pointer', borderBottom: '1px solid #f3f4f6', fontFamily: 'inherit' }}
+                                onMouseEnter={e => (e.currentTarget.style.background = '#F6FAF1')}
+                                onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                            >
+                                <div style={{ fontWeight: 500, fontSize: 14 }}>{p.full_name}</div>
+                                <div style={{ color: '#71717a', fontSize: 12 }}>{p.document_number}</div>
+                            </button>
+                        ))
+                    }
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ─── Nueva cita modal ────────────────────────────────────────────────────────
+
+function NuevaCitaModal({ onClose, doctors, defaultDate }: {
+    onClose: () => void;
+    doctors: DoctorOption[];
+    defaultDate: string;
+}) {
+    const [patientQuery, setPatientQuery] = useState('');
+    const [selectedPatient, setSelectedPatient] = useState<PatientResult | null>(null);
+    const [doctorId, setDoctorId] = useState('');
+    const [fecha, setFecha] = useState(defaultDate);
+    const [hora, setHora] = useState('');
+    const [tipo, setTipo] = useState('consulta');
+    const [notas, setNotas] = useState('');
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [processing, setProcessing] = useState(false);
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        const errs: Record<string, string> = {};
+        if (!selectedPatient) errs.patient_id = 'Selecciona un paciente.';
+        if (!doctorId) errs.doctor_id = 'Selecciona un médico.';
+        if (!fecha) errs.appointment_date = 'La fecha es obligatoria.';
+        if (Object.keys(errs).length) { setErrors(errs); return; }
+
+        setProcessing(true);
+        router.post('/citas', {
+            patient_id: selectedPatient!.id,
+            doctor_id: Number(doctorId),
+            appointment_date: fecha,
+            appointment_time: hora || null,
+            type: tipo,
+            notes: notas || null,
+        }, {
+            onSuccess: () => onClose(),
+            onError: (e) => { setErrors(e); setProcessing(false); },
+            onFinish: () => setProcessing(false),
+        });
+    }
+
+    return (
+        <>
+            <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 40, background: 'rgba(0,0,0,.4)' }} />
+            <div style={{ position: 'fixed', zIndex: 41, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 480, maxWidth: '95vw', maxHeight: '90vh', background: '#fff', borderRadius: 16, boxShadow: '0 24px 64px -16px rgba(16,40,24,.35)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div style={{ padding: '16px 20px', borderBottom: '1px solid #eef0ec', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+                    <span style={{ fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 17, color: '#1f2d22' }}>Nueva cita</span>
+                    <button type="button" onClick={onClose} style={{ width: 30, height: 30, border: 'none', borderRadius: 8, background: '#F3F7F2', cursor: 'pointer', fontSize: 16 }}>✕</button>
+                </div>
+                <form onSubmit={handleSubmit} style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 500, fontSize: 14 }}>
+                            <span>Paciente *</span>
+                            <PatientSearch
+                                selected={selectedPatient}
+                                query={patientQuery}
+                                onQueryChange={v => setPatientQuery(v)}
+                                onSelect={p => { setSelectedPatient(p); setPatientQuery(''); }}
+                                onClear={() => { setSelectedPatient(null); setPatientQuery(''); }}
+                                error={errors.patient_id}
+                            />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 500, fontSize: 14 }}>
+                            <span>Médico *</span>
+                            <select value={doctorId} onChange={e => setDoctorId(e.target.value)}
+                                style={{ ...inputStyle, borderColor: errors.doctor_id ? '#b91c1c' : '#e4e4e7', cursor: 'pointer' }}>
+                                <option value="">Seleccionar médico…</option>
+                                {doctors.map(d => <option key={d.id} value={d.id}>{d.name} — {d.specialty}</option>)}
+                            </select>
+                            {errors.doctor_id && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.doctor_id}</span>}
+                        </label>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 500, fontSize: 14 }}>
+                                <span>Fecha *</span>
+                                <input type="date" value={fecha} onChange={e => setFecha(e.target.value)}
+                                    style={{ ...inputStyle, borderColor: errors.appointment_date ? '#b91c1c' : '#e4e4e7' }} />
+                                {errors.appointment_date && <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.appointment_date}</span>}
+                            </label>
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 500, fontSize: 14 }}>
+                                <span>Hora <span style={{ fontWeight: 400, color: '#71717a' }}>(opcional)</span></span>
+                                <input type="time" value={hora} onChange={e => setHora(e.target.value)} style={inputStyle} />
+                            </label>
+                        </div>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 500, fontSize: 14 }}>
+                            <span>Tipo</span>
+                            <select value={tipo} onChange={e => setTipo(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
+                                <option value="consulta">Consulta</option>
+                                <option value="seguimiento">Seguimiento</option>
+                                <option value="primera_vez">Primera vez</option>
+                            </select>
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 500, fontSize: 14 }}>
+                            <span>Notas <span style={{ fontWeight: 400, color: '#71717a' }}>(opcional)</span></span>
+                            <textarea value={notas} onChange={e => setNotas(e.target.value)} rows={2}
+                                placeholder="Motivo de consulta, indicaciones…"
+                                style={{ ...inputStyle, height: 'auto', padding: '8px 12px', resize: 'vertical', lineHeight: 1.5 }} />
+                        </label>
+                    </div>
+                    <div style={{ padding: '14px 20px', borderTop: '1px solid #eef0ec', display: 'flex', justifyContent: 'flex-end', gap: 8, flexShrink: 0 }}>
+                        <button type="button" onClick={onClose} style={{ height: 36, padding: '0 14px', borderRadius: 10, border: '1px solid #dfe7df', background: '#F6F9F5', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14 }}>Cancelar</button>
+                        <button type="submit" disabled={processing} style={{ height: 36, padding: '0 16px', borderRadius: 10, border: 'none', background: processing ? '#7cb987' : '#2E8B3E', color: '#fff', fontWeight: 500, cursor: processing ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14 }}>
+                            {processing ? 'Guardando…' : '✓ Registrar cita'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </>
+    );
+}
+
+// ─── Appointment row (shared between today and future views) ──────────────────
+
+function CitaRow({ cita, doctors, onCancel }: {
+    cita: AppointmentRow;
+    doctors: DoctorOption[];
+    onCancel: (id: number) => void;
+}) {
+    const doc = doctors.find(d => d.id === cita.doctor_id);
+    const pal = docPalette(cita.doctor_id);
+    const stColor = ESTADO_COLORS[cita.status] ?? { bg: '#F4F4F5', fg: '#52525B' };
+    const isDone = cita.status === 'atendida' || cita.status === 'no_asistio' || cita.status === 'cancelada';
+    const isInList = cita.status === 'en_lista';
+    const canCancel = cita.status === 'pendiente' || cita.status === 'confirmada';
+
+    return (
+        <tr style={{ background: isDone ? '#FAFAFA' : isInList ? '#F8FBF6' : '#fff' }}>
+            {/* Tipo de fila diferenciado — la primera columna la define el padre */}
+            <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec' }}>
+                <div style={{ fontWeight: 500, color: isDone ? '#8a948e' : '#1f2d22' }}>{cita.patient_name}</div>
+                {cita.notes && <div style={{ fontSize: 12, color: '#71717a' }}>{cita.notes.length > 40 ? cita.notes.slice(0, 40) + '…' : cita.notes}</div>}
+            </td>
+            <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 26, height: 26, flexShrink: 0, borderRadius: '50%', background: pal.bg, color: pal.fg, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600 }}>
+                        {doc?.initials ?? '?'}
+                    </span>
+                    <span style={{ fontSize: 13, color: isDone ? '#8a948e' : '#52525b' }}>{cita.doctor_name}</span>
+                </div>
+            </td>
+            <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec', color: isDone ? '#8a948e' : '#52525b', fontSize: 13 }}>
+                {TYPE_LABELS[cita.type] ?? cita.type}
+            </td>
+            <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap', padding: '2px 9px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: stColor.bg, color: stColor.fg }}>
+                    {isInList && cita.turn_number
+                        ? `En lista · T-${String(cita.turn_number).padStart(2, '0')}`
+                        : ESTADO_LABELS[cita.status] ?? cita.status}
+                </span>
+            </td>
+            <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec', textAlign: 'right' }}>
+                {canCancel && (
+                    <button onClick={() => onCancel(cita.id)} style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #dfe7df', background: '#F6F9F5', color: '#52525b', fontWeight: 500, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+                        Cancelar
+                    </button>
+                )}
+            </td>
+        </tr>
+    );
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+
+export default function CitasIndex({ appointments, doctors, date, is_today }: Props) {
+    const [showModal, setShowModal] = useState(false);
     const [selDoc, setSelDoc] = useState<number | null>(null);
 
-    const citas = MOCK_CITAS[dayTab];
-    const filteredCitas = selDoc
-        ? citas.filter((c) => c.doc === selDoc)
-        : citas;
+    const isTomorrow = date === tomorrowStr();
+    const filtered = selDoc ? appointments.filter(a => a.doctor_id === selDoc) : appointments;
 
-    const SLOTS_HOY = [
-        '08:00',
-        '08:30',
-        '09:00',
-        '09:30',
-        '10:00',
-        '10:30',
-        '11:00',
-        '11:30',
-        '12:00',
-        '14:00',
-        '14:30',
-        '15:00',
-    ];
+    function navigate(targetDate: string) {
+        router.get('/citas', { date: targetDate }, { preserveState: false });
+    }
+
+    function cancelCita(id: number) {
+        if (!confirm('¿Cancelar esta cita?')) return;
+        router.delete(`/citas/${id}`, { preserveScroll: true });
+    }
+
+    // Slot-based view (future dates)
+    const bySlot = Object.fromEntries(
+        filtered.filter(a => a.appointment_time).map(a => [a.appointment_time!, a])
+    );
+    const noSlot = filtered.filter(a => !a.appointment_time);
+
+    // Today: exclude cancelled, sort by turn_order then time
+    const todayRows = filtered.filter(a => a.status !== 'cancelada');
+
+    const pendingCount = filtered.filter(a => a.status === 'pendiente' || a.status === 'confirmada').length;
 
     return (
         <div className="flex flex-col gap-5">
-            {/* Toolbar */}
-            <div
-                style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: 12,
-                    flexWrap: 'wrap',
-                }}
-            >
+
+            {/* ── Toolbar ── */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+
+                {/* Doctor filter chips */}
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {DOCTORS.map((d) => (
-                        <button
-                            key={d.id}
-                            onClick={() =>
-                                setSelDoc(selDoc === d.id ? null : d.id)
-                            }
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 10,
-                                padding: '6px 14px 6px 6px',
-                                borderRadius: 12,
-                                cursor: 'pointer',
-                                textAlign: 'left',
-                                background:
-                                    selDoc === d.id ? '#EEF6E2' : '#fff',
-                                border: `1px solid ${selDoc === d.id ? '#B9DC8E' : '#e3e9e3'}`,
-                                fontFamily: 'inherit',
-                                fontSize: 14,
-                            }}
-                        >
-                            <span
-                                style={{
-                                    width: 32,
-                                    height: 32,
-                                    flexShrink: 0,
-                                    borderRadius: '50%',
-                                    background: d.abg,
-                                    color: d.afg,
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: 12,
-                                    fontWeight: 600,
-                                }}
-                            >
-                                {d.ini}
-                            </span>
-                            <span style={{ lineHeight: 1.2 }}>
-                                <span
-                                    style={{
-                                        display: 'block',
-                                        fontWeight: 600,
-                                        color: '#1f2d22',
-                                        whiteSpace: 'nowrap',
-                                    }}
-                                >
-                                    {d.nom}
+                    {doctors.map(d => {
+                        const pal = docPalette(d.id);
+                        const active = selDoc === d.id;
+                        return (
+                            <button key={d.id} onClick={() => setSelDoc(active ? null : d.id)} style={{
+                                display: 'flex', alignItems: 'center', gap: 10,
+                                padding: '6px 14px 6px 6px', borderRadius: 12,
+                                cursor: 'pointer', textAlign: 'left',
+                                background: active ? '#EEF6E2' : '#fff',
+                                border: `1px solid ${active ? '#B9DC8E' : '#e3e9e3'}`,
+                                fontFamily: 'inherit', fontSize: 14,
+                            }}>
+                                <span style={{ width: 32, height: 32, flexShrink: 0, borderRadius: '50%', background: pal.bg, color: pal.fg, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600 }}>
+                                    {d.initials}
                                 </span>
-                                <span
-                                    style={{
-                                        display: 'block',
-                                        fontSize: 12,
-                                        color: '#71717a',
-                                        whiteSpace: 'nowrap',
-                                    }}
-                                >
-                                    {d.esp}
+                                <span style={{ lineHeight: 1.2 }}>
+                                    <span style={{ display: 'block', fontWeight: 600, color: '#1f2d22', whiteSpace: 'nowrap' }}>{d.name}</span>
+                                    <span style={{ display: 'block', fontSize: 12, color: '#71717a', whiteSpace: 'nowrap' }}>{d.specialty}</span>
                                 </span>
-                            </span>
-                        </button>
-                    ))}
+                            </button>
+                        );
+                    })}
                 </div>
-                <div
-                    style={{
-                        display: 'flex',
-                        gap: 8,
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                    }}
-                >
-                    <div
-                        style={{
-                            display: 'inline-flex',
-                            background: '#F3F7F2',
-                            border: '1px solid #e3e9e3',
-                            borderRadius: 11,
-                            padding: 3,
-                            gap: 2,
-                        }}
-                    >
-                        {(
-                            [
-                                {
-                                    key: 'hoy',
-                                    label: 'Hoy',
-                                    n: MOCK_CITAS.hoy.length,
-                                },
-                                {
-                                    key: 'manana',
-                                    label: 'Mañana',
-                                    n: MOCK_CITAS.manana.length,
-                                },
-                            ] as const
-                        ).map((t) => (
-                            <button
-                                key={t.key}
-                                onClick={() => setDayTab(t.key)}
-                                style={{
-                                    whiteSpace: 'nowrap',
-                                    height: 30,
-                                    padding: '0 12px',
-                                    border: 'none',
-                                    borderRadius: 10,
-                                    cursor: 'pointer',
-                                    fontWeight: 500,
-                                    background:
-                                        dayTab === t.key
-                                            ? '#fff'
-                                            : 'transparent',
-                                    color:
-                                        dayTab === t.key
-                                            ? '#1f2d22'
-                                            : '#52605a',
-                                    boxShadow:
-                                        dayTab === t.key
-                                            ? '0 1px 3px rgba(0,0,0,.1)'
-                                            : 'none',
-                                    fontFamily: 'inherit',
-                                    fontSize: 14,
-                                }}
-                            >
-                                {t.label}{' '}
-                                <span
-                                    style={{
-                                        color: '#8a948e',
-                                        fontVariantNumeric: 'tabular-nums',
-                                    }}
-                                >
-                                    {t.n}
-                                </span>
+
+                {/* Right controls */}
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    {/* Hoy / Mañana segmented */}
+                    <div style={{ display: 'inline-flex', background: '#F3F7F2', border: '1px solid #e3e9e3', borderRadius: 11, padding: 3, gap: 2 }}>
+                        {([
+                            { key: todayStr(),    label: 'Hoy',    active: is_today   },
+                            { key: tomorrowStr(), label: 'Mañana', active: isTomorrow },
+                        ] as const).map(t => (
+                            <button key={t.key} onClick={() => navigate(t.key)} style={{
+                                whiteSpace: 'nowrap', height: 30, padding: '0 12px',
+                                border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 500,
+                                background: t.active ? '#fff' : 'transparent',
+                                color: t.active ? '#1f2d22' : '#52605a',
+                                boxShadow: t.active ? '0 1px 3px rgba(0,0,0,.1)' : 'none',
+                                fontFamily: 'inherit', fontSize: 14,
+                            }}>
+                                {t.label}
                             </button>
                         ))}
                     </div>
-                    <div
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 4,
-                        }}
-                    >
-                        <button
-                            style={{
-                                width: 36,
-                                height: 36,
-                                border: '1px solid #dfe7df',
-                                background: '#F6F9F5',
-                                borderRadius: 10,
-                                cursor: 'pointer',
-                                fontFamily: 'inherit',
-                                fontSize: 16,
-                            }}
-                        >
-                            ‹
-                        </button>
-                        <button
-                            style={{
-                                height: 36,
-                                padding: '0 12px',
-                                border: '1px solid #dfe7df',
-                                background: '#F6F9F5',
-                                borderRadius: 10,
-                                cursor: 'pointer',
-                                fontFamily: 'inherit',
-                                fontSize: 14,
-                                fontWeight: 500,
-                            }}
-                        >
-                            Hoy
-                        </button>
-                        <button
-                            style={{
-                                width: 36,
-                                height: 36,
-                                border: '1px solid #dfe7df',
-                                background: '#F6F9F5',
-                                borderRadius: 10,
-                                cursor: 'pointer',
-                                fontFamily: 'inherit',
-                                fontSize: 16,
-                            }}
-                        >
-                            ›
-                        </button>
+                    {/* ‹ Hoy › navigation */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <button onClick={() => navigate(addDays(date, -1))} style={{ width: 36, height: 36, border: '1px solid #dfe7df', background: '#F6F9F5', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', fontSize: 16 }}>‹</button>
+                        <button onClick={() => navigate(todayStr())} style={{ height: 36, padding: '0 12px', border: '1px solid #dfe7df', background: '#F6F9F5', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 500 }}>Hoy</button>
+                        <button onClick={() => navigate(addDays(date, 1))} style={{ width: 36, height: 36, border: '1px solid #dfe7df', background: '#F6F9F5', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', fontSize: 16 }}>›</button>
                     </div>
-                    <button
-                        style={{
-                            whiteSpace: 'nowrap',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            height: 36,
-                            padding: '0 14px',
-                            borderRadius: 10,
-                            border: 'none',
-                            background: '#2E8B3E',
-                            color: '#fff',
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                            fontFamily: 'inherit',
-                            fontSize: 14,
-                        }}
-                    >
+                    <button onClick={() => setShowModal(true)} style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 14px', borderRadius: 10, border: 'none', background: '#2E8B3E', color: '#fff', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14 }}>
                         + Nueva cita
                     </button>
                 </div>
             </div>
 
-            {/* Table */}
-            <div
-                style={{
-                    background: '#fff',
-                    border: '1px solid #e3e9e3',
-                    borderRadius: 14,
-                    overflow: 'hidden',
-                }}
-            >
-                <div
-                    style={{
-                        padding: '14px 20px',
-                        borderBottom: '1px solid #eef0ec',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: 12,
-                        flexWrap: 'wrap',
-                    }}
-                >
+            {/* ── Table card ── */}
+            <div style={{ background: '#fff', border: '1px solid #e3e9e3', borderRadius: 14, overflow: 'hidden' }}>
+                <div style={{ padding: '14px 20px', borderBottom: '1px solid #eef0ec', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                     <div>
-                        <div
-                            style={{
-                                fontFamily: 'Bitter,Georgia,serif',
-                                fontWeight: 600,
-                                fontSize: 17,
-                                color: '#1f2d22',
-                            }}
-                        >
-                            {dayTab === 'hoy'
-                                ? 'Lunes, 12 de octubre 2026'
-                                : 'Martes, 13 de octubre 2026'}
+                        <div style={{ fontFamily: 'Bitter,Georgia,serif', fontWeight: 600, fontSize: 17, color: '#1f2d22', textTransform: 'capitalize' }}>
+                            {formatDateLong(date)}
                         </div>
                         <div style={{ fontSize: 13, color: '#71717a' }}>
-                            {filteredCitas.length} citas ·{' '}
-                            {
-                                filteredCitas.filter(
-                                    (c) => c.estado === 'Pendiente',
-                                ).length
-                            }{' '}
-                            pendientes de confirmar
+                            {filtered.length} {filtered.length === 1 ? 'cita' : 'citas'} · {pendingCount} pendientes
+                            {is_today && ' · Los turnos se gestionan desde el Tablero'}
                         </div>
                     </div>
                 </div>
+
                 <div style={{ overflowX: 'auto' }}>
-                    <table
-                        style={{
-                            width: '100%',
-                            borderCollapse: 'collapse',
-                            minWidth: 700,
-                        }}
-                    >
+                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
                         <thead>
                             <tr>
-                                <th style={{ ...thStyle, paddingLeft: 20 }}>
-                                    Hora
-                                </th>
+                                <th style={{ ...thStyle, paddingLeft: 20 }}>{is_today ? 'Estado' : 'Hora'}</th>
                                 <th style={thStyle}>Paciente</th>
                                 <th style={thStyle}>Médico</th>
                                 <th style={thStyle}>Tipo</th>
-                                <th style={thStyle}>Estado</th>
-                                <th style={{ ...thStyle, textAlign: 'right' }}>
-                                    Acciones
-                                </th>
+                                <th style={thStyle}>Cita</th>
+                                <th style={{ ...thStyle, textAlign: 'right' }}></th>
                             </tr>
                         </thead>
                         <tbody>
-                            {SLOTS_HOY.map((slot) => {
-                                const cita = filteredCitas.find(
-                                    (c) => c.hora === slot,
-                                );
-                                if (!cita) {
-                                    return (
-                                        <tr key={slot}>
-                                            <td
-                                                style={{
-                                                    padding:
-                                                        '6px 12px 6px 20px',
-                                                    borderBottom:
-                                                        '1px solid #f1f3ef',
-                                                    fontWeight: 600,
-                                                    fontVariantNumeric:
-                                                        'tabular-nums',
-                                                    color: '#8a948e',
-                                                    width: 60,
-                                                }}
-                                            >
-                                                {slot}
-                                            </td>
-                                            <td
-                                                colSpan={5}
-                                                style={{
-                                                    padding: '0 12px',
-                                                    borderBottom:
-                                                        '1px solid #f1f3ef',
-                                                    height: 44,
-                                                }}
-                                            >
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 8,
-                                                        padding: '0 4px',
-                                                        height: '100%',
-                                                        borderRadius: 8,
-                                                        border: '1px dashed #d6e2d0',
-                                                        color: '#8a948e',
-                                                        cursor: 'pointer',
-                                                        fontSize: 13,
-                                                    }}
-                                                >
-                                                    + Disponible
+                            {is_today ? (
+                                // ── Today: list view (status only, no turn actions) ──
+                                todayRows.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6}>
+                                            <div style={{ padding: '6px 12px 6px 20px', borderBottom: '1px solid #f1f3ef' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 4px', height: 44, borderRadius: 8, border: '1px dashed #d6e2d0', color: '#8a948e', cursor: 'pointer', fontSize: 13 }}
+                                                    onClick={() => setShowModal(true)}>
+                                                    + Registrar primera cita del día
                                                 </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                }
-                                const doc = DOCTORS.find(
-                                    (d) => d.id === cita.doc,
-                                )!;
-                                const stColor = ESTADO_COLORS[cita.estado] ?? {
-                                    bg: '#F4F4F5',
-                                    fg: '#52525B',
-                                };
-                                return (
-                                    <tr
-                                        key={slot}
-                                        style={{
-                                            background:
-                                                cita.estado === 'Atendida'
-                                                    ? '#F8FBF6'
-                                                    : '#fff',
-                                        }}
-                                    >
-                                        <td
-                                            style={{
-                                                padding: '10px 12px 10px 20px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                                fontWeight: 600,
-                                                fontVariantNumeric:
-                                                    'tabular-nums',
-                                                color:
-                                                    cita.estado === 'Atendida'
-                                                        ? '#8a948e'
-                                                        : '#1f2d22',
-                                            }}
-                                        >
-                                            {slot}
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                            }}
-                                        >
-                                            <div style={{ fontWeight: 500 }}>
-                                                {cita.paciente}
                                             </div>
-                                            <div
-                                                style={{
-                                                    fontSize: 12,
-                                                    color: '#71717a',
-                                                }}
-                                            >
-                                                {cita.motivo}
-                                            </div>
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                            }}
-                                        >
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 8,
-                                                }}
-                                            >
-                                                <span
-                                                    style={{
-                                                        width: 26,
-                                                        height: 26,
-                                                        flexShrink: 0,
-                                                        borderRadius: '50%',
-                                                        background: doc.abg,
-                                                        color: doc.afg,
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        justifyContent:
-                                                            'center',
-                                                        fontSize: 11,
-                                                        fontWeight: 600,
-                                                    }}
-                                                >
-                                                    {doc.ini}
-                                                </span>
-                                                <span style={{ fontSize: 13 }}>
-                                                    {doc.nom}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                                color: '#52525b',
-                                                fontSize: 13,
-                                            }}
-                                        >
-                                            {cita.tipo}
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                            }}
-                                        >
-                                            <span
-                                                style={{
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    whiteSpace: 'nowrap',
-                                                    padding: '2px 9px',
-                                                    borderRadius: 999,
-                                                    fontSize: 12,
-                                                    fontWeight: 600,
-                                                    background: stColor.bg,
-                                                    color: stColor.fg,
-                                                }}
-                                            >
-                                                {cita.estado}
-                                            </span>
-                                        </td>
-                                        <td
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderBottom:
-                                                    '1px solid #eef0ec',
-                                                textAlign: 'right',
-                                            }}
-                                        >
-                                            {cita.estado === 'Pendiente' && (
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        justifyContent:
-                                                            'flex-end',
-                                                        gap: 6,
-                                                    }}
-                                                >
-                                                    <button
-                                                        style={{
-                                                            height: 30,
-                                                            padding: '0 10px',
-                                                            borderRadius: 8,
-                                                            border: 'none',
-                                                            background:
-                                                                '#2E8B3E',
-                                                            color: '#fff',
-                                                            fontWeight: 500,
-                                                            fontSize: 12.5,
-                                                            cursor: 'pointer',
-                                                            fontFamily:
-                                                                'inherit',
-                                                        }}
-                                                    >
-                                                        + Agregar a la lista
-                                                    </button>
-                                                    <button
-                                                        style={{
-                                                            height: 30,
-                                                            padding: '0 10px',
-                                                            borderRadius: 8,
-                                                            border: '1px solid #dfe7df',
-                                                            background:
-                                                                '#F6F9F5',
-                                                            color: '#52525b',
-                                                            fontWeight: 500,
-                                                            fontSize: 12.5,
-                                                            cursor: 'pointer',
-                                                            fontFamily:
-                                                                'inherit',
-                                                        }}
-                                                    >
-                                                        ✕
-                                                    </button>
-                                                </div>
-                                            )}
-                                            {cita.estado === 'En lista' && (
-                                                <span
-                                                    style={{
-                                                        fontSize: 12.5,
-                                                        color: '#2E8B3E',
-                                                        fontWeight: 500,
-                                                    }}
-                                                >
-                                                    ✓ En lista · T-05
-                                                </span>
-                                            )}
                                         </td>
                                     </tr>
-                                );
-                            })}
+                                ) : (
+                                    todayRows.map(cita => {
+                                        const stColor = ESTADO_COLORS[cita.status] ?? { bg: '#F4F4F5', fg: '#52525B' };
+                                        const isDone = cita.status === 'atendida' || cita.status === 'no_asistio' || cita.status === 'cancelada';
+                                        const isInList = cita.status === 'en_lista';
+                                        const canCancel = cita.status === 'pendiente' || cita.status === 'confirmada';
+                                        const doc = doctors.find(d => d.id === cita.doctor_id);
+                                        const pal = docPalette(cita.doctor_id);
+                                        return (
+                                            <tr key={cita.id} style={{ background: isDone ? '#FAFAFA' : isInList ? '#F8FBF6' : '#fff' }}>
+                                                {/* Status / Turn column */}
+                                                <td style={{ padding: '10px 12px 10px 20px', borderBottom: '1px solid #eef0ec' }}>
+                                                    <span style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap', padding: '2px 9px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: stColor.bg, color: stColor.fg }}>
+                                                        {isInList && cita.turn_number
+                                                            ? `T-${String(cita.turn_number).padStart(2, '0')} · En lista`
+                                                            : ESTADO_LABELS[cita.status] ?? cita.status}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec' }}>
+                                                    <div style={{ fontWeight: 500, color: isDone ? '#8a948e' : '#1f2d22' }}>{cita.patient_name}</div>
+                                                    {cita.notes && <div style={{ fontSize: 12, color: '#71717a' }}>{cita.notes.length > 40 ? cita.notes.slice(0, 40) + '…' : cita.notes}</div>}
+                                                </td>
+                                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                        <span style={{ width: 26, height: 26, flexShrink: 0, borderRadius: '50%', background: pal.bg, color: pal.fg, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600 }}>
+                                                            {doc?.initials ?? '?'}
+                                                        </span>
+                                                        <span style={{ fontSize: 13, color: isDone ? '#8a948e' : '#52525b' }}>{cita.doctor_name}</span>
+                                                    </div>
+                                                </td>
+                                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec', color: isDone ? '#8a948e' : '#52525b', fontSize: 13 }}>
+                                                    {TYPE_LABELS[cita.type] ?? cita.type}
+                                                </td>
+                                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec', color: '#71717a', fontSize: 13, fontVariantNumeric: 'tabular-nums' }}>
+                                                    {cita.appointment_time ?? '—'}
+                                                </td>
+                                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec', textAlign: 'right' }}>
+                                                    {canCancel && (
+                                                        <button onClick={() => cancelCita(cita.id)} style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #dfe7df', background: '#F6F9F5', color: '#52525b', fontWeight: 500, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+                                                            Cancelar
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )
+                            ) : (
+                                // ── Future date: slot-based rows ──
+                                <>
+                                    {SLOTS.map(slot => {
+                                        const cita = bySlot[slot];
+                                        if (!cita) {
+                                            return (
+                                                <tr key={slot}>
+                                                    <td style={{ padding: '6px 12px 6px 20px', borderBottom: '1px solid #f1f3ef', fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: '#8a948e', width: 60 }}>{slot}</td>
+                                                    <td colSpan={5} style={{ padding: '0 12px', borderBottom: '1px solid #f1f3ef', height: 44 }}>
+                                                        <div onClick={() => setShowModal(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 4px', height: '100%', borderRadius: 8, border: '1px dashed #d6e2d0', color: '#8a948e', cursor: 'pointer', fontSize: 13 }}>
+                                                            + Disponible
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        }
+                                        const doc = doctors.find(d => d.id === cita.doctor_id);
+                                        const pal = docPalette(cita.doctor_id);
+                                        const stColor = ESTADO_COLORS[cita.status] ?? { bg: '#F4F4F5', fg: '#52525B' };
+                                        const canCancel = cita.status === 'pendiente' || cita.status === 'confirmada';
+                                        return (
+                                            <tr key={slot}>
+                                                <td style={{ padding: '10px 12px 10px 20px', borderBottom: '1px solid #eef0ec', fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: '#1f2d22' }}>{slot}</td>
+                                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec' }}>
+                                                    <div style={{ fontWeight: 500 }}>{cita.patient_name}</div>
+                                                    {cita.notes && <div style={{ fontSize: 12, color: '#71717a' }}>{cita.notes.length > 40 ? cita.notes.slice(0, 40) + '…' : cita.notes}</div>}
+                                                </td>
+                                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                        <span style={{ width: 26, height: 26, flexShrink: 0, borderRadius: '50%', background: pal.bg, color: pal.fg, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600 }}>
+                                                            {doc?.initials ?? '?'}
+                                                        </span>
+                                                        <span style={{ fontSize: 13 }}>{cita.doctor_name}</span>
+                                                    </div>
+                                                </td>
+                                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec', color: '#52525b', fontSize: 13 }}>{TYPE_LABELS[cita.type] ?? cita.type}</td>
+                                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec' }}>
+                                                    <span style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap', padding: '2px 9px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: stColor.bg, color: stColor.fg }}>
+                                                        {ESTADO_LABELS[cita.status] ?? cita.status}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec', textAlign: 'right' }}>
+                                                    {canCancel && (
+                                                        <button onClick={() => cancelCita(cita.id)} style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #dfe7df', background: '#F6F9F5', color: '#52525b', fontWeight: 500, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+                                                            Cancelar
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                    {noSlot.map(cita => {
+                                        const doc = doctors.find(d => d.id === cita.doctor_id);
+                                        const pal = docPalette(cita.doctor_id);
+                                        const stColor = ESTADO_COLORS[cita.status] ?? { bg: '#F4F4F5', fg: '#52525B' };
+                                        const canCancel = cita.status === 'pendiente' || cita.status === 'confirmada';
+                                        return (
+                                            <tr key={cita.id}>
+                                                <td style={{ padding: '10px 12px 10px 20px', borderBottom: '1px solid #eef0ec', fontWeight: 600, color: '#8a948e' }}>—</td>
+                                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec' }}>
+                                                    <div style={{ fontWeight: 500 }}>{cita.patient_name}</div>
+                                                    {cita.notes && <div style={{ fontSize: 12, color: '#71717a' }}>{cita.notes.length > 40 ? cita.notes.slice(0, 40) + '…' : cita.notes}</div>}
+                                                </td>
+                                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                        <span style={{ width: 26, height: 26, flexShrink: 0, borderRadius: '50%', background: pal.bg, color: pal.fg, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600 }}>
+                                                            {doc?.initials ?? '?'}
+                                                        </span>
+                                                        <span style={{ fontSize: 13 }}>{cita.doctor_name}</span>
+                                                    </div>
+                                                </td>
+                                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec', color: '#52525b', fontSize: 13 }}>{TYPE_LABELS[cita.type] ?? cita.type}</td>
+                                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec' }}>
+                                                    <span style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap', padding: '2px 9px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: stColor.bg, color: stColor.fg }}>
+                                                        {ESTADO_LABELS[cita.status] ?? cita.status}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #eef0ec', textAlign: 'right' }}>
+                                                    {canCancel && (
+                                                        <button onClick={() => cancelCita(cita.id)} style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #dfe7df', background: '#F6F9F5', color: '#52525b', fontWeight: 500, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+                                                            Cancelar
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </>
+                            )}
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            {/* ── Modal nueva cita ── */}
+            {showModal && (
+                <NuevaCitaModal
+                    onClose={() => setShowModal(false)}
+                    doctors={doctors}
+                    defaultDate={date}
+                />
+            )}
         </div>
     );
 }
