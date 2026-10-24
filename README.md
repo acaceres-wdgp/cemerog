@@ -10,7 +10,7 @@ Sistema de gestión clínica para el Centro Médico Dres. Rodríguez & Guzmán (
 
 | Herramienta | Versión mínima |
 | ----------- | -------------- |
-| PHP         | 8.3+           |
+| PHP         | 8.4+           |
 | MySQL       | 8.0+           |
 | Node.js     | 20+            |
 | Composer    | 2.x            |
@@ -21,7 +21,7 @@ Sistema de gestión clínica para el Centro Médico Dres. Rodríguez & Guzmán (
 
 [Laravel Herd](https://herd.laravel.com) provee PHP, MySQL y un servidor web de forma nativa, sin Docker.
 
-1. Descarga e instala Herd desde `herd.laravel.com`. Incluye PHP 8.3+ y MySQL 8.
+1. Descarga e instala Herd desde `herd.laravel.com`. Incluye PHP 8.4+ y MySQL 8.
 
 2. En Herd, agrega el directorio padre de este proyecto como sitio:
     - Abre Herd → General → Herd Path → agrega `~/Desktop` (o donde tengas el repo).
@@ -74,7 +74,7 @@ Sistema de gestión clínica para el Centro Médico Dres. Rodríguez & Guzmán (
 
 ## Instalación con PHP/MySQL nativos
 
-1. Asegúrate de tener PHP 8.3+, MySQL 8, Node 20+ y Composer instalados.
+1. Asegúrate de tener PHP 8.4+, MySQL 8, Node 20+ y Composer instalados.
 
 2. Crea la base de datos:
 

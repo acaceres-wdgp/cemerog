@@ -4,7 +4,7 @@ Sistema de gestión clínica para Dres. Rodríguez & Guzmán (República Dominic
 
 ## Stack
 
-- **Backend**: Laravel 13, PHP 8.3+, MySQL 8 (SQLite en tests)
+- **Backend**: Laravel 13, PHP 8.4+, MySQL 8 (SQLite en tests)
 - **Frontend**: Inertia 3, React 19, TypeScript, Tailwind CSS 4, shadcn/ui
 - **Auth**: username + password (sin email, sin registro público)
 - **Roles**: spatie/laravel-permission – 8 roles
@@ -102,6 +102,9 @@ No modificar nada dentro de `design/`.
 - No envolver páginas en `<AppLayout>`: el layout se aplica globalmente en `app.tsx` mediante `createInertiaApp({ layout })`
 - No combinar un cast `encrypted` con un `Attribute` sobre la misma columna en Eloquent — produce doble cifrado o fallo al descifrar (ver ADR-010)
 - No borrar pacientes con `forceDelete` ni `DB::delete`; usar siempre `$patient->delete()` (soft delete) para preservar integridad referencial con turns y citas (ver ADR-012)
+- No escribir colores hex ni `style={{…}}` en `resources/js/pages/`. Usar los tokens de `resources/css/app.css` (`bg-primary`, `text-text-secondary`, `border-divider`…) y los componentes de `components/cemerog/`. Solo se permite `style` para valores calculados en tiempo de ejecución (p. ej. el tamaño de un avatar). Las páginas migradas están protegidas por `resources/js/__tests__/no-hardcoded-hex.test.ts`
+- No hacer commits de más de ~400 líneas de código de producción; dividir en PRs
+- No mezclar ramas a `main` en local; siempre por PR en GitHub
 
 ## Módulos y permisos
 
