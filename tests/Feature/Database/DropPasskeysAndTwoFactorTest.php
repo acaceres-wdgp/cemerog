@@ -16,7 +16,10 @@ test('passkeys table and two factor columns are dropped', function () {
 });
 
 test('rolling back restores the passkeys table and two factor columns', function () {
-    $this->artisan('migrate:rollback', ['--step' => 1])->assertSuccessful();
+    // Target this migration by path: later migrations make --step=1 roll back something else
+    $this->artisan('migrate:rollback', [
+        '--path' => 'database/migrations/2026_10_22_000001_drop_passkeys_and_two_factor_columns.php',
+    ])->assertSuccessful();
 
     expect(Schema::hasTable('passkeys'))->toBeTrue()
         ->and(Schema::hasColumns('passkeys', ['user_id', 'name', 'credential_id', 'credential', 'last_used_at']))->toBeTrue()
