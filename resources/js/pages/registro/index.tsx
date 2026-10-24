@@ -96,7 +96,7 @@ function PatientAvatar({
 }) {
     return (
         <div
-            className="flex shrink-0 items-center justify-center rounded-full bg-[#EEF6E2] font-semibold text-[#2f4a17]"
+            className="flex shrink-0 items-center justify-center rounded-full bg-accent-bg font-semibold text-accent-fg"
             style={{ width: size, height: size, fontSize: size * 0.37 }}
         >
             {initials}
@@ -202,7 +202,7 @@ function PatientAutocomplete({ onSelect, searchPath }: AutocompleteProps) {
     return (
         <div className="relative">
             <div className="relative">
-                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#71717a]" />
+                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted" />
                 <input
                     ref={inputRef}
                     id="patient-search-input"
@@ -228,13 +228,13 @@ function PatientAutocomplete({ onSelect, searchPath }: AutocompleteProps) {
                     data-1p-ignore
                     data-lpignore="true"
                     data-form-type="other"
-                    className="h-10 w-full rounded-lg border border-[#e3e9e3] bg-white pr-9 pl-9 text-sm placeholder-[#a1a1aa] outline-none focus:border-[#2E8B3E] focus:ring-1 focus:ring-[#2E8B3E]"
+                    className="h-10 w-full rounded-lg border border-card-border bg-white pr-9 pl-9 text-sm placeholder-muted-light outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
                 {query && (
                     <button
                         type="button"
                         onClick={handleClear}
-                        className="absolute top-1/2 right-3 -translate-y-1/2 text-[#71717a] hover:text-[#333]"
+                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted hover:text-text-body"
                         aria-label="Limpiar búsqueda"
                     >
                         <X className="h-4 w-4" />
@@ -247,21 +247,21 @@ function PatientAutocomplete({ onSelect, searchPath }: AutocompleteProps) {
                 <ul
                     id="patient-search-listbox"
                     role="listbox"
-                    className="absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-[#e3e9e3] bg-white shadow-lg"
+                    className="absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-card-border bg-white shadow-lg"
                 >
                     {tooShort ? (
-                        <li className="px-4 py-3 text-sm text-[#8a948e]">
+                        <li className="px-4 py-3 text-sm text-text-tertiary">
                             Escribe al menos 3 caracteres.
                         </li>
                     ) : loading ? (
-                        <li className="flex items-center gap-2 px-4 py-3 text-sm text-[#71717a]">
+                        <li className="flex items-center gap-2 px-4 py-3 text-sm text-muted">
                             <Loader2 className="h-4 w-4 animate-spin" />
                             Buscando…
                         </li>
                     ) : (
                         <>
                             {results.length === 0 && (
-                                <li className="px-4 py-3 text-sm text-[#8a948e]">
+                                <li className="px-4 py-3 text-sm text-text-tertiary">
                                     Ningún paciente coincide con «{query}».
                                 </li>
                             )}
@@ -272,14 +272,14 @@ function PatientAutocomplete({ onSelect, searchPath }: AutocompleteProps) {
                                     role="option"
                                     aria-selected={activeIdx === idx}
                                     onClick={() => selectPatient(p)}
-                                    className={`flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-[#F6FAF1] ${activeIdx === idx ? 'bg-[#F6FAF1]' : ''}`}
+                                    className={`flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-table-header-bg ${activeIdx === idx ? 'bg-table-header-bg' : ''}`}
                                 >
                                     <PatientAvatar initials={p.initials} />
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-medium text-[#1f2d22]">
+                                        <p className="text-sm font-medium text-text-heading">
                                             {p.full_name}
                                         </p>
-                                        <p className="text-[12px] text-[#71717a]">
+                                        <p className="text-[12px] text-muted">
                                             {p.document_number} · {p.age} años
                                             {p.phone ? ` · ${p.phone}` : ''}
                                         </p>
@@ -291,12 +291,12 @@ function PatientAutocomplete({ onSelect, searchPath }: AutocompleteProps) {
                                             </span>
                                         )}
                                         {p.allergies && (
-                                            <span className="rounded-full bg-[#FEF2F2] px-2 py-0.5 text-[11px] font-medium text-[#B91C1C]">
+                                            <span className="rounded-full bg-error-bg px-2 py-0.5 text-[11px] font-medium text-error">
                                                 Alergias
                                             </span>
                                         )}
                                         {p.last_attended_at && (
-                                            <span className="text-[11px] text-[#a1a1aa]">
+                                            <span className="text-[11px] text-muted-light">
                                                 Últ. {p.last_attended_at}
                                             </span>
                                         )}
@@ -310,12 +310,12 @@ function PatientAutocomplete({ onSelect, searchPath }: AutocompleteProps) {
                                 role="option"
                                 aria-selected={activeIdx === results.length}
                                 onClick={selectNew}
-                                className={`flex cursor-pointer items-center gap-3 border-t border-[#eef0ec] px-4 py-3 hover:bg-[#F6FAF1] ${activeIdx === results.length ? 'bg-[#F6FAF1]' : ''}`}
+                                className={`flex cursor-pointer items-center gap-3 border-t border-divider px-4 py-3 hover:bg-table-header-bg ${activeIdx === results.length ? 'bg-table-header-bg' : ''}`}
                             >
-                                <div className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-[#EEF6E2]">
-                                    <UserPlus className="h-4 w-4 text-[#2E8B3E]" />
+                                <div className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-accent-bg">
+                                    <UserPlus className="h-4 w-4 text-primary" />
                                 </div>
-                                <p className="text-sm font-medium text-[#2E8B3E]">
+                                <p className="text-sm font-medium text-primary">
                                     Registrar como paciente nuevo
                                 </p>
                             </li>
@@ -432,7 +432,7 @@ export default function RegistroIndex({
                 className="flex flex-col gap-5"
             >
                 {/* Intro */}
-                <p className="text-[13.5px]" style={{ color: '#5f6b64' }}>
+                <p className="text-[13.5px] text-text-secondary">
                     Busca primero por cédula. Si el paciente no existe, completa
                     sus datos y crea la atención.
                 </p>
@@ -454,7 +454,7 @@ export default function RegistroIndex({
                             noPadding
                         >
                             {/* Search zone */}
-                            <div className="border-b border-[#eef0ec] px-5 py-4">
+                            <div className="border-b border-divider px-5 py-4">
                                 <PatientAutocomplete
                                     searchPath="/registro/pacientes/buscar"
                                     onSelect={(p) => {
@@ -466,10 +466,10 @@ export default function RegistroIndex({
 
                             {/* Banners */}
                             {mode !== 'search' && (
-                                <div className="flex flex-col gap-3 border-b border-[#eef0ec] px-5 py-4">
+                                <div className="flex flex-col gap-3 border-b border-divider px-5 py-4">
                                     {mode === 'existing' && existingPatient && (
-                                        <div className="flex items-start gap-3 rounded-xl border border-[#DCEBC9] bg-[#EEF6E2] px-4 py-3 text-[13px] text-[#1f4a1a]">
-                                            <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#2E8B3E]" />
+                                        <div className="flex items-start gap-3 rounded-xl border border-success-border bg-accent-bg px-4 py-3 text-[13px] text-success-fg">
+                                            <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                                             <div className="flex-1">
                                                 <strong>
                                                     Paciente existente
@@ -484,7 +484,7 @@ export default function RegistroIndex({
                                                     ? ` · última ${existingPatient.last_attended_at}`
                                                     : ''}
                                                 .{' '}
-                                                <span className="text-[#56693f]">
+                                                <span className="text-table-header-text">
                                                     Verifica que los datos estén
                                                     al día.
                                                 </span>
@@ -492,7 +492,7 @@ export default function RegistroIndex({
                                             <button
                                                 type="button"
                                                 onClick={handleChangePatient}
-                                                className="shrink-0 text-[12px] font-medium text-[#2E8B3E] underline hover:no-underline"
+                                                className="shrink-0 text-[12px] font-medium text-primary underline hover:no-underline"
                                             >
                                                 Cambiar paciente
                                             </button>
@@ -502,7 +502,7 @@ export default function RegistroIndex({
                                     {mode === 'existing' &&
                                         existingPatient?.has_open_turn_today &&
                                         existingPatient.open_turn && (
-                                            <div className="flex items-start gap-3 rounded-xl border border-[#FECACA] bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#991B1B]">
+                                            <div className="flex items-start gap-3 rounded-xl border border-error-border bg-error-bg px-4 py-3 text-[13px] text-error-strong">
                                                 <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
                                                 <div className="flex-1">
                                                     Ya tiene la atención{' '}
@@ -522,7 +522,7 @@ export default function RegistroIndex({
                                                 </div>
                                                 <Link
                                                     href="/tablero"
-                                                    className="shrink-0 text-[12px] font-medium text-[#991B1B] underline hover:no-underline"
+                                                    className="shrink-0 text-[12px] font-medium text-error-strong underline hover:no-underline"
                                                 >
                                                     Ver en el tablero
                                                 </Link>
@@ -531,7 +531,7 @@ export default function RegistroIndex({
 
                                     {mode === 'existing' &&
                                         existingPatient?.allergies && (
-                                            <div className="flex items-start gap-3 rounded-xl border border-[#FECACA] bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#991B1B]">
+                                            <div className="flex items-start gap-3 rounded-xl border border-error-border bg-error-bg px-4 py-3 text-[13px] text-error-strong">
                                                 <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
                                                 <p>
                                                     <strong>
@@ -543,7 +543,7 @@ export default function RegistroIndex({
                                         )}
 
                                     {mode === 'new' && (
-                                        <div className="flex items-start gap-3 rounded-xl border border-[#BAE6FD] bg-[#EFF6FF] px-4 py-3 text-[13px] text-[#1e40af]">
+                                        <div className="flex items-start gap-3 rounded-xl border border-sky-200 bg-blue-50 px-4 py-3 text-[13px] text-blue-800">
                                             <Info className="mt-0.5 h-4 w-4 shrink-0" />
                                             <p>
                                                 Se registrará como{' '}
@@ -553,7 +553,7 @@ export default function RegistroIndex({
                                             <button
                                                 type="button"
                                                 onClick={handleChangePatient}
-                                                className="ml-auto shrink-0 text-[12px] font-medium text-[#1e40af] underline hover:no-underline"
+                                                className="ml-auto shrink-0 text-[12px] font-medium text-blue-800 underline hover:no-underline"
                                             >
                                                 Volver a buscar
                                             </button>
@@ -561,7 +561,7 @@ export default function RegistroIndex({
                                     )}
 
                                     {errors.open_turn && (
-                                        <div className="flex items-start gap-3 rounded-xl border border-[#FECACA] bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#991B1B]">
+                                        <div className="flex items-start gap-3 rounded-xl border border-error-border bg-error-bg px-4 py-3 text-[13px] text-error-strong">
                                             <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
                                             <p>{errors.open_turn}</p>
                                         </div>
@@ -572,10 +572,7 @@ export default function RegistroIndex({
                             {/* Form fields – always visible, disabled when locked */}
                             <div className="px-5 py-4">
                                 {locked && (
-                                    <div
-                                        className="mb-4 flex items-center gap-2 text-[13px]"
-                                        style={{ color: '#71717a' }}
-                                    >
+                                    <div className="mb-4 flex items-center gap-2 text-[13px] text-muted">
                                         <Info className="h-4 w-4 shrink-0" />
                                         Busca un paciente o elige «Registrar
                                         como paciente nuevo» para continuar.
@@ -593,9 +590,9 @@ export default function RegistroIndex({
                                     }
                                 >
                                     <div>
-                                        <label className="mb-1 block text-[13px] font-medium text-[#333]">
+                                        <label className="mb-1 block text-[13px] font-medium text-text-body">
                                             Tipo de documento{' '}
-                                            <span className="text-[#b91c1c]">
+                                            <span className="text-error">
                                                 *
                                             </span>
                                         </label>
@@ -607,7 +604,7 @@ export default function RegistroIndex({
                                                     e.target.value,
                                                 )
                                             }
-                                            className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E]"
+                                            className="h-9 w-full rounded-lg border border-card-border bg-white px-3 text-sm outline-none focus:border-primary"
                                         >
                                             {DOC_TYPES.map((t) => (
                                                 <option
@@ -619,16 +616,16 @@ export default function RegistroIndex({
                                             ))}
                                         </select>
                                         {errors.document_type && (
-                                            <p className="mt-1 text-[12px] text-[#b91c1c]">
+                                            <p className="mt-1 text-[12px] text-error">
                                                 {errors.document_type}
                                             </p>
                                         )}
                                     </div>
 
                                     <div>
-                                        <label className="mb-1 block text-[13px] font-medium text-[#333]">
+                                        <label className="mb-1 block text-[13px] font-medium text-text-body">
                                             No. de documento{' '}
-                                            <span className="text-[#b91c1c]">
+                                            <span className="text-error">
                                                 *
                                             </span>
                                         </label>
@@ -646,7 +643,7 @@ export default function RegistroIndex({
                                                 data-1p-ignore
                                                 data-lpignore="true"
                                                 data-form-type="other"
-                                                className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm tabular-nums outline-none focus:border-[#2E8B3E] disabled:bg-[#f9fafb]"
+                                                className="h-9 w-full rounded-lg border border-card-border bg-white px-3 text-sm tabular-nums outline-none focus:border-primary disabled:bg-gray-50"
                                             />
                                         ) : (
                                             <input
@@ -666,20 +663,20 @@ export default function RegistroIndex({
                                                 data-1p-ignore
                                                 data-lpignore="true"
                                                 data-form-type="other"
-                                                className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E] disabled:bg-[#f9fafb]"
+                                                className="h-9 w-full rounded-lg border border-card-border bg-white px-3 text-sm outline-none focus:border-primary disabled:bg-gray-50"
                                             />
                                         )}
                                         {errors.document_number && (
-                                            <p className="mt-1 text-[12px] text-[#b91c1c]">
+                                            <p className="mt-1 text-[12px] text-error">
                                                 {errors.document_number}
                                             </p>
                                         )}
                                     </div>
 
                                     <div>
-                                        <label className="mb-1 block text-[13px] font-medium text-[#333]">
+                                        <label className="mb-1 block text-[13px] font-medium text-text-body">
                                             Fecha de nacimiento{' '}
-                                            <span className="text-[#b91c1c]">
+                                            <span className="text-error">
                                                 *
                                             </span>
                                         </label>
@@ -701,19 +698,19 @@ export default function RegistroIndex({
                                             data-1p-ignore
                                             data-lpignore="true"
                                             data-form-type="other"
-                                            className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E]"
+                                            className="h-9 w-full rounded-lg border border-card-border bg-white px-3 text-sm outline-none focus:border-primary"
                                         />
                                         {errors.birth_date && (
-                                            <p className="mt-1 text-[12px] text-[#b91c1c]">
+                                            <p className="mt-1 text-[12px] text-error">
                                                 {errors.birth_date}
                                             </p>
                                         )}
                                     </div>
 
                                     <div>
-                                        <label className="mb-1 block text-[13px] font-medium text-[#333]">
+                                        <label className="mb-1 block text-[13px] font-medium text-text-body">
                                             Nombres{' '}
-                                            <span className="text-[#b91c1c]">
+                                            <span className="text-error">
                                                 *
                                             </span>
                                         </label>
@@ -731,19 +728,19 @@ export default function RegistroIndex({
                                             data-1p-ignore
                                             data-lpignore="true"
                                             data-form-type="other"
-                                            className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E]"
+                                            className="h-9 w-full rounded-lg border border-card-border bg-white px-3 text-sm outline-none focus:border-primary"
                                         />
                                         {errors.first_names && (
-                                            <p className="mt-1 text-[12px] text-[#b91c1c]">
+                                            <p className="mt-1 text-[12px] text-error">
                                                 {errors.first_names}
                                             </p>
                                         )}
                                     </div>
 
                                     <div>
-                                        <label className="mb-1 block text-[13px] font-medium text-[#333]">
+                                        <label className="mb-1 block text-[13px] font-medium text-text-body">
                                             Apellidos{' '}
-                                            <span className="text-[#b91c1c]">
+                                            <span className="text-error">
                                                 *
                                             </span>
                                         </label>
@@ -761,19 +758,19 @@ export default function RegistroIndex({
                                             data-1p-ignore
                                             data-lpignore="true"
                                             data-form-type="other"
-                                            className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E]"
+                                            className="h-9 w-full rounded-lg border border-card-border bg-white px-3 text-sm outline-none focus:border-primary"
                                         />
                                         {errors.last_names && (
-                                            <p className="mt-1 text-[12px] text-[#b91c1c]">
+                                            <p className="mt-1 text-[12px] text-error">
                                                 {errors.last_names}
                                             </p>
                                         )}
                                     </div>
 
                                     <div>
-                                        <label className="mb-1 block text-[13px] font-medium text-[#333]">
+                                        <label className="mb-1 block text-[13px] font-medium text-text-body">
                                             Sexo{' '}
-                                            <span className="text-[#b91c1c]">
+                                            <span className="text-error">
                                                 *
                                             </span>
                                         </label>
@@ -791,7 +788,7 @@ export default function RegistroIndex({
                                                         onChange={() =>
                                                             setData('sex', s)
                                                         }
-                                                        className="accent-[#2E8B3E]"
+                                                        className="accent-primary"
                                                     />
                                                     {s === 'M'
                                                         ? 'Masculino'
@@ -800,16 +797,16 @@ export default function RegistroIndex({
                                             ))}
                                         </div>
                                         {errors.sex && (
-                                            <p className="mt-1 text-[12px] text-[#b91c1c]">
+                                            <p className="mt-1 text-[12px] text-error">
                                                 {errors.sex}
                                             </p>
                                         )}
                                     </div>
 
                                     <div>
-                                        <label className="mb-1 block text-[13px] font-medium text-[#333]">
+                                        <label className="mb-1 block text-[13px] font-medium text-text-body">
                                             Teléfono{' '}
-                                            <span className="text-[#b91c1c]">
+                                            <span className="text-error">
                                                 *
                                             </span>
                                         </label>
@@ -823,17 +820,17 @@ export default function RegistroIndex({
                                             data-1p-ignore
                                             data-lpignore="true"
                                             data-form-type="other"
-                                            className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm tabular-nums outline-none focus:border-[#2E8B3E]"
+                                            className="h-9 w-full rounded-lg border border-card-border bg-white px-3 text-sm tabular-nums outline-none focus:border-primary"
                                         />
                                         {errors.phone && (
-                                            <p className="mt-1 text-[12px] text-[#b91c1c]">
+                                            <p className="mt-1 text-[12px] text-error">
                                                 {errors.phone}
                                             </p>
                                         )}
                                     </div>
 
                                     <div className="sm:col-span-2">
-                                        <label className="mb-1 block text-[13px] font-medium text-[#333]">
+                                        <label className="mb-1 block text-[13px] font-medium text-text-body">
                                             Dirección
                                         </label>
                                         <input
@@ -850,12 +847,12 @@ export default function RegistroIndex({
                                             data-1p-ignore
                                             data-lpignore="true"
                                             data-form-type="other"
-                                            className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E]"
+                                            className="h-9 w-full rounded-lg border border-card-border bg-white px-3 text-sm outline-none focus:border-primary"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="mb-1 block text-[13px] font-medium text-[#333]">
+                                        <label className="mb-1 block text-[13px] font-medium text-text-body">
                                             Persona de contacto
                                         </label>
                                         <input
@@ -872,12 +869,12 @@ export default function RegistroIndex({
                                             data-1p-ignore
                                             data-lpignore="true"
                                             data-form-type="other"
-                                            className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E]"
+                                            className="h-9 w-full rounded-lg border border-card-border bg-white px-3 text-sm outline-none focus:border-primary"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="mb-1 block text-[13px] font-medium text-[#333]">
+                                        <label className="mb-1 block text-[13px] font-medium text-text-body">
                                             Tel. de contacto
                                         </label>
                                         <input
@@ -894,12 +891,12 @@ export default function RegistroIndex({
                                             data-1p-ignore
                                             data-lpignore="true"
                                             data-form-type="other"
-                                            className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E]"
+                                            className="h-9 w-full rounded-lg border border-card-border bg-white px-3 text-sm outline-none focus:border-primary"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="mb-1 block text-[13px] font-medium text-[#333]">
+                                        <label className="mb-1 block text-[13px] font-medium text-text-body">
                                             Tipo de sangre
                                         </label>
                                         <select
@@ -910,7 +907,7 @@ export default function RegistroIndex({
                                                     e.target.value,
                                                 )
                                             }
-                                            className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E]"
+                                            className="h-9 w-full rounded-lg border border-card-border bg-white px-3 text-sm outline-none focus:border-primary"
                                         >
                                             <option value="">
                                                 — Sin registrar —
@@ -924,8 +921,8 @@ export default function RegistroIndex({
                                     </div>
 
                                     <div className="sm:col-span-3">
-                                        <label className="mb-1 flex items-center gap-1.5 text-[13px] font-medium text-[#333]">
-                                            <TriangleAlert className="h-3.5 w-3.5 text-[#b91c1c]" />
+                                        <label className="mb-1 flex items-center gap-1.5 text-[13px] font-medium text-text-body">
+                                            <TriangleAlert className="h-3.5 w-3.5 text-error" />
                                             Alergias
                                         </label>
                                         <textarea
@@ -938,7 +935,7 @@ export default function RegistroIndex({
                                             }
                                             rows={2}
                                             placeholder="Medicamentos, alimentos u otros"
-                                            className="w-full rounded-lg border border-[#e3e9e3] bg-white px-3 py-2 text-sm outline-none focus:border-[#2E8B3E]"
+                                            className="w-full rounded-lg border border-card-border bg-white px-3 py-2 text-sm outline-none focus:border-primary"
                                         />
                                     </div>
                                 </div>
@@ -993,11 +990,11 @@ export default function RegistroIndex({
                                             title={opt.tooltip}
                                             className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition-colors ${
                                                 opt.disabled
-                                                    ? 'cursor-not-allowed border-[#e3e9e3] opacity-50'
+                                                    ? 'cursor-not-allowed border-card-border opacity-50'
                                                     : data.attention_type ===
                                                         opt.value
-                                                      ? 'border-[#2E8B3E] bg-[#EEF6E2]'
-                                                      : 'border-[#e3e9e3] hover:bg-[#F6FAF1]'
+                                                      ? 'border-primary bg-accent-bg'
+                                                      : 'border-card-border hover:bg-table-header-bg'
                                             }`}
                                         >
                                             <input
@@ -1015,13 +1012,13 @@ export default function RegistroIndex({
                                                         opt.value,
                                                     )
                                                 }
-                                                className="mt-0.5 accent-[#2E8B3E]"
+                                                className="mt-0.5 accent-primary"
                                             />
                                             <div>
-                                                <p className="text-sm font-medium text-[#1f2d22]">
+                                                <p className="text-sm font-medium text-text-heading">
                                                     {opt.label}
                                                 </p>
-                                                <p className="text-[12px] text-[#71717a]">
+                                                <p className="text-[12px] text-muted">
                                                     {opt.desc}
                                                 </p>
                                             </div>
@@ -1032,9 +1029,9 @@ export default function RegistroIndex({
                                 {data.attention_type === 'consulta' && (
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         <div>
-                                            <label className="mb-1 block text-[13px] font-medium text-[#333]">
+                                            <label className="mb-1 block text-[13px] font-medium text-text-body">
                                                 Médico{' '}
-                                                <span className="text-[#b91c1c]">
+                                                <span className="text-error">
                                                     *
                                                 </span>
                                             </label>
@@ -1046,7 +1043,7 @@ export default function RegistroIndex({
                                                         e.target.value,
                                                     )
                                                 }
-                                                className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E]"
+                                                className="h-9 w-full rounded-lg border border-card-border bg-white px-3 text-sm outline-none focus:border-primary"
                                             >
                                                 <option value="">
                                                     — Seleccionar médico —
@@ -1061,13 +1058,13 @@ export default function RegistroIndex({
                                                 ))}
                                             </select>
                                             {errors.doctor_id && (
-                                                <p className="mt-1 text-[12px] text-[#b91c1c]">
+                                                <p className="mt-1 text-[12px] text-error">
                                                     {errors.doctor_id}
                                                 </p>
                                             )}
                                         </div>
                                         <div>
-                                            <label className="mb-1 block text-[13px] font-medium text-[#333]">
+                                            <label className="mb-1 block text-[13px] font-medium text-text-body">
                                                 Motivo de la visita
                                             </label>
                                             <textarea
@@ -1079,7 +1076,7 @@ export default function RegistroIndex({
                                                     )
                                                 }
                                                 rows={2}
-                                                className="w-full rounded-lg border border-[#e3e9e3] bg-white px-3 py-2 text-sm outline-none focus:border-[#2E8B3E]"
+                                                className="w-full rounded-lg border border-card-border bg-white px-3 py-2 text-sm outline-none focus:border-primary"
                                             />
                                         </div>
                                     </div>
@@ -1087,17 +1084,17 @@ export default function RegistroIndex({
                             </div>
 
                             {/* Footer */}
-                            <div className="flex items-center justify-end gap-3 border-t border-[#eef0ec] px-5 py-4">
+                            <div className="flex items-center justify-end gap-3 border-t border-divider px-5 py-4">
                                 <Link
                                     href={pacientes.url()}
-                                    className="inline-flex h-9 items-center rounded-lg border border-[#e3e9e3] bg-white px-[14px] text-sm font-medium text-[#333] hover:bg-[#F3F7F2]"
+                                    className="inline-flex h-9 items-center rounded-lg border border-card-border bg-white px-[14px] text-sm font-medium text-text-body hover:bg-app-bg"
                                 >
                                     Cancelar
                                 </Link>
                                 <button
                                     type="submit"
                                     disabled={!isFormValid || processing}
-                                    className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#2E8B3E] px-[14px] text-sm font-medium text-white hover:bg-[#277a35] disabled:opacity-60"
+                                    className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-[14px] text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
                                 >
                                     {processing ? (
                                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -1113,20 +1110,20 @@ export default function RegistroIndex({
                     {/* ── Right column: Resumen ─────────────────────────── */}
                     <div style={{ flex: '1 1 300px' }}>
                         <Panel title="Resumen" noPadding>
-                            <dl className="divide-y divide-[#eef0ec] text-[13px]">
+                            <dl className="divide-y divide-divider text-[13px]">
                                 <div className="flex justify-between px-5 py-3">
-                                    <dt className="text-[#71717a]">
+                                    <dt className="text-muted">
                                         Turno asignado
                                     </dt>
-                                    <dd className="font-medium text-[#8a948e]">
+                                    <dd className="font-medium text-text-tertiary">
                                         {data.doctor_id
                                             ? '— al guardar —'
                                             : '—'}
                                     </dd>
                                 </div>
                                 <div className="flex justify-between px-5 py-3">
-                                    <dt className="text-[#71717a]">Paciente</dt>
-                                    <dd className="max-w-[160px] truncate text-right font-medium text-[#1f2d22]">
+                                    <dt className="text-muted">Paciente</dt>
+                                    <dd className="max-w-[160px] truncate text-right font-medium text-text-heading">
                                         {data.first_names
                                             ? `${data.first_names} ${data.last_names}`
                                             : '—'}
@@ -1134,8 +1131,8 @@ export default function RegistroIndex({
                                 </div>
                                 {data.birth_date && (
                                     <div className="flex justify-between px-5 py-3">
-                                        <dt className="text-[#71717a]">Edad</dt>
-                                        <dd className="font-medium text-[#1f2d22]">
+                                        <dt className="text-muted">Edad</dt>
+                                        <dd className="font-medium text-text-heading">
                                             {differenceInYears(
                                                 new Date(),
                                                 new Date(data.birth_date),
@@ -1145,24 +1142,24 @@ export default function RegistroIndex({
                                     </div>
                                 )}
                                 <div className="flex justify-between px-5 py-3">
-                                    <dt className="text-[#71717a]">
+                                    <dt className="text-muted">
                                         No. de atención
                                     </dt>
-                                    <dd className="font-medium text-[#8a948e]">
+                                    <dd className="font-medium text-text-tertiary">
                                         Se genera al guardar
                                     </dd>
                                 </div>
                                 <div className="flex justify-between px-5 py-3">
-                                    <dt className="text-[#71717a]">Tipo</dt>
-                                    <dd className="font-medium text-[#1f2d22]">
+                                    <dt className="text-muted">Tipo</dt>
+                                    <dd className="font-medium text-text-heading">
                                         {data.attention_type === 'consulta'
                                             ? 'Consulta'
                                             : '—'}
                                     </dd>
                                 </div>
                                 <div className="flex justify-between px-5 py-3">
-                                    <dt className="text-[#71717a]">Llegada</dt>
-                                    <dd className="font-medium text-[#1f2d22] tabular-nums">
+                                    <dt className="text-muted">Llegada</dt>
+                                    <dd className="font-medium text-text-heading tabular-nums">
                                         {new Date().toLocaleTimeString(
                                             'es-DO',
                                             {
@@ -1174,19 +1171,17 @@ export default function RegistroIndex({
                                 </div>
                                 {selectedDoctor && (
                                     <div className="flex justify-between px-5 py-3">
-                                        <dt className="text-[#71717a]">
-                                            Médico
-                                        </dt>
-                                        <dd className="max-w-[160px] truncate text-right font-medium text-[#1f2d22]">
+                                        <dt className="text-muted">Médico</dt>
+                                        <dd className="max-w-[160px] truncate text-right font-medium text-text-heading">
                                             {selectedDoctor.name}
                                         </dd>
                                     </div>
                                 )}
                                 <div className="flex justify-between px-5 py-3">
-                                    <dt className="text-[#71717a]">
+                                    <dt className="text-muted">
                                         Cargo inicial
                                     </dt>
-                                    <dd className="font-medium text-[#8a948e]">
+                                    <dd className="font-medium text-text-tertiary">
                                         —
                                     </dd>
                                 </div>

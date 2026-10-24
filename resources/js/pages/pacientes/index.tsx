@@ -123,7 +123,7 @@ function PatientAvatar({
     }
     return (
         <div
-            className="flex items-center justify-center rounded-full bg-[#EEF6E2] font-semibold text-[#2f4a17]"
+            className="flex items-center justify-center rounded-full bg-accent-bg font-semibold text-accent-fg"
             style={{ width: size, height: size, fontSize: size * 0.37 }}
         >
             {initials}
@@ -151,10 +151,10 @@ const columns: DataTableColumn<PatientRow>[] = [
                     photoUrl={row.original.photo_url}
                 />
                 <div>
-                    <p className="font-semibold text-[#1f2d22]">
+                    <p className="font-semibold text-text-heading">
                         {row.original.full_name}
                     </p>
-                    <p className="text-[12.5px] text-[#71717a]">
+                    <p className="text-[12.5px] text-muted">
                         {row.original.sex === 'F' ? 'Femenino' : 'Masculino'} ·{' '}
                         {row.original.age} años
                     </p>
@@ -167,10 +167,10 @@ const columns: DataTableColumn<PatientRow>[] = [
         header: 'Documento',
         cell: ({ row }) => (
             <div>
-                <p className="text-[#333] tabular-nums">
+                <p className="text-text-body tabular-nums">
                     {row.original.document_number}
                 </p>
-                <p className="text-[12px] text-[#71717a]">
+                <p className="text-[12px] text-muted">
                     {DOC_LABELS[row.original.document_type] ??
                         row.original.document_type}
                 </p>
@@ -181,7 +181,7 @@ const columns: DataTableColumn<PatientRow>[] = [
         id: 'phone',
         header: 'Teléfono',
         cell: ({ row }) => (
-            <span className="text-[#333] tabular-nums">
+            <span className="text-text-body tabular-nums">
                 {row.original.phone ?? '—'}
             </span>
         ),
@@ -191,11 +191,11 @@ const columns: DataTableColumn<PatientRow>[] = [
         header: 'Sangre',
         cell: ({ row }) =>
             row.original.blood_type ? (
-                <span className="inline-flex items-center rounded-[7px] bg-[#F3F5F1] px-2 py-0.5 text-[12.5px] font-semibold text-[#3f3f46]">
+                <span className="inline-flex items-center rounded-[7px] bg-surface px-2 py-0.5 text-[12.5px] font-semibold text-zinc-700">
                     {row.original.blood_type}
                 </span>
             ) : (
-                <span className="text-[#a1a1aa]">—</span>
+                <span className="text-muted-light">—</span>
             ),
     },
     {
@@ -203,12 +203,12 @@ const columns: DataTableColumn<PatientRow>[] = [
         header: 'Alergias',
         cell: ({ row }) =>
             row.original.allergies ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-[#FEF2F2] px-2 py-0.5 text-[12px] text-[#B91C1C]">
+                <span className="inline-flex items-center gap-1 rounded-full bg-error-bg px-2 py-0.5 text-[12px] text-error">
                     <TriangleAlert className="h-[13px] w-[13px]" />
                     {row.original.allergies}
                 </span>
             ) : (
-                <span className="text-[13px] text-[#8a948e]">
+                <span className="text-[13px] text-text-tertiary">
                     Ninguna conocida
                 </span>
             ),
@@ -219,11 +219,11 @@ const columns: DataTableColumn<PatientRow>[] = [
         cell: ({ row }) =>
             row.original.last_attended_at ? (
                 <div>
-                    <p className="text-[#333]">
+                    <p className="text-text-body">
                         {row.original.last_attended_at}
                     </p>
                     {row.original.last_turn_doctor && (
-                        <p className="text-[12px] text-[#71717a]">
+                        <p className="text-[12px] text-muted">
                             {row.original.last_turn_type} ·{' '}
                             {row.original.last_turn_doctor}
                         </p>
@@ -231,15 +231,17 @@ const columns: DataTableColumn<PatientRow>[] = [
                 </div>
             ) : (
                 <div>
-                    <p className="text-[#a1a1aa]">—</p>
-                    <p className="text-[12px] text-[#8a948e]">Sin atenciones</p>
+                    <p className="text-muted-light">—</p>
+                    <p className="text-[12px] text-text-tertiary">
+                        Sin atenciones
+                    </p>
                 </div>
             ),
     },
     {
         id: 'chevron',
         header: '',
-        cell: () => <ChevronRight className="h-4 w-4 text-[#a1a1aa]" />,
+        cell: () => <ChevronRight className="h-4 w-4 text-muted-light" />,
     },
 ];
 
@@ -257,24 +259,24 @@ function DetailPanel({
     return (
         <div className="flex h-full flex-col">
             {/* Header */}
-            <div className="flex items-start gap-4 border-b border-[#eef0ec] px-6 py-5">
+            <div className="flex items-start gap-4 border-b border-divider px-6 py-5">
                 <PatientAvatar
                     initials={patient.initials}
                     photoUrl={patient.photo_url}
                     size={48}
                 />
                 <div className="min-w-0 flex-1">
-                    <p className="font-['Bitter'] text-[19px] leading-tight font-semibold text-[#1f2d22]">
+                    <p className="font-['Bitter'] text-[19px] leading-tight font-semibold text-text-heading">
                         {patient.full_name}
                     </p>
-                    <p className="mt-0.5 text-[13px] text-[#71717a]">
+                    <p className="mt-0.5 text-[13px] text-muted">
                         {sexLabel} · {patient.age} años · Expediente{' '}
                         {patient.expediente_number}
                     </p>
                 </div>
                 <button
                     onClick={onClose}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-[#71717a] hover:bg-[#F3F7F2]"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-app-bg"
                     aria-label="Cerrar panel"
                 >
                     <X className="h-4 w-4" />
@@ -285,7 +287,7 @@ function DetailPanel({
             <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
                 {/* Allergy banner */}
                 {patient.allergies && (
-                    <div className="flex items-start gap-2 rounded-xl border border-[#FECACA] bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#991B1B]">
+                    <div className="flex items-start gap-2 rounded-xl border border-error-border bg-error-bg px-4 py-3 text-[13px] text-error-strong">
                         <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
                         <p>
                             <strong>Alergia:</strong> {patient.allergies}
@@ -295,36 +297,36 @@ function DetailPanel({
 
                 {/* Personal data */}
                 <section>
-                    <p className="mb-3 text-[11.5px] font-semibold tracking-[.05em] text-[#56693f] uppercase">
+                    <p className="mb-3 text-[11.5px] font-semibold tracking-[.05em] text-table-header-text uppercase">
                         Datos personales
                     </p>
                     <dl className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-2 text-[13px]">
-                        <dt className="text-[#71717a]">Documento</dt>
-                        <dd className="text-[#333] tabular-nums">
+                        <dt className="text-muted">Documento</dt>
+                        <dd className="text-text-body tabular-nums">
                             {patient.document_number}{' '}
-                            <span className="text-[#71717a]">
+                            <span className="text-muted">
                                 (
                                 {DOC_LABELS[patient.document_type] ??
                                     patient.document_type}
                                 )
                             </span>
                         </dd>
-                        <dt className="text-[#71717a]">Nacimiento</dt>
-                        <dd className="text-[#333]">
+                        <dt className="text-muted">Nacimiento</dt>
+                        <dd className="text-text-body">
                             {patient.birth_date} ({patient.age} años)
                         </dd>
-                        <dt className="text-[#71717a]">Sangre</dt>
-                        <dd className="text-[#333]">
+                        <dt className="text-muted">Sangre</dt>
+                        <dd className="text-text-body">
                             {patient.blood_type ?? 'No registrado'}
                         </dd>
-                        <dt className="text-[#71717a]">Teléfono</dt>
-                        <dd className="text-[#333] tabular-nums">
+                        <dt className="text-muted">Teléfono</dt>
+                        <dd className="text-text-body tabular-nums">
                             {patient.phone ?? '—'}
                         </dd>
                         {patient.address && (
                             <>
-                                <dt className="text-[#71717a]">Dirección</dt>
-                                <dd className="text-[#333]">
+                                <dt className="text-muted">Dirección</dt>
+                                <dd className="text-text-body">
                                     {patient.address}
                                 </dd>
                             </>
@@ -332,10 +334,8 @@ function DetailPanel({
                         {(patient.emergency_contact_name ||
                             patient.emergency_contact_phone) && (
                             <>
-                                <dt className="text-[#71717a]">
-                                    Contacto emerg.
-                                </dt>
-                                <dd className="text-[#333]">
+                                <dt className="text-muted">Contacto emerg.</dt>
+                                <dd className="text-text-body">
                                     {[
                                         patient.emergency_contact_name,
                                         patient.emergency_contact_phone,
@@ -345,8 +345,8 @@ function DetailPanel({
                                 </dd>
                             </>
                         )}
-                        <dt className="text-[#71717a]">Registrado</dt>
-                        <dd className="text-[#333]">
+                        <dt className="text-muted">Registrado</dt>
+                        <dd className="text-text-body">
                             {patient.created_at ?? '—'}
                         </dd>
                     </dl>
@@ -355,34 +355,34 @@ function DetailPanel({
                 {/* Recent visits */}
                 <section>
                     <div className="mb-3 flex items-center justify-between">
-                        <p className="text-[11.5px] font-semibold tracking-[.05em] text-[#56693f] uppercase">
+                        <p className="text-[11.5px] font-semibold tracking-[.05em] text-table-header-text uppercase">
                             Últimas atenciones
                         </p>
-                        <span className="text-[12px] text-[#71717a]">
+                        <span className="text-[12px] text-muted">
                             {patient.total_turns} en total
                         </span>
                     </div>
                     {patient.recent_turns.length === 0 ? (
-                        <p className="text-[13px] text-[#8a948e]">
+                        <p className="text-[13px] text-text-tertiary">
                             Todavía no tiene atenciones.
                         </p>
                     ) : (
-                        <ul className="divide-y divide-[#eef0ec] rounded-xl border border-[#eef0ec]">
+                        <ul className="divide-y divide-divider rounded-xl border border-divider">
                             {patient.recent_turns.map((t) => (
                                 <li
                                     key={t.id}
                                     className="flex items-start justify-between gap-3 px-4 py-3"
                                 >
                                     <div className="min-w-0">
-                                        <p className="text-[13px] font-medium text-[#1f2d22]">
+                                        <p className="text-[13px] font-medium text-text-heading">
                                             {t.type} · T-{t.turn_number}
                                         </p>
-                                        <p className="text-[12px] text-[#71717a]">
+                                        <p className="text-[12px] text-muted">
                                             {t.doctor_name}
                                             {t.notes ? ` · ${t.notes}` : ''}
                                         </p>
                                     </div>
-                                    <span className="shrink-0 text-[12px] text-[#8a948e] tabular-nums">
+                                    <span className="shrink-0 text-[12px] text-text-tertiary tabular-nums">
                                         {t.arrived_at}
                                     </span>
                                 </li>
@@ -393,16 +393,16 @@ function DetailPanel({
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-2 border-t border-[#eef0ec] px-6 py-4">
+            <div className="flex items-center justify-end gap-2 border-t border-divider px-6 py-4">
                 <Link
                     href={editPaciente.url({ patient: patient.id })}
-                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#e3e9e3] bg-white px-3.5 text-sm font-medium text-[#333] hover:bg-[#F3F7F2]"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-card-border bg-white px-3.5 text-sm font-medium text-text-body hover:bg-app-bg"
                 >
                     Editar
                 </Link>
                 <Link
                     href={registro.url({ query: { paciente: patient.id } })}
-                    className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#2E8B3E] px-3.5 text-sm font-medium text-white hover:bg-[#277a35]"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-sm font-medium text-white hover:bg-primary-hover"
                 >
                     <Plus className="h-4 w-4" />
                     Nueva atención
@@ -533,13 +533,16 @@ export default function PacientesIndex({
             <div className="flex h-full flex-col gap-5">
                 {/* Page header */}
                 <div className="flex items-center justify-between">
-                    <p style={{ color: '#5f6b64', fontSize: '14px' }}>
+                    <p
+                        className="text-text-secondary"
+                        style={{ fontSize: '14px' }}
+                    >
                         {counts.total} pacientes registrados ·{' '}
                         {counts.attended_today} atendidos hoy
                     </p>
                     <Link
                         href={registro.url()}
-                        className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#2E8B3E] px-[14px] text-sm font-medium text-white hover:bg-[#277a35]"
+                        className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-[14px] text-sm font-medium text-white hover:bg-primary-hover"
                     >
                         <Plus className="h-4 w-4" />
                         Nuevo paciente
@@ -547,18 +550,18 @@ export default function PacientesIndex({
                 </div>
 
                 {/* Panel */}
-                <div className="rounded-[14px] border border-[#e3e9e3] bg-white shadow-[0_1px_2px_rgba(16,40,24,.03)]">
+                <div className="rounded-[14px] border border-card-border bg-white shadow-[0_1px_2px_rgba(16,40,24,.03)]">
                     {/* Filter bar */}
-                    <div className="flex flex-wrap items-center gap-3 border-b border-[#eef0ec] px-5 py-3.5">
+                    <div className="flex flex-wrap items-center gap-3 border-b border-divider px-5 py-3.5">
                         {/* Search */}
                         <div className="relative min-w-[280px] flex-1">
-                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#71717a]" />
+                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted" />
                             <input
                                 type="search"
                                 value={search}
                                 onChange={(e) => handleSearch(e.target.value)}
                                 placeholder="Buscar por cédula, nombre o teléfono…"
-                                className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white pr-3 pl-9 text-sm text-[#333] placeholder-[#a1a1aa] outline-none focus:border-[#2E8B3E] focus:ring-1 focus:ring-[#2E8B3E]"
+                                className="h-9 w-full rounded-lg border border-card-border bg-white pr-3 pl-9 text-sm text-text-body placeholder-muted-light outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                             />
                         </div>
 
@@ -580,7 +583,7 @@ export default function PacientesIndex({
                                 setSort(v);
                                 navigate({ sort: v });
                             }}
-                            className="h-9 rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm text-[#333] outline-none focus:border-[#2E8B3E]"
+                            className="h-9 rounded-lg border border-card-border bg-white px-3 text-sm text-text-body outline-none focus:border-primary"
                         >
                             <option value="ultima_atencion">
                                 Última atención (reciente)
@@ -612,7 +615,7 @@ export default function PacientesIndex({
                             <div className="flex justify-center py-6">
                                 <Link
                                     href={registro.url()}
-                                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#e3e9e3] bg-white px-3.5 text-sm font-medium text-[#333] hover:bg-[#F3F7F2]"
+                                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-card-border bg-white px-3.5 text-sm font-medium text-text-body hover:bg-app-bg"
                                 >
                                     <Plus className="h-4 w-4" />
                                     Registrar paciente nuevo
