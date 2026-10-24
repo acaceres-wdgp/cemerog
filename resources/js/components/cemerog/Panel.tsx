@@ -3,6 +3,7 @@
  */
 
 import { ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
 interface PanelProps {
     title?: string;
@@ -11,6 +12,7 @@ interface PanelProps {
     children: ReactNode;
     className?: string;
     noPadding?: boolean;
+    noShadow?: boolean;
 }
 
 export default function Panel({
@@ -20,32 +22,28 @@ export default function Panel({
     children,
     className = '',
     noPadding = false,
+    noShadow = false,
 }: PanelProps) {
     const hasHeader = title || description || headerActions;
 
     return (
         <div
-            className={`rounded-[14px] border border-[#e3e9e3] bg-white shadow-[0_1px_2px_rgba(16,40,24,.03)] ${className}`}
+            className={cn(
+                'rounded-[14px] border border-card-border bg-white',
+                !noShadow && 'shadow-[0_1px_2px_rgba(16,40,24,.03)]',
+                className,
+            )}
         >
             {hasHeader && (
-                <div className="flex items-center justify-between border-b border-[#e3e9e3] px-5 py-4">
+                <div className="flex items-center justify-between border-b border-card-border px-5 py-4">
                     <div>
                         {title && (
-                            <h2
-                                className="font-semibold text-[#1f2d22]"
-                                style={{
-                                    fontFamily: 'Bitter, serif',
-                                    fontSize: '16px',
-                                }}
-                            >
+                            <h2 className="font-serif text-base font-semibold text-text-heading">
                                 {title}
                             </h2>
                         )}
                         {description && (
-                            <p
-                                className="mt-0.5 text-[#71717a]"
-                                style={{ fontSize: '13px' }}
-                            >
+                            <p className="mt-0.5 text-[13px] text-muted">
                                 {description}
                             </p>
                         )}

@@ -3,6 +3,11 @@ import StatusBadge from '@/components/cemerog/StatusBadge';
 import { AppointmentRow, DoctorOption } from '../types';
 import { docPalette } from '../lib/palettes';
 
+/** Build avatar style from doctor palette — computed at runtime from doctor ID. */
+function palStyle(pal: { bg: string; fg: string }): React.CSSProperties {
+    return { background: pal.bg, color: pal.fg };
+}
+
 const TYPE_LABELS: Record<string, string> = {
     consulta: 'Consulta',
     seguimiento: 'Seguimiento',
@@ -40,9 +45,9 @@ export function TodayRows({
         return (
             <tr>
                 <td colSpan={6}>
-                    <div className="pl-5 pr-3 py-1.5 border-b border-row-divider">
+                    <div className="border-b border-row-divider py-1.5 pr-3 pl-5">
                         <div
-                            className="flex items-center gap-2 px-1 h-[44px] rounded-lg cursor-pointer text-[13px] border border-dashed border-slot-empty-border text-text-tertiary"
+                            className="flex h-[44px] cursor-pointer items-center gap-2 rounded-lg border border-dashed border-slot-empty-border px-1 text-[13px] text-text-tertiary"
                             onClick={onNewCita}
                         >
                             + Registrar primera cita del día
@@ -77,7 +82,7 @@ export function TodayRows({
                         )}
                     >
                         {/* Status / Turn column */}
-                        <td className="pl-5 pr-3 py-[10px] border-b border-divider">
+                        <td className="border-b border-divider py-[10px] pr-3 pl-5">
                             <StatusBadge
                                 state={citaStatusToState(cita.status)}
                                 label={
@@ -87,7 +92,7 @@ export function TodayRows({
                                 }
                             />
                         </td>
-                        <td className="px-3 py-[10px] border-b border-divider">
+                        <td className="border-b border-divider px-3 py-[10px]">
                             <div
                                 className={cn(
                                     'font-medium',
@@ -106,11 +111,12 @@ export function TodayRows({
                                 </div>
                             )}
                         </td>
-                        <td className="px-3 py-[10px] border-b border-divider">
+                        <td className="border-b border-divider px-3 py-[10px]">
                             <div className="flex items-center gap-2">
+                                {/* dynamic-style: doctor color palette computed from doctor ID */}
                                 <span
-                                    style={{ background: pal.bg, color: pal.fg }} // dynamic-style: doctor color palette computed from doctor ID
-                                    className="w-[26px] h-[26px] shrink-0 rounded-full inline-flex items-center justify-center text-[11px] font-semibold"
+                                    style={palStyle(pal)}
+                                    className="inline-flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full text-[11px] font-semibold"
                                 >
                                     {doc?.initials ?? '?'}
                                 </span>
@@ -128,20 +134,20 @@ export function TodayRows({
                         </td>
                         <td
                             className={cn(
-                                'px-3 py-[10px] text-[13px] border-b border-divider',
+                                'border-b border-divider px-3 py-[10px] text-[13px]',
                                 isDone ? 'text-text-tertiary' : 'text-text-dim',
                             )}
                         >
                             {TYPE_LABELS[cita.type] ?? cita.type}
                         </td>
-                        <td className="px-3 py-[10px] text-[13px] tabular-nums border-b border-divider text-muted">
+                        <td className="border-b border-divider px-3 py-[10px] text-[13px] text-muted tabular-nums">
                             {cita.appointment_time ?? '—'}
                         </td>
-                        <td className="px-3 py-[10px] text-right border-b border-divider">
+                        <td className="border-b border-divider px-3 py-[10px] text-right">
                             {canCancel && (
                                 <button
                                     onClick={() => onCancel(cita.id)}
-                                    className="h-7 px-2.5 rounded-lg font-medium text-xs cursor-pointer font-[inherit] border border-secondary-border bg-secondary-bg text-text-dim"
+                                    className="h-7 cursor-pointer rounded-lg border border-secondary-border bg-secondary-bg px-2.5 font-[inherit] text-xs font-medium text-text-dim"
                                 >
                                     Cancelar
                                 </button>

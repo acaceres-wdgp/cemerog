@@ -1,3 +1,4 @@
+import Panel from '@/components/cemerog/Panel';
 import { AppointmentRow, DoctorOption } from '../types';
 import { formatDateLong } from '../lib/dates';
 import { TodayRows } from './TodayRows';
@@ -32,10 +33,10 @@ export function CitasTable({
     onCancel,
 }: CitasTableProps) {
     return (
-        <div className="rounded-[14px] overflow-hidden border border-card-border bg-white">
-            <div className="flex items-center justify-between flex-wrap gap-3 border-b border-divider px-5 py-[14px]">
+        <Panel noPadding noShadow className="overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-divider px-5 py-[14px]">
                 <div>
-                    <div className="font-serif font-semibold text-[17px] text-text-heading capitalize">
+                    <div className="font-serif text-[17px] font-semibold text-text-heading capitalize">
                         {formatDateLong(date)}
                     </div>
                     <div className="text-[13px] text-muted">
@@ -49,26 +50,16 @@ export function CitasTable({
             </div>
 
             <div className="overflow-x-auto">
-                <table className="w-full border-collapse min-w-[700px]">
+                <table className="w-full min-w-[700px] border-collapse">
                     <thead>
                         <tr>
-                            <th
-                                className={`${thBaseClassName} pl-5`}
-                            >
+                            <th className={`${thBaseClassName} pl-5`}>
                                 {is_today ? 'Estado' : 'Hora'}
                             </th>
-                            <th className={thBaseClassName}>
-                                Paciente
-                            </th>
-                            <th className={thBaseClassName}>
-                                Médico
-                            </th>
-                            <th className={thBaseClassName}>
-                                Tipo
-                            </th>
-                            <th className={thBaseClassName}>
-                                Cita
-                            </th>
+                            <th className={thBaseClassName}>Paciente</th>
+                            <th className={thBaseClassName}>Médico</th>
+                            <th className={thBaseClassName}>Tipo</th>
+                            <th className={thBaseClassName}>Cita</th>
                             <th
                                 className={`${thBaseClassName} text-right`}
                             ></th>
@@ -94,6 +85,6 @@ export function CitasTable({
                     </tbody>
                 </table>
             </div>
-        </div>
+        </Panel>
     );
 }

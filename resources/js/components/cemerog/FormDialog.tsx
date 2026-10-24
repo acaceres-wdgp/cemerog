@@ -44,8 +44,8 @@ export default function FormDialog({
             <DialogContent
                 className={`flex max-h-[90vh] flex-col p-0 ${maxWidth}`}
             >
-                <DialogHeader className="border-b border-[#e3e9e3] px-6 py-4">
-                    <DialogTitle className="text-[#1f2d22]">
+                <DialogHeader className="border-b border-card-border px-6 py-4">
+                    <DialogTitle className="text-text-heading">
                         {title}
                     </DialogTitle>
                     {description && (
@@ -61,7 +61,7 @@ export default function FormDialog({
                         {children}
                     </div>
 
-                    <div className="flex justify-end gap-2 border-t border-[#e3e9e3] px-6 py-4">
+                    <div className="flex justify-end gap-2 border-t border-card-border px-6 py-4">
                         {footer ?? (
                             <>
                                 <Button
@@ -75,7 +75,7 @@ export default function FormDialog({
                                 <Button
                                     type="submit"
                                     disabled={isLoading}
-                                    style={{ backgroundColor: '#2E8B3E' }}
+                                    className="bg-primary text-primary-foreground"
                                 >
                                     {submitLabel}
                                 </Button>

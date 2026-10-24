@@ -23,6 +23,11 @@ function citaStatusToState(
     return map[status] ?? 'cita-cancelada';
 }
 
+/** Build avatar style from doctor palette — computed at runtime from doctor ID. */
+function palStyle(pal: { bg: string; fg: string }): React.CSSProperties {
+    return { background: pal.bg, color: pal.fg };
+}
+
 type FutureRowsProps = {
     bySlot: Record<string, AppointmentRow>;
     noSlot: AppointmentRow[];
@@ -45,16 +50,16 @@ export function FutureRows({
                 if (!cita) {
                     return (
                         <tr key={slot}>
-                            <td className="pl-5 pr-3 py-1.5 font-semibold tabular-nums w-[60px] border-b border-row-divider text-text-tertiary">
+                            <td className="w-[60px] border-b border-row-divider py-1.5 pr-3 pl-5 font-semibold text-text-tertiary tabular-nums">
                                 {slot}
                             </td>
                             <td
                                 colSpan={5}
-                                className="px-3 h-[44px] border-b border-row-divider"
+                                className="h-[44px] border-b border-row-divider px-3"
                             >
                                 <div
                                     onClick={onNewCita}
-                                    className="flex items-center gap-2 px-1 h-full rounded-lg cursor-pointer text-[13px] border border-dashed border-slot-empty-border text-text-tertiary"
+                                    className="flex h-full cursor-pointer items-center gap-2 rounded-lg border border-dashed border-slot-empty-border px-1 text-[13px] text-text-tertiary"
                                 >
                                     + Disponible
                                 </div>
@@ -68,10 +73,10 @@ export function FutureRows({
                     cita.status === 'pendiente' || cita.status === 'confirmada';
                 return (
                     <tr key={slot}>
-                        <td className="pl-5 pr-3 py-[10px] font-semibold tabular-nums border-b border-divider text-text-heading">
+                        <td className="border-b border-divider py-[10px] pr-3 pl-5 font-semibold text-text-heading tabular-nums">
                             {slot}
                         </td>
-                        <td className="px-3 py-[10px] border-b border-divider">
+                        <td className="border-b border-divider px-3 py-[10px]">
                             <div className="font-medium">
                                 {cita.patient_name}
                             </div>
@@ -83,11 +88,12 @@ export function FutureRows({
                                 </div>
                             )}
                         </td>
-                        <td className="px-3 py-[10px] border-b border-divider">
+                        <td className="border-b border-divider px-3 py-[10px]">
                             <div className="flex items-center gap-2">
+                                {/* dynamic-style: doctor color palette computed from doctor ID */}
                                 <span
-                                    style={{ background: pal.bg, color: pal.fg }} // dynamic-style: doctor color palette computed from doctor ID
-                                    className="w-[26px] h-[26px] shrink-0 rounded-full inline-flex items-center justify-center text-[11px] font-semibold"
+                                    style={palStyle(pal)}
+                                    className="inline-flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full text-[11px] font-semibold"
                                 >
                                     {doc?.initials ?? '?'}
                                 </span>
@@ -96,19 +102,19 @@ export function FutureRows({
                                 </span>
                             </div>
                         </td>
-                        <td className="px-3 py-[10px] text-[13px] border-b border-divider text-text-dim">
+                        <td className="border-b border-divider px-3 py-[10px] text-[13px] text-text-dim">
                             {TYPE_LABELS[cita.type] ?? cita.type}
                         </td>
-                        <td className="px-3 py-[10px] border-b border-divider">
+                        <td className="border-b border-divider px-3 py-[10px]">
                             <StatusBadge
                                 state={citaStatusToState(cita.status)}
                             />
                         </td>
-                        <td className="px-3 py-[10px] text-right border-b border-divider">
+                        <td className="border-b border-divider px-3 py-[10px] text-right">
                             {canCancel && (
                                 <button
                                     onClick={() => onCancel(cita.id)}
-                                    className="h-7 px-2.5 rounded-lg font-medium text-xs cursor-pointer font-[inherit] border border-secondary-border bg-secondary-bg text-text-dim"
+                                    className="h-7 cursor-pointer rounded-lg border border-secondary-border bg-secondary-bg px-2.5 font-[inherit] text-xs font-medium text-text-dim"
                                 >
                                     Cancelar
                                 </button>
@@ -124,10 +130,10 @@ export function FutureRows({
                     cita.status === 'pendiente' || cita.status === 'confirmada';
                 return (
                     <tr key={cita.id}>
-                        <td className="pl-5 pr-3 py-[10px] font-semibold border-b border-divider text-text-tertiary">
+                        <td className="border-b border-divider py-[10px] pr-3 pl-5 font-semibold text-text-tertiary">
                             —
                         </td>
-                        <td className="px-3 py-[10px] border-b border-divider">
+                        <td className="border-b border-divider px-3 py-[10px]">
                             <div className="font-medium">
                                 {cita.patient_name}
                             </div>
@@ -139,11 +145,12 @@ export function FutureRows({
                                 </div>
                             )}
                         </td>
-                        <td className="px-3 py-[10px] border-b border-divider">
+                        <td className="border-b border-divider px-3 py-[10px]">
                             <div className="flex items-center gap-2">
+                                {/* dynamic-style: doctor color palette computed from doctor ID */}
                                 <span
-                                    style={{ background: pal.bg, color: pal.fg }} // dynamic-style: doctor color palette computed from doctor ID
-                                    className="w-[26px] h-[26px] shrink-0 rounded-full inline-flex items-center justify-center text-[11px] font-semibold"
+                                    style={palStyle(pal)}
+                                    className="inline-flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full text-[11px] font-semibold"
                                 >
                                     {doc?.initials ?? '?'}
                                 </span>
@@ -152,19 +159,19 @@ export function FutureRows({
                                 </span>
                             </div>
                         </td>
-                        <td className="px-3 py-[10px] text-[13px] border-b border-divider text-text-dim">
+                        <td className="border-b border-divider px-3 py-[10px] text-[13px] text-text-dim">
                             {TYPE_LABELS[cita.type] ?? cita.type}
                         </td>
-                        <td className="px-3 py-[10px] border-b border-divider">
+                        <td className="border-b border-divider px-3 py-[10px]">
                             <StatusBadge
                                 state={citaStatusToState(cita.status)}
                             />
                         </td>
-                        <td className="px-3 py-[10px] text-right border-b border-divider">
+                        <td className="border-b border-divider px-3 py-[10px] text-right">
                             {canCancel && (
                                 <button
                                     onClick={() => onCancel(cita.id)}
-                                    className="h-7 px-2.5 rounded-lg font-medium text-xs cursor-pointer font-[inherit] border border-secondary-border bg-secondary-bg text-text-dim"
+                                    className="h-7 cursor-pointer rounded-lg border border-secondary-border bg-secondary-bg px-2.5 font-[inherit] text-xs font-medium text-text-dim"
                                 >
                                     Cancelar
                                 </button>

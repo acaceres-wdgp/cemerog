@@ -3,6 +3,11 @@ import { DoctorOption } from '../types';
 import { todayStr, tomorrowStr, addDays } from '../lib/dates';
 import { docPalette } from '../lib/palettes';
 
+/** Build avatar style from doctor palette — computed at runtime from doctor ID. */
+function palStyle(pal: { bg: string; fg: string }): React.CSSProperties {
+    return { background: pal.bg, color: pal.fg };
+}
+
 type CitasToolbarProps = {
     doctors: DoctorOption[];
     selDoc: number | null;
@@ -25,9 +30,9 @@ export function CitasToolbar({
     const isTomorrow = date === tomorrowStr();
 
     return (
-        <div className="flex justify-between items-center gap-3 flex-wrap">
+        <div className="flex flex-wrap items-center justify-between gap-3">
             {/* Doctor filter chips */}
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex flex-wrap gap-2">
                 {doctors.map((d) => {
                     const pal = docPalette(d.id);
                     const active = selDoc === d.id;
@@ -36,15 +41,16 @@ export function CitasToolbar({
                             key={d.id}
                             onClick={() => setSelDoc(active ? null : d.id)}
                             className={cn(
-                                'flex items-center gap-2.5 pl-1.5 pr-3.5 py-1.5 rounded-xl cursor-pointer text-left font-[inherit] text-sm',
+                                'flex cursor-pointer items-center gap-2.5 rounded-xl py-1.5 pr-3.5 pl-1.5 text-left font-[inherit] text-sm',
                                 active
                                     ? 'border border-accent-border bg-accent-bg'
                                     : 'border border-card-border bg-white',
                             )}
                         >
+                            {/* dynamic-style: doctor color palette computed from doctor ID */}
                             <span
-                                style={{ background: pal.bg, color: pal.fg }} // dynamic-style: doctor color palette computed from doctor ID
-                                className="w-8 h-8 shrink-0 rounded-full inline-flex items-center justify-center text-xs font-semibold"
+                                style={palStyle(pal)}
+                                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
                             >
                                 {d.initials}
                             </span>
@@ -62,9 +68,9 @@ export function CitasToolbar({
             </div>
 
             {/* Right controls */}
-            <div className="flex gap-2 items-center flex-wrap">
+            <div className="flex flex-wrap items-center gap-2">
                 {/* Hoy / Mañana segmented */}
-                <div className="inline-flex rounded-[11px] p-[3px] gap-0.5 border border-card-border bg-app-bg">
+                <div className="inline-flex gap-0.5 rounded-[11px] border border-card-border bg-app-bg p-[3px]">
                     {(
                         [
                             {
@@ -83,9 +89,9 @@ export function CitasToolbar({
                             key={t.key}
                             onClick={() => onNavigate(t.key)}
                             className={cn(
-                                'whitespace-nowrap h-[30px] px-3 border-0 rounded-[10px] cursor-pointer font-medium font-[inherit] text-sm',
+                                'h-[30px] cursor-pointer rounded-[10px] border-0 px-3 font-[inherit] text-sm font-medium whitespace-nowrap',
                                 t.active
-                                    ? 'bg-card-bg shadow-sm text-text-heading'
+                                    ? 'bg-card-bg text-text-heading shadow-sm'
                                     : 'bg-transparent text-secondary-fg',
                             )}
                         >
@@ -97,26 +103,26 @@ export function CitasToolbar({
                 <div className="flex items-center gap-1">
                     <button
                         onClick={() => onNavigate(addDays(date, -1))}
-                        className="w-9 h-9 rounded-[10px] cursor-pointer font-[inherit] text-base border border-secondary-border bg-secondary-bg"
+                        className="h-9 w-9 cursor-pointer rounded-[10px] border border-secondary-border bg-secondary-bg font-[inherit] text-base"
                     >
                         ‹
                     </button>
                     <button
                         onClick={() => onNavigate(todayStr())}
-                        className="h-9 px-3 rounded-[10px] cursor-pointer font-[inherit] text-sm font-medium border border-secondary-border bg-secondary-bg"
+                        className="h-9 cursor-pointer rounded-[10px] border border-secondary-border bg-secondary-bg px-3 font-[inherit] text-sm font-medium"
                     >
                         Hoy
                     </button>
                     <button
                         onClick={() => onNavigate(addDays(date, 1))}
-                        className="w-9 h-9 rounded-[10px] cursor-pointer font-[inherit] text-base border border-secondary-border bg-secondary-bg"
+                        className="h-9 w-9 cursor-pointer rounded-[10px] border border-secondary-border bg-secondary-bg font-[inherit] text-base"
                     >
                         ›
                     </button>
                 </div>
                 <button
                     onClick={onNewCita}
-                    className="whitespace-nowrap inline-flex items-center gap-2 h-9 px-3.5 rounded-[10px] border-0 font-medium cursor-pointer font-[inherit] text-sm bg-primary text-white"
+                    className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border-0 bg-primary px-3.5 font-[inherit] text-sm font-medium whitespace-nowrap text-white"
                 >
                     + Nueva cita
                 </button>
