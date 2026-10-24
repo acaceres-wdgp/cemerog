@@ -9,6 +9,7 @@ export interface NavItem {
     icon: string;
     href: string;
     permission: string;
+    activeFor?: string[];
 }
 
 export interface NavGroup {
@@ -45,13 +46,7 @@ export const NAV_GROUPS: NavGroup[] = [
                 icon: 'Contact',
                 href: '/pacientes',
                 permission: 'module.pacientes.access',
-            },
-            {
-                key: 'registro',
-                label: 'Registro de pacientes',
-                icon: 'UserPlus',
-                href: '/registro',
-                permission: 'module.registro.access',
+                activeFor: ['/registro'],
             },
             {
                 key: 'citas',

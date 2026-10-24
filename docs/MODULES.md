@@ -7,7 +7,7 @@
 | inicio        | /inicio                  | inicio/index        | admin, medico, secretaria, caja                          | Esqueleto  | 1           |
 | tablero       | /tablero                 | tablero/index       | admin, medico, enfermeria, secretaria, caja              | Terminado  | 2           |
 | pacientes     | /pacientes               | pacientes/index     | admin, medico, secretaria                                | Terminado  | 2b          |
-| registro      | /registro                | registro/index      | admin, secretaria                                        | Terminado  | 3           |
+| registro      | /registro                | registro/index      | admin, secretaria                                        | Sin entrada en sidebar | 3           |
 | citas         | /citas                   | citas/index         | admin, medico, secretaria                                | Esqueleto  | 4           |
 | consulta      | /consulta                | consulta/index      | admin, medico                                            | Terminado  | 5           |
 | emergencia    | /emergencia              | emergencia/index    | admin, medico, enfermeria                                | Esqueleto | 6           |
@@ -28,6 +28,15 @@
 | precios       | /admin/precios           | precios/index       | admin                                                    | Esqueleto | 21          |
 | habs          | /admin/habitaciones      | habs/index          | admin                                                    | Esqueleto | 22          |
 | tema          | /admin/tema              | tema/index          | admin                                                    | Esqueleto | 23          |
+
+### Nota sobre `registro`
+
+El módulo `registro` (/registro) no aparece en el sidebar. Se accede únicamente desde botones explícitos:
+- "Nuevo paciente" en /pacientes
+- "Nueva atención" en el panel lateral de /pacientes
+- Accesos directos del Tablero, Inicio y Citas
+
+El ítem "Pacientes" en el sidebar usa `activeFor: ['/registro']` para mantenerse resaltado cuando el usuario navega a /registro.
 
 ## Roles
 

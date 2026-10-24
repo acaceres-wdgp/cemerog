@@ -153,4 +153,10 @@ class Patient extends Model
     {
         return $this->hasMany(Turn::class);
     }
+
+    /** @return HasOne<Turn, $this> */
+    public function latestTurn(): HasOne
+    {
+        return $this->hasOne(Turn::class)->latestOfMany('arrived_at');
+    }
 }

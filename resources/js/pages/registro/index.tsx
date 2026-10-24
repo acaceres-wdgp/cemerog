@@ -1,4 +1,5 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { pacientes } from '@/routes';
 import {
     Check,
     CircleCheck,
@@ -203,17 +204,26 @@ function PatientAutocomplete({ onSelect, searchPath }: AutocompleteProps) {
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#71717a]" />
                 <input
                     ref={inputRef}
-                    type="text"
+                    id="patient-search-input"
+                    type="search"
+                    name="patient-search"
                     value={query}
                     onChange={(e) => handleChange(e.target.value)}
                     onKeyDown={handleKeyDown}
                     onFocus={() => query.trim().length >= 3 && setOpen(true)}
-                    placeholder="Buscar por cédula, nombre o teléfono…"
+                    placeholder="Busca primero por cédula para evitar duplicados"
+                    autoComplete="off"
                     autoFocus
-                    className="h-10 w-full rounded-lg border border-[#e3e9e3] bg-white pl-9 pr-9 text-sm placeholder-[#a1a1aa] outline-none focus:border-[#2E8B3E] focus:ring-1 focus:ring-[#2E8B3E]"
+                    role="combobox"
                     aria-label="Buscar paciente"
                     aria-autocomplete="list"
                     aria-expanded={open}
+                    aria-controls="patient-search-listbox"
+                    aria-activedescendant={activeIdx >= 0 ? `patient-option-${activeIdx}` : undefined}
+                    data-1p-ignore
+                    data-lpignore="true"
+                    data-form-type="other"
+                    className="h-10 w-full rounded-lg border border-[#e3e9e3] bg-white pl-9 pr-9 text-sm placeholder-[#a1a1aa] outline-none focus:border-[#2E8B3E] focus:ring-1 focus:ring-[#2E8B3E]"
                 />
                 {query && (
                     <button
@@ -230,6 +240,7 @@ function PatientAutocomplete({ onSelect, searchPath }: AutocompleteProps) {
             {/* Dropdown */}
             {open && (
                 <ul
+                    id="patient-search-listbox"
                     role="listbox"
                     className="absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-[#e3e9e3] bg-white shadow-lg"
                 >
@@ -252,6 +263,7 @@ function PatientAutocomplete({ onSelect, searchPath }: AutocompleteProps) {
                             {results.map((p, idx) => (
                                 <li
                                     key={p.id}
+                                    id={`patient-option-${idx}`}
                                     role="option"
                                     aria-selected={activeIdx === idx}
                                     onClick={() => selectPatient(p)}
@@ -289,6 +301,7 @@ function PatientAutocomplete({ onSelect, searchPath }: AutocompleteProps) {
 
                             {/* Always show "Register as new" */}
                             <li
+                                id={`patient-option-${results.length}`}
                                 role="option"
                                 aria-selected={activeIdx === results.length}
                                 onClick={selectNew}
@@ -409,7 +422,7 @@ export default function RegistroIndex({
         <>
             <Head title="Registro de pacientes" />
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <form onSubmit={handleSubmit} autoComplete="off" className="flex flex-col gap-5">
                 {/* Intro */}
                 <p className="text-[13.5px]" style={{ color: '#5f6b64' }}>
                     Busca primero por cédula. Si el paciente no existe,
@@ -500,12 +513,12 @@ export default function RegistroIndex({
                                                     }
                                                     ). Evita duplicarla.
                                                 </div>
-                                                <a
+                                                <Link
                                                     href="/tablero"
                                                     className="shrink-0 text-[12px] font-medium text-[#991B1B] underline hover:no-underline"
                                                 >
                                                     Ver en el tablero
-                                                </a>
+                                                </Link>
                                             </div>
                                         )}
 
@@ -623,6 +636,10 @@ export default function RegistroIndex({
                                                     data.document_type ===
                                                     'no_tiene'
                                                 }
+                                                autoComplete="off"
+                                                data-1p-ignore
+                                                data-lpignore="true"
+                                                data-form-type="other"
                                                 className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm tabular-nums outline-none focus:border-[#2E8B3E] disabled:bg-[#f9fafb]"
                                             />
                                         ) : (
@@ -639,6 +656,10 @@ export default function RegistroIndex({
                                                     data.document_type ===
                                                     'no_tiene'
                                                 }
+                                                autoComplete="off"
+                                                data-1p-ignore
+                                                data-lpignore="true"
+                                                data-form-type="other"
                                                 className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E] disabled:bg-[#f9fafb]"
                                             />
                                         )}
@@ -670,6 +691,10 @@ export default function RegistroIndex({
                                                     .toISOString()
                                                     .split('T')[0]
                                             }
+                                            autoComplete="new-password"
+                                            data-1p-ignore
+                                            data-lpignore="true"
+                                            data-form-type="other"
                                             className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E]"
                                         />
                                         {errors.birth_date && (
@@ -688,6 +713,7 @@ export default function RegistroIndex({
                                         </label>
                                         <input
                                             type="text"
+                                            name="patient_first_names"
                                             value={data.first_names}
                                             onChange={(e) =>
                                                 setData(
@@ -695,6 +721,10 @@ export default function RegistroIndex({
                                                     e.target.value,
                                                 )
                                             }
+                                            autoComplete="off"
+                                            data-1p-ignore
+                                            data-lpignore="true"
+                                            data-form-type="other"
                                             className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E]"
                                         />
                                         {errors.first_names && (
@@ -713,6 +743,7 @@ export default function RegistroIndex({
                                         </label>
                                         <input
                                             type="text"
+                                            name="patient_last_names"
                                             value={data.last_names}
                                             onChange={(e) =>
                                                 setData(
@@ -720,6 +751,10 @@ export default function RegistroIndex({
                                                     e.target.value,
                                                 )
                                             }
+                                            autoComplete="off"
+                                            data-1p-ignore
+                                            data-lpignore="true"
+                                            data-form-type="other"
                                             className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E]"
                                         />
                                         {errors.last_names && (
@@ -778,6 +813,10 @@ export default function RegistroIndex({
                                             onChange={(v) =>
                                                 setData('phone', v)
                                             }
+                                            autoComplete="new-password"
+                                            data-1p-ignore
+                                            data-lpignore="true"
+                                            data-form-type="other"
                                             className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm tabular-nums outline-none focus:border-[#2E8B3E]"
                                         />
                                         {errors.phone && (
@@ -793,6 +832,7 @@ export default function RegistroIndex({
                                         </label>
                                         <input
                                             type="text"
+                                            name="patient_address"
                                             value={data.address}
                                             onChange={(e) =>
                                                 setData(
@@ -800,6 +840,10 @@ export default function RegistroIndex({
                                                     e.target.value,
                                                 )
                                             }
+                                            autoComplete="off"
+                                            data-1p-ignore
+                                            data-lpignore="true"
+                                            data-form-type="other"
                                             className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E]"
                                         />
                                     </div>
@@ -810,6 +854,7 @@ export default function RegistroIndex({
                                         </label>
                                         <input
                                             type="text"
+                                            name="patient_emergency_name"
                                             value={data.emergency_contact_name}
                                             onChange={(e) =>
                                                 setData(
@@ -817,6 +862,10 @@ export default function RegistroIndex({
                                                     e.target.value,
                                                 )
                                             }
+                                            autoComplete="off"
+                                            data-1p-ignore
+                                            data-lpignore="true"
+                                            data-form-type="other"
                                             className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E]"
                                         />
                                     </div>
@@ -827,6 +876,7 @@ export default function RegistroIndex({
                                         </label>
                                         <input
                                             type="text"
+                                            name="patient_emergency_phone"
                                             value={
                                                 data.emergency_contact_phone
                                             }
@@ -836,6 +886,10 @@ export default function RegistroIndex({
                                                     e.target.value,
                                                 )
                                             }
+                                            autoComplete="off"
+                                            data-1p-ignore
+                                            data-lpignore="true"
+                                            data-form-type="other"
                                             className="h-9 w-full rounded-lg border border-[#e3e9e3] bg-white px-3 text-sm outline-none focus:border-[#2E8B3E]"
                                         />
                                     </div>
@@ -1027,12 +1081,12 @@ export default function RegistroIndex({
 
                             {/* Footer */}
                             <div className="flex items-center justify-end gap-3 border-t border-[#eef0ec] px-5 py-4">
-                                <a
-                                    href="/tablero"
+                                <Link
+                                    href={pacientes.url()}
                                     className="inline-flex h-9 items-center rounded-lg border border-[#e3e9e3] bg-white px-[14px] text-sm font-medium text-[#333] hover:bg-[#F3F7F2]"
                                 >
                                     Cancelar
-                                </a>
+                                </Link>
                                 <button
                                     type="submit"
                                     disabled={!isFormValid || processing}

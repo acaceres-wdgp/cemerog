@@ -61,6 +61,9 @@ composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 echo "==> Running migrations..."
 php artisan migrate --force
 
+echo "==> Syncing permissions..."
+php artisan cemerog:sync-permissions
+
 echo "==> Clearing caches..."
 php artisan config:cache
 php artisan route:cache
@@ -108,6 +111,17 @@ Agregar al crontab del servidor (Forge lo hace automáticamente):
 ```cron
 * * * * * forge php /home/forge/cemerog/artisan schedule:run >> /dev/null 2>&1
 ```
+
+---
+
+## Comando `cemerog:sync-permissions`
+
+Ejecuta el seeder `RolesAndPermissionsSeeder` de forma segura sobre la base existente.
+Usar cada vez que se agreguen permisos o roles nuevos (e.g., nuevo módulo).
+
+- Es idempotente: no duplica permisos ni roles.
+- Limpia la caché de Spatie Permission al terminar.
+- Requiere `--force` implícito (no pide confirmación en producción).
 
 ---
 

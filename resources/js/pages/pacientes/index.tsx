@@ -1,4 +1,6 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { registro, pacientes } from '@/routes';
+import { edit as editPaciente } from '@/routes/registro/pacientes';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -66,6 +68,8 @@ interface SelectedPatient extends PatientRow {
 interface Counts {
     total: number;
     attended_today: number;
+    con_alergias: number;
+    sin_atenciones: number;
 }
 
 interface Filters {
@@ -342,19 +346,19 @@ function DetailPanel({
 
             {/* Footer */}
             <div className="flex items-center justify-end gap-2 border-t border-[#eef0ec] px-6 py-4">
-                <a
-                    href={`/registro/pacientes/${patient.id}/editar`}
+                <Link
+                    href={editPaciente.url({ patient: patient.id })}
                     className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#e3e9e3] bg-white px-3.5 text-sm font-medium text-[#333] hover:bg-[#F3F7F2]"
                 >
                     Editar
-                </a>
-                <a
-                    href={`/registro?paciente=${patient.id}`}
+                </Link>
+                <Link
+                    href={registro.url({ query: { paciente: patient.id } })}
                     className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#2E8B3E] px-3.5 text-sm font-medium text-white hover:bg-[#277a35]"
                 >
                     <Plus className="h-4 w-4" />
                     Nueva atención
-                </a>
+                </Link>
             </div>
         </div>
     );
@@ -445,8 +449,8 @@ export default function PacientesIndex({
     const filterSegments = [
         { value: 'todos' as FilterValue, label: 'Todos', count: counts.total },
         { value: 'atendidos_hoy' as FilterValue, label: 'Atendidos hoy', count: counts.attended_today },
-        { value: 'con_alergias' as FilterValue, label: 'Con alergias' },
-        { value: 'sin_atenciones' as FilterValue, label: 'Sin atenciones' },
+        { value: 'con_alergias' as FilterValue, label: 'Con alergias', count: counts.con_alergias },
+        { value: 'sin_atenciones' as FilterValue, label: 'Sin atenciones', count: counts.sin_atenciones },
     ];
 
     return (
@@ -456,18 +460,16 @@ export default function PacientesIndex({
             <div className="flex h-full flex-col gap-5">
                 {/* Page header */}
                 <div className="flex items-center justify-between">
-                    <p className="text-sm text-[#5f6b64]">
-                        <strong className="font-semibold">{counts.total}</strong> pacientes registrados
-                        {' · '}
-                        <strong className="font-semibold">{counts.attended_today}</strong> atendidos hoy
+                    <p style={{ color: '#5f6b64', fontSize: '14px' }}>
+                        {counts.total} pacientes registrados · {counts.attended_today} atendidos hoy
                     </p>
-                    <a
-                        href="/registro"
+                    <Link
+                        href={registro.url()}
                         className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#2E8B3E] px-[14px] text-sm font-medium text-white hover:bg-[#277a35]"
                     >
                         <Plus className="h-4 w-4" />
                         Nuevo paciente
-                    </a>
+                    </Link>
                 </div>
 
                 {/* Panel */}
@@ -528,16 +530,15 @@ export default function PacientesIndex({
                         }
                     />
 
-                    {/* Empty state extra button */}
-                    {patients.data.length === 0 && (
-                        <div className="flex justify-center py-4">
-                            <a
-                                href="/registro"
+                    {patients.data.length === 0 && !search && activeFilter === 'todos' && (
+                        <div className="flex justify-center py-6">
+                            <Link
+                                href={registro.url()}
                                 className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#e3e9e3] bg-white px-3.5 text-sm font-medium text-[#333] hover:bg-[#F3F7F2]"
                             >
                                 <Plus className="h-4 w-4" />
                                 Registrar paciente nuevo
-                            </a>
+                            </Link>
                         </div>
                     )}
                 </div>

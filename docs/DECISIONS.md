@@ -194,3 +194,13 @@ No existe borrado ni desactivación de pacientes. Una vez creado, un expediente 
 - Al guardar un paciente, el mutador calcula automáticamente el hash.
 - La regla `UniqueDocumentNumber` también normaliza a dígitos antes de hashear para consistencia.
 - El backfill se ejecuta en la migración `add_phone_hash_to_patients` para registros existentes.
+
+---
+
+## ADR-011: Registro no aparece en el sidebar
+
+**Contexto:** El módulo Registro (/registro) requiere siempre un flujo consciente (crear atención nueva o para paciente existente). Mostrarlo en el sidebar invitaba a ir directo sin pasar por la lista de pacientes, aumentando el riesgo de duplicados.
+
+**Decisión:** Quitar "Registro de pacientes" del sidebar. La ruta /registro sigue existiendo y protegida por `module.registro.access`. Se accede únicamente desde botones explícitos: "Nuevo paciente" en /pacientes, "Nueva atención" en el panel lateral, y accesos del Tablero, Inicio y Citas.
+
+**Consecuencias:** El sidebar de Recepción muestra: Tablero de atenciones, Pacientes y Citas. El ítem Pacientes usa `activeFor: ['/registro']` para mantenerse resaltado cuando el usuario navega a /registro.

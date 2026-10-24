@@ -21,24 +21,22 @@ class PacientesController extends Controller
         $sort = $request->string('sort', 'ultima_atencion')->toString();
         $today = Carbon::today('America/Santo_Domingo')->toDateString();
 
-        $query = Patient::query()
-            ->withMax('turns as last_arrived_at', 'arrived_at')
-            ->withMax('turns as last_turn_id', 'id');
+        // ── Base query (search only, no filter) ───────────────────────────────────
+        $baseQuery = Patient::query();
 
-        // ── Search ────────────────────────────────────────────────────────────
         if (mb_strlen($q) >= 3) {
             $digitsOnly = preg_replace('/[^\d]/', '', $q) ?? '';
 
             if ($digitsOnly !== '' && ! preg_match('/[a-zA-ZÀ-ÖØ-öø-ÿ]/', $q)) {
                 $hash = hash_hmac('sha256', $digitsOnly, config('app.key'));
-                $query->where(function ($inner) use ($hash) {
+                $baseQuery->where(function ($inner) use ($hash) {
                     $inner->where('document_number_hash', $hash)
                         ->orWhere('phone_hash', $hash);
                 });
             } else {
                 $words = preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY) ?: [$q];
                 foreach ($words as $word) {
-                    $query->where(function ($inner) use ($word) {
+                    $baseQuery->where(function ($inner) use ($word) {
                         $inner->where('first_names', 'like', "%{$word}%")
                             ->orWhere('last_names', 'like', "%{$word}%");
                     });
@@ -46,7 +44,16 @@ class PacientesController extends Controller
             }
         }
 
-        // ── Filters ───────────────────────────────────────────────────────────
+        // ── Segment counts (computed over search results, all filters) ────────────
+        $counts = [
+            'total' => (clone $baseQuery)->count(),
+            'attended_today' => (clone $baseQuery)->whereHas('turns', fn ($t) => $t->whereDate('arrived_at', $today))->count(),
+            'con_alergias' => (clone $baseQuery)->whereNotNull('allergies')->count(),
+            'sin_atenciones' => (clone $baseQuery)->whereDoesntHave('turns')->count(),
+        ];
+
+        // ── Apply filter ──────────────────────────────────────────────────────────
+        $query = clone $baseQuery;
         match ($filter) {
             'atendidos_hoy' => $query->whereHas('turns', fn ($t) => $t->whereDate('arrived_at', $today)),
             'con_alergias' => $query->whereNotNull('allergies'),
@@ -54,28 +61,26 @@ class PacientesController extends Controller
             default => null,
         };
 
-        // ── Sort ──────────────────────────────────────────────────────────────
+        // ── Sort ──────────────────────────────────────────────────────────────────
         match ($sort) {
             'nombre' => $query->orderBy('last_names')->orderBy('first_names'),
             'registro' => $query->orderBy('created_at'),
-            default => $query->orderByDesc('last_arrived_at'),
+            default => $query->withMax('turns as last_arrived_at_sort', 'arrived_at')
+                ->orderByDesc('last_arrived_at_sort'),
         };
+
+        // ── Eager load to prevent N+1 ─────────────────────────────────────────────
+        $query->with(['latestTurn.doctor'])
+            ->withExists([
+                'turns as attended_today' => fn ($t) => $t->whereDate('arrived_at', $today),
+            ]);
 
         $paginator = $query->paginate(15)->withQueryString();
 
-        // Count today's attendances for the header subtitle (total, not filtered)
-        $attendedToday = Turn::whereDate('arrived_at', $today)->distinct('patient_id')->count('patient_id');
-
-        // Map for the frontend
-        $paginator->getCollection()->transform(function (Patient $p) use ($today): array {
-            /** @var int|null $lastTurnId */
-            $lastTurnId = $p->getAttribute('last_turn_id');
-            /** @var string|null $lastArrivedAt */
-            $lastArrivedAt = $p->getAttribute('last_arrived_at');
-
-            $lastTurn = $lastTurnId
-                ? Turn::with('doctor.specialty')->find($lastTurnId)
-                : null;
+        // ── Map for the frontend ──────────────────────────────────────────────────
+        $paginator->getCollection()->transform(function (Patient $p): array {
+            /** @var Turn|null $lastTurn */
+            $lastTurn = $p->latestTurn;
 
             return [
                 'id' => $p->id,
@@ -93,21 +98,18 @@ class PacientesController extends Controller
                 'blood_type' => $p->blood_type,
                 'allergies' => $p->allergies,
                 'photo_url' => $p->photo_url,
-                'attended_today' => $p->turns()->whereDate('arrived_at', $today)->exists(),
-                'last_attended_at' => $lastArrivedAt
-                    ? Carbon::parse($lastArrivedAt)->format('d/m/Y')
+                'attended_today' => (bool) $p->getAttribute('attended_today'),
+                'last_attended_at' => $lastTurn?->arrived_at
+                    ? Carbon::parse($lastTurn->arrived_at)->format('d/m/Y')
                     : null,
                 'last_turn_type' => $lastTurn ? 'Consulta' : null,
-                'last_turn_doctor' => $lastTurn?->doctor->name,
+                'last_turn_doctor' => $lastTurn?->doctor?->name,
             ];
         });
 
         return Inertia::render('pacientes/index', [
             'patients' => $paginator,
-            'counts' => [
-                'total' => Patient::count(),
-                'attended_today' => $attendedToday,
-            ],
+            'counts' => $counts,
             'filters' => $request->only(['q', 'filter', 'sort']),
             'selected' => $this->resolveSelected($request),
         ]);

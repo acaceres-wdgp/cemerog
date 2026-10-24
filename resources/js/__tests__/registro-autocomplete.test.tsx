@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import React from 'react';
 import { fireEvent, render, screen, waitFor, act } from '@testing-library/react';
 import RegistroIndex from '@/pages/registro/index';
 
@@ -289,5 +290,32 @@ describe('RegistroIndex with existing patient pre-loaded', () => {
         render(<RegistroIndex doctors={mockDoctors} patient={patientWithAllergy} />);
         expect(screen.getByText(/Alérgico\(a\) a:/)).toBeTruthy();
         expect(screen.getByText(/Ibuprofeno/)).toBeTruthy();
+    });
+});
+
+describe('registro page – PatientAutocomplete ARIA & autocomplete attrs', () => {
+    beforeEach(() => {
+        global.fetch = vi.fn();
+    });
+
+    it('search input has role="combobox" (patient-search-input)', () => {
+        render(<RegistroIndex doctors={mockDoctors} patient={null} />);
+        const input = document.getElementById('patient-search-input');
+        expect(input).not.toBeNull();
+        expect(input).toHaveAttribute('role', 'combobox');
+    });
+
+    it('search input has autocomplete="off"', () => {
+        render(<RegistroIndex doctors={mockDoctors} patient={null} />);
+        const input = document.getElementById('patient-search-input');
+        expect(input).not.toBeNull();
+        expect(input).toHaveAttribute('autocomplete', 'off');
+    });
+
+    it('listbox is not rendered when dropdown is closed (initial state)', () => {
+        render(<RegistroIndex doctors={mockDoctors} patient={null} />);
+        // Listbox is only rendered when open=true (after typing)
+        // By default it's closed, so listbox should not exist
+        expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     });
 });

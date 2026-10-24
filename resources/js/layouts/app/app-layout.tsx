@@ -34,11 +34,9 @@ import {
     Search,
     LogOut,
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import type { PageProps } from '@/types/global';
-import { NAV_GROUPS } from '@/lib/navigation';
-import { resolveBreadcrumb } from '@/lib/breadcrumb';
+import { NAV_GROUPS, type NavItem } from '@/lib/navigation';
+import { resolveBreadcrumb, formatTopbarDate } from '@/lib/breadcrumb';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 
 // Icon registry
@@ -124,12 +122,27 @@ export default function AppLayout({ children }: AppLayoutProps) {
         setShowThemePicker(false);
     };
 
-    // A nav item is active on its own URL and on its sub-pages (e.g. /citas/123)
+    // A nav item is active on its own URL, sub-pages, and any paths in activeFor
     const { currentUrl, isCurrentUrl } = useCurrentUrl();
-    const breadcrumb = resolveBreadcrumb(currentUrl, NAV_GROUPS);
-    const todayLabel = format(new Date(), "d 'de' MMMM, yyyy", { locale: es });
-    const isActiveItem = (href: string) =>
-        isCurrentUrl(href) || currentUrl.startsWith(`${href}/`);
+
+    // Compute breadcrumb: for /registro, add 3rd level from page props + URL
+    const basePath = currentUrl.split('?')[0];
+    const pageProps = usePage().props as unknown as { patient?: unknown };
+    const registroBreadcrumbFallback = basePath === '/registro'
+        ? {
+              section: 'Recepción',
+              page: 'Pacientes',
+              subPage: pageProps.patient != null ? 'Nueva atención' : 'Nuevo paciente',
+          }
+        : undefined;
+    const breadcrumb = resolveBreadcrumb(basePath, NAV_GROUPS, registroBreadcrumbFallback);
+    const todayLabel = formatTopbarDate(new Date());
+    const isActiveItem = (item: NavItem) =>
+        isCurrentUrl(item.href) ||
+        currentUrl.startsWith(`${item.href}/`) ||
+        (item.activeFor?.some(
+            (path) => currentUrl === path || currentUrl.startsWith(`${path}/`),
+        ) ?? false);
 
     const permissions: string[] =
         (usePage<PageProps>().props as unknown as { permissions?: string[] })
@@ -200,7 +213,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                                 )}
                                 {visibleItems.map((item) => {
                                     const Icon = ICONS[item.icon] ?? House;
-                                    const isActive = isActiveItem(item.href);
+                                    const isActive = isActiveItem(item);
                                     return (
                                         <Link
                                             key={item.key}
@@ -331,7 +344,15 @@ export default function AppLayout({ children }: AppLayoutProps) {
                             <>
                                 <span>{breadcrumb.section}</span>
                                 <span aria-hidden="true">›</span>
-                                <span className="font-medium text-[#1f2d22]">{breadcrumb.page}</span>
+                                {breadcrumb.subPage ? (
+                                    <>
+                                        <span>{breadcrumb.page}</span>
+                                        <span aria-hidden="true">›</span>
+                                        <span className="font-medium text-[#1f2d22]">{breadcrumb.subPage}</span>
+                                    </>
+                                ) : (
+                                    <span className="font-medium text-[#1f2d22]">{breadcrumb.page}</span>
+                                )}
                                 <span aria-hidden="true">·</span>
                                 <span>{todayLabel}</span>
                             </>
