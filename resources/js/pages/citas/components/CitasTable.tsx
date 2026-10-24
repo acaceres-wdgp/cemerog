@@ -4,15 +4,7 @@ import { TodayRows } from './TodayRows';
 import { FutureRows } from './FutureRows';
 
 const thBaseClassName =
-    'text-left font-semibold text-table-header-text bg-table-header-bg border-b border-success-border whitespace-nowrap';
-
-const thStyle: React.CSSProperties = {
-    fontSize: 11.5,
-    letterSpacing: '.05em',
-    textTransform: 'uppercase',
-    padding: '0 12px',
-    height: 40,
-};
+    'text-left font-semibold text-table-header-text bg-table-header-bg border-b border-success-border whitespace-nowrap text-[11.5px] tracking-[.05em] uppercase px-3 h-10';
 
 type CitasTableProps = {
     filtered: AppointmentRow[];
@@ -40,37 +32,13 @@ export function CitasTable({
     onCancel,
 }: CitasTableProps) {
     return (
-        <div
-            style={{
-                borderRadius: 14,
-                overflow: 'hidden',
-            }}
-            className="border border-card-border bg-white"
-        >
-            <div
-                style={{
-                    padding: '14px 20px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: 12,
-                    flexWrap: 'wrap',
-                }}
-                className="border-b border-divider"
-            >
+        <div className="rounded-[14px] overflow-hidden border border-card-border bg-white">
+            <div className="flex items-center justify-between flex-wrap gap-3 border-b border-divider px-5 py-[14px]">
                 <div>
-                    <div
-                        style={{
-                            fontFamily: 'Bitter,Georgia,serif',
-                            fontWeight: 600,
-                            fontSize: 17,
-                            textTransform: 'capitalize',
-                        }}
-                        className="text-text-heading"
-                    >
+                    <div className="font-serif font-semibold text-[17px] text-text-heading capitalize">
                         {formatDateLong(date)}
                     </div>
-                    <div style={{ fontSize: 13 }} className="text-muted">
+                    <div className="text-[13px] text-muted">
                         {filtered.length}{' '}
                         {filtered.length === 1 ? 'cita' : 'citas'} ·{' '}
                         {pendingCount} pendientes
@@ -80,37 +48,29 @@ export function CitasTable({
                 </div>
             </div>
 
-            <div style={{ overflowX: 'auto' }}>
-                <table
-                    style={{
-                        width: '100%',
-                        borderCollapse: 'collapse',
-                        minWidth: 700,
-                    }}
-                >
+            <div className="overflow-x-auto">
+                <table className="w-full border-collapse min-w-[700px]">
                     <thead>
                         <tr>
                             <th
-                                style={{ ...thStyle, paddingLeft: 20 }}
-                                className={thBaseClassName}
+                                className={`${thBaseClassName} pl-5`}
                             >
                                 {is_today ? 'Estado' : 'Hora'}
                             </th>
-                            <th style={thStyle} className={thBaseClassName}>
+                            <th className={thBaseClassName}>
                                 Paciente
                             </th>
-                            <th style={thStyle} className={thBaseClassName}>
+                            <th className={thBaseClassName}>
                                 Médico
                             </th>
-                            <th style={thStyle} className={thBaseClassName}>
+                            <th className={thBaseClassName}>
                                 Tipo
                             </th>
-                            <th style={thStyle} className={thBaseClassName}>
+                            <th className={thBaseClassName}>
                                 Cita
                             </th>
                             <th
-                                style={{ ...thStyle, textAlign: 'right' }}
-                                className={thBaseClassName}
+                                className={`${thBaseClassName} text-right`}
                             ></th>
                         </tr>
                     </thead>

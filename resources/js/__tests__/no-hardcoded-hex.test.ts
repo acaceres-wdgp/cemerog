@@ -97,13 +97,17 @@ for (const entry of CLEAN_PAGES) {
         });
 
         // ── Test 2: no static style={{ ───────────────────────────────────────
-        // Fails if a line contains `style={{` AND the previous non-empty line
-        // does NOT start with `// dynamic-style:`.
+        // Fails if a line contains `style={{` AND neither:
+        //   - the current line contains `// dynamic-style:` (inline comment), nor
+        //   - the previous non-empty line starts with `// dynamic-style:`
         const styleViolations: { line: number; text: string }[] = [];
 
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             if (!line.includes('style={{')) continue;
+
+            // Allow inline comment on same line
+            if (line.includes('// dynamic-style:')) continue;
 
             // Find the previous non-empty line
             let prevLineText = '';

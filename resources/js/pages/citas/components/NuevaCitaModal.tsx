@@ -1,19 +1,9 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
+import { cn } from '@/lib/utils';
 import { PatientSearch } from './PatientSearch';
 import { DoctorOption, PatientResult } from '../types';
 import { SLOTS } from '../lib/dates';
-
-const inputStyle: React.CSSProperties = {
-    height: 36,
-    width: '100%',
-    padding: '0 12px',
-    borderRadius: 10,
-    outline: 'none',
-    fontFamily: 'inherit',
-    fontSize: 14,
-    boxSizing: 'border-box',
-};
 
 export function NuevaCitaModal({
     onClose,
@@ -75,93 +65,27 @@ export function NuevaCitaModal({
         <>
             <div
                 onClick={onClose}
-                style={{
-                    position: 'fixed',
-                    inset: 0,
-                    zIndex: 40,
-                    background: 'rgba(0,0,0,.4)',
-                }}
+                className="fixed inset-0 z-40 bg-black/40"
             />
-            <div
-                style={{
-                    position: 'fixed',
-                    zIndex: 41,
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%,-50%)',
-                    width: 480,
-                    maxWidth: '95vw',
-                    maxHeight: '90vh',
-                    borderRadius: 16,
-                    boxShadow: '0 24px 64px -16px rgba(16,40,24,.35)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'hidden',
-                }}
-                className="bg-white"
-            >
-                <div
-                    style={{
-                        padding: '16px 20px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        flexShrink: 0,
-                    }}
-                    className="border-b border-divider"
-                >
-                    <span
-                        style={{
-                            fontFamily: 'Bitter,Georgia,serif',
-                            fontWeight: 600,
-                            fontSize: 17,
-                        }}
-                        className="text-text-heading"
-                    >
+            <div className="fixed z-[41] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] max-w-[95vw] max-h-[90vh] bg-white rounded-2xl shadow-[0_24px_64px_-16px_rgba(16,40,24,.35)] flex flex-col overflow-hidden">
+                <div className="flex items-center justify-between shrink-0 border-b border-divider px-5 py-4">
+                    <span className="font-serif font-semibold text-[17px] text-text-heading">
                         Nueva cita
                     </span>
                     <button
                         type="button"
                         onClick={onClose}
-                        style={{
-                            width: 30,
-                            height: 30,
-                            border: 'none',
-                            borderRadius: 8,
-                            cursor: 'pointer',
-                            fontSize: 16,
-                        }}
-                        className="bg-app-bg"
+                        className="w-[30px] h-[30px] border-0 rounded-lg cursor-pointer text-base bg-app-bg"
                     >
                         ✕
                     </button>
                 </div>
                 <form
                     onSubmit={handleSubmit}
-                    style={{
-                        overflowY: 'auto',
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                    }}
+                    className="overflow-y-auto flex-1 flex flex-col"
                 >
-                    <div
-                        style={{
-                            padding: '16px 20px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 14,
-                        }}
-                    >
-                        <label
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 6,
-                                fontWeight: 500,
-                                fontSize: 14,
-                            }}
-                        >
+                    <div className="px-5 py-4 flex flex-col gap-[14px]">
+                        <label className="flex flex-col gap-1.5 font-medium text-sm">
                             <span>Paciente *</span>
                             <PatientSearch
                                 selected={selectedPatient}
@@ -178,24 +102,17 @@ export function NuevaCitaModal({
                                 error={errors.patient_id}
                             />
                         </label>
-                        <label
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 6,
-                                fontWeight: 500,
-                                fontSize: 14,
-                            }}
-                        >
+                        <label className="flex flex-col gap-1.5 font-medium text-sm">
                             <span>Médico *</span>
                             <select
                                 value={doctorId}
                                 onChange={(e) => setDoctorId(e.target.value)}
-                                style={{
-                                    ...inputStyle,
-                                    border: `1px solid ${errors.doctor_id ? 'var(--color-error)' : 'var(--color-input-border)'}`,
-                                    cursor: 'pointer',
-                                }}
+                                className={cn(
+                                    'h-9 w-full rounded-[10px] border px-3 text-sm outline-none box-border font-[inherit] cursor-pointer',
+                                    errors.doctor_id
+                                        ? 'border-error'
+                                        : 'border-input-border',
+                                )}
                             >
                                 <option value="">Seleccionar médico…</option>
                                 {doctors.map((d) => (
@@ -205,68 +122,35 @@ export function NuevaCitaModal({
                                 ))}
                             </select>
                             {errors.doctor_id && (
-                                <span
-                                    style={{ fontSize: 12 }}
-                                    className="text-error"
-                                >
+                                <span className="text-xs text-error">
                                     {errors.doctor_id}
                                 </span>
                             )}
                         </label>
-                        <div
-                            style={{
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: 12,
-                            }}
-                        >
-                            <label
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 6,
-                                    fontWeight: 500,
-                                    fontSize: 14,
-                                }}
-                            >
+                        <div className="grid grid-cols-2 gap-3">
+                            <label className="flex flex-col gap-1.5 font-medium text-sm">
                                 <span>Fecha *</span>
                                 <input
                                     type="date"
                                     value={fecha}
                                     onChange={(e) => setFecha(e.target.value)}
-                                    style={{
-                                        ...inputStyle,
-                                        border: `1px solid ${errors.appointment_date ? 'var(--color-error)' : 'var(--color-input-border)'}`,
-                                    }}
+                                    className={cn(
+                                        'h-9 w-full rounded-[10px] border px-3 text-sm outline-none box-border font-[inherit]',
+                                        errors.appointment_date
+                                            ? 'border-error'
+                                            : 'border-input-border',
+                                    )}
                                 />
                                 {errors.appointment_date && (
-                                    <span
-                                        style={{
-                                            fontSize: 12,
-                                        }}
-                                        className="text-error"
-                                    >
+                                    <span className="text-xs text-error">
                                         {errors.appointment_date}
                                     </span>
                                 )}
                             </label>
-                            <label
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 6,
-                                    fontWeight: 500,
-                                    fontSize: 14,
-                                }}
-                            >
+                            <label className="flex flex-col gap-1.5 font-medium text-sm">
                                 <span>
                                     Hora{' '}
-                                    <span
-                                        style={{
-                                            fontWeight: 400,
-                                        }}
-                                        className="text-muted"
-                                    >
+                                    <span className="font-normal text-muted">
                                         (opcional)
                                     </span>
                                 </span>
@@ -274,54 +158,26 @@ export function NuevaCitaModal({
                                     type="time"
                                     value={hora}
                                     onChange={(e) => setHora(e.target.value)}
-                                    style={{
-                                        ...inputStyle,
-                                        border: `1px solid var(--color-input-border)`,
-                                    }}
+                                    className="h-9 w-full rounded-[10px] border border-input-border px-3 text-sm outline-none box-border font-[inherit]"
                                 />
                             </label>
                         </div>
-                        <label
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 6,
-                                fontWeight: 500,
-                                fontSize: 14,
-                            }}
-                        >
+                        <label className="flex flex-col gap-1.5 font-medium text-sm">
                             <span>Tipo</span>
                             <select
                                 value={tipo}
                                 onChange={(e) => setTipo(e.target.value)}
-                                style={{
-                                    ...inputStyle,
-                                    border: `1px solid var(--color-input-border)`,
-                                    cursor: 'pointer',
-                                }}
+                                className="h-9 w-full rounded-[10px] border border-input-border px-3 text-sm outline-none box-border font-[inherit] cursor-pointer"
                             >
                                 <option value="consulta">Consulta</option>
                                 <option value="seguimiento">Seguimiento</option>
                                 <option value="primera_vez">Primera vez</option>
                             </select>
                         </label>
-                        <label
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 6,
-                                fontWeight: 500,
-                                fontSize: 14,
-                            }}
-                        >
+                        <label className="flex flex-col gap-1.5 font-medium text-sm">
                             <span>
                                 Notas{' '}
-                                <span
-                                    style={{
-                                        fontWeight: 400,
-                                    }}
-                                    className="text-muted"
-                                >
+                                <span className="font-normal text-muted">
                                     (opcional)
                                 </span>
                             </span>
@@ -330,61 +186,27 @@ export function NuevaCitaModal({
                                 onChange={(e) => setNotas(e.target.value)}
                                 rows={2}
                                 placeholder="Motivo de consulta, indicaciones…"
-                                style={{
-                                    ...inputStyle,
-                                    height: 'auto',
-                                    padding: '8px 12px',
-                                    resize: 'vertical',
-                                    lineHeight: 1.5,
-                                    border: `1px solid var(--color-input-border)`,
-                                }}
+                                className="w-full rounded-[10px] border border-input-border px-3 py-2 text-sm outline-none box-border font-[inherit] resize-y leading-normal"
                             />
                         </label>
                     </div>
-                    <div
-                        style={{
-                            padding: '14px 20px',
-                            display: 'flex',
-                            justifyContent: 'flex-end',
-                            gap: 8,
-                            flexShrink: 0,
-                        }}
-                        className="border-t border-divider"
-                    >
+                    <div className="flex justify-end gap-2 shrink-0 border-t border-divider px-5 py-[14px]">
                         <button
                             type="button"
                             onClick={onClose}
-                            style={{
-                                height: 36,
-                                padding: '0 14px',
-                                borderRadius: 10,
-                                fontWeight: 500,
-                                cursor: 'pointer',
-                                fontFamily: 'inherit',
-                                fontSize: 14,
-                            }}
-                            className="border border-secondary-border bg-secondary-bg"
+                            className="h-9 px-3.5 rounded-[10px] font-medium cursor-pointer font-[inherit] text-sm border border-secondary-border bg-secondary-bg"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             disabled={processing}
-                            style={{
-                                height: 36,
-                                padding: '0 16px',
-                                borderRadius: 10,
-                                border: 'none',
-                                /* processing state: computed at runtime based on form state */
-                                background: processing
-                                    ? 'var(--color-primary-disabled)'
-                                    : 'var(--color-primary)',
-                                fontWeight: 500,
-                                cursor: processing ? 'not-allowed' : 'pointer',
-                                fontFamily: 'inherit',
-                                fontSize: 14,
-                            }}
-                            className="text-white"
+                            className={cn(
+                                'h-9 px-4 rounded-[10px] border-0 text-white font-medium font-[inherit] text-sm',
+                                processing
+                                    ? 'bg-primary-disabled cursor-not-allowed'
+                                    : 'bg-primary cursor-pointer',
+                            )}
                         >
                             {processing ? 'Guardando…' : '✓ Registrar cita'}
                         </button>

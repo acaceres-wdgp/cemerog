@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import { DoctorOption } from '../types';
 import { todayStr, tomorrowStr, addDays } from '../lib/dates';
 import { docPalette } from '../lib/palettes';
@@ -24,17 +25,9 @@ export function CitasToolbar({
     const isTomorrow = date === tomorrowStr();
 
     return (
-        <div
-            style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: 12,
-                flexWrap: 'wrap',
-            }}
-        >
+        <div className="flex justify-between items-center gap-3 flex-wrap">
             {/* Doctor filter chips */}
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div className="flex gap-2 flex-wrap">
                 {doctors.map((d) => {
                     const pal = docPalette(d.id);
                     const active = selDoc === d.id;
@@ -42,60 +35,24 @@ export function CitasToolbar({
                         <button
                             key={d.id}
                             onClick={() => setSelDoc(active ? null : d.id)}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 10,
-                                padding: '6px 14px 6px 6px',
-                                borderRadius: 12,
-                                cursor: 'pointer',
-                                textAlign: 'left',
-                                fontFamily: 'inherit',
-                                fontSize: 14,
-                            }}
-                            className={
+                            className={cn(
+                                'flex items-center gap-2.5 pl-1.5 pr-3.5 py-1.5 rounded-xl cursor-pointer text-left font-[inherit] text-sm',
                                 active
                                     ? 'border border-accent-border bg-accent-bg'
-                                    : 'border border-card-border bg-white'
-                            }
+                                    : 'border border-card-border bg-white',
+                            )}
                         >
-                            {/* Doctor palette: computed at runtime from doctor ID */}
                             <span
-                                style={{
-                                    width: 32,
-                                    height: 32,
-                                    flexShrink: 0,
-                                    borderRadius: '50%',
-                                    background: pal.bg,
-                                    color: pal.fg,
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: 12,
-                                    fontWeight: 600,
-                                }}
+                                style={{ background: pal.bg, color: pal.fg }} // dynamic-style: doctor color palette computed from doctor ID
+                                className="w-8 h-8 shrink-0 rounded-full inline-flex items-center justify-center text-xs font-semibold"
                             >
                                 {d.initials}
                             </span>
-                            <span style={{ lineHeight: 1.2 }}>
-                                <span
-                                    style={{
-                                        display: 'block',
-                                        fontWeight: 600,
-                                        whiteSpace: 'nowrap',
-                                    }}
-                                    className="text-text-heading"
-                                >
+                            <span className="leading-tight">
+                                <span className="block font-semibold whitespace-nowrap text-text-heading">
                                     {d.name}
                                 </span>
-                                <span
-                                    style={{
-                                        display: 'block',
-                                        fontSize: 12,
-                                        whiteSpace: 'nowrap',
-                                    }}
-                                    className="text-muted"
-                                >
+                                <span className="block text-xs whitespace-nowrap text-muted">
                                     {d.specialty}
                                 </span>
                             </span>
@@ -105,24 +62,9 @@ export function CitasToolbar({
             </div>
 
             {/* Right controls */}
-            <div
-                style={{
-                    display: 'flex',
-                    gap: 8,
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                }}
-            >
+            <div className="flex gap-2 items-center flex-wrap">
                 {/* Hoy / Mañana segmented */}
-                <div
-                    style={{
-                        display: 'inline-flex',
-                        borderRadius: 11,
-                        padding: 3,
-                        gap: 2,
-                    }}
-                    className="border border-card-border bg-app-bg"
-                >
+                <div className="inline-flex rounded-[11px] p-[3px] gap-0.5 border border-card-border bg-app-bg">
                     {(
                         [
                             {
@@ -140,103 +82,41 @@ export function CitasToolbar({
                         <button
                             key={t.key}
                             onClick={() => onNavigate(t.key)}
-                            style={{
-                                whiteSpace: 'nowrap',
-                                height: 30,
-                                padding: '0 12px',
-                                border: 'none',
-                                borderRadius: 10,
-                                cursor: 'pointer',
-                                fontWeight: 500,
-                                /* active/inactive computed at runtime from navigation state */
-                                background: t.active
-                                    ? 'var(--color-card-bg)'
-                                    : 'transparent',
-                                boxShadow: t.active
-                                    ? '0 1px 3px rgba(0,0,0,.1)'
-                                    : 'none',
-                                fontFamily: 'inherit',
-                                fontSize: 14,
-                            }}
-                            className={
+                            className={cn(
+                                'whitespace-nowrap h-[30px] px-3 border-0 rounded-[10px] cursor-pointer font-medium font-[inherit] text-sm',
                                 t.active
-                                    ? 'text-text-heading'
-                                    : 'text-secondary-fg'
-                            }
+                                    ? 'bg-card-bg shadow-sm text-text-heading'
+                                    : 'bg-transparent text-secondary-fg',
+                            )}
                         >
                             {t.label}
                         </button>
                     ))}
                 </div>
                 {/* ‹ Hoy › navigation */}
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4,
-                    }}
-                >
+                <div className="flex items-center gap-1">
                     <button
                         onClick={() => onNavigate(addDays(date, -1))}
-                        style={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: 10,
-                            cursor: 'pointer',
-                            fontFamily: 'inherit',
-                            fontSize: 16,
-                        }}
-                        className="border border-secondary-border bg-secondary-bg"
+                        className="w-9 h-9 rounded-[10px] cursor-pointer font-[inherit] text-base border border-secondary-border bg-secondary-bg"
                     >
                         ‹
                     </button>
                     <button
                         onClick={() => onNavigate(todayStr())}
-                        style={{
-                            height: 36,
-                            padding: '0 12px',
-                            borderRadius: 10,
-                            cursor: 'pointer',
-                            fontFamily: 'inherit',
-                            fontSize: 14,
-                            fontWeight: 500,
-                        }}
-                        className="border border-secondary-border bg-secondary-bg"
+                        className="h-9 px-3 rounded-[10px] cursor-pointer font-[inherit] text-sm font-medium border border-secondary-border bg-secondary-bg"
                     >
                         Hoy
                     </button>
                     <button
                         onClick={() => onNavigate(addDays(date, 1))}
-                        style={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: 10,
-                            cursor: 'pointer',
-                            fontFamily: 'inherit',
-                            fontSize: 16,
-                        }}
-                        className="border border-secondary-border bg-secondary-bg"
+                        className="w-9 h-9 rounded-[10px] cursor-pointer font-[inherit] text-base border border-secondary-border bg-secondary-bg"
                     >
                         ›
                     </button>
                 </div>
                 <button
                     onClick={onNewCita}
-                    style={{
-                        whiteSpace: 'nowrap',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        height: 36,
-                        padding: '0 14px',
-                        borderRadius: 10,
-                        border: 'none',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        fontFamily: 'inherit',
-                        fontSize: 14,
-                    }}
-                    className="bg-primary text-white"
+                    className="whitespace-nowrap inline-flex items-center gap-2 h-9 px-3.5 rounded-[10px] border-0 font-medium cursor-pointer font-[inherit] text-sm bg-primary text-white"
                 >
                     + Nueva cita
                 </button>

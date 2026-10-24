@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import StatusBadge from '@/components/cemerog/StatusBadge';
 import { AppointmentRow, DoctorOption } from '../types';
 import { docPalette } from '../lib/palettes';
@@ -39,24 +40,9 @@ export function TodayRows({
         return (
             <tr>
                 <td colSpan={6}>
-                    <div
-                        style={{
-                            padding: '6px 12px 6px 20px',
-                        }}
-                        className="border-b border-row-divider"
-                    >
+                    <div className="pl-5 pr-3 py-1.5 border-b border-row-divider">
                         <div
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 8,
-                                padding: '0 4px',
-                                height: 44,
-                                borderRadius: 8,
-                                cursor: 'pointer',
-                                fontSize: 13,
-                            }}
-                            className="border border-dashed border-slot-empty-border text-text-tertiary"
+                            className="flex items-center gap-2 px-1 h-[44px] rounded-lg cursor-pointer text-[13px] border border-dashed border-slot-empty-border text-text-tertiary"
                             onClick={onNewCita}
                         >
                             + Registrar primera cita del día
@@ -82,21 +68,16 @@ export function TodayRows({
                 return (
                     <tr
                         key={cita.id}
-                        className={
+                        className={cn(
                             isDone
                                 ? 'bg-done-row-bg'
                                 : isInList
                                   ? 'bg-list-row-bg'
-                                  : 'bg-white'
-                        }
+                                  : 'bg-white',
+                        )}
                     >
                         {/* Status / Turn column */}
-                        <td
-                            style={{
-                                padding: '10px 12px 10px 20px',
-                            }}
-                            className="border-b border-divider"
-                        >
+                        <td className="pl-5 pr-3 py-[10px] border-b border-divider">
                             <StatusBadge
                                 state={citaStatusToState(cita.status)}
                                 label={
@@ -106,121 +87,61 @@ export function TodayRows({
                                 }
                             />
                         </td>
-                        <td
-                            style={{
-                                padding: '10px 12px',
-                            }}
-                            className="border-b border-divider"
-                        >
+                        <td className="px-3 py-[10px] border-b border-divider">
                             <div
-                                style={{
-                                    fontWeight: 500,
-                                }}
-                                className={
+                                className={cn(
+                                    'font-medium',
                                     isDone
                                         ? 'text-text-tertiary'
-                                        : 'text-text-heading'
-                                }
+                                        : 'text-text-heading',
+                                )}
                             >
                                 {cita.patient_name}
                             </div>
                             {cita.notes && (
-                                <div
-                                    style={{
-                                        fontSize: 12,
-                                    }}
-                                    className="text-muted"
-                                >
+                                <div className="text-xs text-muted">
                                     {cita.notes.length > 40
                                         ? cita.notes.slice(0, 40) + '…'
                                         : cita.notes}
                                 </div>
                             )}
                         </td>
-                        <td
-                            style={{
-                                padding: '10px 12px',
-                            }}
-                            className="border-b border-divider"
-                        >
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 8,
-                                }}
-                            >
-                                {/* Doctor palette: computed at runtime from doctor ID */}
+                        <td className="px-3 py-[10px] border-b border-divider">
+                            <div className="flex items-center gap-2">
                                 <span
-                                    style={{
-                                        width: 26,
-                                        height: 26,
-                                        flexShrink: 0,
-                                        borderRadius: '50%',
-                                        background: pal.bg,
-                                        color: pal.fg,
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: 11,
-                                        fontWeight: 600,
-                                    }}
+                                    style={{ background: pal.bg, color: pal.fg }} // dynamic-style: doctor color palette computed from doctor ID
+                                    className="w-[26px] h-[26px] shrink-0 rounded-full inline-flex items-center justify-center text-[11px] font-semibold"
                                 >
                                     {doc?.initials ?? '?'}
                                 </span>
                                 <span
-                                    style={{
-                                        fontSize: 13,
-                                    }}
-                                    className={
+                                    className={cn(
+                                        'text-[13px]',
                                         isDone
                                             ? 'text-text-tertiary'
-                                            : 'text-text-dim'
-                                    }
+                                            : 'text-text-dim',
+                                    )}
                                 >
                                     {cita.doctor_name}
                                 </span>
                             </div>
                         </td>
                         <td
-                            style={{
-                                padding: '10px 12px',
-                                fontSize: 13,
-                            }}
-                            className={`border-b border-divider ${isDone ? 'text-text-tertiary' : 'text-text-dim'}`}
+                            className={cn(
+                                'px-3 py-[10px] text-[13px] border-b border-divider',
+                                isDone ? 'text-text-tertiary' : 'text-text-dim',
+                            )}
                         >
                             {TYPE_LABELS[cita.type] ?? cita.type}
                         </td>
-                        <td
-                            style={{
-                                padding: '10px 12px',
-                                fontSize: 13,
-                                fontVariantNumeric: 'tabular-nums',
-                            }}
-                            className="border-b border-divider text-muted"
-                        >
+                        <td className="px-3 py-[10px] text-[13px] tabular-nums border-b border-divider text-muted">
                             {cita.appointment_time ?? '—'}
                         </td>
-                        <td
-                            style={{
-                                padding: '10px 12px',
-                                textAlign: 'right',
-                            }}
-                            className="border-b border-divider"
-                        >
+                        <td className="px-3 py-[10px] text-right border-b border-divider">
                             {canCancel && (
                                 <button
                                     onClick={() => onCancel(cita.id)}
-                                    style={{
-                                        height: 28,
-                                        padding: '0 10px',
-                                        borderRadius: 8,
-                                        fontWeight: 500,
-                                        fontSize: 12,
-                                        cursor: 'pointer',
-                                        fontFamily: 'inherit',
-                                    }}
-                                    className="border border-secondary-border bg-secondary-bg text-text-dim"
+                                    className="h-7 px-2.5 rounded-lg font-medium text-xs cursor-pointer font-[inherit] border border-secondary-border bg-secondary-bg text-text-dim"
                                 >
                                     Cancelar
                                 </button>
