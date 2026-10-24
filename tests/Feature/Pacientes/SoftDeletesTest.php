@@ -8,6 +8,7 @@ use App\Models\Turn;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 uses(RefreshDatabase::class);
 
@@ -148,18 +149,18 @@ test('/citas no muestra cita de paciente con deleted_at', function () {
 // ── Reversibilidad de la migración ───────────────────────────────────────────
 
 test('restore_soft_deletes migration: up → down → up sin errores', function () {
-    expect(\Illuminate\Support\Facades\Schema::hasColumn('patients', 'deleted_at'))->toBeTrue();
+    expect(Schema::hasColumn('patients', 'deleted_at'))->toBeTrue();
 
     $this->artisan('migrate:rollback', [
         '--path' => 'database/migrations/2026_10_24_300000_restore_soft_deletes_to_patients.php',
     ])->assertSuccessful();
 
-    expect(\Illuminate\Support\Facades\Schema::hasColumn('patients', 'deleted_at'))->toBeFalse();
+    expect(Schema::hasColumn('patients', 'deleted_at'))->toBeFalse();
 
     $this->artisan('migrate', [
         '--path' => 'database/migrations/2026_10_24_300000_restore_soft_deletes_to_patients.php',
         '--force' => true,
     ])->assertSuccessful();
 
-    expect(\Illuminate\Support\Facades\Schema::hasColumn('patients', 'deleted_at'))->toBeTrue();
+    expect(Schema::hasColumn('patients', 'deleted_at'))->toBeTrue();
 });
