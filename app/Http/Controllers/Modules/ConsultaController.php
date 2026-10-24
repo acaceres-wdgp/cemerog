@@ -85,6 +85,7 @@ class ConsultaController extends Controller
         ]);
     }
 
+    /** @return list<array<string, mixed>> */
     private function loadHistorial(Patient $patient): array
     {
         return Consultation::with(['doctor.specialty'])
@@ -96,8 +97,8 @@ class ConsultaController extends Controller
                 'consulted_at' => $c->consulted_at,
                 'doctor' => [
                     'id' => $c->doctor->id,
-                    'full_name' => $c->doctor->full_name,
-                    'specialty' => $c->doctor->specialty?->name,
+                    'full_name' => $c->doctor->name,
+                    'specialty' => $c->doctor->specialty->name,
                 ],
                 'motivo_consulta' => $c->motivo_consulta,
                 'historia_enfermedad' => $c->historia_enfermedad,
@@ -118,6 +119,7 @@ class ConsultaController extends Controller
             ->all();
     }
 
+    /** @return array<string, mixed> */
     private function formatHistorialPatient(Patient $patient): array
     {
         return [
@@ -130,6 +132,7 @@ class ConsultaController extends Controller
         ];
     }
 
+    /** @return array<string, mixed> */
     private function formatTurn(Turn $turn): array
     {
         return [
@@ -147,8 +150,8 @@ class ConsultaController extends Controller
             ],
             'doctor' => [
                 'id' => $turn->doctor->id,
-                'full_name' => $turn->doctor->full_name,
-                'specialty' => $turn->doctor->specialty?->name,
+                'full_name' => $turn->doctor->name,
+                'specialty' => $turn->doctor->specialty->name,
             ],
         ];
     }

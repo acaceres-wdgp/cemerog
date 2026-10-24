@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('patient_id')->constrained()->restrictOnDelete();
             $table->foreignId('doctor_id')->constrained()->restrictOnDelete();
-            $table->foreignId('turn_id')->nullable()->nullOnDelete()->constrained('turns');
+            $table->foreignId('turn_id')->nullable()->constrained('turns')->nullOnDelete();
 
             // Vitals
             $table->unsignedSmallInteger('peso')->nullable();        // kg * 10 (e.g. 703 = 70.3 kg)

@@ -53,6 +53,8 @@ test('index includes turns in en_consulta with patient and doctor data', functio
         ->assertInertia(fn ($page) => $page
             ->component('consulta/index')
             ->has('turns_en_consulta', 1)
+            ->where('turns_en_consulta.0.doctor.full_name', $this->doctor->name)
+            ->where('turns_en_consulta.0.doctor.specialty', 'Medicina General')
         );
 });
 
@@ -175,6 +177,8 @@ test('index loads historial when patient_id is provided', function () {
         ->assertInertia(fn ($page) => $page
             ->component('consulta/index')
             ->has('historial', 3)
+            ->where('historial.0.doctor.full_name', $this->doctor->name)
+            ->where('historial.0.doctor.specialty', 'Medicina General')
             ->has('historial_patient')
         );
 });
