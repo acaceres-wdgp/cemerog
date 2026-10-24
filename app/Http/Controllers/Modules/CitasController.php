@@ -25,6 +25,7 @@ class CitasController extends Controller
         $isToday = Carbon::parse($date)->isToday();
 
         $appointments = Appointment::with(['patient', 'doctor.specialty', 'turn'])
+            ->whereHas('patient')
             ->whereDate('appointment_date', $date)
             ->when(
                 $request->filled('doctor_id'),

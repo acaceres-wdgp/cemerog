@@ -22,10 +22,12 @@ class RegistroController extends Controller
      */
     public function create(?Patient $patient = null): Response
     {
-        // Accept ?paciente={id} to pre-load an existing patient
+        // Accept ?paciente={id} to pre-load an existing patient.
+        // Non-existent IDs → 404. Soft-deleted patients → silently ignored (patient = null).
         if (request()->filled('paciente')) {
-            $patient = Patient::find(request()->integer('paciente'));
-            abort_if($patient === null, 404);
+            $found = Patient::withTrashed()->find(request()->integer('paciente'));
+            abort_if($found === null, 404);
+            $patient = $found->trashed() ? null : $found;
         }
 
         $doctors = Doctor::with('specialty')

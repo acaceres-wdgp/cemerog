@@ -15,6 +15,7 @@ class TableroController extends Controller
     {
         // Active turns for today, ordered by turn_order
         $turns = Turn::with(['patient', 'doctor.specialty'])
+            ->whereHas('patient')
             ->whereDate('arrived_at', today())
             ->whereIn('status', ['espera', 'en_consulta'])
             ->orderBy('turn_order')
@@ -38,6 +39,7 @@ class TableroController extends Controller
 
         // Today's appointments (excluding cancelled), with turn info
         $appointments = Appointment::with(['patient', 'doctor.specialty', 'turn'])
+            ->whereHas('patient')
             ->whereDate('appointment_date', today())
             ->whereNotIn('status', ['cancelada'])
             ->orderBy('appointment_time')

@@ -204,3 +204,27 @@ No existe borrado ni desactivación de pacientes. Una vez creado, un expediente 
 **Decisión:** Quitar "Registro de pacientes" del sidebar. La ruta /registro sigue existiendo y protegida por `module.registro.access`. Se accede únicamente desde botones explícitos: "Nuevo paciente" en /pacientes, "Nueva atención" en el panel lateral, y accesos del Tablero, Inicio y Citas.
 
 **Consecuencias:** El sidebar de Recepción muestra: Tablero de atenciones, Pacientes y Citas. El ítem Pacientes usa `activeFor: ['/registro']` para mantenerse resaltado cuando el usuario navega a /registro.
+
+---
+
+## ADR-012: Restaurar soft deletes en pacientes
+
+**Fecha**: 2026-10-24
+**Estado**: Aceptado
+
+### Contexto
+
+La tabla `patients` originalmente tenía `deleted_at` (soft deletes). Una migración anterior eliminó la columna. Con el sistema en producción, necesitamos eliminar registros de pacientes sin perder la integridad referencial (turns, appointments, etc.).
+
+### Decisión
+
+Restaurar el trait `SoftDeletes` en `App\Models\Patient` mediante la migración `2026_10_24_300000_restore_soft_deletes_to_patients.php`.
+
+Todos los endpoints que muestran listas de registros relacionados (`/tablero`, `/citas`) filtran con `->whereHas('patient')` para excluir filas huérfanas. El endpoint `/registro?paciente=` ignora silenciosamente pacientes eliminados (retorna `patient: null`) en lugar de 404, para evitar romper flujos de navegación con IDs en caché.
+
+### Consecuencias
+
+- `Patient::query()` y `Patient::find()` excluyen automáticamente registros con `deleted_at != null`.
+- Los endpoints `/pacientes`, `/pacientes/buscar` y `/registro?paciente=` no requieren cambios adicionales gracias al scope automático de Eloquent.
+- `TableroController` y `CitasController` añaden `->whereHas('patient')` para evitar null pointer en el mapeo `$t->patient->full_name`.
+- Se cubre con 6 tests en `tests/Feature/Pacientes/SoftDeletesTest.php`.
