@@ -353,6 +353,7 @@ export default function RegistroIndex({
         attention_type: 'consulta',
         doctor_id: '' as number | string,
         notes: '',
+        open_turn: '',
     });
 
     const handleSelectExisting = (p: PatientSuggestion) => {
@@ -631,10 +632,6 @@ export default function RegistroIndex({
                                                         'document_number',
                                                         v,
                                                     )
-                                                }
-                                                disabled={
-                                                    data.document_type ===
-                                                    'no_tiene'
                                                 }
                                                 autoComplete="off"
                                                 data-1p-ignore

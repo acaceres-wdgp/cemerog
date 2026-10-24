@@ -422,7 +422,7 @@ export default function PacientesIndex({
                 replace: true,
                 only: ['selected'],
                 onSuccess: (page) => {
-                    const sel = (page.props as Props).selected;
+                    const sel = (page.props as { selected?: SelectedPatient | null }).selected;
                     if (sel) {
                         setSelectedPatient(sel);
                         setPanelOpen(true);
