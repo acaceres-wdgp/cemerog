@@ -22,6 +22,12 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
+type FilterValue = 'todos' | 'atendidos_hoy' | 'con_alergias' | 'sin_atenciones';
+type SortValue = 'ultima_atencion' | 'nombre' | 'registro';
+
+const VALID_FILTERS: FilterValue[] = ['todos', 'atendidos_hoy', 'con_alergias', 'sin_atenciones'];
+const VALID_SORTS: SortValue[] = ['ultima_atencion', 'nombre', 'registro'];
+
 interface PatientRow {
     id: number;
     expediente_number: string;
@@ -73,9 +79,9 @@ interface Counts {
 }
 
 interface Filters {
-    q?: string;
-    filter?: string;
-    sort?: string;
+    q: string;
+    filter: FilterValue;
+    sort: SortValue;
 }
 
 interface Props {
@@ -84,9 +90,6 @@ interface Props {
     filters: Filters;
     selected: SelectedPatient | null;
 }
-
-type FilterValue = 'todos' | 'atendidos_hoy' | 'con_alergias' | 'sin_atenciones';
-type SortValue = 'ultima_atencion' | 'nombre' | 'registro';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -372,12 +375,12 @@ export default function PacientesIndex({
     filters,
     selected,
 }: Props) {
-    const [search, setSearch] = useState(filters.q ?? '');
+    const [search, setSearch] = useState(typeof filters.q === 'string' ? filters.q : '');
     const [activeFilter, setActiveFilter] = useState<FilterValue>(
-        (filters.filter as FilterValue) ?? 'todos',
+        VALID_FILTERS.includes(filters.filter) ? filters.filter : 'todos',
     );
     const [sort, setSort] = useState<SortValue>(
-        (filters.sort as SortValue) ?? 'ultima_atencion',
+        VALID_SORTS.includes(filters.sort) ? filters.sort : 'ultima_atencion',
     );
     const [panelOpen, setPanelOpen] = useState(selected !== null);
     const [selectedPatient, setSelectedPatient] = useState<SelectedPatient | null>(selected);
