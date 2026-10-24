@@ -2,12 +2,23 @@
 
 namespace App\Models;
 
+use Database\Factories\DoctorFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $exequatur
+ * @property string|null $phone
+ * @property int $specialty_id
+ * @property bool $is_active
+ * @property-read Specialty $specialty
+ */
 class Doctor extends Model
 {
+    /** @use HasFactory<DoctorFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -22,6 +33,7 @@ class Doctor extends Model
         'is_active' => 'boolean',
     ];
 
+    /** @return BelongsTo<Specialty, $this> */
     public function specialty(): BelongsTo
     {
         return $this->belongsTo(Specialty::class);
