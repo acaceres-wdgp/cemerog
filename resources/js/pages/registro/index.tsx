@@ -450,9 +450,7 @@ export default function RegistroIndex({
                 </p>
 
                 {/* Main grid */}
-                <div
-                    className="flex flex-wrap items-start gap-4"
-                >
+                <div className="flex flex-wrap items-start gap-4">
                     {/* ── Left column ───────────────────────────────────── */}
                     <div
                         className="flex min-w-0 flex-col gap-4"

@@ -63,11 +63,11 @@ export function PatientSearch({
 
     if (selected) {
         return (
-            <div className="flex items-center gap-2.5 h-9 pr-2.5 pl-3 rounded-[10px] border border-accent-border bg-accent-bg">
-                <span className="w-[22px] h-[22px] shrink-0 rounded-full inline-flex items-center justify-center text-[10px] font-bold bg-primary text-white">
+            <div className="flex h-9 items-center gap-2.5 rounded-[10px] border border-accent-border bg-accent-bg pr-2.5 pl-3">
+                <span className="inline-flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
                     ✓
                 </span>
-                <span className="flex-1 font-medium text-sm text-text-heading">
+                <span className="flex-1 text-sm font-medium text-text-heading">
                     {selected.full_name}
                 </span>
                 <span className="text-xs text-table-header-text">
@@ -76,7 +76,7 @@ export function PatientSearch({
                 <button
                     type="button"
                     onClick={onClear}
-                    className="w-[22px] h-[22px] shrink-0 border-0 rounded-md bg-black/[.08] cursor-pointer inline-flex items-center justify-center text-xs leading-none text-table-header-text"
+                    className="inline-flex h-[22px] w-[22px] shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-black/[.08] text-xs leading-none text-table-header-text"
                 >
                     ✕
                 </button>
@@ -88,7 +88,7 @@ export function PatientSearch({
         <div ref={ref} className="relative">
             <input
                 className={cn(
-                    'h-9 w-full rounded-[10px] border px-3 text-sm outline-none box-border font-[inherit]',
+                    'box-border h-9 w-full rounded-[10px] border px-3 font-[inherit] text-sm outline-none',
                     error ? 'border-error' : 'border-input-border',
                 )}
                 value={query}
@@ -100,11 +100,9 @@ export function PatientSearch({
                 autoComplete="off"
                 autoFocus
             />
-            {error && (
-                <span className="text-xs text-error">{error}</span>
-            )}
+            {error && <span className="text-xs text-error">{error}</span>}
             {open && (
-                <div className="absolute top-full left-0 right-0 z-[200] rounded-[10px] shadow-[0_8px_24px_rgba(0,0,0,.1)] mt-1 overflow-hidden border border-card-border bg-white">
+                <div className="absolute top-full right-0 left-0 z-[200] mt-1 overflow-hidden rounded-[10px] border border-card-border bg-white shadow-[0_8px_24px_rgba(0,0,0,.1)]">
                     {results.length === 0 ? (
                         <div className="px-3.5 py-[10px] text-[13px] text-muted">
                             No se encontraron pacientes.
@@ -118,9 +116,9 @@ export function PatientSearch({
                                     onSelect(p);
                                     setOpen(false);
                                 }}
-                                className="block w-full text-left px-3.5 py-[10px] border-0 bg-transparent cursor-pointer font-[inherit] border-b border-row-separator hover:bg-table-header-bg"
+                                className="block w-full cursor-pointer border-0 border-b border-row-separator bg-transparent px-3.5 py-[10px] text-left font-[inherit] hover:bg-table-header-bg"
                             >
-                                <div className="font-medium text-sm">
+                                <div className="text-sm font-medium">
                                     {p.full_name}
                                 </div>
                                 <div className="text-xs text-muted">

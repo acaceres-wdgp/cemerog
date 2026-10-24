@@ -14,7 +14,6 @@ import { join, relative } from 'path';
 import { expect, test } from 'vitest';
 
 const PAGES_DIR = join(import.meta.dirname, '../pages');
-const COMPONENTS_DIR = join(import.meta.dirname, '../components');
 
 /**
  * Files explicitly excluded from the scan (e.g. runtime palettes).
@@ -42,15 +41,12 @@ const HEX_COLOR_RE = /#[0-9a-fA-F]{3,6}\b/;
 function resolveEntry(entry: string): { abs: string; rel: string }[] {
     if (entry.endsWith('/')) {
         const dir = join(PAGES_DIR, entry);
-        return collectFiles(dir, entry);
+        return collectFiles(dir);
     }
     return [{ abs: join(PAGES_DIR, entry), rel: entry }];
 }
 
-function collectFiles(
-    dir: string,
-    prefix: string,
-): { abs: string; rel: string }[] {
+function collectFiles(dir: string): { abs: string; rel: string }[] {
     const results: { abs: string; rel: string }[] = [];
     const entries = readdirSync(dir);
     for (const name of entries) {
@@ -58,7 +54,7 @@ function collectFiles(
         const rel = relative(PAGES_DIR, abs);
         const stat = statSync(abs);
         if (stat.isDirectory()) {
-            results.push(...collectFiles(abs, prefix));
+            results.push(...collectFiles(abs));
         } else if (name.endsWith('.ts') || name.endsWith('.tsx')) {
             if (!EXCLUDED_FILES.has(rel)) {
                 results.push({ abs, rel });

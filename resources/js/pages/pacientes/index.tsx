@@ -526,9 +526,7 @@ export default function PacientesIndex({
             <div className="flex h-full flex-col gap-5">
                 {/* Page header */}
                 <div className="flex items-center justify-between">
-                    <p
-                        className="text-sm text-text-secondary"
-                    >
+                    <p className="text-sm text-text-secondary">
                         {counts.total} pacientes registrados ·{' '}
                         {counts.attended_today} atendidos hoy
                     </p>
