@@ -13,6 +13,9 @@ class UpdateSpecialtyRequest extends FormRequest
         return $this->user()->can('module.doctores.access');
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         /** @var Specialty $specialty */

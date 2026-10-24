@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 class UpdatePatient
 {
+    /** @param array<string, mixed> $data */
     public function handle(Patient $patient, array $data): Patient
     {
         $file = Arr::pull($data, 'photo');

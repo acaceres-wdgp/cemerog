@@ -13,6 +13,9 @@ class UpdatePatientRequest extends FormRequest
         return $this->user()->can('module.registro.access');
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         $patientId = $this->route('patient')?->id;

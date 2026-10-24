@@ -24,7 +24,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $motivo_consulta
  * @property string|null $historia_enfermedad
  * @property string|null $examen_fisico
- * @property array|null $diagnosticos
+ * @property list<array{code: string, label: string}>|null $diagnosticos
  * @property string|null $plan_tratamiento
  * @property Carbon $consulted_at
  * @property Carbon|null $created_at
