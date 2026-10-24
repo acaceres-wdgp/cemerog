@@ -69,6 +69,38 @@
     --color-success-fg: #1f4a1a;
     --color-success-border: #dcebc9;
 
+    /* ── Secondary button ───────────────────────────── */
+    --color-secondary-bg: #f6f9f5;
+    --color-secondary-border: #dfe7df;
+    --color-secondary-fg: #52605a;
+
+    /* ── Dimmed text ─────────────────────────────────── */
+    --color-text-dim: #52525b;
+
+    /* ── Primary button disabled/processing state ────── */
+    --color-primary-disabled: #7cb987;
+
+    /* ── Table row borders ───────────────────────────── */
+    --color-row-divider: #f1f3ef;
+    --color-row-separator: #f3f4f6;
+
+    /* ── Cita appointment status colors ──────────────── */
+    --color-cita-atendida-bg: #dcfce7;
+    --color-cita-atendida-fg: #166534;
+
+    /* ── Row state backgrounds ───────────────────────── */
+    --color-done-row-bg: #fafafa;
+    --color-list-row-bg: #f8fbf6;
+
+    /* ── Accent chip border ──────────────────────────── */
+    --color-accent-border: #b9dc8e;
+
+    /* ── Empty appointment slot dashed border ────────── */
+    --color-slot-empty-border: #d6e2d0;
+
+    /* ── Modal overlay ──────────────────────────── */
+    --color-overlay: rgba(0, 0, 0, 0.4);
+
     /* ── Sidebar Themes ──────────────────────────── */
     --color-sidebar-carbon: #2a2e2c;
     --color-sidebar-slate: #1f2b33;
