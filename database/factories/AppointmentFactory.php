@@ -15,13 +15,13 @@ class AppointmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'patient_id'       => Patient::factory(),
-            'doctor_id'        => Doctor::factory(),
+            'patient_id' => Patient::factory(),
+            'doctor_id' => Doctor::factory(),
             'appointment_date' => $this->faker->dateTimeBetween('now', '+30 days')->format('Y-m-d'),
             'appointment_time' => $this->faker->boolean(70) ? $this->faker->time('H:i') : null,
-            'type'             => $this->faker->randomElement(['consulta', 'seguimiento', 'primera_vez']),
-            'status'           => $this->faker->randomElement(['pendiente', 'confirmada', 'cancelada', 'no_asistio']),
-            'notes'            => $this->faker->boolean(30) ? $this->faker->sentence() : null,
+            'type' => $this->faker->randomElement(['consulta', 'seguimiento', 'primera_vez']),
+            'status' => $this->faker->randomElement(['pendiente', 'confirmada', 'cancelada', 'no_asistio']),
+            'notes' => $this->faker->boolean(30) ? $this->faker->sentence() : null,
         ];
     }
 

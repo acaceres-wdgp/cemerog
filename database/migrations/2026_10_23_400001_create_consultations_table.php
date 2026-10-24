@@ -12,7 +12,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('patient_id')->constrained()->restrictOnDelete();
             $table->foreignId('doctor_id')->constrained()->restrictOnDelete();
-            $table->foreignId('turn_id')->nullable()->nullOnDelete()->constrained('turns');
+            // ON DELETE SET NULL is added by 2026_10_24_000000_fix_consultations_turn_id_foreign_key
+            $table->foreignId('turn_id')->nullable()->constrained('turns');
 
             // Vitals
             $table->unsignedSmallInteger('peso')->nullable();        // kg * 10 (e.g. 703 = 70.3 kg)

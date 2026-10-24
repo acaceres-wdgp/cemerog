@@ -9,14 +9,17 @@
  * The formatted value (with separators) is what gets stored and submitted.
  */
 
-type Props = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> & {
+type Props = Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    'onChange' | 'value'
+> & {
     mask: string;
     value: string;
     onChange: (formatted: string) => void;
 };
 
 function digitSlots(mask: string): number {
-    return mask.split('').filter(c => c === '0').length;
+    return mask.split('').filter((c) => c === '0').length;
 }
 
 function applyMask(digits: string, mask: string): string {

@@ -15,14 +15,14 @@ class TurnFactory extends Factory
     public function definition(): array
     {
         return [
-            'patient_id'     => Patient::factory(),
-            'doctor_id'      => Doctor::factory(),
+            'patient_id' => Patient::factory(),
+            'doctor_id' => Doctor::factory(),
             'appointment_id' => null,
-            'turn_number'    => 1,
-            'turn_order'     => 10,
-            'status'         => 'espera',
-            'arrived_at'     => now(),
-            'notes'          => null,
+            'turn_number' => 1,
+            'turn_order' => 10,
+            'status' => 'espera',
+            'arrived_at' => now(),
+            'notes' => null,
         ];
     }
 

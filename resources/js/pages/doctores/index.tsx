@@ -72,28 +72,30 @@ type SpecialtyModalProps = {
 
 function SpecialtyModal({ onClose, specialty }: SpecialtyModalProps) {
     const isEdit = Boolean(specialty);
-    const { data, setData, post, put, processing, errors } = useForm({
-        name: specialty?.name ?? '',
-        consultation_price: specialty ? (specialty.consultation_price / 100).toString() : '',
-    });
+    const { data, setData, post, put, transform, processing, errors } = useForm(
+        {
+            name: specialty?.name ?? '',
+            consultation_price: specialty
+                ? (specialty.consultation_price / 100).toString()
+                : '',
+        },
+    );
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const payload = {
-            name: data.name,
-            consultation_price: Math.round(parseFloat(data.consultation_price || '0') * 100),
-        };
+        transform((form) => ({
+            name: form.name,
+            consultation_price: Math.round(
+                parseFloat(form.consultation_price || '0') * 100,
+            ),
+        }));
 
         if (isEdit && specialty) {
             put(`/admin/doctores/especialidades/${specialty.id}`, {
-                data: payload,
                 onSuccess: onClose,
             });
         } else {
-            post('/admin/doctores/especialidades', {
-                data: payload,
-                onSuccess: onClose,
-            });
+            post('/admin/doctores/especialidades', { onSuccess: onClose });
         }
     };
 
@@ -101,7 +103,12 @@ function SpecialtyModal({ onClose, specialty }: SpecialtyModalProps) {
         <>
             <div
                 onClick={onClose}
-                style={{ position: 'fixed', inset: 0, zIndex: 40, background: 'rgba(0,0,0,.4)' }}
+                style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 40,
+                    background: 'rgba(0,0,0,.4)',
+                }}
             />
             <div
                 style={{
@@ -154,20 +161,54 @@ function SpecialtyModal({ onClose, specialty }: SpecialtyModalProps) {
                     </button>
                 </div>
                 <form onSubmit={handleSubmit}>
-                    <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-                        <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 500, fontSize: 14 }}>
+                    <div
+                        style={{
+                            padding: '16px 20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 14,
+                        }}
+                    >
+                        <label
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 6,
+                                fontWeight: 500,
+                                fontSize: 14,
+                            }}
+                        >
                             <span>Nombre de la especialidad *</span>
                             <input
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 placeholder="Ej: Dermatología"
-                                style={{ ...inputStyle, ...(errors.name ? { borderColor: '#b91c1c' } : {}) }}
+                                style={{
+                                    ...inputStyle,
+                                    ...(errors.name
+                                        ? { borderColor: '#b91c1c' }
+                                        : {}),
+                                }}
                             />
                             {errors.name && (
-                                <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.name}</span>
+                                <span
+                                    style={{ color: '#b91c1c', fontSize: 12 }}
+                                >
+                                    {errors.name}
+                                </span>
                             )}
                         </label>
-                        <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 500, fontSize: 14 }}>
+                        <label
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 6,
+                                fontWeight: 500,
+                                fontSize: 14,
+                            }}
+                        >
                             <span>Precio de consulta (RD$) *</span>
                             <div
                                 style={{
@@ -179,7 +220,14 @@ function SpecialtyModal({ onClose, specialty }: SpecialtyModalProps) {
                                     overflow: 'hidden',
                                 }}
                             >
-                                <span style={{ padding: '0 10px', color: '#71717a', fontSize: 13, flexShrink: 0 }}>
+                                <span
+                                    style={{
+                                        padding: '0 10px',
+                                        color: '#71717a',
+                                        fontSize: 13,
+                                        flexShrink: 0,
+                                    }}
+                                >
                                     RD$
                                 </span>
                                 <input
@@ -187,7 +235,12 @@ function SpecialtyModal({ onClose, specialty }: SpecialtyModalProps) {
                                     min="0"
                                     step="0.01"
                                     value={data.consultation_price}
-                                    onChange={(e) => setData('consultation_price', e.target.value)}
+                                    onChange={(e) =>
+                                        setData(
+                                            'consultation_price',
+                                            e.target.value,
+                                        )
+                                    }
                                     placeholder="0.00"
                                     style={{
                                         flex: 1,
@@ -202,7 +255,11 @@ function SpecialtyModal({ onClose, specialty }: SpecialtyModalProps) {
                                 />
                             </div>
                             {errors.consultation_price && (
-                                <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.consultation_price}</span>
+                                <span
+                                    style={{ color: '#b91c1c', fontSize: 12 }}
+                                >
+                                    {errors.consultation_price}
+                                </span>
                             )}
                         </label>
                     </div>
@@ -267,34 +324,40 @@ type DoctorModalProps = {
     defaultSpecialtyId?: number | null;
 };
 
-function DoctorModal({ specialties, onClose, doctor, defaultSpecialtyId }: DoctorModalProps) {
+function DoctorModal({
+    specialties,
+    onClose,
+    doctor,
+    defaultSpecialtyId,
+}: DoctorModalProps) {
     const isEdit = Boolean(doctor);
-    const { data, setData, post, put, processing, errors } = useForm({
-        name: doctor?.name ?? '',
-        exequatur: doctor?.exequatur ?? '',
-        phone: doctor?.phone ?? '',
-        specialty_id: String(doctor?.specialty_id ?? defaultSpecialtyId ?? specialties[0]?.id ?? ''),
-    });
+    const { data, setData, post, put, transform, processing, errors } = useForm(
+        {
+            name: doctor?.name ?? '',
+            exequatur: doctor?.exequatur ?? '',
+            phone: doctor?.phone ?? '',
+            specialty_id: String(
+                doctor?.specialty_id ??
+                    defaultSpecialtyId ??
+                    specialties[0]?.id ??
+                    '',
+            ),
+        },
+    );
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const payload = {
-            name: data.name,
-            exequatur: data.exequatur || null,
-            phone: data.phone || null,
-            specialty_id: parseInt(data.specialty_id, 10),
-        };
+        transform((form) => ({
+            name: form.name,
+            exequatur: form.exequatur || null,
+            phone: form.phone || null,
+            specialty_id: parseInt(form.specialty_id, 10),
+        }));
 
         if (isEdit && doctor) {
-            put(`/admin/doctores/${doctor.id}`, {
-                data: payload,
-                onSuccess: onClose,
-            });
+            put(`/admin/doctores/${doctor.id}`, { onSuccess: onClose });
         } else {
-            post('/admin/doctores', {
-                data: payload,
-                onSuccess: onClose,
-            });
+            post('/admin/doctores', { onSuccess: onClose });
         }
     };
 
@@ -302,7 +365,12 @@ function DoctorModal({ specialties, onClose, doctor, defaultSpecialtyId }: Docto
         <>
             <div
                 onClick={onClose}
-                style={{ position: 'fixed', inset: 0, zIndex: 40, background: 'rgba(0,0,0,.4)' }}
+                style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 40,
+                    background: 'rgba(0,0,0,.4)',
+                }}
             />
             <div
                 style={{
@@ -355,59 +423,142 @@ function DoctorModal({ specialties, onClose, doctor, defaultSpecialtyId }: Docto
                     </button>
                 </div>
                 <form onSubmit={handleSubmit}>
-                    <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-                        <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 500, fontSize: 14 }}>
+                    <div
+                        style={{
+                            padding: '16px 20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 14,
+                        }}
+                    >
+                        <label
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 6,
+                                fontWeight: 500,
+                                fontSize: 14,
+                            }}
+                        >
                             <span>Nombre completo *</span>
                             <input
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 placeholder="Dr. / Dra."
-                                style={{ ...inputStyle, ...(errors.name ? { borderColor: '#b91c1c' } : {}) }}
+                                style={{
+                                    ...inputStyle,
+                                    ...(errors.name
+                                        ? { borderColor: '#b91c1c' }
+                                        : {}),
+                                }}
                             />
                             {errors.name && (
-                                <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.name}</span>
+                                <span
+                                    style={{ color: '#b91c1c', fontSize: 12 }}
+                                >
+                                    {errors.name}
+                                </span>
                             )}
                         </label>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                            <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 500, fontSize: 14 }}>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: 12,
+                            }}
+                        >
+                            <label
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 6,
+                                    fontWeight: 500,
+                                    fontSize: 14,
+                                }}
+                            >
                                 <span>No. de exequátur</span>
                                 <input
                                     value={data.exequatur}
-                                    onChange={(e) => setData('exequatur', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('exequatur', e.target.value)
+                                    }
                                     placeholder="EX-000000"
                                     style={{
                                         ...inputStyle,
                                         fontFamily: 'ui-monospace,monospace',
                                         fontSize: 13,
-                                        ...(errors.exequatur ? { borderColor: '#b91c1c' } : {}),
+                                        ...(errors.exequatur
+                                            ? { borderColor: '#b91c1c' }
+                                            : {}),
                                     }}
                                 />
                                 {errors.exequatur && (
-                                    <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.exequatur}</span>
+                                    <span
+                                        style={{
+                                            color: '#b91c1c',
+                                            fontSize: 12,
+                                        }}
+                                    >
+                                        {errors.exequatur}
+                                    </span>
                                 )}
                             </label>
-                            <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 500, fontSize: 14 }}>
+                            <label
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 6,
+                                    fontWeight: 500,
+                                    fontSize: 14,
+                                }}
+                            >
                                 <span>Teléfono</span>
                                 <MaskedInput
                                     mask="000-000-0000"
                                     value={data.phone ?? ''}
-                                    onChange={(v) => setData('phone', v || null)}
+                                    onChange={(v) => setData('phone', v)}
                                     placeholder="809-000-0000"
-                                    style={{ ...inputStyle, ...(errors.phone ? { borderColor: '#b91c1c' } : {}) }}
+                                    style={{
+                                        ...inputStyle,
+                                        ...(errors.phone
+                                            ? { borderColor: '#b91c1c' }
+                                            : {}),
+                                    }}
                                 />
                                 {errors.phone && (
-                                    <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.phone}</span>
+                                    <span
+                                        style={{
+                                            color: '#b91c1c',
+                                            fontSize: 12,
+                                        }}
+                                    >
+                                        {errors.phone}
+                                    </span>
                                 )}
                             </label>
                         </div>
-                        <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 500, fontSize: 14 }}>
+                        <label
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 6,
+                                fontWeight: 500,
+                                fontSize: 14,
+                            }}
+                        >
                             <span>Especialidad *</span>
                             <select
                                 value={data.specialty_id}
-                                onChange={(e) => setData('specialty_id', e.target.value)}
+                                onChange={(e) =>
+                                    setData('specialty_id', e.target.value)
+                                }
                                 style={{
                                     ...inputStyle,
-                                    ...(errors.specialty_id ? { borderColor: '#b91c1c' } : {}),
+                                    ...(errors.specialty_id
+                                        ? { borderColor: '#b91c1c' }
+                                        : {}),
                                     appearance: 'auto',
                                 }}
                             >
@@ -418,7 +569,11 @@ function DoctorModal({ specialties, onClose, doctor, defaultSpecialtyId }: Docto
                                 ))}
                             </select>
                             {errors.specialty_id && (
-                                <span style={{ color: '#b91c1c', fontSize: 12 }}>{errors.specialty_id}</span>
+                                <span
+                                    style={{ color: '#b91c1c', fontSize: 12 }}
+                                >
+                                    {errors.specialty_id}
+                                </span>
                             )}
                         </label>
                     </div>
@@ -509,13 +664,17 @@ function ToggleButton({ doctor }: { doctor: Doctor }) {
 export default function DoctoresIndex() {
     const { specialties, doctors } = usePage<Props>().props;
 
-    const [selEsp, setSelEsp] = useState<number | null>(specialties[0]?.id ?? null);
+    const [selEsp, setSelEsp] = useState<number | null>(
+        specialties[0]?.id ?? null,
+    );
     const [showSpecialtyModal, setShowSpecialtyModal] = useState(false);
     const [showDoctorModal, setShowDoctorModal] = useState(false);
     const [editSpecialty, setEditSpecialty] = useState<Specialty | null>(null);
     const [editDoctor, setEditDoctor] = useState<Doctor | null>(null);
 
-    const filteredDoctors = selEsp ? doctors.filter((d) => d.specialty_id === selEsp) : [];
+    const filteredDoctors = selEsp
+        ? doctors.filter((d) => d.specialty_id === selEsp)
+        : [];
     const selectedSpecialty = specialties.find((s) => s.id === selEsp) ?? null;
 
     const openNewSpecialty = () => {
@@ -564,7 +723,8 @@ export default function DoctoresIndex() {
                         Doctores y Especialidades
                     </h1>
                     <p style={{ margin: '4px 0 0', color: '#5f6b64' }}>
-                        {specialties.length} especialidades · {doctors.length} médicos registrados
+                        {specialties.length} especialidades · {doctors.length}{' '}
+                        médicos registrados
                     </p>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
@@ -611,7 +771,14 @@ export default function DoctoresIndex() {
             </div>
 
             {/* Body */}
-            <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+            <div
+                style={{
+                    display: 'flex',
+                    gap: 16,
+                    alignItems: 'flex-start',
+                    flexWrap: 'wrap',
+                }}
+            >
                 {/* Specialty sidebar */}
                 <div
                     style={{
@@ -636,7 +803,13 @@ export default function DoctoresIndex() {
                     </div>
 
                     {specialties.length === 0 ? (
-                        <p style={{ color: '#71717a', fontSize: 13, padding: '8px 4px' }}>
+                        <p
+                            style={{
+                                color: '#71717a',
+                                fontSize: 13,
+                                padding: '8px 4px',
+                            }}
+                        >
                             No hay especialidades registradas.
                         </p>
                     ) : (
@@ -663,7 +836,9 @@ export default function DoctoresIndex() {
                                             style={{
                                                 fontWeight: active ? 600 : 500,
                                                 fontSize: 14,
-                                                color: active ? '#1f2d22' : '#374151',
+                                                color: active
+                                                    ? '#1f2d22'
+                                                    : '#374151',
                                                 whiteSpace: 'nowrap',
                                                 overflow: 'hidden',
                                                 textOverflow: 'ellipsis',
@@ -671,7 +846,13 @@ export default function DoctoresIndex() {
                                         >
                                             {s.name}
                                         </div>
-                                        <div style={{ fontSize: 12, color: '#71717a', marginTop: 2 }}>
+                                        <div
+                                            style={{
+                                                fontSize: 12,
+                                                color: '#71717a',
+                                                marginTop: 2,
+                                            }}
+                                        >
                                             {fmt(s.consultation_price)} consulta
                                         </div>
                                     </div>
@@ -679,8 +860,12 @@ export default function DoctoresIndex() {
                                         style={{
                                             fontSize: 12,
                                             fontWeight: 600,
-                                            color: active ? '#2E8B3E' : '#a1a1aa',
-                                            background: active ? '#D1FAE5' : '#F4F4F5',
+                                            color: active
+                                                ? '#2E8B3E'
+                                                : '#a1a1aa',
+                                            background: active
+                                                ? '#D1FAE5'
+                                                : '#F4F4F5',
                                             padding: '2px 7px',
                                             borderRadius: 999,
                                             flexShrink: 0,
@@ -697,7 +882,9 @@ export default function DoctoresIndex() {
                                             height: 26,
                                             border: '1px solid #dfe7df',
                                             borderRadius: 6,
-                                            background: active ? '#fff' : '#F6F9F5',
+                                            background: active
+                                                ? '#fff'
+                                                : '#F6F9F5',
                                             cursor: 'pointer',
                                             fontSize: 12,
                                             display: 'flex',
@@ -726,9 +913,19 @@ export default function DoctoresIndex() {
                     }}
                 >
                     {!selectedSpecialty ? (
-                        <div style={{ padding: '48px 20px', textAlign: 'center', color: '#a1a1aa' }}>
-                            <div style={{ fontSize: 32, marginBottom: 8 }}>🏥</div>
-                            <div style={{ fontWeight: 500 }}>Selecciona una especialidad</div>
+                        <div
+                            style={{
+                                padding: '48px 20px',
+                                textAlign: 'center',
+                                color: '#a1a1aa',
+                            }}
+                        >
+                            <div style={{ fontSize: 32, marginBottom: 8 }}>
+                                🏥
+                            </div>
+                            <div style={{ fontWeight: 500 }}>
+                                Selecciona una especialidad
+                            </div>
                         </div>
                     ) : (
                         <>
@@ -753,12 +950,25 @@ export default function DoctoresIndex() {
                                     >
                                         {selectedSpecialty.name}
                                     </div>
-                                    <div style={{ fontSize: 13, color: '#5f6b64', marginTop: 2 }}>
-                                        Consulta: <strong>{fmt(selectedSpecialty.consultation_price)}</strong>
+                                    <div
+                                        style={{
+                                            fontSize: 13,
+                                            color: '#5f6b64',
+                                            marginTop: 2,
+                                        }}
+                                    >
+                                        Consulta:{' '}
+                                        <strong>
+                                            {fmt(
+                                                selectedSpecialty.consultation_price,
+                                            )}
+                                        </strong>
                                     </div>
                                 </div>
                                 <button
-                                    onClick={(e) => openEditSpecialty(selectedSpecialty, e)}
+                                    onClick={(e) =>
+                                        openEditSpecialty(selectedSpecialty, e)
+                                    }
                                     style={{
                                         height: 30,
                                         padding: '0 10px',
@@ -782,8 +992,20 @@ export default function DoctoresIndex() {
                                         color: '#a1a1aa',
                                     }}
                                 >
-                                    <div style={{ fontSize: 32, marginBottom: 8 }}>👨‍⚕️</div>
-                                    <div style={{ fontWeight: 500, marginBottom: 4 }}>
+                                    <div
+                                        style={{
+                                            fontSize: 32,
+                                            marginBottom: 8,
+                                        }}
+                                    >
+                                        👨‍⚕️
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontWeight: 500,
+                                            marginBottom: 4,
+                                        }}
+                                    >
                                         Sin médicos asignados
                                     </div>
                                     <div style={{ fontSize: 13 }}>
@@ -802,25 +1024,43 @@ export default function DoctoresIndex() {
                                         <thead>
                                             <tr>
                                                 <th style={thStyle}>Nombre</th>
-                                                <th style={thStyle}>Exequátur</th>
-                                                <th style={thStyle}>Teléfono</th>
+                                                <th style={thStyle}>
+                                                    Exequátur
+                                                </th>
+                                                <th style={thStyle}>
+                                                    Teléfono
+                                                </th>
                                                 <th style={thStyle}>Estado</th>
-                                                <th style={{ ...thStyle, width: 80 }}></th>
+                                                <th
+                                                    style={{
+                                                        ...thStyle,
+                                                        width: 80,
+                                                    }}
+                                                ></th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {filteredDoctors.map((d) => (
-                                                <tr key={d.id} style={{ opacity: d.is_active ? 1 : 0.6 }}>
+                                                <tr
+                                                    key={d.id}
+                                                    style={{
+                                                        opacity: d.is_active
+                                                            ? 1
+                                                            : 0.6,
+                                                    }}
+                                                >
                                                     <td
                                                         style={{
                                                             padding: '12px',
-                                                            borderBottom: '1px solid #eef0ec',
+                                                            borderBottom:
+                                                                '1px solid #eef0ec',
                                                         }}
                                                     >
                                                         <div
                                                             style={{
                                                                 display: 'flex',
-                                                                alignItems: 'center',
+                                                                alignItems:
+                                                                    'center',
                                                                 gap: 10,
                                                             }}
                                                         >
@@ -829,19 +1069,31 @@ export default function DoctoresIndex() {
                                                                     width: 34,
                                                                     height: 34,
                                                                     flexShrink: 0,
-                                                                    borderRadius: '50%',
-                                                                    background: '#DBEAFE',
+                                                                    borderRadius:
+                                                                        '50%',
+                                                                    background:
+                                                                        '#DBEAFE',
                                                                     color: '#1E40AF',
-                                                                    display: 'inline-flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center',
+                                                                    display:
+                                                                        'inline-flex',
+                                                                    alignItems:
+                                                                        'center',
+                                                                    justifyContent:
+                                                                        'center',
                                                                     fontSize: 12,
                                                                     fontWeight: 700,
                                                                 }}
                                                             >
-                                                                {initials(d.name)}
+                                                                {initials(
+                                                                    d.name,
+                                                                )}
                                                             </span>
-                                                            <span style={{ fontWeight: 500, fontSize: 14 }}>
+                                                            <span
+                                                                style={{
+                                                                    fontWeight: 500,
+                                                                    fontSize: 14,
+                                                                }}
+                                                            >
                                                                 {d.name}
                                                             </span>
                                                         </div>
@@ -849,47 +1101,76 @@ export default function DoctoresIndex() {
                                                     <td
                                                         style={{
                                                             padding: '12px',
-                                                            borderBottom: '1px solid #eef0ec',
-                                                            fontFamily: 'ui-monospace,monospace',
+                                                            borderBottom:
+                                                                '1px solid #eef0ec',
+                                                            fontFamily:
+                                                                'ui-monospace,monospace',
                                                             fontSize: 12.5,
                                                             color: '#52525b',
                                                         }}
                                                     >
-                                                        {d.exequatur ?? <span style={{ color: '#c4c9c4' }}>—</span>}
+                                                        {d.exequatur ?? (
+                                                            <span
+                                                                style={{
+                                                                    color: '#c4c9c4',
+                                                                }}
+                                                            >
+                                                                —
+                                                            </span>
+                                                        )}
                                                     </td>
                                                     <td
                                                         style={{
                                                             padding: '12px',
-                                                            borderBottom: '1px solid #eef0ec',
+                                                            borderBottom:
+                                                                '1px solid #eef0ec',
                                                             fontSize: 13,
                                                             color: '#52525b',
                                                         }}
                                                     >
-                                                        {d.phone ?? <span style={{ color: '#c4c9c4' }}>—</span>}
+                                                        {d.phone ?? (
+                                                            <span
+                                                                style={{
+                                                                    color: '#c4c9c4',
+                                                                }}
+                                                            >
+                                                                —
+                                                            </span>
+                                                        )}
                                                     </td>
                                                     <td
                                                         style={{
                                                             padding: '12px',
-                                                            borderBottom: '1px solid #eef0ec',
+                                                            borderBottom:
+                                                                '1px solid #eef0ec',
                                                         }}
                                                     >
                                                         <span
                                                             style={{
-                                                                padding: '3px 10px',
+                                                                padding:
+                                                                    '3px 10px',
                                                                 borderRadius: 999,
                                                                 fontSize: 12,
                                                                 fontWeight: 600,
-                                                                background: d.is_active ? '#EEF6E2' : '#F4F4F5',
-                                                                color: d.is_active ? '#2E8B3E' : '#52525B',
+                                                                background:
+                                                                    d.is_active
+                                                                        ? '#EEF6E2'
+                                                                        : '#F4F4F5',
+                                                                color: d.is_active
+                                                                    ? '#2E8B3E'
+                                                                    : '#52525B',
                                                             }}
                                                         >
-                                                            {d.is_active ? 'Activo' : 'Inactivo'}
+                                                            {d.is_active
+                                                                ? 'Activo'
+                                                                : 'Inactivo'}
                                                         </span>
                                                     </td>
                                                     <td
                                                         style={{
                                                             padding: '12px',
-                                                            borderBottom: '1px solid #eef0ec',
+                                                            borderBottom:
+                                                                '1px solid #eef0ec',
                                                             textAlign: 'right',
                                                         }}
                                                     >
@@ -897,24 +1178,34 @@ export default function DoctoresIndex() {
                                                             style={{
                                                                 display: 'flex',
                                                                 gap: 6,
-                                                                justifyContent: 'flex-end',
+                                                                justifyContent:
+                                                                    'flex-end',
                                                             }}
                                                         >
                                                             <button
-                                                                onClick={() => openEditDoctor(d)}
+                                                                onClick={() =>
+                                                                    openEditDoctor(
+                                                                        d,
+                                                                    )
+                                                                }
                                                                 style={{
                                                                     height: 28,
-                                                                    padding: '0 8px',
+                                                                    padding:
+                                                                        '0 8px',
                                                                     borderRadius: 6,
                                                                     border: '1px solid #dfe7df',
-                                                                    background: '#F6F9F5',
+                                                                    background:
+                                                                        '#F6F9F5',
                                                                     cursor: 'pointer',
                                                                     fontSize: 12,
                                                                 }}
                                                             >
                                                                 ✏
                                                             </button>
-                                                            <ToggleButton key={d.id} doctor={d} />
+                                                            <ToggleButton
+                                                                key={d.id}
+                                                                doctor={d}
+                                                            />
                                                         </div>
                                                     </td>
                                                 </tr>

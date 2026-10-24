@@ -1,4 +1,8 @@
-export type DocumentType = 'cedula' | 'pasaporte' | 'cedula_extranjera' | 'no_tiene';
+export type DocumentType =
+    | 'cedula'
+    | 'pasaporte'
+    | 'cedula_extranjera'
+    | 'no_tiene';
 export type Sex = 'M' | 'F';
 export type BloodType = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
 

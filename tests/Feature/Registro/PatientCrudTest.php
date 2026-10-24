@@ -335,10 +335,10 @@ test('store saves photo when PDF is provided', function () {
     Storage::disk('public')->assertExists($patient->photo_path);
 });
 
-test('store rejects photo exceeding 5 MB', function () {
+test('store rejects photo exceeding 20 MB', function () {
     Storage::fake('public');
 
-    $big = UploadedFile::fake()->create('foto.jpg', 6000, 'image/jpeg');
+    $big = UploadedFile::fake()->create('foto.jpg', 20481, 'image/jpeg');
 
     $this->actingAs($this->secretaria)
         ->post('/registro/pacientes', [

@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $appointment_date
  * @property string|null $appointment_time
  * @property string $type
- * @property string $status   pendiente | confirmada | cancelada | no_asistio
+ * @property string $status pendiente | confirmada | cancelada | no_asistio
  * @property string|null $notes
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at

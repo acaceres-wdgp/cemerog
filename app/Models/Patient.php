@@ -71,6 +71,7 @@ class Patient extends Model
      * Encrypt document_number on write and compute its HMAC-SHA256 hash
      * for the unique index. Decrypt transparently on read.
      */
+    /** @return Attribute<string, string> */
     protected function documentNumber(): Attribute
     {
         return Attribute::make(

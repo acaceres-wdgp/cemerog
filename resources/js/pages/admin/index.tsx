@@ -148,11 +148,17 @@ function UserModal({
         } else {
             nextRoles = [...currentRoles, roleName];
             // Auto-add role permissions
-            const toAdd = role.permissions.filter((p) => !nextPerms.includes(p));
+            const toAdd = role.permissions.filter(
+                (p) => !nextPerms.includes(p),
+            );
             nextPerms = [...nextPerms, ...toAdd];
         }
 
-        setData((prev) => ({ ...prev, roles: nextRoles, permissions: nextPerms }));
+        setData((prev) => ({
+            ...prev,
+            roles: nextRoles,
+            permissions: nextPerms,
+        }));
     }
 
     function handlePermToggle(permName: string) {
@@ -180,12 +186,15 @@ function UserModal({
     }
 
     // Group permissions by module label for display
-    const grouped = permissions.reduce<Record<string, Permission[]>>((acc, p) => {
-        const key = p.label;
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(p);
-        return acc;
-    }, {});
+    const grouped = permissions.reduce<Record<string, Permission[]>>(
+        (acc, p) => {
+            const key = p.label;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(p);
+            return acc;
+        },
+        {},
+    );
 
     if (!open) return null;
 
@@ -306,7 +315,10 @@ function UserModal({
                                 />
                                 {errors.name && (
                                     <span
-                                        style={{ color: '#b91c1c', fontSize: 12 }}
+                                        style={{
+                                            color: '#b91c1c',
+                                            fontSize: 12,
+                                        }}
                                     >
                                         {errors.name}
                                     </span>
@@ -341,7 +353,10 @@ function UserModal({
                                 />
                                 {errors.username && (
                                     <span
-                                        style={{ color: '#b91c1c', fontSize: 12 }}
+                                        style={{
+                                            color: '#b91c1c',
+                                            fontSize: 12,
+                                        }}
                                     >
                                         {errors.username}
                                     </span>
@@ -363,7 +378,9 @@ function UserModal({
                             <input
                                 type="email"
                                 value={data.email}
-                                onChange={(e) => setData('email', e.target.value)}
+                                onChange={(e) =>
+                                    setData('email', e.target.value)
+                                }
                                 style={{
                                     ...inputStyle,
                                     borderColor: errors.email
@@ -372,7 +389,9 @@ function UserModal({
                                 }}
                             />
                             {errors.email && (
-                                <span style={{ color: '#b91c1c', fontSize: 12 }}>
+                                <span
+                                    style={{ color: '#b91c1c', fontSize: 12 }}
+                                >
                                     {errors.email}
                                 </span>
                             )}
@@ -461,8 +480,8 @@ function UserModal({
                                     border: '1px solid #e3e9e3',
                                 }}
                             >
-                                Para cambiar la contraseña usa el botón "Contraseña"
-                                en la lista de usuarios.
+                                Para cambiar la contraseña usa el botón
+                                "Contraseña" en la lista de usuarios.
                             </p>
                         )}
 
@@ -511,12 +530,18 @@ function UserModal({
                                                 border: selected
                                                     ? `2px solid ${rc.fg}`
                                                     : '1px solid #e4e4e7',
-                                                background: selected ? rc.bg : '#fff',
-                                                color: selected ? rc.fg : '#52525b',
+                                                background: selected
+                                                    ? rc.bg
+                                                    : '#fff',
+                                                color: selected
+                                                    ? rc.fg
+                                                    : '#52525b',
                                                 cursor: 'pointer',
                                                 fontSize: 13,
                                                 fontFamily: 'inherit',
-                                                fontWeight: selected ? 600 : 400,
+                                                fontWeight: selected
+                                                    ? 600
+                                                    : 400,
                                                 transition: 'all .15s',
                                             }}
                                         >
@@ -535,16 +560,29 @@ function UserModal({
                                 gap: 8,
                             }}
                         >
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                }}
+                            >
                                 <span style={{ fontWeight: 500, fontSize: 14 }}>
                                     Permisos directos
                                 </span>
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        const allNames = permissions.map((p) => p.name);
-                                        const allChecked = allNames.every((n) => data.permissions.includes(n));
-                                        setData('permissions', allChecked ? [] : allNames);
+                                        const allNames = permissions.map(
+                                            (p) => p.name,
+                                        );
+                                        const allChecked = allNames.every((n) =>
+                                            data.permissions.includes(n),
+                                        );
+                                        setData(
+                                            'permissions',
+                                            allChecked ? [] : allNames,
+                                        );
                                     }}
                                     style={{
                                         background: 'none',
@@ -557,7 +595,9 @@ function UserModal({
                                         textDecoration: 'underline',
                                     }}
                                 >
-                                    {permissions.every((p) => data.permissions.includes(p.name))
+                                    {permissions.every((p) =>
+                                        data.permissions.includes(p.name),
+                                    )
                                         ? 'Deseleccionar todos'
                                         : 'Seleccionar todos'}
                                 </button>
@@ -578,9 +618,10 @@ function UserModal({
                             >
                                 {Object.entries(grouped).map(([label, perms]) =>
                                     perms.map((perm) => {
-                                        const checked = data.permissions.includes(
-                                            perm.name,
-                                        );
+                                        const checked =
+                                            data.permissions.includes(
+                                                perm.name,
+                                            );
                                         return (
                                             <label
                                                 key={perm.name}
@@ -599,9 +640,13 @@ function UserModal({
                                                     type="checkbox"
                                                     checked={checked}
                                                     onChange={() =>
-                                                        handlePermToggle(perm.name)
+                                                        handlePermToggle(
+                                                            perm.name,
+                                                        )
                                                     }
-                                                    style={{ accentColor: '#2E8B3E' }}
+                                                    style={{
+                                                        accentColor: '#2E8B3E',
+                                                    }}
                                                 />
                                                 {label}
                                             </label>
@@ -819,7 +864,9 @@ function PasswordModal({
                                 }}
                             />
                             {errors.password && (
-                                <span style={{ color: '#b91c1c', fontSize: 12 }}>
+                                <span
+                                    style={{ color: '#b91c1c', fontSize: 12 }}
+                                >
                                     {errors.password}
                                 </span>
                             )}
@@ -871,7 +918,11 @@ function PasswordModal({
                                         e.target.checked,
                                     )
                                 }
-                                style={{ accentColor: '#2E8B3E', width: 16, height: 16 }}
+                                style={{
+                                    accentColor: '#2E8B3E',
+                                    width: 16,
+                                    height: 16,
+                                }}
                             />
                             Forzar cambio en el próximo acceso
                         </label>
@@ -986,7 +1037,8 @@ export default function AdminIndex() {
                         Usuarios y Roles
                     </h1>
                     <p style={{ margin: '4px 0 0', color: '#5f6b64' }}>
-                        {users.filter((u) => u.is_active).length} usuarios activos
+                        {users.filter((u) => u.is_active).length} usuarios
+                        activos
                     </p>
                 </div>
                 <button
@@ -1138,7 +1190,8 @@ export default function AdminIndex() {
                                         style={{
                                             padding: '12px',
                                             borderBottom: '1px solid #eef0ec',
-                                            fontFamily: 'ui-monospace,monospace',
+                                            fontFamily:
+                                                'ui-monospace,monospace',
                                             fontSize: 12.5,
                                             color: '#52525b',
                                         }}
@@ -1170,7 +1223,8 @@ export default function AdminIndex() {
                                                       };
                                                       const roleLabel =
                                                           roles.find(
-                                                              (x) => x.name === r,
+                                                              (x) =>
+                                                                  x.name === r,
                                                           )?.label ?? r;
                                                       return (
                                                           <span
@@ -1179,7 +1233,8 @@ export default function AdminIndex() {
                                                                   padding:
                                                                       '2px 8px',
                                                                   borderRadius: 999,
-                                                                  background: rc.bg,
+                                                                  background:
+                                                                      rc.bg,
                                                                   color: rc.fg,
                                                                   fontSize: 12,
                                                                   fontWeight: 600,
@@ -1198,8 +1253,8 @@ export default function AdminIndex() {
                                                       >
                                                           {u.permissions.length}{' '}
                                                           permiso
-                                                          {u.permissions.length !==
-                                                          1
+                                                          {u.permissions
+                                                              .length !== 1
                                                               ? 's'
                                                               : ''}{' '}
                                                           directos
@@ -1240,7 +1295,9 @@ export default function AdminIndex() {
                                                     : '#52525B',
                                             }}
                                         >
-                                            {u.is_active ? 'Activo' : 'Inactivo'}
+                                            {u.is_active
+                                                ? 'Activo'
+                                                : 'Inactivo'}
                                         </span>
                                     </td>
 

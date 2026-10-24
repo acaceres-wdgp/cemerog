@@ -33,19 +33,19 @@ class CitasController extends Controller
             ->orderBy('appointment_time')
             ->get()
             ->map(fn (Appointment $a) => [
-                'id'               => $a->id,
-                'patient_id'       => $a->patient_id,
-                'patient_name'     => $a->patient->full_name,
+                'id' => $a->id,
+                'patient_id' => $a->patient_id,
+                'patient_name' => $a->patient->full_name,
                 'patient_initials' => $a->patient->initials,
-                'doctor_id'        => $a->doctor_id,
-                'doctor_name'      => $a->doctor->name,
+                'doctor_id' => $a->doctor_id,
+                'doctor_name' => $a->doctor->name,
                 'doctor_specialty' => $a->doctor->specialty->name,
                 'appointment_date' => $a->appointment_date->format('Y-m-d'),
                 'appointment_time' => $a->appointment_time,
-                'type'             => $a->type,
-                'status'           => $a->status,
-                'notes'            => $a->notes,
-                'turn_number'      => $a->turn?->turn_number,
+                'type' => $a->type,
+                'status' => $a->status,
+                'notes' => $a->notes,
+                'turn_number' => $a->turn?->turn_number,
             ]);
 
         $doctors = Doctor::with('specialty')
@@ -53,8 +53,8 @@ class CitasController extends Controller
             ->orderBy('name')
             ->get()
             ->map(fn (Doctor $d) => [
-                'id'       => $d->id,
-                'name'     => $d->name,
+                'id' => $d->id,
+                'name' => $d->name,
                 'specialty' => $d->specialty->name,
                 'initials' => collect(explode(' ', (string) preg_replace('/^(Dr\.|Dra\.)\s*/i', '', $d->name)))
                     ->map(fn (string $w) => strtoupper($w[0] ?? ''))
@@ -64,9 +64,9 @@ class CitasController extends Controller
 
         return Inertia::render('citas/index', [
             'appointments' => $appointments,
-            'doctors'      => $doctors,
-            'date'         => $date,
-            'is_today'     => $isToday,
+            'doctors' => $doctors,
+            'date' => $date,
+            'is_today' => $isToday,
         ]);
     }
 

@@ -52,7 +52,7 @@ jobs:
         run: vendor/bin/pint --test
 
       - name: Run Larastan (static analysis)
-        run: vendor/bin/phpstan analyse --level=6 --no-progress
+        run: vendor/bin/phpstan analyse --level=6 --no-progress --memory-limit=1G
 
       - name: Run Pest (tests)
         run: php artisan test --env=testing

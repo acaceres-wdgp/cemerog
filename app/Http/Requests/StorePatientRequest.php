@@ -13,6 +13,9 @@ class StorePatientRequest extends FormRequest
         return $this->user()->can('module.registro.access');
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         return [
