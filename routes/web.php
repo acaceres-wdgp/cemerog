@@ -10,7 +10,6 @@ use App\Http\Controllers\Modules\CajaController;
 use App\Http\Controllers\Modules\CirugiaController;
 use App\Http\Controllers\Modules\CitasController;
 use App\Http\Controllers\Modules\ConsultaController;
-use App\Http\Controllers\Modules\TurnosController;
 use App\Http\Controllers\Modules\CuadreController;
 use App\Http\Controllers\Modules\CxcController;
 use App\Http\Controllers\Modules\DoctoresController;
@@ -27,6 +26,7 @@ use App\Http\Controllers\Modules\PreciosController;
 use App\Http\Controllers\Modules\RegistroController;
 use App\Http\Controllers\Modules\TableroController;
 use App\Http\Controllers\Modules\TemaController;
+use App\Http\Controllers\Modules\TurnosController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -84,9 +84,12 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
     });
 
     // Atencion clinica
-    Route::get('/consulta', [ConsultaController::class, 'index'])
-        ->middleware('permission:module.consulta.access')
-        ->name('consulta');
+    Route::prefix('/consulta')->middleware('permission:module.consulta.access')->group(function () {
+        Route::get('/', [ConsultaController::class, 'index'])->name('consulta');
+        Route::post('/', [ConsultaController::class, 'store'])->name('consulta.store');
+        Route::patch('/turnos/{turn}/alta', [ConsultaController::class, 'alta'])->name('consulta.alta');
+        Route::patch('/antecedentes/{patient}', [ConsultaController::class, 'updateAntecedents'])->name('consulta.antecedentes');
+    });
 
     Route::get('/emergencia', [EmergenciaController::class, 'index'])
         ->middleware('permission:module.emergencia.access')

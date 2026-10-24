@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -104,5 +105,11 @@ class Patient extends Model
         return $this->photo_path
             ? Storage::disk('public')->url($this->photo_path)
             : null;
+    }
+
+    /** @return HasOne<PatientAntecedent, $this> */
+    public function antecedent(): HasOne
+    {
+        return $this->hasOne(PatientAntecedent::class);
     }
 }
