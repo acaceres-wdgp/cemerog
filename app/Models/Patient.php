@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Pii;
 use Database\Factories\PatientFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -59,8 +60,7 @@ class Patient extends Model
     {
         return [
             'birth_date' => 'date',
-            'email' => 'encrypted',
-            'phone' => 'encrypted',
+            'email' => 'encrypted', // uses Crypt::encryptString via the cast — no Attribute conflict
         ];
     }
 
@@ -73,15 +73,11 @@ class Patient extends Model
     protected function documentNumber(): Attribute
     {
         return Attribute::make(
-            get: fn (string $value) => decrypt($value),
-            set: function (string $value) {
-                $digits = preg_replace('/[^\d]/', '', $value) ?: $value;
-
-                return [
-                    'document_number' => encrypt($value),
-                    'document_number_hash' => hash_hmac('sha256', $digits, config('app.key')),
-                ];
-            },
+            get: fn (string $value) => Pii::decrypt($value) ?? $value,
+            set: fn (string $value) => [
+                'document_number' => Pii::encrypt($value),
+                'document_number_hash' => Pii::hash($value, fallbackToFull: true),
+            ],
         );
     }
 
@@ -94,16 +90,15 @@ class Patient extends Model
     protected function phone(): Attribute
     {
         return Attribute::make(
-            get: fn (?string $value) => $value ? decrypt($value) : null,
+            get: fn (?string $value) => $value !== null ? Pii::decrypt($value) : null,
             set: function (?string $value) {
                 if ($value === null || $value === '') {
                     return ['phone' => null, 'phone_hash' => null];
                 }
-                $digits = preg_replace('/[^\d]/', '', $value);
 
                 return [
-                    'phone' => encrypt($value),
-                    'phone_hash' => $digits ? hash_hmac('sha256', $digits, config('app.key')) : null,
+                    'phone' => Pii::encrypt($value),
+                    'phone_hash' => Pii::hash($value),
                 ];
             },
         );
