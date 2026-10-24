@@ -76,6 +76,10 @@ interface Props {
     patient: ExistingPatient | null;
 }
 
+/** Extends the inferred form errors with `open_turn`, which the server returns
+ *  via `PatientHasOpenTurnException` but is not part of the form data. */
+type FormErrors = Partial<Record<string, string>> & { open_turn?: string };
+
 const DOC_TYPES = [
     { value: 'cedula', label: 'Cédula' },
     { value: 'pasaporte', label: 'Pasaporte' },
@@ -339,7 +343,14 @@ export default function RegistroIndex({
     const [existingPatient, setExistingPatient] =
         useState<ExistingPatient | null>(initialPatient);
 
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const {
+        data,
+        setData,
+        post,
+        processing,
+        errors: rawErrors,
+        reset,
+    } = useForm({
         patient_id: initialPatient?.id ?? (null as number | null),
         document_type: initialPatient?.document_type ?? 'cedula',
         document_number: initialPatient?.document_number ?? '',
@@ -356,8 +367,8 @@ export default function RegistroIndex({
         attention_type: 'consulta',
         doctor_id: '' as number | string,
         notes: '',
-        open_turn: '',
     });
+    const errors = rawErrors as FormErrors;
 
     const handleSelectExisting = (p: PatientSuggestion) => {
         setExistingPatient({
