@@ -1,7 +1,7 @@
 import StatusBadge from '@/components/cemerog/StatusBadge';
 import { AppointmentRow, DoctorOption } from '../types';
 import { SLOTS } from '../lib/dates';
-import { docPalette } from '../lib/palettes';
+import { docPalette } from '@/components/cemerog/palettes';
 
 const TYPE_LABELS: Record<string, string> = {
     consulta: 'Consulta',

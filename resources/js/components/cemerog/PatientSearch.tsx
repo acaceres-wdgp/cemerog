@@ -1,14 +1,23 @@
+/**
+ * PatientSearch – shared patient search widget used by Citas and Tablero.
+ */
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { PatientResult } from '../types';
 
-export function PatientSearch({
+export type PatientResult = {
+    id: number;
+    full_name: string;
+    document_number: string;
+};
+
+export default function PatientSearch({
     selected,
     query,
     onQueryChange,
     onSelect,
     onClear,
     error,
+    endpoint,
 }: {
     selected: PatientResult | null;
     query: string;
@@ -16,6 +25,7 @@ export function PatientSearch({
     onSelect: (p: PatientResult) => void;
     onClear: () => void;
     error?: string;
+    endpoint: string;
 }) {
     const [results, setResults] = useState<PatientResult[]>([]);
     const [open, setOpen] = useState(false);
@@ -34,7 +44,7 @@ export function PatientSearch({
         const t = setTimeout(async () => {
             try {
                 const res = await fetch(
-                    `/citas/pacientes/buscar?q=${encodeURIComponent(query)}`,
+                    `${endpoint}?q=${encodeURIComponent(query)}`,
                 );
                 if (!res.ok) {
                     setResults([]);
@@ -50,7 +60,7 @@ export function PatientSearch({
             }
         }, 300);
         return () => clearTimeout(t);
-    }, [query, selected]);
+    }, [query, selected, endpoint]);
 
     useEffect(() => {
         const handler = (e: MouseEvent) => {

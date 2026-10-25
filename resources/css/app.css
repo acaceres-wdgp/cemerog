@@ -101,6 +101,21 @@
     /* ── Modal overlay ──────────────────────────── */
     --color-overlay: rgba(0, 0, 0, 0.4);
 
+    /* ── Status indicator dots (turn queue + stat cards) ─── */
+    --color-espera-dot: #d97706;
+    --color-consulta-dot: #2563eb;
+    --color-emergencia-dot: #dc2626;
+    --color-internado-dot: #7c3aed;
+
+    /* ── Stat card number colors ─────────────────────────── */
+    --color-espera-num: #92400e;
+    --color-consulta-num: #1e40af;
+    --color-emergencia-num: #991b1b;
+    --color-internado-num: #5b21b6;
+
+    /* ── Info tip box border (accent, soft variant) ──────── */
+    --color-accent-tip-border: #c6e5a8;
+
     /* ── Sidebar Themes ──────────────────────────── */
     --color-sidebar-carbon: #2a2e2c;
     --color-sidebar-slate: #1f2b33;

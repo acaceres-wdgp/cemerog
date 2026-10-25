@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import { DoctorOption } from '../types';
 import { todayStr, tomorrowStr, addDays } from '../lib/dates';
-import { docPalette } from '../lib/palettes';
+import { docPalette } from '@/components/cemerog/palettes';
 
 /** Build avatar style from doctor palette — computed at runtime from doctor ID. */
 function palStyle(pal: { bg: string; fg: string }): React.CSSProperties {

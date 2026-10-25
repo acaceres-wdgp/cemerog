@@ -1,10 +1,10 @@
 /**
- * Doctor avatar color palettes — runtime computed from doctor ID.
- * These are intentionally kept as hex literals (not CSS tokens) because
- * they represent a fixed, ordered set of avatar swatches generated
- * programmatically at render time (docPalette(id) = PALETTES[id % n]).
+ * palettes.ts – dynamic color palettes for doctor avatars and cita status badges.
+ * These are runtime-computed values (indexed by ID or status) and cannot be
+ * expressed as static Tailwind classes.
  */
 
+// Dynamic palette for doctor avatars — indexed by doctor_id % length at runtime
 export const DOC_PALETTES = [
     { bg: '#EEF6E2', fg: '#2E8B3E' },
     { bg: '#DBEAFE', fg: '#1E40AF' },

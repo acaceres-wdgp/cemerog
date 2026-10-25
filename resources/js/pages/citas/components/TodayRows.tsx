@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import StatusBadge from '@/components/cemerog/StatusBadge';
 import { AppointmentRow, DoctorOption } from '../types';
-import { docPalette } from '../lib/palettes';
+import { docPalette } from '@/components/cemerog/palettes';
 
 /** Build avatar style from doctor palette — computed at runtime from doctor ID. */
 function palStyle(pal: { bg: string; fg: string }): React.CSSProperties {

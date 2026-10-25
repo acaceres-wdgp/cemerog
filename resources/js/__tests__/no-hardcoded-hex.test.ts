@@ -19,17 +19,19 @@ const PAGES_DIR = join(import.meta.dirname, '../pages');
  * Files explicitly excluded from the scan (e.g. runtime palettes).
  * Paths are relative to PAGES_DIR.
  */
-const EXCLUDED_FILES = new Set([
-    // dynamic-style: avatar color palette selected at runtime from doctor ID
-    'citas/lib/palettes.ts',
-]);
+const EXCLUDED_FILES = new Set<string>([]);
 
 /**
  * Pages/directories that have been fully migrated to design tokens.
  * Entries ending in '/' are scanned recursively for all .ts and .tsx files.
  * Add new entries here after migrating a page or directory.
  */
-const CLEAN_PAGES = ['pacientes/index.tsx', 'registro/index.tsx', 'citas/'];
+const CLEAN_PAGES = [
+    'pacientes/index.tsx',
+    'registro/index.tsx',
+    'citas/',
+    'tablero/',
+];
 
 // Matches a 3- or 6-digit hex color, e.g. #2E8B3E or #333
 const HEX_COLOR_RE = /#[0-9a-fA-F]{3,6}\b/;

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import FormDialog from '@/components/cemerog/FormDialog';
-import { PatientSearch } from './PatientSearch';
-import { DoctorOption, PatientResult } from '../types';
+import PatientSearch from '@/components/cemerog/PatientSearch';
+import type { PatientResult } from '@/components/cemerog/PatientSearch';
+import { DoctorOption } from '../types';
 import { SLOTS } from '../lib/dates';
 
 export function NuevaCitaModal({
@@ -92,6 +93,7 @@ export function NuevaCitaModal({
                             setPatientQuery('');
                         }}
                         error={errors.patient_id}
+                        endpoint="/citas/pacientes/buscar"
                     />
                 </div>
 
