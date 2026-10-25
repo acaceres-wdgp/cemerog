@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
+import { toast } from 'sonner';
 import type { TurnRow, CitaRow, DoctorOption } from './types';
 import { StatCards } from './components/StatCards';
 import { TurnosPanel } from './components/TurnosPanel';
@@ -26,7 +27,14 @@ export default function TableroIndex({ turns, appointments, doctors }: Props) {
                 doctor_id: cita.doctor_id,
                 appointment_id: cita.id,
             },
-            { preserveScroll: true },
+            {
+                preserveScroll: true,
+                onError: (errors: Record<string, string>) => {
+                    if (errors.open_turn) {
+                        toast.error(errors.open_turn);
+                    }
+                },
+            },
         );
     }
 
