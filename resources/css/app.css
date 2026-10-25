@@ -242,6 +242,36 @@
     --state-text: #52525b;
     --state-accent: #a1a1aa;
 }
+.state-cita-atendida {
+    --state-bg: var(--color-cita-atendida-bg);
+    --state-text: var(--color-cita-atendida-fg);
+    --state-accent: var(--color-cita-atendida-fg);
+}
+.state-cita-confirmada {
+    --state-bg: var(--color-app-bg);
+    --state-text: var(--color-primary);
+    --state-accent: var(--color-primary);
+}
+
+/* ── Alert Variant Utilities ─────────────────────── */
+.alert-danger {
+    --alert-bg: var(--color-error-bg);
+    --alert-border: var(--color-error-border);
+    --alert-text: var(--color-error);
+    --alert-title: var(--color-error-strong);
+}
+.alert-warning {
+    --alert-bg: #fef3c7;
+    --alert-border: #d97706;
+    --alert-text: #92400e;
+    --alert-title: #78350f;
+}
+.alert-info {
+    --alert-bg: #dbeafe;
+    --alert-border: #93c5fd;
+    --alert-text: #1e40af;
+    --alert-title: #1d4ed8;
+}
 
 /* ── Triage Level Utilities ──────────────────────── */
 .triage-i {

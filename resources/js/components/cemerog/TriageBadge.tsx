@@ -11,13 +11,13 @@ interface TriageBadgeProps {
 
 const TRIAGE_CONFIG: Record<
     TriageLevel,
-    { label: string; bg: string; text: string }
+    { label: string; cssClass: string }
 > = {
-    I: { label: 'I – Resucitación', bg: '#DC2626', text: '#FFFFFF' },
-    II: { label: 'II – Emergencia', bg: '#EA580C', text: '#FFFFFF' },
-    III: { label: 'III – Urgente', bg: '#F59E0B', text: '#3b2a00' },
-    IV: { label: 'IV – Menos urgente', bg: '#2E8B3E', text: '#FFFFFF' },
-    V: { label: 'V – No urgente', bg: '#2563EB', text: '#FFFFFF' },
+    I: { label: 'I – Resucitación', cssClass: 'triage-i' },
+    II: { label: 'II – Emergencia', cssClass: 'triage-ii' },
+    III: { label: 'III – Urgente', cssClass: 'triage-iii' },
+    IV: { label: 'IV – Menos urgente', cssClass: 'triage-iv' },
+    V: { label: 'V – No urgente', cssClass: 'triage-v' },
 };
 
 export default function TriageBadge({
@@ -28,8 +28,7 @@ export default function TriageBadge({
 
     return (
         <span
-            className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-xs font-bold ${className}`}
-            style={{ backgroundColor: config.bg, color: config.text }}
+            className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-xs font-bold ${config.cssClass} bg-[var(--triage-bg)] text-[var(--triage-text)] ${className}`}
             aria-label={config.label}
             title={config.label}
         >
