@@ -234,6 +234,60 @@ test('usuario sin doctor vinculado no puede llamar siguiente (403)', function ()
         ->assertStatus(403);
 });
 
+// ─── Adjustment 3: queue usa arrived_at, no created_at ───────────────────────
+
+test('queue no cuenta turnos con arrived_at de ayer', function () {
+    $user = User::factory()->create();
+    $user->assignRole('medico');
+
+    $specialty = Specialty::factory()->create();
+    $doctor = Doctor::factory()->create([
+        'specialty_id' => $specialty->id,
+        'user_id' => $user->id,
+    ]);
+
+    // Turn arrived yesterday → must NOT appear in today's queue
+    Turn::factory()->create([
+        'doctor_id' => $doctor->id,
+        'patient_id' => Patient::factory()->create()->id,
+        'status' => 'espera',
+        'arrived_at' => now()->subDay(),
+        'turn_number' => 1,
+        'turn_order' => 10,
+    ]);
+
+    partialQueueRequest($this, $user)
+        ->assertOk()
+        ->assertJsonPath('props.queue.waiting_count', 0);
+});
+
+test('callNext no llama un turno con arrived_at de ayer', function () {
+    $user = User::factory()->create();
+    $user->assignRole('medico');
+
+    $specialty = Specialty::factory()->create();
+    $doctor = Doctor::factory()->create([
+        'specialty_id' => $specialty->id,
+        'user_id' => $user->id,
+    ]);
+
+    $yesterdayTurn = Turn::factory()->create([
+        'doctor_id' => $doctor->id,
+        'patient_id' => Patient::factory()->create()->id,
+        'status' => 'espera',
+        'arrived_at' => now()->subDay(),
+        'turn_number' => 1,
+        'turn_order' => 10,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('turnos.call-next'))
+        ->assertRedirect()
+        ->assertSessionHasErrors(['queue']);
+
+    expect($yesterdayTurn->fresh()->status)->toBe('espera');
+});
+
 // ─── Adjustment 1: queue debe ser deferred (no optional) ─────────────────────
 
 test('la prop queue es deferred en la respuesta Inertia inicial', function () {

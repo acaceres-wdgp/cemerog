@@ -81,7 +81,7 @@ class TurnosController extends Controller
 
         $next = Turn::where('doctor_id', $doctorId)
             ->where('status', 'espera')
-            ->whereDate('created_at', $today)
+            ->whereDate('arrived_at', $today)
             ->orderBy('turn_order')
             ->first();
 

@@ -85,12 +85,12 @@ class HandleInertiaRequests extends Middleware
         $currentTurn = Turn::with('patient')
             ->where('doctor_id', $doctorId)
             ->where('status', 'en_consulta')
-            ->whereDate('created_at', $today)
+            ->whereDate('arrived_at', $today)
             ->first();
 
         $waitingCount = Turn::where('doctor_id', $doctorId)
             ->where('status', 'espera')
-            ->whereDate('created_at', $today)
+            ->whereDate('arrived_at', $today)
             ->count();
 
         return [
