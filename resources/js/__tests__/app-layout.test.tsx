@@ -229,9 +229,7 @@ describe('user menu', () => {
         render(<AppLayout>x</AppLayout>);
         fireEvent.click(screen.getByRole('button', { name: /Ana Gómez/i }));
         // Role is shown in the dropdown (may appear more than once across topbar + dropdown)
-        expect(
-            screen.getAllByText(/administrador/i).length,
-        ).toBeGreaterThan(0);
+        expect(screen.getAllByText(/administrador/i).length).toBeGreaterThan(0);
     });
 });
 

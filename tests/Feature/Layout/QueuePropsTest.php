@@ -5,11 +5,12 @@ use App\Models\Patient;
 use App\Models\Specialty;
 use App\Models\Turn;
 use App\Models\User;
+use Illuminate\Testing\TestResponse;
 use Inertia\Inertia;
 
 // Helper: perform a partial reload requesting only the 'queue' prop.
 // Sends the correct Inertia version so the middleware does NOT return 409.
-function partialQueueRequest(object $test, User $user, string $component = 'inicio/index'): \Illuminate\Testing\TestResponse
+function partialQueueRequest(object $test, User $user, string $component = 'inicio/index'): TestResponse
 {
     // Compute the same version the Inertia middleware computes
     $manifestPath = public_path('build/manifest.json');
