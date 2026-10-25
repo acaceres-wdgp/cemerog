@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
+import { toast } from 'sonner';
 import { Stethoscope } from 'lucide-react';
 import type { DoctorProp, QueueProp } from '@/types/global';
 
@@ -38,6 +39,11 @@ export function TurnoActualCard({
             {},
             {
                 preserveScroll: true,
+                onError: (errors: Record<string, string>) => {
+                    if (errors.queue) {
+                        toast.error(errors.queue);
+                    }
+                },
                 onFinish: () => {
                     setLoading(false);
                     // Reload the queue after calling next

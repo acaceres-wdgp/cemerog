@@ -209,7 +209,7 @@ test('llamar siguiente NO afecta turnos de otros doctores', function () {
     expect($otherTurn->fresh()->status)->toBe('espera');
 });
 
-test('llamar siguiente retorna 422 cuando no hay pacientes en espera', function () {
+test('llamar siguiente retorna redirect con error de sesion cuando no hay pacientes en espera', function () {
     $user = User::factory()->create();
     $user->assignRole('medico');
 
@@ -221,7 +221,8 @@ test('llamar siguiente retorna 422 cuando no hay pacientes en espera', function 
 
     $this->actingAs($user)
         ->post(route('turnos.call-next'))
-        ->assertStatus(422);
+        ->assertRedirect()
+        ->assertSessionHasErrors(['queue']);
 });
 
 test('usuario sin doctor vinculado no puede llamar siguiente (403)', function () {

@@ -86,7 +86,7 @@ class TurnosController extends Controller
             ->first();
 
         if ($next === null) {
-            return response()->json(['message' => 'No hay pacientes en espera.'], 422);
+            return back()->withErrors(['queue' => 'No hay pacientes en espera.']);
         }
 
         $next->update(['status' => 'en_consulta']);
