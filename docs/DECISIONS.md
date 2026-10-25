@@ -243,7 +243,7 @@ El chequeo original en `RegisterArrival` bloqueaba cualquier nuevo turno si el p
 
 ### Decisión
 
-La unicidad del turno abierto se verifica por `(patient_id, doctor_id, fecha, status IN ('espera', 'en_consulta'))`. Un paciente puede tener varios turnos abiertos el mismo día siempre que sean con médicos distintos. Solo se bloquea un segundo turno con el *mismo* médico.
+La unicidad del turno abierto se verifica por `(patient_id, doctor_id, fecha, status IN ('espera', 'en_consulta'))`. Un paciente puede tener varios turnos abiertos el mismo día siempre que sean con médicos distintos. Solo se bloquea un segundo turno con el _mismo_ médico.
 
 ### Cambios
 

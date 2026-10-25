@@ -159,5 +159,5 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 5. Los precios de servicios son configurables desde el catálogo de precios.
 6. ITBIS: los servicios médicos están exentos; medicamentos al 18 %.
 7. **Permanencia de pacientes**: los expedientes clínicos nunca se borran ni desactivan. Solo el administrador puede editar datos personales.
-8. **Turno único por médico por día**: un paciente puede tener turnos con varios médicos el mismo día (por ejemplo, Medicina General y Pediatría). Lo que no está permitido es abrir un segundo turno con el *mismo* médico mientras el primero sigue en estado `espera` o `en_consulta`. El intento genera un error de validación que nombra al médico con el turno abierto.
+8. **Turno único por médico por día**: un paciente puede tener turnos con varios médicos el mismo día (por ejemplo, Medicina General y Pediatría). Lo que no está permitido es abrir un segundo turno con el _mismo_ médico mientras el primero sigue en estado `espera` o `en_consulta`. El intento genera un error de validación que nombra al médico con el turno abierto.
 9. **Permanencia de pacientes**: la UI no ofrece eliminar pacientes. Los expedientes clínicos son permanentes (ver ADR-009 y ADR-012).
