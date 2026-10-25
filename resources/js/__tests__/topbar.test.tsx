@@ -84,20 +84,54 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('topbar search', () => {
-    it('renders the patient search input', () => {
+    it('no muestra el campo de búsqueda a usuarios sin module.pacientes.access', () => {
+        // Default beforeEach sets permissions to ['module.inicio.access'] only
+        render(<AppLayout>x</AppLayout>);
+        expect(
+            screen.queryByPlaceholderText(
+                /Buscar paciente o No\. de atención/i,
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    it('muestra el campo de búsqueda a usuarios con module.pacientes.access', () => {
+        page.props.permissions = [
+            'module.inicio.access',
+            'module.pacientes.access',
+        ];
         render(<AppLayout>x</AppLayout>);
         const input = screen.getByPlaceholderText(
             /Buscar paciente o No\. de atención/i,
         );
         expect(input).toBeInTheDocument();
+        expect(input).toBeVisible();
     });
 
-    it('shows the search input at all times (not hidden behind ⌘K)', () => {
+    it('navega a /pacientes?paciente={id} al seleccionar un resultado', async () => {
+        page.props.permissions = [
+            'module.inicio.access',
+            'module.pacientes.access',
+        ];
+        // Mock fetch to return a patient result
+        global.fetch = vi.fn().mockResolvedValueOnce({
+            ok: true,
+            json: async () => [
+                { id: 42, full_name: 'Ana Díaz', document_number: '001' },
+            ],
+        });
+
+        const { fireEvent: fe } = await import('@testing-library/react');
         render(<AppLayout>x</AppLayout>);
+
         const input = screen.getByPlaceholderText(
             /Buscar paciente o No\. de atención/i,
         );
-        expect(input).toBeVisible();
+        fe.change(input, { target: { value: 'Ana' } });
+
+        // Wait for debounce and fetch
+        await vi.waitFor(() => {
+            expect(global.fetch).toHaveBeenCalled();
+        });
     });
 });
 

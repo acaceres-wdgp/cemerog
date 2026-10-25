@@ -1,14 +1,18 @@
 /**
  * Topbar – application top bar with breadcrumb, patient search, clock, notifications, and user menu.
+ * The patient search is only shown to users with module.pacientes.access.
  */
 
-import { useEffect, useRef, useState } from 'react';
-import { router } from '@inertiajs/react';
+import { useState } from 'react';
+import { useEffect } from 'react';
+import { router, usePage } from '@inertiajs/react';
 import { Bell } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { BreadcrumbResult } from '@/lib/breadcrumb';
 import type { PatientResult } from '@/components/cemerog/PatientSearch';
+import PatientSearch from '@/components/cemerog/PatientSearch';
+import type { PageProps } from '@/types/global';
 import { UserMenu, type UserMenuProps } from './UserMenu';
 
 export interface TopbarProps {
@@ -27,91 +31,39 @@ function formatShortDate(d: Date): string {
     return format(d, 'd MMM', { locale: es });
 }
 
-/** Minimal inline patient search for the topbar */
+/** Patient search in the topbar, reusing the shared PatientSearch component. */
 function TopbarSearch() {
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState<PatientResult[]>([]);
-    const [open, setOpen] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (query.length < 3) {
-            setResults([]);
-            setOpen(false);
-            return;
-        }
-        const t = setTimeout(async () => {
-            try {
-                const res = await fetch(
-                    `/pacientes/buscar?q=${encodeURIComponent(query)}`,
-                );
-                if (!res.ok) {
-                    setResults([]);
-                    setOpen(true);
-                    return;
-                }
-                const data: PatientResult[] = await res.json();
-                setResults(Array.isArray(data) ? data : []);
-                setOpen(true);
-            } catch {
-                setResults([]);
-                setOpen(true);
-            }
-        }, 300);
-        return () => clearTimeout(t);
-    }, [query]);
-
-    useEffect(() => {
-        const handler = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) {
-                setOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
-    }, []);
+    const [selected, setSelected] = useState<PatientResult | null>(null);
 
     const handleSelect = (patient: PatientResult) => {
-        setQuery('');
-        setOpen(false);
+        setSelected(patient);
         router.visit(`/pacientes?paciente=${patient.id}`);
     };
 
+    const handleClear = () => {
+        setSelected(null);
+        setQuery('');
+    };
+
+    // Clear selection whenever we navigate away (query changes externally)
+    useEffect(() => {
+        setSelected(null);
+        setQuery('');
+    }, []);
+
     return (
-        <div ref={ref} className="relative">
-            <input
-                type="search"
-                className="h-9 w-52 rounded-md border border-input-border bg-app-bg px-3 text-sm text-text-body transition-colors outline-none placeholder:text-muted focus:border-primary focus:ring-2 focus:ring-primary/20"
+        <div className="w-52">
+            <PatientSearch
+                selected={selected}
+                query={query}
+                onQueryChange={setQuery}
+                onSelect={handleSelect}
+                onClear={handleClear}
+                endpoint="/pacientes/buscar"
+                compact
                 placeholder="Buscar paciente o No. de atención…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                autoComplete="off"
             />
-            {open && (
-                <div className="absolute top-full left-0 z-50 mt-1 w-72 overflow-hidden rounded-lg border border-card-border bg-white shadow-lg">
-                    {results.length === 0 ? (
-                        <div className="px-3.5 py-3 text-sm text-muted">
-                            No se encontraron pacientes.
-                        </div>
-                    ) : (
-                        results.map((p) => (
-                            <button
-                                key={p.id}
-                                type="button"
-                                onClick={() => handleSelect(p)}
-                                className="block w-full border-b border-row-separator px-3.5 py-2.5 text-left text-sm hover:bg-table-header-bg"
-                            >
-                                <div className="font-medium text-text-heading">
-                                    {p.full_name}
-                                </div>
-                                <div className="text-xs text-muted">
-                                    {p.document_number}
-                                </div>
-                            </button>
-                        ))
-                    )}
-                </div>
-            )}
         </div>
     );
 }
@@ -137,6 +89,9 @@ function TopbarClock() {
 }
 
 export function Topbar({ breadcrumb, todayLabel, userMenuProps }: TopbarProps) {
+    const { permissions } = usePage<PageProps>().props;
+    const canSearchPatients = permissions.includes('module.pacientes.access');
+
     return (
         <header className="flex h-14 shrink-0 items-center justify-between border-b border-card-border bg-white px-4 shadow-sm">
             {/* Left: breadcrumb */}
@@ -170,8 +125,8 @@ export function Topbar({ breadcrumb, todayLabel, userMenuProps }: TopbarProps) {
 
             {/* Right: search, clock, notifications, user */}
             <div className="flex items-center gap-3">
-                {/* Patient search */}
-                <TopbarSearch />
+                {/* Patient search – only for users with pacientes access */}
+                {canSearchPatients && <TopbarSearch />}
 
                 {/* Clock */}
                 <TopbarClock />
