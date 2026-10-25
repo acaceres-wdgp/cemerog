@@ -28,33 +28,11 @@ export function PhotoCard({
     onRemovePhoto,
 }: PhotoCardProps) {
     return (
-        <div
-            style={{
-                background: '#fff',
-                border: '1px solid #e3e9e3',
-                borderRadius: 14,
-            }}
-        >
-            <div
-                style={{
-                    padding: '16px 20px',
-                    borderBottom: '1px solid #eef0ec',
-                    fontFamily: 'Bitter,Georgia,serif',
-                    fontWeight: 600,
-                    fontSize: 16,
-                    color: '#1f2d22',
-                }}
-            >
+        <div className="overflow-hidden rounded-[14px] border border-card-border bg-card-bg">
+            <div className="border-b border-divider px-5 py-4 font-serif text-[16px] font-semibold text-text-heading">
                 Foto / Identificación
             </div>
-            <div
-                style={{
-                    padding: '16px 20px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 10,
-                }}
-            >
+            <div className="flex flex-col gap-2.5 px-5 py-4">
                 <div
                     onClick={() => fileInputRef.current?.click()}
                     onDragOver={(e) => {
@@ -68,61 +46,32 @@ export function PhotoCard({
                         const file = e.dataTransfer.files[0] ?? null;
                         if (file) onFileSelect(file);
                     }}
-                    style={{
-                        border: `2px dashed ${isDragging ? '#2E8B3E' : '#d4d4d8'}`,
-                        borderRadius: 12,
-                        background: isDragging ? '#F3F9EC' : '#fafafa',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        minHeight: 160,
-                        gap: 8,
-                        overflow: 'hidden',
-                        transition: 'border-color .15s, background .15s',
-                    }}
+                    className={`flex min-h-[160px] cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-[12px] border-2 border-dashed transition-[border-color,background] duration-150 ${
+                        isDragging
+                            ? 'border-primary bg-info-bg'
+                            : 'border-neutral-border bg-done-row-bg'
+                    }`}
                 >
                     {hasPhoto && !isPdf && previewUrl ? (
                         <img
                             src={previewUrl}
                             alt="Foto del paciente"
-                            style={{
-                                width: '100%',
-                                height: 160,
-                                objectFit: 'cover',
-                            }}
+                            className="h-[160px] w-full object-cover"
                         />
                     ) : hasPhoto && isPdf ? (
-                        <div
-                            style={{
-                                textAlign: 'center',
-                                color: '#5f6b64',
-                                fontSize: 13,
-                            }}
-                        >
-                            <div style={{ fontSize: 36, marginBottom: 4 }}>
-                                📄
-                            </div>
-                            <div style={{ fontWeight: 500 }}>
+                        <div className="text-center text-[13px] text-text-secondary">
+                            <div className="mb-1 text-[36px]">📄</div>
+                            <div className="font-medium">
                                 {photoFileName ?? 'Documento PDF'}
                             </div>
                         </div>
                     ) : (
-                        <div
-                            style={{
-                                textAlign: 'center',
-                                color: '#71717a',
-                                padding: '0 12px',
-                            }}
-                        >
-                            <div style={{ fontSize: 32, marginBottom: 8 }}>
-                                📷
-                            </div>
-                            <div style={{ fontSize: 13, fontWeight: 500 }}>
+                        <div className="px-3 text-center text-muted">
+                            <div className="mb-2 text-[32px]">📷</div>
+                            <div className="text-[13px] font-medium">
                                 Haz clic o arrastra un archivo
                             </div>
-                            <div style={{ fontSize: 12, marginTop: 4 }}>
+                            <div className="mt-1 text-xs">
                                 JPG, PNG, WEBP o PDF · máx. 20 MB
                             </div>
                         </div>
@@ -132,31 +81,20 @@ export function PhotoCard({
                     ref={fileInputRef}
                     type="file"
                     accept="image/jpeg,image/png,image/webp,application/pdf"
-                    style={{ display: 'none' }}
+                    className="hidden"
                     onChange={(e) => onFileSelect(e.target.files?.[0] ?? null)}
                 />
                 {hasPhoto && (
                     <button
                         type="button"
                         onClick={onRemovePhoto}
-                        style={{
-                            height: 32,
-                            padding: '0 12px',
-                            borderRadius: 8,
-                            border: '1px solid #fecaca',
-                            background: '#fef2f2',
-                            color: '#b91c1c',
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                            fontFamily: 'inherit',
-                            fontSize: 13,
-                        }}
+                        className="h-8 cursor-pointer rounded-[8px] border border-error-border bg-error-bg px-3 font-[inherit] text-[13px] font-medium text-error"
                     >
                         Eliminar foto
                     </button>
                 )}
                 {(photoError ?? photoFormError) && (
-                    <span style={{ color: '#b91c1c', fontSize: 12 }}>
+                    <span className="text-xs text-error">
                         {photoError ?? photoFormError}
                     </span>
                 )}

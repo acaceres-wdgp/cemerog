@@ -6,98 +6,37 @@ interface PatientInfoCardProps {
 
 export function PatientInfoCard({ patient }: PatientInfoCardProps) {
     return (
-        <div
-            style={{
-                background: '#fff',
-                border: '1px solid #e3e9e3',
-                borderRadius: 14,
-            }}
-        >
-            <div
-                style={{
-                    padding: '16px 20px',
-                    borderBottom: '1px solid #eef0ec',
-                    fontFamily: 'Bitter,Georgia,serif',
-                    fontWeight: 600,
-                    fontSize: 16,
-                    color: '#1f2d22',
-                }}
-            >
+        <div className="overflow-hidden rounded-[14px] border border-card-border bg-card-bg">
+            <div className="border-b border-divider px-5 py-4 font-serif text-[16px] font-semibold text-text-heading">
                 Paciente
             </div>
-            <div
-                style={{
-                    padding: '16px 20px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 12,
-                }}
-            >
-                <div
-                    style={{
-                        display: 'flex',
-                        gap: 10,
-                        alignItems: 'center',
-                    }}
-                >
-                    <span
-                        style={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: '50%',
-                            background: '#EEF6E2',
-                            color: '#2f4a17',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontWeight: 700,
-                            fontSize: 14,
-                        }}
-                    >
+            <div className="flex flex-col gap-3 px-5 py-4">
+                <div className="flex items-center gap-2.5">
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-bg text-sm font-bold text-accent-fg">
                         {patient.initials}
                     </span>
                     <div>
-                        <div
-                            style={{
-                                fontWeight: 600,
-                                color: '#1f2d22',
-                            }}
-                        >
+                        <div className="font-semibold text-text-heading">
                             {patient.full_name}
                         </div>
-                        <div
-                            style={{
-                                fontSize: 12,
-                                color: '#71717a',
-                            }}
-                        >
+                        <div className="text-xs text-muted">
                             {patient.age} años ·{' '}
                             {patient.sex === 'F' ? 'Femenino' : 'Masculino'}
                         </div>
                     </div>
                 </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'auto 1fr',
-                        gap: '6px 12px',
-                        fontSize: 13,
-                    }}
-                >
-                    <span style={{ color: '#71717a' }}>Documento</span>
-                    <span style={{ textAlign: 'right' }}>
+                <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[13px]">
+                    <span className="text-muted">Documento</span>
+                    <span className="text-right">
                         {patient.document_number}
                     </span>
-                    <span style={{ color: '#71717a' }}>Sangre</span>
-                    <span style={{ textAlign: 'right' }}>
+                    <span className="text-muted">Sangre</span>
+                    <span className="text-right">
                         {patient.blood_type ?? '—'}
                     </span>
-                    <span style={{ color: '#71717a' }}>Alergias</span>
+                    <span className="text-muted">Alergias</span>
                     <span
-                        style={{
-                            textAlign: 'right',
-                            color: patient.allergies ? '#b91c1c' : '#c4c9c4',
-                        }}
+                        className={`text-right ${patient.allergies ? 'text-error' : 'text-text-none'}`}
                     >
                         {patient.allergies ?? 'Ninguna'}
                     </span>

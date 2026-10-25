@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import { MaskedInput } from '@/components/cemerog/masked-input';
 import type {
     BloodType,
@@ -27,23 +28,9 @@ const DOCUMENT_TYPES: { value: DocumentType; label: string }[] = [
 const CEDULA_MASK = '000-0000000-0';
 const PHONE_MASK = '000-000-0000';
 
-const inputStyle: React.CSSProperties = {
-    height: 36,
-    padding: '0 12px',
-    border: '1px solid #e4e4e7',
-    borderRadius: 10,
-    outline: 'none',
-    width: '100%',
-    fontSize: 14,
-    fontFamily: 'inherit',
-};
-const labelStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 6,
-    fontWeight: 500,
-    fontSize: 14,
-};
+const inputCls =
+    'box-border h-9 w-full rounded-[10px] border border-input-border px-3 font-[inherit] text-sm outline-none';
+const labelCls = 'flex flex-col gap-1.5 font-medium text-sm';
 
 type FormData = {
     document_type: DocumentType;
@@ -84,28 +71,8 @@ export function PatientFormCard({
         if (data.document_type === 'no_tiene') {
             const isGenerated = patient.document_number.startsWith('GEN-');
             return (
-                <div
-                    style={{
-                        display: 'flex',
-                        gap: 10,
-                        alignItems: 'flex-start',
-                        padding: '10px 12px',
-                        border: '1px solid #cfe3b8',
-                        borderRadius: 10,
-                        fontSize: 13,
-                        background: '#F3F9EC',
-                        gridColumn: 'span 2',
-                    }}
-                >
-                    <span
-                        style={{
-                            fontSize: 16,
-                            color: '#2E8B3E',
-                            marginTop: 1,
-                        }}
-                    >
-                        ℹ
-                    </span>
+                <div className="col-span-2 flex items-start gap-2.5 rounded-[10px] border border-info-border bg-info-bg px-3 py-[10px] text-[13px]">
+                    <span className="mt-px text-[16px] text-primary">ℹ</span>
                     <span>
                         {isGenerated ? (
                             <>
@@ -122,21 +89,19 @@ export function PatientFormCard({
 
         if (data.document_type === 'cedula') {
             return (
-                <label style={labelStyle}>
+                <label className={labelCls}>
                     <span>No. de cédula *</span>
                     <MaskedInput
                         mask={CEDULA_MASK}
                         value={data.document_number}
                         onChange={(v) => setData('document_number', v)}
-                        style={{
-                            ...inputStyle,
-                            borderColor: errors.document_number
-                                ? '#fecaca'
-                                : undefined,
-                        }}
+                        className={cn(
+                            inputCls,
+                            errors.document_number && 'border-error-border',
+                        )}
                     />
                     {errors.document_number && (
-                        <span style={{ color: '#b91c1c', fontSize: 12 }}>
+                        <span className="text-xs text-error" role="alert">
                             {errors.document_number}
                         </span>
                     )}
@@ -154,7 +119,7 @@ export function PatientFormCard({
         };
 
         return (
-            <label style={labelStyle}>
+            <label className={labelCls}>
                 <span>
                     {labels[data.document_type] ?? 'No. de documento *'}
                 </span>
@@ -162,15 +127,13 @@ export function PatientFormCard({
                     value={data.document_number}
                     onChange={(e) => setData('document_number', e.target.value)}
                     placeholder={placeholders[data.document_type]}
-                    style={{
-                        ...inputStyle,
-                        borderColor: errors.document_number
-                            ? '#fecaca'
-                            : undefined,
-                    }}
+                    className={cn(
+                        inputCls,
+                        errors.document_number && 'border-error-border',
+                    )}
                 />
                 {errors.document_number && (
-                    <span style={{ color: '#b91c1c', fontSize: 12 }}>
+                    <span className="text-xs text-error" role="alert">
                         {errors.document_number}
                     </span>
                 )}
@@ -179,50 +142,25 @@ export function PatientFormCard({
     };
 
     return (
-        <div
-            style={{
-                background: '#fff',
-                border: '1px solid #e3e9e3',
-                borderRadius: 14,
-            }}
-        >
-            <div
-                style={{
-                    padding: '16px 20px',
-                    borderBottom: '1px solid #eef0ec',
-                }}
-            >
-                <div
-                    style={{
-                        fontFamily: 'Bitter,Georgia,serif',
-                        fontWeight: 600,
-                        fontSize: 16,
-                        color: '#1f2d22',
-                    }}
-                >
+        <div className="overflow-hidden rounded-[14px] border border-card-border bg-card-bg">
+            <div className="border-b border-divider px-5 py-4">
+                <div className="font-serif text-[16px] font-semibold text-text-heading">
                     Datos del paciente
                 </div>
-                <div style={{ fontSize: 13, color: '#71717a' }}>
+                <div className="text-[13px] text-muted">
                     Los campos con * son obligatorios.
                 </div>
             </div>
 
-            <div
-                style={{
-                    padding: '16px 20px 20px',
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(3,minmax(0,1fr))',
-                    gap: '14px 16px',
-                }}
-            >
-                <label style={labelStyle}>
+            <div className="grid grid-cols-3 gap-x-4 gap-y-[14px] p-[16px_20px_20px]">
+                <label className={labelCls}>
                     <span>Tipo de documento *</span>
                     <select
                         value={data.document_type}
                         onChange={(e) =>
                             onDocumentTypeChange(e.target.value as DocumentType)
                         }
-                        style={inputStyle}
+                        className={cn(inputCls, 'cursor-pointer')}
                     >
                         {DOCUMENT_TYPES.map((dt) => (
                             <option key={dt.value} value={dt.value}>
@@ -231,7 +169,7 @@ export function PatientFormCard({
                         ))}
                     </select>
                     {errors.document_type && (
-                        <span style={{ color: '#b91c1c', fontSize: 12 }}>
+                        <span className="text-xs text-error" role="alert">
                             {errors.document_type}
                         </span>
                     )}
@@ -239,175 +177,141 @@ export function PatientFormCard({
 
                 {docNumberField()}
 
-                <label style={labelStyle}>
+                <label className={labelCls}>
                     <span>Fecha de nacimiento *</span>
                     <input
                         type="date"
                         value={data.birth_date}
                         onChange={(e) => setData('birth_date', e.target.value)}
-                        style={{
-                            ...inputStyle,
-                            borderColor: errors.birth_date
-                                ? '#fecaca'
-                                : undefined,
-                        }}
+                        className={cn(
+                            inputCls,
+                            errors.birth_date && 'border-error-border',
+                        )}
                     />
                     {errors.birth_date && (
-                        <span style={{ color: '#b91c1c', fontSize: 12 }}>
+                        <span className="text-xs text-error" role="alert">
                             {errors.birth_date}
                         </span>
                     )}
                 </label>
-                <label style={labelStyle}>
+                <label className={labelCls}>
                     <span>Nombres *</span>
                     <input
                         value={data.first_names}
                         onChange={(e) => setData('first_names', e.target.value)}
-                        style={{
-                            ...inputStyle,
-                            borderColor: errors.first_names
-                                ? '#fecaca'
-                                : undefined,
-                        }}
+                        className={cn(
+                            inputCls,
+                            errors.first_names && 'border-error-border',
+                        )}
                     />
                     {errors.first_names && (
-                        <span style={{ color: '#b91c1c', fontSize: 12 }}>
+                        <span className="text-xs text-error" role="alert">
                             {errors.first_names}
                         </span>
                     )}
                 </label>
-                <label style={labelStyle}>
+                <label className={labelCls}>
                     <span>Apellidos *</span>
                     <input
                         value={data.last_names}
                         onChange={(e) => setData('last_names', e.target.value)}
-                        style={{
-                            ...inputStyle,
-                            borderColor: errors.last_names
-                                ? '#fecaca'
-                                : undefined,
-                        }}
+                        className={cn(
+                            inputCls,
+                            errors.last_names && 'border-error-border',
+                        )}
                     />
                     {errors.last_names && (
-                        <span style={{ color: '#b91c1c', fontSize: 12 }}>
+                        <span className="text-xs text-error" role="alert">
                             {errors.last_names}
                         </span>
                     )}
                 </label>
-                <label style={{ ...labelStyle, gridColumn: 'span 2' }}>
+                <label className={cn(labelCls, 'col-span-2')}>
                     <span>Correo electrónico</span>
                     <input
                         type="email"
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
                         placeholder="paciente@ejemplo.com"
-                        style={{
-                            ...inputStyle,
-                            borderColor: errors.email ? '#fecaca' : undefined,
-                        }}
+                        className={cn(
+                            inputCls,
+                            errors.email && 'border-error-border',
+                        )}
                     />
                     {errors.email && (
-                        <span style={{ color: '#b91c1c', fontSize: 12 }}>
+                        <span className="text-xs text-error" role="alert">
                             {errors.email}
                         </span>
                     )}
                 </label>
-                <div style={labelStyle}>
+                <div className={labelCls}>
                     <span>Sexo *</span>
-                    <div
-                        style={{
-                            display: 'flex',
-                            gap: 16,
-                            height: 36,
-                            alignItems: 'center',
-                        }}
-                    >
+                    <div className="flex h-9 items-center gap-4">
                         {(['F', 'M'] as Sex[]).map((s) => (
                             <span
                                 key={s}
                                 onClick={() => setData('sex', s)}
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 8,
-                                    cursor: 'pointer',
-                                }}
+                                className="inline-flex cursor-pointer items-center gap-2"
                             >
                                 <span
-                                    style={{
-                                        width: 16,
-                                        height: 16,
-                                        borderRadius: '50%',
-                                        border: `1px solid ${data.sex === s ? '#2E8B3E' : '#d4d4d8'}`,
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                    }}
+                                    className={`inline-flex h-4 w-4 items-center justify-center rounded-full border ${data.sex === s ? 'border-primary' : 'border-neutral-border'}`}
                                 >
                                     <span
-                                        style={{
-                                            width: 8,
-                                            height: 8,
-                                            borderRadius: '50%',
-                                            background:
-                                                data.sex === s
-                                                    ? '#2E8B3E'
-                                                    : 'transparent',
-                                        }}
-                                    ></span>
+                                        className={`h-2 w-2 rounded-full ${data.sex === s ? 'bg-primary' : 'bg-transparent'}`}
+                                    />
                                 </span>
                                 {s === 'F' ? 'Femenino' : 'Masculino'}
                             </span>
                         ))}
                     </div>
                     {errors.sex && (
-                        <span style={{ color: '#b91c1c', fontSize: 12 }}>
+                        <span className="text-xs text-error" role="alert">
                             {errors.sex}
                         </span>
                     )}
                 </div>
-                <label style={labelStyle}>
+                <label className={labelCls}>
                     <span>Teléfono</span>
                     <MaskedInput
                         mask={PHONE_MASK}
                         value={data.phone}
                         onChange={(v) => setData('phone', v)}
-                        style={inputStyle}
+                        className={inputCls}
                     />
                 </label>
-                <label style={{ ...labelStyle, gridColumn: 'span 2' }}>
+                <label className={cn(labelCls, 'col-span-2')}>
                     <span>Dirección</span>
                     <input
                         value={data.address}
                         onChange={(e) => setData('address', e.target.value)}
-                        style={inputStyle}
+                        className={inputCls}
                     />
                 </label>
-                <label style={labelStyle}>
+                <label className={labelCls}>
                     <span>Persona de contacto</span>
                     <input
                         value={data.emergency_contact_name}
                         onChange={(e) =>
                             setData('emergency_contact_name', e.target.value)
                         }
-                        style={inputStyle}
+                        className={inputCls}
                     />
                 </label>
-                <label style={labelStyle}>
+                <label className={labelCls}>
                     <span>Tel. de contacto</span>
                     <MaskedInput
                         mask={PHONE_MASK}
                         value={data.emergency_contact_phone}
                         onChange={(v) => setData('emergency_contact_phone', v)}
-                        style={inputStyle}
+                        className={inputCls}
                     />
                 </label>
-                <label style={labelStyle}>
+                <label className={labelCls}>
                     <span>Tipo de sangre</span>
                     <select
                         value={data.blood_type}
                         onChange={(e) => setData('blood_type', e.target.value)}
-                        style={inputStyle}
+                        className={cn(inputCls, 'cursor-pointer')}
                     >
                         <option value="">Seleccionar</option>
                         {BLOOD_TYPES.map((bt) => (
@@ -417,15 +321,8 @@ export function PatientFormCard({
                         ))}
                     </select>
                 </label>
-                <div style={{ ...labelStyle, gridColumn: '1 / -1' }}>
-                    <span
-                        style={{
-                            color: '#b91c1c',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 6,
-                        }}
-                    >
+                <div className="col-span-full flex flex-col gap-1.5">
+                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-error">
                         ⚠ Alergias
                     </span>
                     <textarea
@@ -433,84 +330,30 @@ export function PatientFormCard({
                         value={data.allergies}
                         onChange={(e) => setData('allergies', e.target.value)}
                         placeholder="Medicamentos, alimentos u otros"
-                        style={{
-                            padding: '8px 12px',
-                            border: '1px solid #fecaca',
-                            borderRadius: 10,
-                            outline: 'none',
-                            fontFamily: 'inherit',
-                            fontSize: 14,
-                            resize: 'vertical',
-                        }}
+                        className="box-border w-full resize-y rounded-[10px] border border-error-border px-3 py-2 font-[inherit] text-sm leading-normal outline-none"
                     />
                 </div>
             </div>
 
-            <div
-                style={{
-                    padding: '14px 20px',
-                    borderTop: '1px solid #eef0ec',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    gap: 8,
-                }}
-            >
+            <div className="flex items-center justify-between gap-2 border-t border-divider p-[14px_20px]">
                 <button
                     type="button"
                     onClick={onDelete}
-                    style={{
-                        height: 36,
-                        padding: '0 14px',
-                        borderRadius: 10,
-                        border: '1px solid #fecaca',
-                        background: '#fef2f2',
-                        color: '#b91c1c',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        fontFamily: 'inherit',
-                        fontSize: 14,
-                    }}
+                    className="h-9 cursor-pointer rounded-[10px] border border-error-border bg-error-bg px-[14px] font-[inherit] text-sm font-medium text-error"
                 >
                     Eliminar paciente
                 </button>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div className="flex gap-2">
                     <a
                         href="/registro"
-                        style={{
-                            height: 36,
-                            padding: '0 14px',
-                            borderRadius: 10,
-                            border: '1px solid #dfe7df',
-                            background: '#F6F9F5',
-                            fontWeight: 500,
-                            fontFamily: 'inherit',
-                            fontSize: 14,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            textDecoration: 'none',
-                            color: '#1f2d22',
-                        }}
+                        className="inline-flex h-9 items-center rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-[inherit] text-sm font-medium text-text-heading no-underline"
                     >
                         Cancelar
                     </a>
                     <button
                         type="submit"
                         disabled={processing}
-                        style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            height: 36,
-                            padding: '0 14px',
-                            borderRadius: 10,
-                            border: 'none',
-                            background: processing ? '#7ec48a' : '#2E8B3E',
-                            color: '#fff',
-                            fontWeight: 500,
-                            cursor: processing ? 'not-allowed' : 'pointer',
-                            fontFamily: 'inherit',
-                            fontSize: 14,
-                        }}
+                        className={`inline-flex h-9 items-center gap-2 rounded-[10px] border-0 px-[14px] font-[inherit] text-sm font-medium text-white ${processing ? 'cursor-not-allowed bg-primary-disabled' : 'cursor-pointer bg-primary'}`}
                     >
                         ✓ Guardar cambios
                     </button>

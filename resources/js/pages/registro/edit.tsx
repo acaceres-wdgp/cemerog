@@ -126,47 +126,20 @@ export default function RegistroEdit({ patient }: Props) {
 
     return (
         <div className="flex flex-col gap-5">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="flex items-center gap-3">
                 <a
                     href="/registro"
-                    style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        height: 32,
-                        padding: '0 12px',
-                        borderRadius: 8,
-                        border: '1px solid #e4e4e7',
-                        background: '#fff',
-                        fontSize: 13,
-                        color: '#5f6b64',
-                        textDecoration: 'none',
-                        fontFamily: 'inherit',
-                    }}
+                    className="inline-flex h-8 items-center rounded-[8px] border border-input-border bg-card-bg px-3 font-[inherit] text-[13px] text-text-secondary no-underline"
                 >
                     ← Volver
                 </a>
-                <h1
-                    style={{
-                        fontFamily: 'Bitter,Georgia,serif',
-                        fontWeight: 600,
-                        fontSize: 26,
-                        color: '#1f2d22',
-                        margin: 0,
-                    }}
-                >
+                <h1 className="m-0 font-serif text-[26px] font-semibold text-text-heading">
                     Editar paciente
                 </h1>
             </div>
 
             <form onSubmit={handleSubmit}>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)',
-                        gap: 16,
-                        alignItems: 'start',
-                    }}
-                >
+                <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-start gap-4">
                     <PatientFormCard
                         data={data}
                         setData={setData}
@@ -177,13 +150,7 @@ export default function RegistroEdit({ patient }: Props) {
                         onDelete={handleDelete}
                     />
 
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 16,
-                        }}
-                    >
+                    <div className="flex flex-col gap-4">
                         <PhotoCard
                             previewUrl={previewUrl}
                             isDragging={isDragging}
