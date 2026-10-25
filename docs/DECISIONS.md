@@ -228,3 +228,31 @@ Todos los endpoints que muestran listas de registros relacionados (`/tablero`, `
 - Los endpoints `/pacientes`, `/pacientes/buscar` y `/registro?paciente=` no requieren cambios adicionales gracias al scope automático de Eloquent.
 - `TableroController` y `CitasController` añaden `->whereHas('patient')` para evitar null pointer en el mapeo `$t->patient->full_name`.
 - Se cubre con 6 tests en `tests/Feature/Pacientes/SoftDeletesTest.php`.
+- La UI no ofrece eliminar pacientes: el botón "Eliminar paciente" en la vista de edición fue removido (ver ADR-013).
+
+---
+
+## ADR-013: Unicidad de turno por médico (no por paciente)
+
+**Fecha**: 2026-10-25
+**Estado**: Aceptado
+
+### Contexto
+
+El chequeo original en `RegisterArrival` bloqueaba cualquier nuevo turno si el paciente ya tenía uno abierto ese día, independientemente del médico. Esto impedía que una secretaria registrara a un paciente con el Dr. A y luego con el Dr. B en la misma visita (p. ej., Medicina General + Pediatría).
+
+### Decisión
+
+La unicidad del turno abierto se verifica por `(patient_id, doctor_id, fecha, status IN ('espera', 'en_consulta'))`. Un paciente puede tener varios turnos abiertos el mismo día siempre que sean con médicos distintos. Solo se bloquea un segundo turno con el *mismo* médico.
+
+### Cambios
+
+- `RegisterArrival::handle`: añade `where('doctor_id', $attention['doctor_id'])` al chequeo.
+- `PatientHasOpenTurnException`: el mensaje incluye el nombre del médico.
+- `PacientesController::search` y `RegistroController::patientPayload`: devuelven `open_turns_today` (lista de `{ doctor_name, status }`) en lugar de los flags planos `has_open_turn_today` + `open_turn_status`.
+- Frontend (`registro/index.tsx`): la UI advierte sobre turnos abiertos por médico pero no bloquea el formulario — el servidor es quien valida.
+
+### Consecuencias
+
+- El índice único necesario para prevenir condiciones de carrera sería `(patient_id, doctor_id, DATE(arrived_at), status)`, pero como el status cambia a lo largo del turno, se mantiene la validación en la capa de aplicación (sin índice único en DB).
+- Los tests C9–C15 en `RegisterArrivalTest` cubren todos los escenarios.
