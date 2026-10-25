@@ -14,12 +14,13 @@ import { join, relative } from 'path';
 import { expect, test } from 'vitest';
 
 const PAGES_DIR = join(import.meta.dirname, '../pages');
+const COMPONENTS_DIR = join(import.meta.dirname, '../components/cemerog');
 
 /**
  * Files explicitly excluded from the scan (e.g. runtime palettes).
- * Paths are relative to PAGES_DIR.
+ * Paths are relative to their respective root directory.
  */
-const EXCLUDED_FILES = new Set<string>([]);
+const EXCLUDED_FILES = new Set<string>(['palettes.ts']);
 
 /**
  * Pages/directories that have been fully migrated to design tokens.
@@ -41,26 +42,33 @@ const HEX_COLOR_RE = /#[0-9a-fA-F]{3,6}\b/;
 /**
  * Resolve an entry to a list of absolute file paths.
  * If the entry ends with '/', scan recursively for .ts/.tsx files.
+ * Supports an optional base directory (defaults to PAGES_DIR).
  */
-function resolveEntry(entry: string): { abs: string; rel: string }[] {
+function resolveEntry(
+    entry: string,
+    baseDir = PAGES_DIR,
+): { abs: string; rel: string }[] {
     if (entry.endsWith('/')) {
-        const dir = join(PAGES_DIR, entry);
-        return collectFiles(dir);
+        const dir = join(baseDir, entry);
+        return collectFiles(dir, baseDir);
     }
-    return [{ abs: join(PAGES_DIR, entry), rel: entry }];
+    return [{ abs: join(baseDir, entry), rel: entry }];
 }
 
-function collectFiles(dir: string): { abs: string; rel: string }[] {
+function collectFiles(
+    dir: string,
+    baseDir = PAGES_DIR,
+): { abs: string; rel: string }[] {
     const results: { abs: string; rel: string }[] = [];
     const entries = readdirSync(dir);
     for (const name of entries) {
         const abs = join(dir, name);
-        const rel = relative(PAGES_DIR, abs);
+        const rel = relative(baseDir, abs);
         const stat = statSync(abs);
         if (stat.isDirectory()) {
-            results.push(...collectFiles(abs));
+            results.push(...collectFiles(abs, baseDir));
         } else if (name.endsWith('.ts') || name.endsWith('.tsx')) {
-            if (!EXCLUDED_FILES.has(rel)) {
+            if (!EXCLUDED_FILES.has(name) && !EXCLUDED_FILES.has(rel)) {
                 results.push({ abs, rel });
             }
         }
@@ -123,4 +131,58 @@ for (const entry of CLEAN_PAGES) {
             expect(styleViolations).toEqual([]);
         });
     }
+}
+
+// ── components/cemerog/ scan ──────────────────────────────────────────────────
+// Scans all .ts/.tsx files in the cemerog component library, excluding palettes.ts.
+// Tests will fail until the full token migration is complete.
+
+const CEMEROG_FILES = collectFiles(COMPONENTS_DIR, COMPONENTS_DIR).filter(
+    ({ rel }) => !rel.includes('__tests__'),
+);
+
+for (const { abs, rel } of CEMEROG_FILES) {
+    const lines = readFileSync(abs, 'utf-8').split('\n');
+
+    // ── Test 1: no hardcoded hex colors ──────────────────────────────────
+    const hexViolations: { line: number; text: string }[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (/^\s*(\/\/|\/\*|\*)/.test(line)) continue;
+        const stripped = line.replace(/font-\['[^']+'\]/g, '');
+        if (HEX_COLOR_RE.test(stripped)) {
+            hexViolations.push({ line: i + 1, text: line.trim() });
+        }
+    }
+
+    test(`cemerog/${rel} no hardcoded hex colors`, () => {
+        expect(hexViolations).toEqual([]);
+    });
+
+    // ── Test 2: no static style={{ ───────────────────────────────────────
+    const styleViolations: { line: number; text: string }[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.includes('style={{')) continue;
+
+        if (line.includes('// dynamic-style:')) continue;
+
+        let prevLineText = '';
+        for (let j = i - 1; j >= 0; j--) {
+            if (lines[j].trim() !== '') {
+                prevLineText = lines[j].trim();
+                break;
+            }
+        }
+
+        if (!prevLineText.startsWith('// dynamic-style:')) {
+            styleViolations.push({ line: i + 1, text: line.trim() });
+        }
+    }
+
+    test(`cemerog/${rel} no static style={{ (use Tailwind tokens instead)`, () => {
+        expect(styleViolations).toEqual([]);
+    });
 }
