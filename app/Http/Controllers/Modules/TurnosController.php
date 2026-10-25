@@ -10,6 +10,7 @@ use App\Http\Requests\StoreTurnRequest;
 use App\Http\Requests\UpdateTurnStatusRequest;
 use App\Models\Patient;
 use App\Models\Turn;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -70,10 +71,10 @@ class TurnosController extends Controller
      */
     public function callNext(Request $request): RedirectResponse|JsonResponse
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = $request->user();
 
-        abort_unless($user?->doctor !== null, 403);
+        abort_unless($user->doctor !== null, 403);
 
         $doctorId = $user->doctor->id;
         $today = Carbon::today();
