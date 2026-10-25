@@ -24,12 +24,14 @@ export default function EmptyState({
         <div
             className={`flex flex-col items-center justify-center py-16 text-center ${className}`}
         >
-            <div className="mb-4 rounded-full bg-[#EEF6E2] p-4">
-                <Icon className="h-8 w-8 text-[#2E8B3E]" aria-hidden="true" />
+            <div className="mb-4 rounded-full bg-accent-bg p-4">
+                <Icon className="h-8 w-8 text-primary" aria-hidden="true" />
             </div>
-            <h3 className="text-base font-semibold text-[#1f2d22]">{title}</h3>
+            <h3 className="text-base font-semibold text-text-heading">
+                {title}
+            </h3>
             {description && (
-                <p className="mt-1 max-w-sm text-sm text-[#71717a]">
+                <p className="mt-1 max-w-sm text-sm text-muted">
                     {description}
                 </p>
             )}

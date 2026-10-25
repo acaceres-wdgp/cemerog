@@ -104,13 +104,12 @@ export default function DataTable<TData extends RowData>({
                         {table.getHeaderGroups().map((headerGroup) => (
                             <tr
                                 key={headerGroup.id}
-                                className="h-10 border-b border-[#DCEBC9] bg-[#F6FAF1]"
+                                className="h-10 border-b border-success-border bg-table-header-bg"
                             >
                                 {headerGroup.headers.map((header, idx) => (
                                     <th
                                         key={header.id}
-                                        className={`py-0 text-left font-semibold tracking-[.05em] whitespace-nowrap text-[#56693f] uppercase ${idx === 0 ? 'pr-3 pl-5' : 'px-3'}`}
-                                        style={{ fontSize: '11.5px' }}
+                                        className={`py-0 text-left text-[11.5px] font-semibold tracking-[.05em] whitespace-nowrap text-table-header-text uppercase ${idx === 0 ? 'pr-3 pl-5' : 'px-3'}`}
                                     >
                                         {header.isPlaceholder
                                             ? null
@@ -129,7 +128,7 @@ export default function DataTable<TData extends RowData>({
                             <tr>
                                 <td
                                     colSpan={columns.length}
-                                    className="py-10 text-center text-[#71717a]"
+                                    className="py-10 text-center text-muted"
                                 >
                                     Cargando...
                                 </td>
@@ -138,7 +137,7 @@ export default function DataTable<TData extends RowData>({
                             <tr>
                                 <td
                                     colSpan={columns.length}
-                                    className="py-10 text-center text-[#71717a]"
+                                    className="py-10 text-center text-muted"
                                 >
                                     {emptyMessage}
                                 </td>
@@ -170,18 +169,18 @@ export default function DataTable<TData extends RowData>({
                                                 onRowClick(row.original);
                                             }
                                         }}
-                                        className={`border-b border-[#eef0ec] transition-colors last:border-0 ${
+                                        className={`border-b border-divider transition-colors last:border-0 ${
                                             isSelected
-                                                ? 'bg-[#F3F9EC]'
+                                                ? 'bg-info-bg'
                                                 : onRowClick
-                                                  ? 'cursor-pointer hover:bg-[#F6FAF1]'
+                                                  ? 'cursor-pointer hover:bg-table-header-bg'
                                                   : ''
                                         }`}
                                     >
                                         {row.getAllCells().map((cell, idx) => (
                                             <td
                                                 key={cell.id}
-                                                className={`py-3 text-[#333333] ${idx === 0 ? 'pr-3 pl-5' : 'px-3'}`}
+                                                className={`py-3 text-text-body ${idx === 0 ? 'pr-3 pl-5' : 'px-3'}`}
                                             >
                                                 {flexRender(
                                                     cell.column.columnDef.cell,
@@ -199,7 +198,7 @@ export default function DataTable<TData extends RowData>({
 
             {/* Pagination footer */}
             {paginator && onPageChange && (
-                <div className="flex items-center justify-between border-t border-[#eef0ec] px-5 py-3 text-sm text-[#71717a]">
+                <div className="flex items-center justify-between border-t border-divider px-5 py-3 text-sm text-muted">
                     <span>
                         {total > 0
                             ? `Mostrando ${from}–${to} de ${total} ${noun}`
@@ -212,7 +211,7 @@ export default function DataTable<TData extends RowData>({
                             <button
                                 onClick={() => onPageChange(currentPage - 1)}
                                 disabled={currentPage === 1}
-                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e3e9e3] bg-white text-[#71717a] hover:bg-[#F3F7F2] disabled:cursor-not-allowed disabled:opacity-40"
+                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-card-border bg-white text-muted hover:bg-app-bg disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label="Página anterior"
                             >
                                 <ChevronLeft className="h-4 w-4" />
@@ -222,7 +221,7 @@ export default function DataTable<TData extends RowData>({
                                 p === '...' ? (
                                     <span
                                         key={`ellipsis-${idx}`}
-                                        className="flex h-8 w-8 items-center justify-center text-[#a1a1aa]"
+                                        className="flex h-8 w-8 items-center justify-center text-muted-light"
                                     >
                                         …
                                     </span>
@@ -232,8 +231,8 @@ export default function DataTable<TData extends RowData>({
                                         onClick={() => onPageChange(p)}
                                         className={`flex h-8 w-8 items-center justify-center rounded-lg border text-sm font-medium transition-colors ${
                                             p === currentPage
-                                                ? 'border-[#2E8B3E] bg-[#2E8B3E] text-white'
-                                                : 'border-[#e3e9e3] bg-white text-[#71717a] hover:bg-[#F3F7F2]'
+                                                ? 'border-primary bg-primary text-white'
+                                                : 'border-card-border bg-white text-muted hover:bg-app-bg'
                                         }`}
                                         aria-current={
                                             p === currentPage
@@ -250,7 +249,7 @@ export default function DataTable<TData extends RowData>({
                             <button
                                 onClick={() => onPageChange(currentPage + 1)}
                                 disabled={currentPage === lastPage}
-                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e3e9e3] bg-white text-[#71717a] hover:bg-[#F3F7F2] disabled:cursor-not-allowed disabled:opacity-40"
+                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-card-border bg-white text-muted hover:bg-app-bg disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label="Página siguiente"
                             >
                                 <ChevronRight className="h-4 w-4" />

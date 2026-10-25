@@ -19,8 +19,8 @@ describe('SegmentedControl', () => {
             />,
         );
         const div = container.firstElementChild as HTMLElement;
-        expect(div.className).toContain('bg-[#F3F7F2]');
-        expect(div.className).toContain('border-[#e3e9e3]');
+        expect(div.className).toContain('bg-app-bg');
+        expect(div.className).toContain('border-card-border');
         expect(div.className).toContain('rounded-[11px]');
         expect(div.className).toContain('p-[3px]');
     });

@@ -27,108 +27,45 @@ interface StatusBadgeProps {
 
 const STATE_CONFIG: Record<
     AttentionState,
-    {
-        label: string;
-        bg: string;
-        text: string;
-        border: string;
-        noBorder?: boolean;
-    }
+    { label: string; stateClass: string; noBorder?: boolean }
 > = {
-    espera: {
-        label: 'En espera',
-        bg: '#FEF3C7',
-        text: '#92400E',
-        border: '#D97706',
-    },
-    consulta: {
-        label: 'Consulta',
-        bg: '#DBEAFE',
-        text: '#1E40AF',
-        border: '#2563EB',
-    },
-    emergencia: {
-        label: 'Emergencia',
-        bg: '#FEE2E2',
-        text: '#991B1B',
-        border: '#DC2626',
-    },
-    internado: {
-        label: 'Internado',
-        bg: '#EDE9FE',
-        text: '#5B21B6',
-        border: '#7C3AED',
-    },
-    cirugia: {
-        label: 'Cirugía',
-        bg: '#FCE7F3',
-        text: '#9D174D',
-        border: '#DB2777',
-    },
-    pendiente: {
-        label: 'Pendiente',
-        bg: '#FFEDD5',
-        text: '#9A3412',
-        border: '#EA580C',
-    },
-    balance: {
-        label: 'Balance',
-        bg: '#CFFAFE',
-        text: '#155E75',
-        border: '#0891B2',
-    },
-    saldada: {
-        label: 'Saldada',
-        bg: '#2E8B3E',
-        text: '#FFFFFF',
-        border: '#2E8B3E',
-    },
-    cancelada: {
-        label: 'Cancelada',
-        bg: '#F4F4F5',
-        text: '#52525B',
-        border: '#A1A1AA',
-    },
+    espera: { label: 'En espera', stateClass: 'state-espera' },
+    consulta: { label: 'Consulta', stateClass: 'state-consulta' },
+    emergencia: { label: 'Emergencia', stateClass: 'state-emergencia' },
+    internado: { label: 'Internado', stateClass: 'state-internado' },
+    cirugia: { label: 'Cirugía', stateClass: 'state-cirugia' },
+    pendiente: { label: 'Pendiente', stateClass: 'state-pendiente' },
+    balance: { label: 'Balance', stateClass: 'state-balance' },
+    saldada: { label: 'Saldada', stateClass: 'state-saldada' },
+    cancelada: { label: 'Cancelada', stateClass: 'state-cancelada' },
     'cita-pendiente': {
         label: 'Pendiente',
-        bg: '#FEF3C7',
-        text: '#92400E',
-        border: '#FEF3C7',
+        stateClass: 'state-espera',
         noBorder: true,
     },
     'cita-confirmada': {
         label: 'Confirmada',
-        bg: '#F3F7F2',
-        text: '#2E8B3E',
-        border: '#F3F7F2',
+        stateClass: 'state-cita-confirmada',
         noBorder: true,
     },
     'cita-en_lista': {
         label: 'En lista',
-        bg: '#DBEAFE',
-        text: '#1E40AF',
-        border: '#DBEAFE',
+        stateClass: 'state-consulta',
         noBorder: true,
     },
     'cita-atendida': {
         label: 'Atendida',
-        bg: '#DCFCE7',
-        text: '#166534',
-        border: '#DCFCE7',
+        stateClass: 'state-cita-atendida',
         noBorder: true,
     },
     'cita-no_asistio': {
         label: 'No asistió',
-        bg: '#F4F4F5',
-        text: '#52525B',
-        border: '#F4F4F5',
+        stateClass: 'state-cancelada',
         noBorder: true,
     },
     'cita-cancelada': {
         label: 'Cancelada',
-        bg: '#F4F4F5',
-        text: '#52525B',
-        border: '#F4F4F5',
+        stateClass: 'state-cancelada',
         noBorder: true,
     },
 };
@@ -142,12 +79,7 @@ export default function StatusBadge({
 
     return (
         <span
-            className={`inline-flex items-center rounded-full text-xs font-semibold ${config.noBorder ? 'px-[9px] py-[2px]' : 'border px-2.5 py-0.5'} ${className}`}
-            style={{
-                backgroundColor: config.bg,
-                color: config.text,
-                ...(config.noBorder ? {} : { borderColor: config.border }),
-            }}
+            className={`inline-flex items-center rounded-full text-xs font-semibold ${config.stateClass} bg-[var(--state-bg)] text-[var(--state-text)] ${config.noBorder ? 'px-[9px] py-[2px]' : 'border border-[var(--state-accent)] px-2.5 py-0.5'} ${className}`}
         >
             {label ?? config.label}
         </span>

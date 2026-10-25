@@ -18,7 +18,7 @@ export default function MoneyText({
     colorize = false,
 }: MoneyTextProps) {
     const isNegative = centavos < 0;
-    const colorClass = colorize ? (isNegative ? 'text-[#b91c1c]' : '') : '';
+    const colorClass = colorize ? (isNegative ? 'text-error' : '') : '';
 
     return (
         <span className={`font-medium tabular-nums ${colorClass} ${className}`}>

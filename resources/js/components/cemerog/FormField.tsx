@@ -64,20 +64,20 @@ const FormField = forwardRef<
         },
         ref,
     ) => {
-        const inputClasses = `w-full rounded-md border px-3 py-2 text-sm text-[#333333] placeholder:text-[#71717a] focus:outline-none focus:ring-2 focus:ring-[#2E8B3E] focus:border-[#2E8B3E] transition-colors ${
+        const inputClasses = `w-full rounded-md border px-3 py-2 text-sm text-text-body placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${
             error
-                ? 'border-[#fecaca] bg-[#fef2f2]'
-                : 'border-[#e4e4e7] bg-white'
+                ? 'border-error-border bg-error-bg'
+                : 'border-input-border bg-white'
         }`;
 
         return (
             <div className={`flex flex-col gap-1.5 ${className}`}>
                 <label
                     htmlFor={name}
-                    className="text-sm font-medium text-[#1f2d22]"
+                    className="text-sm font-medium text-text-heading"
                 >
                     {label}
-                    {required && <span className="ml-1 text-[#b91c1c]">*</span>}
+                    {required && <span className="ml-1 text-error">*</span>}
                 </label>
 
                 {Component === 'textarea' ? (
@@ -109,13 +109,11 @@ const FormField = forwardRef<
                 )}
 
                 {error && (
-                    <p className="text-xs text-[#b91c1c]" role="alert">
+                    <p className="text-xs text-error" role="alert">
                         {error}
                     </p>
                 )}
-                {help && !error && (
-                    <p className="text-xs text-[#71717a]">{help}</p>
-                )}
+                {help && !error && <p className="text-xs text-muted">{help}</p>}
             </div>
         );
     },

@@ -1,8 +1,8 @@
 /**
  * SegmentedControl – pill-style tabs with optional count display.
- * Design tokens: bg #F3F7F2, border #e3e9e3, radius 11px, padding 3px.
+ * Design tokens: bg app-bg, border card-border, radius 11px, padding 3px.
  * Active: white background, shadow 0 1px 2px rgba(0,0,0,.08).
- * Counter: plain text 12px #8a948e — no badge/pill.
+ * Counter: plain text 12px text-text-tertiary — no badge/pill.
  */
 
 interface Segment<T extends string = string> {
@@ -26,7 +26,7 @@ export default function SegmentedControl<T extends string = string>({
 }: SegmentedControlProps<T>) {
     return (
         <div
-            className={`inline-flex gap-0.5 rounded-[11px] border border-[#e3e9e3] bg-[#F3F7F2] p-[3px] ${className}`}
+            className={`inline-flex gap-0.5 rounded-[11px] border border-card-border bg-app-bg p-[3px] ${className}`}
             role="tablist"
         >
             {segments.map((seg) => {
@@ -39,14 +39,14 @@ export default function SegmentedControl<T extends string = string>({
                         onClick={() => onChange(seg.value)}
                         className={`inline-flex h-[30px] items-center gap-1.5 rounded-[10px] px-3 text-sm font-[500] transition-all ${
                             active
-                                ? 'bg-white text-[#333] shadow-[0_1px_2px_rgba(0,0,0,.08)]'
-                                : 'bg-transparent text-[#71717a] hover:text-[#333333]'
+                                ? 'bg-white text-text-body shadow-[0_1px_2px_rgba(0,0,0,.08)]'
+                                : 'bg-transparent text-muted hover:text-text-body'
                         }`}
                     >
                         {seg.label}
                         {seg.count !== undefined && (
                             <span
-                                className="text-[12px] text-[#8a948e] tabular-nums"
+                                className="text-[12px] text-text-tertiary tabular-nums"
                                 aria-label={`${seg.count}`}
                             >
                                 {seg.count}

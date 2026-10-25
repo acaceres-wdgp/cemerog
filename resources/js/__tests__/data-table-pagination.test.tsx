@@ -79,7 +79,7 @@ describe('DataTable pagination', () => {
     });
 
     // N4 – active page button has green bg
-    it('botón de página activa tiene bg-[#2E8B3E] y texto blanco', () => {
+    it('botón de página activa tiene bg-primary y texto blanco', () => {
         render(
             <DataTable
                 data={[{ id: 1, name: 'Ana' }]}
@@ -89,7 +89,7 @@ describe('DataTable pagination', () => {
             />,
         );
         const activeBtn = screen.getByRole('button', { name: '2' });
-        expect(activeBtn.className).toContain('bg-[#2E8B3E]');
+        expect(activeBtn.className).toContain('bg-primary');
         expect(activeBtn.className).toContain('text-white');
     });
 
@@ -176,7 +176,7 @@ describe('DataTable pagination', () => {
     });
 
     // Selected row highlight
-    it('fila seleccionada tiene fondo #F3F9EC', () => {
+    it('fila seleccionada tiene fondo bg-info-bg', () => {
         render(
             <DataTable
                 data={[{ id: 42, name: 'Seleccionado' }]}
@@ -186,6 +186,6 @@ describe('DataTable pagination', () => {
             />,
         );
         const tr = screen.getByRole('button');
-        expect(tr.className).toContain('bg-[#F3F9EC]');
+        expect(tr.className).toContain('bg-info-bg');
     });
 });

@@ -87,6 +87,55 @@ describe('StatusBadge', () => {
     });
 });
 
+describe('StatusBadge — attention states apply semantic CSS class', () => {
+    const attentionStates = [
+        'espera',
+        'consulta',
+        'emergencia',
+        'internado',
+        'cirugia',
+        'pendiente',
+        'balance',
+        'saldada',
+        'cancelada',
+    ] as const;
+
+    it.each(attentionStates)('%s applies the state-%s CSS class', (state) => {
+        const { container } = render(<StatusBadge state={state} />);
+        expect(container.firstChild).toHaveClass(`state-${state}`);
+    });
+
+    it('cita-pendiente reuses espera color class', () => {
+        const { container } = render(<StatusBadge state="cita-pendiente" />);
+        expect(container.firstChild).toHaveClass('state-espera');
+    });
+
+    it('cita-en_lista reuses consulta color class', () => {
+        const { container } = render(<StatusBadge state="cita-en_lista" />);
+        expect(container.firstChild).toHaveClass('state-consulta');
+    });
+
+    it('cita-no_asistio reuses cancelada color class', () => {
+        const { container } = render(<StatusBadge state="cita-no_asistio" />);
+        expect(container.firstChild).toHaveClass('state-cancelada');
+    });
+
+    it('cita-cancelada reuses cancelada color class', () => {
+        const { container } = render(<StatusBadge state="cita-cancelada" />);
+        expect(container.firstChild).toHaveClass('state-cancelada');
+    });
+
+    it('cita-atendida applies state-cita-atendida class', () => {
+        const { container } = render(<StatusBadge state="cita-atendida" />);
+        expect(container.firstChild).toHaveClass('state-cita-atendida');
+    });
+
+    it('cita-confirmada applies state-cita-confirmada class', () => {
+        const { container } = render(<StatusBadge state="cita-confirmada" />);
+        expect(container.firstChild).toHaveClass('state-cita-confirmada');
+    });
+});
+
 describe('StatusBadge — cita-* states have no border', () => {
     const citaStates = [
         'cita-pendiente',
