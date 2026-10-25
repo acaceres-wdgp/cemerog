@@ -153,13 +153,17 @@ describe('RegistroEdit', () => {
     describe('máscara según tipo de documento', () => {
         it('muestra MaskedInput para cédula', () => {
             render(<RegistroEdit patient={basePatient} />);
-            expect(screen.getAllByTestId('masked-input').length).toBeGreaterThan(
-                0,
-            );
+            expect(
+                screen.getAllByTestId('masked-input').length,
+            ).toBeGreaterThan(0);
         });
 
         it('muestra input de texto para pasaporte', () => {
-            const patient = { ...basePatient, document_type: 'pasaporte' as const, document_number: 'AB123456' };
+            const patient = {
+                ...basePatient,
+                document_type: 'pasaporte' as const,
+                document_number: 'AB123456',
+            };
             render(<RegistroEdit patient={patient} />);
             expect(screen.getByDisplayValue('AB123456')).toBeTruthy();
         });
@@ -192,9 +196,7 @@ describe('RegistroEdit', () => {
         it('muestra error en nombres', () => {
             formState.errors = { first_names: 'El nombre es obligatorio.' };
             render(<RegistroEdit patient={basePatient} />);
-            expect(
-                screen.getByText('El nombre es obligatorio.'),
-            ).toBeTruthy();
+            expect(screen.getByText('El nombre es obligatorio.')).toBeTruthy();
         });
 
         it('muestra error en número de documento', () => {
@@ -227,9 +229,7 @@ describe('RegistroEdit', () => {
             render(<RegistroEdit patient={basePatient} />);
             const form = document.querySelector('form')!;
             fireEvent.submit(form);
-            expect(mockPut).toHaveBeenCalledWith(
-                '/registro/pacientes/42',
-            );
+            expect(mockPut).toHaveBeenCalledWith('/registro/pacientes/42');
         });
     });
 
@@ -272,9 +272,7 @@ describe('RegistroEdit', () => {
 
         it('no muestra el botón "Eliminar foto" cuando no hay foto', () => {
             render(<RegistroEdit patient={basePatient} />);
-            expect(
-                screen.queryByText('Eliminar foto'),
-            ).toBeNull();
+            expect(screen.queryByText('Eliminar foto')).toBeNull();
         });
 
         it('muestra error cuando el tipo de archivo no es permitido', () => {
