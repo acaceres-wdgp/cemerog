@@ -117,14 +117,21 @@ export function TurnoActualCard({
             {/* Call next button */}
             <button
                 onClick={handleCallNext}
-                disabled={loading || waitingCount === 0 || queue === undefined}
+                disabled={
+                    loading ||
+                    waitingCount === 0 ||
+                    queue === undefined ||
+                    currentTurn !== null
+                }
                 className="w-full rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-fg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
                 {queue === undefined
                     ? 'Cargando…'
-                    : waitingCount === 0
-                      ? 'Sin pacientes en espera'
-                      : 'Llamar siguiente'}
+                    : currentTurn !== null
+                      ? `En consulta: T-${String(currentTurn.turn_number).padStart(2, '0')}`
+                      : waitingCount === 0
+                        ? 'Sin pacientes en espera'
+                        : 'Llamar siguiente'}
             </button>
         </div>
     );

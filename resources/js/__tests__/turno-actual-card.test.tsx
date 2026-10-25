@@ -95,3 +95,46 @@ describe('TurnoActualCard – queue loaded', () => {
         expect(screen.getByText(/1 paciente en espera/)).toBeInTheDocument();
     });
 });
+
+// ─── Adjustment 4: current_turn in consultation ───────────────────────────────
+
+describe('TurnoActualCard – current_turn en consulta', () => {
+    it('muestra el turno activo cuando hay un turno en_consulta', () => {
+        render(
+            <TurnoActualCard
+                doctor={doctor}
+                queue={{
+                    current_turn: {
+                        id: 5,
+                        turn_number: 3,
+                        patient_name: 'Juan Pérez',
+                    },
+                    waiting_count: 1,
+                }}
+                collapsed={false}
+            />,
+        );
+        expect(screen.getByText('T-03')).toBeInTheDocument();
+        expect(screen.getByText('Juan Pérez')).toBeInTheDocument();
+    });
+
+    it('el botón muestra "En consulta" y está deshabilitado cuando hay current_turn', () => {
+        render(
+            <TurnoActualCard
+                doctor={doctor}
+                queue={{
+                    current_turn: {
+                        id: 5,
+                        turn_number: 3,
+                        patient_name: 'Juan Pérez',
+                    },
+                    waiting_count: 2,
+                }}
+                collapsed={false}
+            />,
+        );
+        const btn = screen.getByRole('button');
+        expect(btn).toBeDisabled();
+        expect(btn.textContent).toMatch(/En consulta/i);
+    });
+});

@@ -234,6 +234,46 @@ test('usuario sin doctor vinculado no puede llamar siguiente (403)', function ()
         ->assertStatus(403);
 });
 
+// ─── Adjustment 4: impedir llamar siguiente cuando hay un turno en_consulta ──
+
+test('callNext retorna error y no cambia estado si ya hay un turno en_consulta', function () {
+    $user = User::factory()->create();
+    $user->assignRole('medico');
+
+    $specialty = Specialty::factory()->create();
+    $doctor = Doctor::factory()->create([
+        'specialty_id' => $specialty->id,
+        'user_id' => $user->id,
+    ]);
+
+    $consultaTurn = Turn::factory()->create([
+        'doctor_id' => $doctor->id,
+        'patient_id' => Patient::factory()->create()->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+        'turn_number' => 1,
+        'turn_order' => 10,
+    ]);
+
+    $waitingTurn = Turn::factory()->create([
+        'doctor_id' => $doctor->id,
+        'patient_id' => Patient::factory()->create()->id,
+        'status' => 'espera',
+        'arrived_at' => now(),
+        'turn_number' => 2,
+        'turn_order' => 20,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('turnos.call-next'))
+        ->assertRedirect()
+        ->assertSessionHasErrors(['queue']);
+
+    // No turn should change status
+    expect($consultaTurn->fresh()->status)->toBe('en_consulta');
+    expect($waitingTurn->fresh()->status)->toBe('espera');
+});
+
 // ─── Adjustment 3: queue usa arrived_at, no created_at ───────────────────────
 
 test('queue no cuenta turnos con arrived_at de ayer', function () {

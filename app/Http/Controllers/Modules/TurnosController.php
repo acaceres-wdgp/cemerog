@@ -79,6 +79,20 @@ class TurnosController extends Controller
         $doctorId = $user->doctor->id;
         $today = Carbon::today();
 
+        // Prevent calling the next patient if one is already in consultation
+        $inConsulta = Turn::where('doctor_id', $doctorId)
+            ->where('status', 'en_consulta')
+            ->whereDate('arrived_at', $today)
+            ->first();
+
+        if ($inConsulta !== null) {
+            $label = 'T-'.str_pad((string) $inConsulta->turn_number, 2, '0', STR_PAD_LEFT);
+
+            return back()->withErrors([
+                'queue' => "Ya tienes un paciente en consulta ({$label}). Termina la consulta antes de llamar al siguiente.",
+            ]);
+        }
+
         $next = Turn::where('doctor_id', $doctorId)
             ->where('status', 'espera')
             ->whereDate('arrived_at', $today)
