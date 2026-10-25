@@ -1,8 +1,36 @@
 /**
- * UserMenu – avatar + name dropdown in the topbar.
+ * UserMenu – avatar + name + role dropdown in the topbar.
  */
 
-import { LogOut } from 'lucide-react';
+import { ChevronDown, LogOut } from 'lucide-react';
+
+/** Human-readable role labels (es-DO) */
+const ROLE_LABELS: Record<string, string> = {
+    administrador: 'Administrador',
+    medico: 'Médico',
+    enfermeria: 'Enfermería',
+    secretaria: 'Secretaría',
+    bioanalista: 'Bioanalista',
+    imagenes: 'Imágenes',
+    caja: 'Caja',
+    almacen: 'Almacén',
+};
+
+function roleLabel(roles: string[]): string {
+    if (roles.length === 0) return '';
+    return ROLE_LABELS[roles[0]] ?? roles[0];
+}
+
+/** Two-letter initials from a full name (first letter of first two words) */
+function getInitials(name: string): string {
+    const parts = name.trim().split(/\s+/);
+    return (
+        parts
+            .slice(0, 2)
+            .map((w) => w.charAt(0).toUpperCase())
+            .join('') || 'U'
+    );
+}
 
 export interface UserMenuProps {
     name: string;
@@ -23,12 +51,8 @@ export function UserMenu({
     onClose,
     onLogout,
 }: UserMenuProps) {
-    const initials =
-        name
-            .split(' ')
-            .slice(0, 2)
-            .map((w) => w.charAt(0).toUpperCase())
-            .join('') || 'U';
+    const initials = getInitials(name);
+    const label = roleLabel(roles);
 
     return (
         <div className="relative">
@@ -38,10 +62,26 @@ export function UserMenu({
                 aria-label={name}
                 aria-expanded={showUserMenu}
             >
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
+                <div
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white"
+                    data-testid="user-avatar"
+                >
                     {initials}
                 </div>
-                <span className="hidden text-text-body md:inline">{name}</span>
+                <div className="hidden flex-col items-start md:flex">
+                    <span className="text-sm leading-tight font-medium text-text-heading">
+                        {name}
+                    </span>
+                    {label && (
+                        <span
+                            className="text-xs leading-tight text-muted"
+                            data-testid="user-role"
+                        >
+                            {label}
+                        </span>
+                    )}
+                </div>
+                <ChevronDown className="hidden h-3.5 w-3.5 text-muted md:block" />
             </button>
 
             {showUserMenu && (

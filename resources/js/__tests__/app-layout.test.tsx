@@ -228,8 +228,10 @@ describe('user menu', () => {
     it('shows user roles in the user menu', () => {
         render(<AppLayout>x</AppLayout>);
         fireEvent.click(screen.getByRole('button', { name: /Ana Gómez/i }));
-        // Role is shown in the dropdown
-        expect(screen.getByText(/administrador/i)).toBeInTheDocument();
+        // Role is shown in the dropdown (may appear more than once across topbar + dropdown)
+        expect(
+            screen.getAllByText(/administrador/i).length,
+        ).toBeGreaterThan(0);
     });
 });
 
@@ -267,12 +269,8 @@ describe('sidebar collapse / expand', () => {
 
     it('expands the sidebar when the expand button is clicked after collapse', () => {
         render(<AppLayout>x</AppLayout>);
-        fireEvent.click(
-            screen.getByRole('button', { name: /Colapsar menú/i }),
-        );
-        fireEvent.click(
-            screen.getByRole('button', { name: /Expandir menú/i }),
-        );
+        fireEvent.click(screen.getByRole('button', { name: /Colapsar menú/i }));
+        fireEvent.click(screen.getByRole('button', { name: /Expandir menú/i }));
         // Back to expanded – collapse button visible again
         expect(
             screen.getByRole('button', { name: /Colapsar menú/i }),
@@ -282,13 +280,16 @@ describe('sidebar collapse / expand', () => {
     it('hides section labels when collapsed', () => {
         render(<AppLayout>x</AppLayout>);
         // Section labels visible when expanded
-        const generalLabel = screen.getByText('General', { exact: true, selector: 'p' });
+        const generalLabel = screen.getByText('General', {
+            exact: true,
+            selector: 'p',
+        });
         expect(generalLabel).toBeInTheDocument();
-        fireEvent.click(
-            screen.getByRole('button', { name: /Colapsar menú/i }),
-        );
+        fireEvent.click(screen.getByRole('button', { name: /Colapsar menú/i }));
         // Section labels hidden when collapsed
-        expect(screen.queryByText('General', { exact: true, selector: 'p' })).not.toBeInTheDocument();
+        expect(
+            screen.queryByText('General', { exact: true, selector: 'p' }),
+        ).not.toBeInTheDocument();
     });
 });
 
