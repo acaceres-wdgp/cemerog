@@ -427,3 +427,105 @@ test('GET /registro?paciente=9999 retorna 404', function () {
         ->get('/registro?paciente=9999')
         ->assertNotFound();
 });
+
+// ─── Adj-1: no duplicate Dr. prefix ──────────────────────────────────────────
+
+// Adj1-A – exception message must not prepend "Dr." when name already has it
+test('el mensaje no duplica el prefijo Dr. cuando el nombre ya lo incluye', function () {
+    $specialty = Specialty::factory()->create(['name' => 'Ginecología']);
+    $doctor = Doctor::factory()->create([
+        'specialty_id' => $specialty->id,
+        'name' => 'Dra. López',
+        'is_active' => true,
+    ]);
+
+    $patient = Patient::factory()->create();
+    Turn::factory()->create([
+        'patient_id' => $patient->id,
+        'doctor_id' => $doctor->id,
+        'status' => 'espera',
+        'arrived_at' => now(),
+    ]);
+
+    $response = $this->actingAs($this->secretaria)
+        ->post('/registro', [
+            'patient_id' => $patient->id,
+            'first_names' => $patient->first_names,
+            'last_names' => $patient->last_names,
+            'document_type' => $patient->document_type,
+            'document_number' => $patient->document_number,
+            'birth_date' => $patient->birth_date->format('Y-m-d'),
+            'sex' => $patient->sex,
+            'phone' => $patient->phone ?? '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $doctor->id,
+        ]);
+
+    $response->assertSessionHasErrors(['open_turn']);
+    $errors = session('errors')->toArray();
+    expect($errors['open_turn'][0])->toContain('con Dra. López');
+    expect($errors['open_turn'][0])->not->toContain('Dr. Dra.');
+});
+
+// ─── Adj-2: status shown as human-readable label in exception message ─────────
+
+// Adj2-A – exception message shows "En espera" not raw "espera"
+test('el mensaje de error muestra "En espera" en lugar del estado raw espera', function () {
+    $patient = Patient::factory()->create();
+    Turn::factory()->create([
+        'patient_id' => $patient->id,
+        'doctor_id' => $this->doctor->id,
+        'status' => 'espera',
+        'arrived_at' => now(),
+    ]);
+
+    $response = $this->actingAs($this->secretaria)
+        ->post('/registro', [
+            'patient_id' => $patient->id,
+            'first_names' => $patient->first_names,
+            'last_names' => $patient->last_names,
+            'document_type' => $patient->document_type,
+            'document_number' => $patient->document_number,
+            'birth_date' => $patient->birth_date->format('Y-m-d'),
+            'sex' => $patient->sex,
+            'phone' => $patient->phone ?? '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
+        ]);
+
+    $response->assertSessionHasErrors(['open_turn']);
+    $errors = session('errors')->toArray();
+    expect($errors['open_turn'][0])->toContain('En espera');
+    expect($errors['open_turn'][0])->not->toContain('espera,');
+    expect($errors['open_turn'][0])->not->toContain('(espera)');
+});
+
+// Adj2-B – exception message shows "En consulta" not raw "en_consulta"
+test('el mensaje de error muestra "En consulta" en lugar del estado raw en_consulta', function () {
+    $patient = Patient::factory()->create();
+    Turn::factory()->create([
+        'patient_id' => $patient->id,
+        'doctor_id' => $this->doctor->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
+    $response = $this->actingAs($this->secretaria)
+        ->post('/registro', [
+            'patient_id' => $patient->id,
+            'first_names' => $patient->first_names,
+            'last_names' => $patient->last_names,
+            'document_type' => $patient->document_type,
+            'document_number' => $patient->document_number,
+            'birth_date' => $patient->birth_date->format('Y-m-d'),
+            'sex' => $patient->sex,
+            'phone' => $patient->phone ?? '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
+        ]);
+
+    $response->assertSessionHasErrors(['open_turn']);
+    $errors = session('errors')->toArray();
+    expect($errors['open_turn'][0])->toContain('En consulta');
+    expect($errors['open_turn'][0])->not->toContain('(en_consulta)');
+});

@@ -16,8 +16,10 @@ class PatientHasOpenTurnException extends RuntimeException
             ? $openTurn->doctor->name
             : $openTurn->doctor()->value('name') ?? 'desconocido';
 
+        $statusLabel = Turn::statusLabel($openTurn->status);
+
         parent::__construct(
-            "El paciente ya tiene un turno abierto hoy con Dr. {$doctorName} (A-{$openTurn->id}, {$openTurn->status})."
+            "El paciente ya tiene un turno abierto hoy con {$doctorName} (A-{$openTurn->id}, {$statusLabel})."
         );
     }
 }

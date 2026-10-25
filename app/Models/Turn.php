@@ -66,4 +66,20 @@ class Turn extends Model
     {
         return $this->belongsTo(Appointment::class);
     }
+
+    /**
+     * Return a human-readable label for the given turn status.
+     *
+     * Known states: espera | en_consulta | atendido | no_asistio
+     */
+    public static function statusLabel(string $status): string
+    {
+        return match ($status) {
+            'espera' => 'En espera',
+            'en_consulta' => 'En consulta',
+            'atendido' => 'Atendido',
+            'no_asistio' => 'No asistió',
+            default => $status,
+        };
+    }
 }
