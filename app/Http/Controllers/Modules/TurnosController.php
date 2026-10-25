@@ -10,8 +10,10 @@ use App\Http\Requests\StoreTurnRequest;
 use App\Http\Requests\UpdateTurnStatusRequest;
 use App\Models\Patient;
 use App\Models\Turn;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class TurnosController extends Controller
 {
@@ -60,5 +62,34 @@ class TurnosController extends Controller
         $action->handle($turn, (string) $request->input('direction'));
 
         return redirect()->route('tablero');
+    }
+
+    /**
+     * Advance the next waiting turn (lowest turn_order) for the authenticated
+     * doctor's queue to "en_consulta". Only available to users with a linked doctor.
+     */
+    public function callNext(Request $request): RedirectResponse|JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        abort_unless($user?->doctor !== null, 403);
+
+        $doctorId = $user->doctor->id;
+        $today = Carbon::today();
+
+        $next = Turn::where('doctor_id', $doctorId)
+            ->where('status', 'espera')
+            ->whereDate('created_at', $today)
+            ->orderBy('turn_order')
+            ->first();
+
+        if ($next === null) {
+            return response()->json(['message' => 'No hay pacientes en espera.'], 422);
+        }
+
+        $next->update(['status' => 'en_consulta']);
+
+        return back()->with('flash', ['type' => 'success', 'message' => 'Paciente llamado.']);
     }
 }

@@ -5,6 +5,7 @@
  */
 
 import { Link, usePage } from '@inertiajs/react';
+import { TurnoActualCard } from './TurnoActualCard';
 import {
     House,
     LayoutDashboard,
@@ -94,9 +95,11 @@ export function Sidebar({
     onToggleThemePicker,
     isActiveItem,
 }: SidebarProps) {
+    const pageProps = usePage<PageProps>().props;
     const permissions: string[] =
-        (usePage<PageProps>().props as unknown as { permissions?: string[] })
-            .permissions ?? [];
+        (pageProps as unknown as { permissions?: string[] }).permissions ?? [];
+    const doctor = pageProps.doctor ?? null;
+    const queue = pageProps.queue ?? null;
 
     return (
         <aside
@@ -170,6 +173,15 @@ export function Sidebar({
                     );
                 })}
             </nav>
+
+            {/* Turno actual card – only for users with a linked doctor */}
+            {doctor && (
+                <TurnoActualCard
+                    doctor={doctor}
+                    queue={queue}
+                    collapsed={collapsed}
+                />
+            )}
 
             {/* Footer – theme picker + collapse toggle */}
             <div className="border-t border-white/10 px-3 py-3">

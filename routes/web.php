@@ -66,6 +66,9 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::patch('/turnos/{turn}/reorder', [TurnosController::class, 'reorder'])->name('turnos.reorder');
     });
 
+    // Doctor queue – "Llamar siguiente" (sidebar card)
+    Route::post('/turnos/llamar-siguiente', [TurnosController::class, 'callNext'])->name('turnos.call-next');
+
     // Pacientes – listing and detail panel
     Route::prefix('/pacientes')->middleware('permission:module.pacientes.access')->group(function () {
         Route::get('/', [PacientesController::class, 'index'])->name('pacientes');
