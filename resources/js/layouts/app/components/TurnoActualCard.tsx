@@ -1,10 +1,11 @@
 /**
  * TurnoActualCard – sidebar card showing the doctor's current turn and queue.
  * Only rendered when the authenticated user has a linked doctor.
- * Queue data is fetched via a partial reload of the 'queue' optional prop.
+ * Queue data is loaded via Inertia::defer() on the backend; the frontend
+ * triggers a partial reload on mount to fetch it.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { Stethoscope } from 'lucide-react';
 import type { DoctorProp, QueueProp } from '@/types/global';
@@ -21,6 +22,14 @@ export function TurnoActualCard({
     collapsed,
 }: TurnoActualCardProps) {
     const [loading, setLoading] = useState(false);
+
+    // Trigger a partial reload on mount to fetch the deferred queue prop
+    useEffect(() => {
+        if (queue === undefined) {
+            router.reload({ only: ['queue'] });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleCallNext = () => {
         setLoading(true);
@@ -67,35 +76,49 @@ export function TurnoActualCard({
                 </span>
             </div>
 
-            {/* Current turn */}
-            <p className="mb-1 text-sm font-semibold text-white">
-                {currentTurn
-                    ? `T-${String(currentTurn.turn_number).padStart(2, '0')}`
-                    : 'Sin turno activo'}
-            </p>
-            {currentTurn && (
-                <p className="mb-2 truncate text-xs text-white/60">
-                    {currentTurn.patient_name}
+            {/* Loading state while queue is being fetched */}
+            {queue === undefined ? (
+                <p
+                    className="mb-2 text-xs text-white/40"
+                    data-testid="turno-loading"
+                >
+                    Cargando…
                 </p>
-            )}
+            ) : (
+                <>
+                    {/* Current turn */}
+                    <p className="mb-1 text-sm font-semibold text-white">
+                        {currentTurn
+                            ? `T-${String(currentTurn.turn_number).padStart(2, '0')}`
+                            : 'Sin turno activo'}
+                    </p>
+                    {currentTurn && (
+                        <p className="mb-2 truncate text-xs text-white/60">
+                            {currentTurn.patient_name}
+                        </p>
+                    )}
 
-            {/* Waiting count + office */}
-            <p className="mb-2 text-xs text-white/50">
-                {waitingCount === 1
-                    ? '1 paciente en espera'
-                    : `${waitingCount} pacientes en espera`}
-                {doctor.office ? ` · ${doctor.office}` : ''}
-            </p>
+                    {/* Waiting count + office */}
+                    <p className="mb-2 text-xs text-white/50">
+                        {waitingCount === 1
+                            ? '1 paciente en espera'
+                            : `${waitingCount} pacientes en espera`}
+                        {doctor.office ? ` · ${doctor.office}` : ''}
+                    </p>
+                </>
+            )}
 
             {/* Call next button */}
             <button
                 onClick={handleCallNext}
-                disabled={loading || waitingCount === 0}
+                disabled={loading || waitingCount === 0 || queue === undefined}
                 className="w-full rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-fg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
-                {waitingCount === 0
-                    ? 'Sin pacientes en espera'
-                    : 'Llamar siguiente'}
+                {queue === undefined
+                    ? 'Cargando…'
+                    : waitingCount === 0
+                      ? 'Sin pacientes en espera'
+                      : 'Llamar siguiente'}
             </button>
         </div>
     );

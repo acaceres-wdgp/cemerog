@@ -232,3 +232,40 @@ test('usuario sin doctor vinculado no puede llamar siguiente (403)', function ()
         ->post(route('turnos.call-next'))
         ->assertStatus(403);
 });
+
+// ─── Adjustment 1: queue debe ser deferred (no optional) ─────────────────────
+
+test('la prop queue es deferred en la respuesta Inertia inicial', function () {
+    $user = User::factory()->create();
+    $user->assignRole('medico');
+
+    $specialty = Specialty::factory()->create();
+    Doctor::factory()->create([
+        'specialty_id' => $specialty->id,
+        'user_id' => $user->id,
+    ]);
+
+    // Initial Inertia page load: queue should appear in deferredProps, not in props
+    $response = $this->actingAs($user)->get('/inicio');
+
+    // The page data is passed to the view; decode it
+    $page = json_decode(json_encode($response->viewData('page')), true);
+
+    expect($page['deferredProps'] ?? [])->not->toBeEmpty();
+    $allDeferred = collect($page['deferredProps'])->flatten()->values()->all();
+    expect($allDeferred)->toContain('queue');
+    // queue must NOT be eagerly resolved in the initial props
+    expect(array_key_exists('queue', $page['props']))->toBeFalse();
+});
+
+test('usuario sin doctor vinculado recibe queue null en la respuesta inicial', function () {
+    $user = User::factory()->create();
+    $user->assignRole('secretaria');
+
+    $response = $this->actingAs($user)->get('/inicio');
+
+    $page = json_decode(json_encode($response->viewData('page')), true);
+
+    // No doctor → queue is null (eager, not deferred)
+    expect($page['props']['queue'] ?? null)->toBeNull();
+});

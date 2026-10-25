@@ -61,7 +61,9 @@ class HandleInertiaRequests extends Middleware
                     'office' => $user->doctor->office,
                 ]
                 : null,
-            'queue' => Inertia::optional(fn () => $this->resolveQueue($user)),
+            'queue' => $user?->doctor !== null
+                ? Inertia::defer(fn () => $this->resolveQueue($user))
+                : null,
         ];
     }
 
