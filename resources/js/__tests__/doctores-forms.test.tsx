@@ -15,6 +15,7 @@ const page = vi.hoisted(() => ({
             },
         ],
         doctors: [],
+        availableUsers: [],
     },
 }));
 
@@ -66,6 +67,8 @@ describe('doctores forms', () => {
             exequatur: null,
             phone: null,
             specialty_id: 7,
+            user_id: null,
+            office: null,
         });
     });
 });

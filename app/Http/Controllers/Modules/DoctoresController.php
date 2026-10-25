@@ -13,6 +13,7 @@ use App\Http\Requests\UpdateDoctorRequest;
 use App\Http\Requests\UpdateSpecialtyRequest;
 use App\Models\Doctor;
 use App\Models\Specialty;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -30,11 +31,21 @@ class DoctoresController extends Controller
             'specialty_id' => $d->specialty_id,
             'specialty_name' => $d->specialty->name,
             'is_active' => $d->is_active,
+            'user_id' => $d->user_id,
+            'office' => $d->office,
         ]);
+
+        // Available medico users: those with the medico role not yet linked to any doctor
+        $linkedUserIds = Doctor::whereNotNull('user_id')->pluck('user_id');
+        $availableUsers = User::role('medico')
+            ->whereNotIn('id', $linkedUserIds)
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
         return Inertia::render('doctores/index', [
             'specialties' => $specialties,
             'doctors' => $doctors,
+            'availableUsers' => $availableUsers,
         ]);
     }
 

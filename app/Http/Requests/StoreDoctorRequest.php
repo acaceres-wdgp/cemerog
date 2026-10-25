@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,6 +23,21 @@ class StoreDoctorRequest extends FormRequest
             'exequatur' => ['nullable', 'string', 'max:30'],
             'phone' => ['nullable', 'string', 'max:20'],
             'specialty_id' => ['required', 'integer', Rule::exists('specialties', 'id')],
+            'user_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('users', 'id'),
+                Rule::unique('doctors', 'user_id'),
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value !== null) {
+                        $linkedUser = User::find($value);
+                        if (! $linkedUser || ! $linkedUser->hasRole('medico')) {
+                            $fail('El usuario seleccionado debe tener el rol de médico.');
+                        }
+                    }
+                },
+            ],
+            'office' => ['nullable', 'string', 'max:100'],
         ];
     }
 
@@ -34,6 +50,9 @@ class StoreDoctorRequest extends FormRequest
             'phone.max' => 'El teléfono no puede superar los 20 caracteres.',
             'specialty_id.required' => 'Debe seleccionar una especialidad.',
             'specialty_id.exists' => 'La especialidad seleccionada no es válida.',
+            'user_id.exists' => 'El usuario seleccionado no existe.',
+            'user_id.unique' => 'Este usuario ya está vinculado a otro doctor.',
+            'office.max' => 'El consultorio no puede superar los 100 caracteres.',
         ];
     }
 }

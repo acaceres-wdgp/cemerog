@@ -17,11 +17,19 @@ type Doctor = {
     specialty_id: number;
     specialty_name: string;
     is_active: boolean;
+    user_id: number | null;
+    office: string | null;
+};
+
+type AvailableUser = {
+    id: number;
+    name: string;
 };
 
 type Props = {
     specialties: Specialty[];
     doctors: Doctor[];
+    availableUsers: AvailableUser[];
 };
 
 const thStyle: React.CSSProperties = {
@@ -319,6 +327,7 @@ function SpecialtyModal({ onClose, specialty }: SpecialtyModalProps) {
 
 type DoctorModalProps = {
     specialties: Specialty[];
+    availableUsers: AvailableUser[];
     onClose: () => void;
     doctor?: Doctor | null;
     defaultSpecialtyId?: number | null;
@@ -326,11 +335,23 @@ type DoctorModalProps = {
 
 function DoctorModal({
     specialties,
+    availableUsers,
     onClose,
     doctor,
     defaultSpecialtyId,
 }: DoctorModalProps) {
     const isEdit = Boolean(doctor);
+
+    // On edit, if the doctor already has a user linked, include that user in the list
+    const usersForSelect: AvailableUser[] = doctor?.user_id
+        ? [
+              ...availableUsers.filter((u) => u.id !== doctor.user_id),
+              ...(availableUsers.find((u) => u.id === doctor.user_id)
+                  ? []
+                  : [{ id: doctor.user_id, name: '(usuario vinculado)' }]),
+          ]
+        : availableUsers;
+
     const { data, setData, post, put, transform, processing, errors } = useForm(
         {
             name: doctor?.name ?? '',
@@ -342,6 +363,8 @@ function DoctorModal({
                     specialties[0]?.id ??
                     '',
             ),
+            user_id: String(doctor?.user_id ?? ''),
+            office: doctor?.office ?? '',
         },
     );
 
@@ -352,6 +375,8 @@ function DoctorModal({
             exequatur: form.exequatur || null,
             phone: form.phone || null,
             specialty_id: parseInt(form.specialty_id, 10),
+            user_id: form.user_id ? parseInt(form.user_id, 10) : null,
+            office: form.office || null,
         }));
 
         if (isEdit && doctor) {
@@ -576,6 +601,75 @@ function DoctorModal({
                                 </span>
                             )}
                         </label>
+                        <label
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 6,
+                                fontWeight: 500,
+                                fontSize: 14,
+                            }}
+                        >
+                            <span>Usuario del sistema</span>
+                            <select
+                                value={data.user_id}
+                                onChange={(e) =>
+                                    setData('user_id', e.target.value)
+                                }
+                                style={{
+                                    ...inputStyle,
+                                    ...(errors.user_id
+                                        ? { borderColor: '#b91c1c' }
+                                        : {}),
+                                    appearance: 'auto',
+                                }}
+                            >
+                                <option value="">Sin vincular</option>
+                                {usersForSelect.map((u) => (
+                                    <option key={u.id} value={u.id}>
+                                        {u.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.user_id && (
+                                <span
+                                    style={{ color: '#b91c1c', fontSize: 12 }}
+                                >
+                                    {errors.user_id}
+                                </span>
+                            )}
+                        </label>
+                        <label
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 6,
+                                fontWeight: 500,
+                                fontSize: 14,
+                            }}
+                        >
+                            <span>Consultorio</span>
+                            <input
+                                value={data.office}
+                                onChange={(e) =>
+                                    setData('office', e.target.value)
+                                }
+                                placeholder="Ej: Consultorio 1"
+                                style={{
+                                    ...inputStyle,
+                                    ...(errors.office
+                                        ? { borderColor: '#b91c1c' }
+                                        : {}),
+                                }}
+                            />
+                            {errors.office && (
+                                <span
+                                    style={{ color: '#b91c1c', fontSize: 12 }}
+                                >
+                                    {errors.office}
+                                </span>
+                            )}
+                        </label>
                     </div>
                     <div
                         style={{
@@ -662,7 +756,7 @@ function ToggleButton({ doctor }: { doctor: Doctor }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function DoctoresIndex() {
-    const { specialties, doctors } = usePage<Props>().props;
+    const { specialties, doctors, availableUsers } = usePage<Props>().props;
 
     const [selEsp, setSelEsp] = useState<number | null>(
         specialties[0]?.id ?? null,
@@ -1236,6 +1330,7 @@ export default function DoctoresIndex() {
                 <DoctorModal
                     key={editDoctor?.id ?? 'new'}
                     specialties={specialties}
+                    availableUsers={availableUsers}
                     doctor={editDoctor}
                     defaultSpecialtyId={selEsp}
                     onClose={() => {
