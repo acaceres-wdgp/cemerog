@@ -54,8 +54,8 @@ export default function ClinicalHistoryList({
                         onClick={() => setActiveFilter('all')}
                         className={`rounded-full border px-3 py-0.5 text-xs font-medium transition-colors ${
                             activeFilter === 'all'
-                                ? 'border-[#2E8B3E] bg-[#EEF6E2] text-[#2f4a17]'
-                                : 'border-[#e4e4e7] text-[#71717a] hover:border-[#2E8B3E]'
+                                ? 'border-primary bg-accent-bg text-accent-fg'
+                                : 'border-input-border text-muted hover:border-primary'
                         }`}
                     >
                         Todos
@@ -66,8 +66,8 @@ export default function ClinicalHistoryList({
                             onClick={() => setActiveFilter(type)}
                             className={`rounded-full border px-3 py-0.5 text-xs font-medium transition-colors ${
                                 activeFilter === type
-                                    ? 'border-[#2E8B3E] bg-[#EEF6E2] text-[#2f4a17]'
-                                    : 'border-[#e4e4e7] text-[#71717a] hover:border-[#2E8B3E]'
+                                    ? 'border-primary bg-accent-bg text-accent-fg'
+                                    : 'border-input-border text-muted hover:border-primary'
                             }`}
                         >
                             {type}
@@ -78,7 +78,7 @@ export default function ClinicalHistoryList({
 
             <div className="flex flex-col gap-2">
                 {filtered.length === 0 ? (
-                    <p className="py-6 text-center text-sm text-[#71717a]">
+                    <p className="py-6 text-center text-sm text-muted">
                         No hay registros.
                     </p>
                 ) : (
@@ -87,46 +87,46 @@ export default function ClinicalHistoryList({
                         return (
                             <div
                                 key={entry.id}
-                                className="rounded-lg border border-[#e3e9e3] bg-white"
+                                className="rounded-lg border border-card-border bg-white"
                             >
                                 <button
-                                    className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[#F3F7F2]"
+                                    className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-app-bg"
                                     onClick={() => toggle(entry.id)}
                                     aria-expanded={isOpen}
                                 >
                                     {isOpen ? (
-                                        <ChevronDown className="h-4 w-4 shrink-0 text-[#71717a]" />
+                                        <ChevronDown className="h-4 w-4 shrink-0 text-muted" />
                                     ) : (
-                                        <ChevronRight className="h-4 w-4 shrink-0 text-[#71717a]" />
+                                        <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
                                     )}
                                     <div className="flex flex-1 items-center justify-between gap-4">
                                         <div>
-                                            <p className="text-sm font-medium text-[#1f2d22]">
+                                            <p className="text-sm font-medium text-text-heading">
                                                 {entry.summary}
                                             </p>
                                             {entry.provider && (
-                                                <p className="text-xs text-[#71717a]">
+                                                <p className="text-xs text-muted">
                                                     {entry.provider}
                                                 </p>
                                             )}
                                         </div>
                                         <div className="shrink-0 text-right">
-                                            <p className="text-xs text-[#71717a]">
+                                            <p className="text-xs text-muted">
                                                 {format(
                                                     new Date(entry.date),
                                                     'dd/MM/yyyy',
                                                     { locale: es },
                                                 )}
                                             </p>
-                                            <span className="inline-flex rounded-full border border-[#e4e4e7] px-2 py-0.5 text-xs text-[#71717a]">
+                                            <span className="inline-flex rounded-full border border-input-border px-2 py-0.5 text-xs text-muted">
                                                 {entry.type}
                                             </span>
                                         </div>
                                     </div>
                                 </button>
                                 {isOpen && entry.details && (
-                                    <div className="border-t border-[#e3e9e3] px-4 py-3">
-                                        <p className="text-sm whitespace-pre-line text-[#333333]">
+                                    <div className="border-t border-card-border px-4 py-3">
+                                        <p className="text-sm whitespace-pre-line text-text-body">
                                             {entry.details}
                                         </p>
                                     </div>
