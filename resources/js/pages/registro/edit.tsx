@@ -1,4 +1,4 @@
-import { router, useForm } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import type { DocumentType, PatientSearchResult } from '@/types/patient';
 import { PatientFormCard } from './components/PatientFormCard';
@@ -114,16 +114,6 @@ export default function RegistroEdit({ patient }: Props) {
         put(`/registro/pacientes/${patient.id}`);
     };
 
-    const handleDelete = () => {
-        if (
-            !confirm(
-                `¿Eliminar a ${patient.full_name}? Esta acción no se puede deshacer.`,
-            )
-        )
-            return;
-        router.delete(`/registro/pacientes/${patient.id}`);
-    };
-
     return (
         <div className="flex flex-col gap-5">
             <div className="flex items-center gap-3">
@@ -147,7 +137,6 @@ export default function RegistroEdit({ patient }: Props) {
                         processing={processing}
                         patient={patient}
                         onDocumentTypeChange={handleDocumentTypeChange}
-                        onDelete={handleDelete}
                     />
 
                     <div className="flex flex-col gap-4">

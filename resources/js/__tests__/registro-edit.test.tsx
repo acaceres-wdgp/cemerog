@@ -233,6 +233,18 @@ describe('RegistroEdit', () => {
         });
     });
 
+    describe('sin botón Eliminar paciente', () => {
+        it('no muestra el botón "Eliminar paciente"', () => {
+            render(<RegistroEdit patient={basePatient} />);
+            expect(screen.queryByText(/Eliminar paciente/i)).toBeNull();
+        });
+
+        it('nunca llama a router.delete', () => {
+            render(<RegistroEdit patient={basePatient} />);
+            expect(mockRouterDelete).not.toHaveBeenCalled();
+        });
+    });
+
     describe('cancelar', () => {
         it('el enlace "Cancelar" apunta a /registro', () => {
             render(<RegistroEdit patient={basePatient} />);
