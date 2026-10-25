@@ -15,6 +15,7 @@ import { expect, test } from 'vitest';
 
 const PAGES_DIR = join(import.meta.dirname, '../pages');
 const COMPONENTS_DIR = join(import.meta.dirname, '../components/cemerog');
+const LAYOUTS_DIR = join(import.meta.dirname, '../layouts');
 
 /**
  * Files explicitly excluded from the scan (e.g. runtime palettes).
@@ -131,6 +132,59 @@ for (const entry of CLEAN_PAGES) {
             expect(styleViolations).toEqual([]);
         });
     }
+}
+
+// ── layouts/ scan ────────────────────────────────────────────────────────────
+// Scans all .ts/.tsx files in the layouts directory.
+
+const LAYOUT_FILES = collectFiles(LAYOUTS_DIR, LAYOUTS_DIR).filter(
+    ({ rel }) => !rel.includes('__tests__'),
+);
+
+for (const { abs, rel } of LAYOUT_FILES) {
+    const lines = readFileSync(abs, 'utf-8').split('\n');
+
+    // ── Test 1: no hardcoded hex colors ──────────────────────────────────
+    const hexViolations: { line: number; text: string }[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (/^\s*(\/\/|\/\*|\*)/.test(line)) continue;
+        const stripped = line.replace(/font-\['[^']+'\]/g, '');
+        if (HEX_COLOR_RE.test(stripped)) {
+            hexViolations.push({ line: i + 1, text: line.trim() });
+        }
+    }
+
+    test(`layouts/${rel} no hardcoded hex colors`, () => {
+        expect(hexViolations).toEqual([]);
+    });
+
+    // ── Test 2: no static style={{ ───────────────────────────────────────
+    const styleViolations: { line: number; text: string }[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.includes('style={{')) continue;
+
+        if (line.includes('// dynamic-style:')) continue;
+
+        let prevLineText = '';
+        for (let j = i - 1; j >= 0; j--) {
+            if (lines[j].trim() !== '') {
+                prevLineText = lines[j].trim();
+                break;
+            }
+        }
+
+        if (!prevLineText.startsWith('// dynamic-style:')) {
+            styleViolations.push({ line: i + 1, text: line.trim() });
+        }
+    }
+
+    test(`layouts/${rel} no static style={{ (use Tailwind tokens instead)`, () => {
+        expect(styleViolations).toEqual([]);
+    });
 }
 
 // ── components/cemerog/ scan ──────────────────────────────────────────────────
