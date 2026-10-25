@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import { DoctorOption } from '../types';
 import { todayStr, tomorrowStr, addDays } from '../lib/dates';
-import { docPalette } from '../lib/palettes';
+import { docPalette } from '@/components/cemerog/palettes';
 
 /** Build avatar style from doctor palette — computed at runtime from doctor ID. */
 function palStyle(pal: { bg: string; fg: string }): React.CSSProperties {
@@ -43,7 +43,7 @@ export function CitasToolbar({
                             className={cn(
                                 'flex cursor-pointer items-center gap-2.5 rounded-xl py-1.5 pr-3.5 pl-1.5 text-left font-[inherit] text-sm',
                                 active
-                                    ? 'border-accent-border border bg-accent-bg'
+                                    ? 'border border-accent-border bg-accent-bg'
                                     : 'border border-card-border bg-white',
                             )}
                         >

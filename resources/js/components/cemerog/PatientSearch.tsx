@@ -2,33 +2,12 @@
  * PatientSearch – shared patient search widget used by Citas and Tablero.
  */
 import { useEffect, useRef, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 export type PatientResult = {
     id: number;
     full_name: string;
     document_number: string;
-};
-
-interface PatientSearchProps {
-    selected: PatientResult | null;
-    query: string;
-    onQueryChange: (v: string) => void;
-    onSelect: (p: PatientResult) => void;
-    onClear: () => void;
-    error?: string;
-    endpoint: string; // e.g. '/citas/pacientes/buscar'
-}
-
-const inputStyle: React.CSSProperties = {
-    height: 36,
-    width: '100%',
-    padding: '0 12px',
-    border: '1px solid #e4e4e7',
-    borderRadius: 10,
-    outline: 'none',
-    fontFamily: 'inherit',
-    fontSize: 14,
-    boxSizing: 'border-box',
 };
 
 export default function PatientSearch({
@@ -39,7 +18,15 @@ export default function PatientSearch({
     onClear,
     error,
     endpoint,
-}: PatientSearchProps) {
+}: {
+    selected: PatientResult | null;
+    query: string;
+    onQueryChange: (v: string) => void;
+    onSelect: (p: PatientResult) => void;
+    onClear: () => void;
+    error?: string;
+    endpoint: string;
+}) {
     const [results, setResults] = useState<PatientResult[]>([]);
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
@@ -86,66 +73,20 @@ export default function PatientSearch({
 
     if (selected) {
         return (
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    height: 36,
-                    padding: '0 10px 0 12px',
-                    border: '1px solid #B9DC8E',
-                    borderRadius: 10,
-                    background: '#EEF6E2',
-                }}
-            >
-                <span
-                    style={{
-                        width: 22,
-                        height: 22,
-                        flexShrink: 0,
-                        borderRadius: '50%',
-                        background: '#2E8B3E',
-                        color: '#fff',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: 10,
-                        fontWeight: 700,
-                    }}
-                >
+            <div className="flex h-9 items-center gap-2.5 rounded-[10px] border border-accent-border bg-accent-bg pr-2.5 pl-3">
+                <span className="inline-flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
                     ✓
                 </span>
-                <span
-                    style={{
-                        flex: 1,
-                        fontWeight: 500,
-                        fontSize: 14,
-                        color: '#1f2d22',
-                    }}
-                >
+                <span className="flex-1 text-sm font-medium text-text-heading">
                     {selected.full_name}
                 </span>
-                <span style={{ fontSize: 12, color: '#56693f' }}>
+                <span className="text-xs text-table-header-text">
                     {selected.document_number}
                 </span>
                 <button
                     type="button"
                     onClick={onClear}
-                    style={{
-                        width: 22,
-                        height: 22,
-                        flexShrink: 0,
-                        border: 'none',
-                        borderRadius: 6,
-                        background: 'rgba(0,0,0,.08)',
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: 12,
-                        color: '#56693f',
-                        lineHeight: 1,
-                    }}
+                    className="inline-flex h-[22px] w-[22px] shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-black/[.08] text-xs leading-none text-table-header-text"
                 >
                     ✕
                 </button>
@@ -154,12 +95,12 @@ export default function PatientSearch({
     }
 
     return (
-        <div ref={ref} style={{ position: 'relative' }}>
+        <div ref={ref} className="relative">
             <input
-                style={{
-                    ...inputStyle,
-                    borderColor: error ? '#b91c1c' : '#e4e4e7',
-                }}
+                className={cn(
+                    'box-border h-9 w-full rounded-[10px] border px-3 font-[inherit] text-sm outline-none',
+                    error ? 'border-error' : 'border-input-border',
+                )}
                 value={query}
                 onChange={(e) => {
                     onQueryChange(e.target.value);
@@ -169,33 +110,11 @@ export default function PatientSearch({
                 autoComplete="off"
                 autoFocus
             />
-            {error && (
-                <span style={{ color: '#b91c1c', fontSize: 12 }}>{error}</span>
-            )}
+            {error && <span className="text-xs text-error">{error}</span>}
             {open && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: 0,
-                        right: 0,
-                        zIndex: 200,
-                        background: '#fff',
-                        border: '1px solid #e3e9e3',
-                        borderRadius: 10,
-                        boxShadow: '0 8px 24px rgba(0,0,0,.1)',
-                        marginTop: 4,
-                        overflow: 'hidden',
-                    }}
-                >
+                <div className="absolute top-full right-0 left-0 z-[200] mt-1 overflow-hidden rounded-[10px] border border-card-border bg-white shadow-[0_8px_24px_rgba(0,0,0,.1)]">
                     {results.length === 0 ? (
-                        <div
-                            style={{
-                                padding: '10px 14px',
-                                color: '#71717a',
-                                fontSize: 13,
-                            }}
-                        >
+                        <div className="px-3.5 py-[10px] text-[13px] text-muted">
                             No se encontraron pacientes.
                         </div>
                     ) : (
@@ -207,23 +126,12 @@ export default function PatientSearch({
                                     onSelect(p);
                                     setOpen(false);
                                 }}
-                                className="hover:bg-table-header-bg"
-                                style={{
-                                    display: 'block',
-                                    width: '100%',
-                                    textAlign: 'left',
-                                    padding: '10px 14px',
-                                    border: 'none',
-                                    background: 'none',
-                                    cursor: 'pointer',
-                                    borderBottom: '1px solid #f3f4f6',
-                                    fontFamily: 'inherit',
-                                }}
+                                className="block w-full cursor-pointer border-0 border-b border-row-separator bg-transparent px-3.5 py-[10px] text-left font-[inherit] hover:bg-table-header-bg"
                             >
-                                <div style={{ fontWeight: 500, fontSize: 14 }}>
+                                <div className="text-sm font-medium">
                                     {p.full_name}
                                 </div>
-                                <div style={{ color: '#71717a', fontSize: 12 }}>
+                                <div className="text-xs text-muted">
                                     {p.document_number}
                                 </div>
                             </button>

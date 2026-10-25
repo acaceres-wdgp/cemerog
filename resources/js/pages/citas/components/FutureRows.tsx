@@ -1,7 +1,7 @@
 import StatusBadge from '@/components/cemerog/StatusBadge';
 import { AppointmentRow, DoctorOption } from '../types';
 import { SLOTS } from '../lib/dates';
-import { docPalette } from '../lib/palettes';
+import { docPalette } from '@/components/cemerog/palettes';
 
 const TYPE_LABELS: Record<string, string> = {
     consulta: 'Consulta',
@@ -50,16 +50,16 @@ export function FutureRows({
                 if (!cita) {
                     return (
                         <tr key={slot}>
-                            <td className="border-row-divider w-[60px] border-b py-1.5 pr-3 pl-5 font-semibold text-text-tertiary tabular-nums">
+                            <td className="w-[60px] border-b border-row-divider py-1.5 pr-3 pl-5 font-semibold text-text-tertiary tabular-nums">
                                 {slot}
                             </td>
                             <td
                                 colSpan={5}
-                                className="border-row-divider h-[44px] border-b px-3"
+                                className="h-[44px] border-b border-row-divider px-3"
                             >
                                 <div
                                     onClick={onNewCita}
-                                    className="border-slot-empty-border flex h-full cursor-pointer items-center gap-2 rounded-lg border border-dashed px-1 text-[13px] text-text-tertiary"
+                                    className="flex h-full cursor-pointer items-center gap-2 rounded-lg border border-dashed border-slot-empty-border px-1 text-[13px] text-text-tertiary"
                                 >
                                     + Disponible
                                 </div>

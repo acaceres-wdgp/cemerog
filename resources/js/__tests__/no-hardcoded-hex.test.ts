@@ -19,10 +19,7 @@ const PAGES_DIR = join(import.meta.dirname, '../pages');
  * Files explicitly excluded from the scan (e.g. runtime palettes).
  * Paths are relative to PAGES_DIR.
  */
-const EXCLUDED_FILES = new Set([
-    // dynamic-style: avatar color palette selected at runtime from doctor ID
-    'citas/lib/palettes.ts',
-]);
+const EXCLUDED_FILES = new Set<string>([]);
 
 /**
  * Pages/directories that have been fully migrated to design tokens.

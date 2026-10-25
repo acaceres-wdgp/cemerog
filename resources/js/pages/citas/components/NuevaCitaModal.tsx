@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import FormDialog from '@/components/cemerog/FormDialog';
 import PatientSearch from '@/components/cemerog/PatientSearch';
-import { DoctorOption, PatientResult } from '../types';
+import type { PatientResult } from '@/components/cemerog/PatientSearch';
+import { DoctorOption } from '../types';
 import { SLOTS } from '../lib/dates';
 
 export function NuevaCitaModal({

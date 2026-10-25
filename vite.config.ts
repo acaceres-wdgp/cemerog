@@ -57,6 +57,7 @@ export default defineConfig({
     },
     lint: {
         ignorePatterns: [
+            '.claude/**',
             'vendor/**',
             'node_modules/**',
             'public/**',
@@ -81,6 +82,7 @@ export default defineConfig({
         singleAttributePerLine: false,
         htmlWhitespaceSensitivity: 'css',
         ignorePatterns: [
+            '.claude/**',
             '.github/**',
             'composer.json',
             'design/**',

@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import StatusBadge from '@/components/cemerog/StatusBadge';
 import { AppointmentRow, DoctorOption } from '../types';
-import { docPalette } from '../lib/palettes';
+import { docPalette } from '@/components/cemerog/palettes';
 
 /** Build avatar style from doctor palette — computed at runtime from doctor ID. */
 function palStyle(pal: { bg: string; fg: string }): React.CSSProperties {
@@ -45,9 +45,9 @@ export function TodayRows({
         return (
             <tr>
                 <td colSpan={6}>
-                    <div className="border-row-divider border-b py-1.5 pr-3 pl-5">
+                    <div className="border-b border-row-divider py-1.5 pr-3 pl-5">
                         <div
-                            className="border-slot-empty-border flex h-[44px] cursor-pointer items-center gap-2 rounded-lg border border-dashed px-1 text-[13px] text-text-tertiary"
+                            className="flex h-[44px] cursor-pointer items-center gap-2 rounded-lg border border-dashed border-slot-empty-border px-1 text-[13px] text-text-tertiary"
                             onClick={onNewCita}
                         >
                             + Registrar primera cita del día

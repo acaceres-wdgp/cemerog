@@ -69,6 +69,38 @@
     --color-success-fg: #1f4a1a;
     --color-success-border: #dcebc9;
 
+    /* ── Secondary button ───────────────────────────── */
+    --color-secondary-bg: #f6f9f5;
+    --color-secondary-border: #dfe7df;
+    --color-secondary-fg: #52605a;
+
+    /* ── Dimmed text ─────────────────────────────────── */
+    --color-text-dim: #52525b;
+
+    /* ── Primary button disabled/processing state ────── */
+    --color-primary-disabled: #7cb987;
+
+    /* ── Table row borders ───────────────────────────── */
+    --color-row-divider: #f1f3ef;
+    --color-row-separator: #f3f4f6;
+
+    /* ── Cita appointment status colors ──────────────── */
+    --color-cita-atendida-bg: #dcfce7;
+    --color-cita-atendida-fg: #166534;
+
+    /* ── Row state backgrounds ───────────────────────── */
+    --color-done-row-bg: #fafafa;
+    --color-list-row-bg: #f8fbf6;
+
+    /* ── Accent chip border ──────────────────────────── */
+    --color-accent-border: #b9dc8e;
+
+    /* ── Empty appointment slot dashed border ────────── */
+    --color-slot-empty-border: #d6e2d0;
+
+    /* ── Modal overlay ──────────────────────────── */
+    --color-overlay: rgba(0, 0, 0, 0.4);
+
     /* ── Status indicator dots (turn queue + stat cards) ─── */
     --color-espera-dot: #d97706;
     --color-consulta-dot: #2563eb;
@@ -80,16 +112,6 @@
     --color-consulta-num: #1e40af;
     --color-emergencia-num: #991b1b;
     --color-internado-num: #5b21b6;
-
-    /* ── Secondary background / fg ───────────────────────── */
-    --color-secondary-bg: #f6f9f5;
-    --color-secondary-fg: #52605a;
-    --color-secondary-border: #dfe7df;
-    --color-text-dim: #52525b;
-    --color-row-separator: #f3f4f6;
-    --color-list-row-bg: #f8fbf6;
-    --color-cita-atendida-bg: #dcfce7;
-    --color-cita-atendida-fg: #166534;
 
     /* ── Info tip box border (accent, soft variant) ──────── */
     --color-accent-tip-border: #c6e5a8;
