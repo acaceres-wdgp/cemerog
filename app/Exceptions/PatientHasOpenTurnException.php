@@ -12,8 +12,12 @@ class PatientHasOpenTurnException extends RuntimeException
         public readonly Patient $patient,
         public readonly Turn $openTurn,
     ) {
+        $doctorName = $openTurn->relationLoaded('doctor')
+            ? $openTurn->doctor->name
+            : $openTurn->doctor()->value('name') ?? 'desconocido';
+
         parent::__construct(
-            "El paciente ya tiene la atención A-{$openTurn->id} abierta hoy ({$openTurn->status})."
+            "El paciente ya tiene un turno abierto hoy con Dr. {$doctorName} (A-{$openTurn->id}, {$openTurn->status})."
         );
     }
 }

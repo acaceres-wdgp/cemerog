@@ -84,8 +84,7 @@ const mockPatients = [
         allergies: 'Penicilina',
         emergency_contact_name: null,
         emergency_contact_phone: null,
-        has_open_turn_today: false,
-        open_turn_status: null,
+        open_turns_today: [],
         last_attended_at: '12/10/2026',
         total_turns: 3,
     },
@@ -283,8 +282,7 @@ describe('RegistroIndex with existing patient pre-loaded', () => {
         emergency_contact_phone: null,
         total_turns: 9,
         last_attended_at: '12/10/2026',
-        has_open_turn_today: false,
-        open_turn: null,
+        open_turns_today: [],
     };
 
     // L1 – Existing patient banner
@@ -296,12 +294,11 @@ describe('RegistroIndex with existing patient pre-loaded', () => {
         expect(screen.getByText(/P-00042/)).toBeTruthy();
     });
 
-    // L2 – Open turn banner
-    it('atención abierta hoy muestra banner rojo con mensaje', () => {
+    // L2 – Open turn banner (warns but does NOT block)
+    it('atención abierta hoy muestra banner informativo con nombre del médico', () => {
         const patientWithOpenTurn = {
             ...existingPatient,
-            has_open_turn_today: true,
-            open_turn: { id: 123, turn_number: 5, status: 'espera' },
+            open_turns_today: [{ doctor_name: 'Martínez', status: 'espera' }],
         };
         render(
             <RegistroIndex
@@ -309,14 +306,23 @@ describe('RegistroIndex with existing patient pre-loaded', () => {
                 patient={patientWithOpenTurn}
             />,
         );
-        expect(screen.getByText(/Ya tiene la atención/)).toBeTruthy();
-        expect(screen.getByText(/A-123/)).toBeTruthy();
+        expect(screen.getByText(/Atención abierta hoy/)).toBeTruthy();
+        expect(screen.getByText(/Martínez/)).toBeTruthy();
+    });
+
+    // L2b – open turn banner NOT shown when no open turns
+    it('no muestra banner de atención abierta cuando no hay turnos abiertos', () => {
+        render(
+            <RegistroIndex doctors={mockDoctors} patient={existingPatient} />,
+        );
+        expect(screen.queryByText(/Atención abierta hoy/)).toBeNull();
     });
 
     // L3 – Allergy banner for existing patient
     it('paciente con alergias muestra banner rojo de alérgico', () => {
         const patientWithAllergy = {
             ...existingPatient,
+            open_turns_today: [] as { doctor_name: string; status: string }[],
             allergies: 'Ibuprofeno',
         };
         render(

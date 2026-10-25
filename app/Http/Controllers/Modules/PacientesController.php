@@ -210,14 +210,17 @@ class PacientesController extends Controller
                 'emergency_contact_name' => $p->emergency_contact_name,
                 'emergency_contact_phone' => $p->emergency_contact_phone,
                 'photo_url' => $p->photo_url,
-                'has_open_turn_today' => $p->turns()
+                'open_turns_today' => $p->turns()
+                    ->with('doctor')
                     ->whereDate('arrived_at', $today)
                     ->whereIn('status', ['espera', 'en_consulta'])
-                    ->exists(),
-                'open_turn_status' => $p->turns()
-                    ->whereDate('arrived_at', $today)
-                    ->whereIn('status', ['espera', 'en_consulta'])
-                    ->value('status'),
+                    ->get()
+                    ->map(fn (Turn $t) => [
+                        'doctor_name' => $t->doctor->name,
+                        'status' => $t->status,
+                    ])
+                    ->values()
+                    ->all(),
                 'last_attended_at' => $p->turns()->max('arrived_at')
                     ? Carbon::parse($p->turns()->max('arrived_at'))->format('d/m/Y')
                     : null,

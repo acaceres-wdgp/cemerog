@@ -24,6 +24,11 @@ interface Doctor {
     specialty: string;
 }
 
+interface OpenTurnToday {
+    doctor_name: string;
+    status: string;
+}
+
 interface PatientSuggestion {
     id: number;
     expediente_number: string;
@@ -42,8 +47,7 @@ interface PatientSuggestion {
     allergies: string | null;
     emergency_contact_name: string | null;
     emergency_contact_phone: string | null;
-    has_open_turn_today: boolean;
-    open_turn_status: string | null;
+    open_turns_today: OpenTurnToday[];
     last_attended_at: string | null;
     total_turns: number;
 }
@@ -67,8 +71,7 @@ interface ExistingPatient {
     emergency_contact_phone: string | null;
     total_turns: number;
     last_attended_at: string | null;
-    has_open_turn_today: boolean;
-    open_turn?: { id: number; turn_number: number; status: string } | null;
+    open_turns_today: OpenTurnToday[];
 }
 
 interface Props {
@@ -290,7 +293,7 @@ function PatientAutocomplete({ onSelect, searchPath }: AutocompleteProps) {
                                         </p>
                                     </div>
                                     <div className="flex shrink-0 flex-col items-end gap-1">
-                                        {p.has_open_turn_today && (
+                                        {p.open_turns_today.length > 0 && (
                                             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700">
                                                 Atención abierta
                                             </span>
@@ -391,8 +394,7 @@ export default function RegistroIndex({
             emergency_contact_phone: p.emergency_contact_phone,
             total_turns: p.total_turns,
             last_attended_at: p.last_attended_at,
-            has_open_turn_today: p.has_open_turn_today,
-            open_turn: null,
+            open_turns_today: p.open_turns_today,
         });
         setMode('existing');
         setData((prev) => ({
@@ -510,29 +512,27 @@ export default function RegistroIndex({
                                     )}
 
                                     {mode === 'existing' &&
-                                        existingPatient?.has_open_turn_today &&
-                                        existingPatient.open_turn && (
-                                            <div className="flex items-start gap-3 rounded-xl border border-error-border bg-error-bg px-4 py-3 text-[13px] text-error-strong">
-                                                <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                                        existingPatient &&
+                                        existingPatient.open_turns_today
+                                            .length > 0 && (
+                                            <div className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-[13px] text-amber-800">
+                                                <Info className="mt-0.5 h-4 w-4 shrink-0" />
                                                 <div className="flex-1">
-                                                    Ya tiene la atención{' '}
                                                     <strong>
-                                                        A-
-                                                        {
-                                                            existingPatient
-                                                                .open_turn.id
-                                                        }
+                                                        Atención abierta hoy:
                                                     </strong>{' '}
-                                                    abierta hoy (
-                                                    {
-                                                        existingPatient
-                                                            .open_turn.status
-                                                    }
-                                                    ). Evita duplicarla.
+                                                    {existingPatient.open_turns_today
+                                                        .map(
+                                                            (t) =>
+                                                                `Dr. ${t.doctor_name} (${t.status})`,
+                                                        )
+                                                        .join(', ')}
+                                                    . Puedes registrar con otro
+                                                    médico.
                                                 </div>
                                                 <Link
                                                     href="/tablero"
-                                                    className="shrink-0 text-[12px] font-medium text-error-strong underline hover:no-underline"
+                                                    className="shrink-0 text-[12px] font-medium text-amber-800 underline hover:no-underline"
                                                 >
                                                     Ver en el tablero
                                                 </Link>
