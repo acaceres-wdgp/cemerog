@@ -14,7 +14,21 @@ const page = vi.hoisted(() => ({
                 doctors_count: 0,
             },
         ],
-        doctors: [],
+        doctors: [
+            {
+                id: 1,
+                name: 'Dr. Demo',
+                exequatur: null,
+                phone: null,
+                specialty_id: 7,
+                specialty_name: 'Pediatría',
+                is_active: true,
+                user_id: 42,
+                user_name: 'Dr. Demo Médico',
+                office: null,
+            },
+        ],
+        availableUsers: [],
     },
 }));
 
@@ -66,6 +80,27 @@ describe('doctores forms', () => {
             exequatur: null,
             phone: null,
             specialty_id: 7,
+            user_id: null,
+            office: null,
         });
+    });
+
+    it('shows the linked user real name in the selector when editing a doctor with user_name', () => {
+        render(<DoctoresIndex />);
+
+        // Select the specialty to show the doctors table
+        const specialtyItems = screen.getAllByText('Pediatría');
+        fireEvent.click(specialtyItems[0]);
+
+        // Click the edit (✏) button for the doctor row (first ✏ in the table)
+        const editButtons = screen.getAllByText('✏');
+        // The first ✏ is the specialty edit button, the second is the doctor edit button
+        fireEvent.click(editButtons[editButtons.length - 1]);
+
+        // The user selector should show "Dr. Demo Médico" as an option
+        const option = screen.getByRole('option', { name: 'Dr. Demo Médico' });
+        expect(option).toBeDefined();
+        const select = screen.getByLabelText(/Usuario del sistema/);
+        expect((select as HTMLSelectElement).value).toBe('42');
     });
 });

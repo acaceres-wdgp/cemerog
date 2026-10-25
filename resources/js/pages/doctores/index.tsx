@@ -1,6 +1,7 @@
 import { useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { MaskedInput } from '@/components/cemerog/masked-input';
+import FormField from '@/components/cemerog/FormField';
 
 type Specialty = {
     id: number;
@@ -17,11 +18,20 @@ type Doctor = {
     specialty_id: number;
     specialty_name: string;
     is_active: boolean;
+    user_id: number | null;
+    user_name: string | null;
+    office: string | null;
+};
+
+type AvailableUser = {
+    id: number;
+    name: string;
 };
 
 type Props = {
     specialties: Specialty[];
     doctors: Doctor[];
+    availableUsers: AvailableUser[];
 };
 
 const thStyle: React.CSSProperties = {
@@ -319,6 +329,7 @@ function SpecialtyModal({ onClose, specialty }: SpecialtyModalProps) {
 
 type DoctorModalProps = {
     specialties: Specialty[];
+    availableUsers: AvailableUser[];
     onClose: () => void;
     doctor?: Doctor | null;
     defaultSpecialtyId?: number | null;
@@ -326,11 +337,29 @@ type DoctorModalProps = {
 
 function DoctorModal({
     specialties,
+    availableUsers,
     onClose,
     doctor,
     defaultSpecialtyId,
 }: DoctorModalProps) {
     const isEdit = Boolean(doctor);
+
+    // On edit, if the doctor already has a user linked, include that user in the list
+    // with their real name (from user_name) if they're not in availableUsers.
+    const usersForSelect: AvailableUser[] = doctor?.user_id
+        ? [
+              ...availableUsers.filter((u) => u.id !== doctor.user_id),
+              ...(availableUsers.find((u) => u.id === doctor.user_id)
+                  ? []
+                  : [
+                        {
+                            id: doctor.user_id,
+                            name: doctor.user_name ?? '(usuario vinculado)',
+                        },
+                    ]),
+          ]
+        : availableUsers;
+
     const { data, setData, post, put, transform, processing, errors } = useForm(
         {
             name: doctor?.name ?? '',
@@ -342,6 +371,8 @@ function DoctorModal({
                     specialties[0]?.id ??
                     '',
             ),
+            user_id: String(doctor?.user_id ?? ''),
+            office: doctor?.office ?? '',
         },
     );
 
@@ -352,6 +383,8 @@ function DoctorModal({
             exequatur: form.exequatur || null,
             phone: form.phone || null,
             specialty_id: parseInt(form.specialty_id, 10),
+            user_id: form.user_id ? parseInt(form.user_id, 10) : null,
+            office: form.office || null,
         }));
 
         if (isEdit && doctor) {
@@ -576,6 +609,29 @@ function DoctorModal({
                                 </span>
                             )}
                         </label>
+                        <FormField
+                            as="select"
+                            name="user_id"
+                            label="Usuario del sistema"
+                            error={errors.user_id}
+                            value={data.user_id}
+                            onChange={(e) => setData('user_id', e.target.value)}
+                        >
+                            <option value="">Sin vincular</option>
+                            {usersForSelect.map((u) => (
+                                <option key={u.id} value={u.id}>
+                                    {u.name}
+                                </option>
+                            ))}
+                        </FormField>
+                        <FormField
+                            name="office"
+                            label="Consultorio"
+                            error={errors.office}
+                            value={data.office}
+                            onChange={(e) => setData('office', e.target.value)}
+                            placeholder="Ej: Consultorio 1"
+                        />
                     </div>
                     <div
                         style={{
@@ -662,7 +718,7 @@ function ToggleButton({ doctor }: { doctor: Doctor }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function DoctoresIndex() {
-    const { specialties, doctors } = usePage<Props>().props;
+    const { specialties, doctors, availableUsers } = usePage<Props>().props;
 
     const [selEsp, setSelEsp] = useState<number | null>(
         specialties[0]?.id ?? null,
@@ -1236,6 +1292,7 @@ export default function DoctoresIndex() {
                 <DoctorModal
                     key={editDoctor?.id ?? 'new'}
                     specialties={specialties}
+                    availableUsers={availableUsers}
                     doctor={editDoctor}
                     defaultSpecialtyId={selEsp}
                     onClose={() => {

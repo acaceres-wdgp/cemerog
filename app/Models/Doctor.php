@@ -9,12 +9,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
+ * @property int|null $user_id
+ * @property string|null $office
  * @property string $name
  * @property string $exequatur
  * @property string|null $phone
  * @property int $specialty_id
  * @property bool $is_active
  * @property-read Specialty $specialty
+ * @property-read User|null $user
  */
 class Doctor extends Model
 {
@@ -22,6 +25,8 @@ class Doctor extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
+        'office',
         'name',
         'exequatur',
         'phone',
@@ -37,5 +42,11 @@ class Doctor extends Model
     public function specialty(): BelongsTo
     {
         return $this->belongsTo(Specialty::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

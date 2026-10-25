@@ -56,22 +56,44 @@ class DemoSeeder extends Seeder
             ['name' => 'Cardiología', 'price' => 250000],
         ];
 
+        // The single demo medico user (created above)
+        $medicoUser = User::where('username', 'medico')->first();
+
         $doctors = [];
+        $officeIndex = 1;
         foreach ($specialties as $spec) {
             $specialty = Specialty::firstOrCreate(
                 ['name' => $spec['name']],
                 ['consultation_price' => $spec['price']]
             );
 
-            $doctors[] = Doctor::firstOrCreate(
-                ['exequatur' => 'EX-'.str_pad((string) $specialty->id, 5, '0', STR_PAD_LEFT)],
+            $exequatur = 'EX-'.str_pad((string) $specialty->id, 5, '0', STR_PAD_LEFT);
+
+            // Link the first specialty's doctor to the demo medico user; the rest have no user
+            $linkUser = ($officeIndex === 1 && $medicoUser) ? $medicoUser->id : null;
+            $office = $linkUser ? 'Consultorio '.$officeIndex : null;
+
+            $doctor = Doctor::firstOrCreate(
+                ['exequatur' => $exequatur],
                 [
                     'name' => 'Dr. Demo '.$spec['name'],
                     'specialty_id' => $specialty->id,
                     'is_active' => true,
                     'phone' => '809-'.fake()->numerify('###-####'),
+                    'user_id' => $linkUser,
+                    'office' => $office,
                 ]
             );
+
+            // Ensure existing doctors (re-seed) also get user_id and office applied
+            if ($doctor->wasRecentlyCreated === false) {
+                if ($linkUser && $doctor->user_id === null) {
+                    $doctor->update(['user_id' => $linkUser, 'office' => $office]);
+                }
+            }
+
+            $doctors[] = $doctor;
+            $officeIndex++;
         }
 
         // ── 40 demo patients ──────────────────────────────────────────────────
