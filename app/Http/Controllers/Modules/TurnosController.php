@@ -10,8 +10,11 @@ use App\Http\Requests\StoreTurnRequest;
 use App\Http\Requests\UpdateTurnStatusRequest;
 use App\Models\Patient;
 use App\Models\Turn;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class TurnosController extends Controller
 {
@@ -60,5 +63,48 @@ class TurnosController extends Controller
         $action->handle($turn, (string) $request->input('direction'));
 
         return redirect()->route('tablero');
+    }
+
+    /**
+     * Advance the next waiting turn (lowest turn_order) for the authenticated
+     * doctor's queue to "en_consulta". Only available to users with a linked doctor.
+     */
+    public function callNext(Request $request): RedirectResponse|JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->doctor !== null, 403);
+
+        $doctorId = $user->doctor->id;
+        $today = Carbon::today();
+
+        // Prevent calling the next patient if one is already in consultation
+        $inConsulta = Turn::where('doctor_id', $doctorId)
+            ->where('status', 'en_consulta')
+            ->whereDate('arrived_at', $today)
+            ->first();
+
+        if ($inConsulta !== null) {
+            $label = 'T-'.str_pad((string) $inConsulta->turn_number, 2, '0', STR_PAD_LEFT);
+
+            return back()->withErrors([
+                'queue' => "Ya tienes un paciente en consulta ({$label}). Termina la consulta antes de llamar al siguiente.",
+            ]);
+        }
+
+        $next = Turn::where('doctor_id', $doctorId)
+            ->where('status', 'espera')
+            ->whereDate('arrived_at', $today)
+            ->orderBy('turn_order')
+            ->first();
+
+        if ($next === null) {
+            return back()->withErrors(['queue' => 'No hay pacientes en espera.']);
+        }
+
+        $next->update(['status' => 'en_consulta']);
+
+        return back()->with('flash', ['type' => 'success', 'message' => 'Paciente llamado.']);
     }
 }

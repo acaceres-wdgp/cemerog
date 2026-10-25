@@ -2,8 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Turn;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Inertia\Inertia;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -58,6 +61,47 @@ class HandleInertiaRequests extends Middleware
                     'office' => $user->doctor->office,
                 ]
                 : null,
+            'queue' => $user?->doctor !== null
+                ? Inertia::defer(fn () => $this->resolveQueue($user))
+                : null,
+        ];
+    }
+
+    /**
+     * Resolve the current doctor's queue for the sidebar "Turno actual" card.
+     * Returns null when the user has no linked doctor.
+     *
+     * @return array{current_turn: array{id:int,turn_number:int,patient_name:string}|null, waiting_count: int}|null
+     */
+    private function resolveQueue(?User $user): ?array
+    {
+        if ($user === null || $user->doctor === null) {
+            return null;
+        }
+
+        $doctorId = $user->doctor->id;
+        $today = Carbon::today();
+
+        $currentTurn = Turn::with('patient')
+            ->where('doctor_id', $doctorId)
+            ->where('status', 'en_consulta')
+            ->whereDate('arrived_at', $today)
+            ->first();
+
+        $waitingCount = Turn::where('doctor_id', $doctorId)
+            ->where('status', 'espera')
+            ->whereDate('arrived_at', $today)
+            ->count();
+
+        return [
+            'current_turn' => $currentTurn ? [
+                'id' => $currentTurn->id,
+                'turn_number' => $currentTurn->turn_number,
+                'patient_name' => trim(
+                    $currentTurn->patient->first_names.' '.$currentTurn->patient->last_names
+                ),
+            ] : null,
+            'waiting_count' => $waitingCount,
         ];
     }
 }

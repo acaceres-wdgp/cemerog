@@ -18,6 +18,8 @@ export default function PatientSearch({
     onClear,
     error,
     endpoint,
+    compact = false,
+    placeholder = 'Buscar por nombre o cédula…',
 }: {
     selected: PatientResult | null;
     query: string;
@@ -26,6 +28,8 @@ export default function PatientSearch({
     onClear: () => void;
     error?: string;
     endpoint: string;
+    compact?: boolean;
+    placeholder?: string;
 }) {
     const [results, setResults] = useState<PatientResult[]>([]);
     const [open, setOpen] = useState(false);
@@ -98,7 +102,8 @@ export default function PatientSearch({
         <div ref={ref} className="relative">
             <input
                 className={cn(
-                    'box-border h-9 w-full rounded-[10px] border px-3 font-[inherit] text-sm outline-none',
+                    'box-border h-9 w-full border px-3 font-[inherit] text-sm outline-none',
+                    compact ? 'rounded-md' : 'rounded-[10px]',
                     error ? 'border-error' : 'border-input-border',
                 )}
                 value={query}
@@ -106,7 +111,7 @@ export default function PatientSearch({
                     onQueryChange(e.target.value);
                     if (!e.target.value) setOpen(false);
                 }}
-                placeholder="Buscar por nombre o cédula…"
+                placeholder={placeholder}
                 autoComplete="off"
                 autoFocus
             />
