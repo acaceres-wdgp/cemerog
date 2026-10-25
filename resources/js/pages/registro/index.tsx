@@ -13,8 +13,17 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import AlertBanner from '@/components/cemerog/AlertBanner';
 import MaskedInput from '@/components/cemerog/masked-input';
 import Panel from '@/components/cemerog/Panel';
+
+// ── Turn status label map (mirrors Turn::statusLabel on the backend) ──────────
+const TURN_STATUS_LABELS: Record<string, string> = {
+    espera: 'En espera',
+    en_consulta: 'En consulta',
+    atendido: 'Atendido',
+    no_asistio: 'No asistió',
+};
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -515,28 +524,30 @@ export default function RegistroIndex({
                                         existingPatient &&
                                         existingPatient.open_turns_today
                                             .length > 0 && (
-                                            <div className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-[13px] text-amber-800">
-                                                <Info className="mt-0.5 h-4 w-4 shrink-0" />
-                                                <div className="flex-1">
-                                                    <strong>
-                                                        Atención abierta hoy:
-                                                    </strong>{' '}
-                                                    {existingPatient.open_turns_today
-                                                        .map(
-                                                            (t) =>
-                                                                `Dr. ${t.doctor_name} (${t.status})`,
-                                                        )
-                                                        .join(', ')}
-                                                    . Puedes registrar con otro
-                                                    médico.
+                                            <AlertBanner variant="warning">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span>
+                                                        <strong>
+                                                            Atención abierta
+                                                            hoy:
+                                                        </strong>{' '}
+                                                        {existingPatient.open_turns_today
+                                                            .map(
+                                                                (t) =>
+                                                                    `${t.doctor_name} (${TURN_STATUS_LABELS[t.status] ?? t.status})`,
+                                                            )
+                                                            .join(', ')}
+                                                        . Puedes registrar con
+                                                        otro médico.
+                                                    </span>
+                                                    <Link
+                                                        href="/tablero"
+                                                        className="shrink-0 text-[12px] font-medium underline hover:no-underline"
+                                                    >
+                                                        Ver en el tablero
+                                                    </Link>
                                                 </div>
-                                                <Link
-                                                    href="/tablero"
-                                                    className="shrink-0 text-[12px] font-medium text-amber-800 underline hover:no-underline"
-                                                >
-                                                    Ver en el tablero
-                                                </Link>
-                                            </div>
+                                            </AlertBanner>
                                         )}
 
                                     {mode === 'existing' &&
