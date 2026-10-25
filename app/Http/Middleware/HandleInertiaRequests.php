@@ -51,6 +51,13 @@ class HandleInertiaRequests extends Middleware
                 ? $user->getAllPermissions()->pluck('name')->toArray()
                 : [],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') !== 'collapsed',
+            'doctor' => fn () => $user?->doctor
+                ? [
+                    'id' => $user->doctor->id,
+                    'name' => $user->doctor->name,
+                    'office' => $user->doctor->office,
+                ]
+                : null,
         ];
     }
 }
