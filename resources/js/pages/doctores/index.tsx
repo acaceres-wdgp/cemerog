@@ -1,6 +1,7 @@
 import { useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { MaskedInput } from '@/components/cemerog/masked-input';
+import FormField from '@/components/cemerog/FormField';
 
 type Specialty = {
     id: number;
@@ -18,6 +19,7 @@ type Doctor = {
     specialty_name: string;
     is_active: boolean;
     user_id: number | null;
+    user_name: string | null;
     office: string | null;
 };
 
@@ -343,12 +345,18 @@ function DoctorModal({
     const isEdit = Boolean(doctor);
 
     // On edit, if the doctor already has a user linked, include that user in the list
+    // with their real name (from user_name) if they're not in availableUsers.
     const usersForSelect: AvailableUser[] = doctor?.user_id
         ? [
               ...availableUsers.filter((u) => u.id !== doctor.user_id),
               ...(availableUsers.find((u) => u.id === doctor.user_id)
                   ? []
-                  : [{ id: doctor.user_id, name: '(usuario vinculado)' }]),
+                  : [
+                        {
+                            id: doctor.user_id,
+                            name: doctor.user_name ?? '(usuario vinculado)',
+                        },
+                    ]),
           ]
         : availableUsers;
 
@@ -601,75 +609,29 @@ function DoctorModal({
                                 </span>
                             )}
                         </label>
-                        <label
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 6,
-                                fontWeight: 500,
-                                fontSize: 14,
-                            }}
+                        <FormField
+                            as="select"
+                            name="user_id"
+                            label="Usuario del sistema"
+                            error={errors.user_id}
+                            value={data.user_id}
+                            onChange={(e) => setData('user_id', e.target.value)}
                         >
-                            <span>Usuario del sistema</span>
-                            <select
-                                value={data.user_id}
-                                onChange={(e) =>
-                                    setData('user_id', e.target.value)
-                                }
-                                style={{
-                                    ...inputStyle,
-                                    ...(errors.user_id
-                                        ? { borderColor: '#b91c1c' }
-                                        : {}),
-                                    appearance: 'auto',
-                                }}
-                            >
-                                <option value="">Sin vincular</option>
-                                {usersForSelect.map((u) => (
-                                    <option key={u.id} value={u.id}>
-                                        {u.name}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.user_id && (
-                                <span
-                                    style={{ color: '#b91c1c', fontSize: 12 }}
-                                >
-                                    {errors.user_id}
-                                </span>
-                            )}
-                        </label>
-                        <label
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 6,
-                                fontWeight: 500,
-                                fontSize: 14,
-                            }}
-                        >
-                            <span>Consultorio</span>
-                            <input
-                                value={data.office}
-                                onChange={(e) =>
-                                    setData('office', e.target.value)
-                                }
-                                placeholder="Ej: Consultorio 1"
-                                style={{
-                                    ...inputStyle,
-                                    ...(errors.office
-                                        ? { borderColor: '#b91c1c' }
-                                        : {}),
-                                }}
-                            />
-                            {errors.office && (
-                                <span
-                                    style={{ color: '#b91c1c', fontSize: 12 }}
-                                >
-                                    {errors.office}
-                                </span>
-                            )}
-                        </label>
+                            <option value="">Sin vincular</option>
+                            {usersForSelect.map((u) => (
+                                <option key={u.id} value={u.id}>
+                                    {u.name}
+                                </option>
+                            ))}
+                        </FormField>
+                        <FormField
+                            name="office"
+                            label="Consultorio"
+                            error={errors.office}
+                            value={data.office}
+                            onChange={(e) => setData('office', e.target.value)}
+                            placeholder="Ej: Consultorio 1"
+                        />
                     </div>
                     <div
                         style={{

@@ -23,7 +23,7 @@ class DoctoresController extends Controller
     public function index(): Response
     {
         $specialties = Specialty::withCount('doctors')->orderBy('name')->get();
-        $doctors = Doctor::with('specialty')->orderBy('name')->get()->map(fn (Doctor $d) => [
+        $doctors = Doctor::with(['specialty', 'user'])->orderBy('name')->get()->map(fn (Doctor $d) => [
             'id' => $d->id,
             'name' => $d->name,
             'exequatur' => $d->exequatur,
@@ -32,6 +32,7 @@ class DoctoresController extends Controller
             'specialty_name' => $d->specialty->name,
             'is_active' => $d->is_active,
             'user_id' => $d->user_id,
+            'user_name' => $d->user?->name,
             'office' => $d->office,
         ]);
 
