@@ -78,7 +78,17 @@
     --color-text-dim: #52525b;
 
     /* ── Primary button disabled/processing state ────── */
-    --color-primary-disabled: #7cb987;
+    --color-primary-disabled: #7ec48a;
+
+    /* ── Neutral (inactive) border — radio buttons, drag-drop zone ── */
+    --color-neutral-border: #d4d4d8;
+
+    /* ── Info box — no-tiene document type notice ────── */
+    --color-info-bg: #f3f9ec;
+    --color-info-border: #cfe3b8;
+
+    /* ── Placeholder/none text — e.g. "Ninguna" in allergies ── */
+    --color-text-none: #c4c9c4;
 
     /* ── Table row borders ───────────────────────────── */
     --color-row-divider: #f1f3ef;

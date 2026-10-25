@@ -29,6 +29,8 @@ const EXCLUDED_FILES = new Set<string>([]);
 const CLEAN_PAGES = [
     'pacientes/index.tsx',
     'registro/index.tsx',
+    'registro/edit.tsx',
+    'registro/components/',
     'citas/',
     'tablero/',
 ];
