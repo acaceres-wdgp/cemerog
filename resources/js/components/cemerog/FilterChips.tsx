@@ -49,14 +49,14 @@ export default function FilterChips<T extends string = string>({
                         aria-pressed={active}
                         className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                             active
-                                ? 'border-[#2E8B3E] bg-[#EEF6E2] text-[#2f4a17]'
-                                : 'border-[#e4e4e7] bg-white text-[#71717a] hover:border-[#2E8B3E] hover:text-[#333333]'
+                                ? 'border-primary bg-accent-bg text-accent-fg'
+                                : 'border-input-border bg-white text-muted hover:border-primary hover:text-text-body'
                         }`}
                     >
                         {chip.label}
                         {chip.count !== undefined && (
                             <span
-                                className={`font-semibold ${active ? 'text-[#2E8B3E]' : ''}`}
+                                className={`font-semibold ${active ? 'text-primary' : ''}`}
                             >
                                 {chip.count}
                             </span>

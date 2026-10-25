@@ -113,9 +113,7 @@ const FormField = forwardRef<
                         {error}
                     </p>
                 )}
-                {help && !error && (
-                    <p className="text-xs text-muted">{help}</p>
-                )}
+                {help && !error && <p className="text-xs text-muted">{help}</p>}
             </div>
         );
     },

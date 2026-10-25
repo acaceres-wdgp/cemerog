@@ -4,7 +4,9 @@ import AlertBanner from '../AlertBanner';
 
 describe('AlertBanner — renders children and title', () => {
     it('renders children text', () => {
-        render(<AlertBanner variant="danger">Something went wrong</AlertBanner>);
+        render(
+            <AlertBanner variant="danger">Something went wrong</AlertBanner>,
+        );
         expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     });
 

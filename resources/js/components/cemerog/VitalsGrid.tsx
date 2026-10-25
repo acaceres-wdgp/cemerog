@@ -36,27 +36,27 @@ export default function VitalsGrid({
                         key={i}
                         className={`rounded-lg border p-3 ${
                             outOfRange
-                                ? 'border-[#fecaca] bg-[#fef2f2]'
-                                : 'border-[#e3e9e3] bg-white'
+                                ? 'border-error-border bg-error-bg'
+                                : 'border-card-border bg-white'
                         }`}
                     >
-                        <p className="text-xs font-medium text-[#71717a]">
+                        <p className="text-xs font-medium text-muted">
                             {vital.label}
                         </p>
                         <p
                             className={`mt-1 text-lg font-semibold tabular-nums ${
-                                outOfRange ? 'text-[#b91c1c]' : 'text-[#1f2d22]'
+                                outOfRange ? 'text-error' : 'text-text-heading'
                             }`}
                         >
                             {vital.value}
                             {vital.unit && (
-                                <span className="ml-1 text-xs font-normal text-[#71717a]">
+                                <span className="ml-1 text-xs font-normal text-muted">
                                     {vital.unit}
                                 </span>
                             )}
                         </p>
                         {outOfRange && (
-                            <p className="mt-0.5 text-xs text-[#b91c1c]">
+                            <p className="mt-0.5 text-xs text-error">
                                 Fuera de rango
                             </p>
                         )}

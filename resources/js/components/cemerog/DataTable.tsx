@@ -109,7 +109,7 @@ export default function DataTable<TData extends RowData>({
                                 {headerGroup.headers.map((header, idx) => (
                                     <th
                                         key={header.id}
-                                        className={`py-0 text-[11.5px] text-left font-semibold tracking-[.05em] whitespace-nowrap text-table-header-text uppercase ${idx === 0 ? 'pr-3 pl-5' : 'px-3'}`}
+                                        className={`py-0 text-left text-[11.5px] font-semibold tracking-[.05em] whitespace-nowrap text-table-header-text uppercase ${idx === 0 ? 'pr-3 pl-5' : 'px-3'}`}
                                     >
                                         {header.isPlaceholder
                                             ? null

@@ -20,27 +20,20 @@ export default function PrintablePage({
 }: PrintablePageProps) {
     return (
         <div
-            className={`mx-auto w-full max-w-[816px] bg-white p-12 print:max-w-none print:p-0 ${className}`}
-            style={{
-                minHeight: '1056px',
-                fontFamily: 'Instrument Sans, sans-serif',
-            }}
+            className={`mx-auto min-h-[1056px] w-full max-w-[816px] bg-white p-12 font-sans print:max-w-none print:p-0 ${className}`}
         >
             {showHeader && (
-                <div className="mb-8 flex items-center justify-between border-b border-[#e3e9e3] pb-6">
+                <div className="mb-8 flex items-center justify-between border-b border-card-border pb-6">
                     <div>
-                        <h1
-                            className="text-xl font-bold text-[#2E8B3E]"
-                            style={{ fontFamily: 'Bitter, serif' }}
-                        >
+                        <h1 className="font-serif text-xl font-bold text-primary">
                             CEMEROG
                         </h1>
-                        <p className="text-xs text-[#71717a]">
+                        <p className="text-xs text-muted">
                             Dres. Rodríguez &amp; Guzmán
                         </p>
                     </div>
                     {title && (
-                        <h2 className="text-base font-semibold text-[#1f2d22]">
+                        <h2 className="text-base font-semibold text-text-heading">
                             {title}
                         </h2>
                     )}

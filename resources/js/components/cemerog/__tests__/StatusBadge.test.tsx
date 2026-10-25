@@ -100,13 +100,10 @@ describe('StatusBadge — attention states apply semantic CSS class', () => {
         'cancelada',
     ] as const;
 
-    it.each(attentionStates)(
-        '%s applies the state-%s CSS class',
-        (state) => {
-            const { container } = render(<StatusBadge state={state} />);
-            expect(container.firstChild).toHaveClass(`state-${state}`);
-        },
-    );
+    it.each(attentionStates)('%s applies the state-%s CSS class', (state) => {
+        const { container } = render(<StatusBadge state={state} />);
+        expect(container.firstChild).toHaveClass(`state-${state}`);
+    });
 
     it('cita-pendiente reuses espera color class', () => {
         const { container } = render(<StatusBadge state="cita-pendiente" />);

@@ -9,16 +9,14 @@ interface TriageBadgeProps {
     className?: string;
 }
 
-const TRIAGE_CONFIG: Record<
-    TriageLevel,
-    { label: string; cssClass: string }
-> = {
-    I: { label: 'I – Resucitación', cssClass: 'triage-i' },
-    II: { label: 'II – Emergencia', cssClass: 'triage-ii' },
-    III: { label: 'III – Urgente', cssClass: 'triage-iii' },
-    IV: { label: 'IV – Menos urgente', cssClass: 'triage-iv' },
-    V: { label: 'V – No urgente', cssClass: 'triage-v' },
-};
+const TRIAGE_CONFIG: Record<TriageLevel, { label: string; cssClass: string }> =
+    {
+        I: { label: 'I – Resucitación', cssClass: 'triage-i' },
+        II: { label: 'II – Emergencia', cssClass: 'triage-ii' },
+        III: { label: 'III – Urgente', cssClass: 'triage-iii' },
+        IV: { label: 'IV – Menos urgente', cssClass: 'triage-iv' },
+        V: { label: 'V – No urgente', cssClass: 'triage-v' },
+    };
 
 export default function TriageBadge({
     level,

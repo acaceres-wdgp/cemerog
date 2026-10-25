@@ -34,7 +34,7 @@ export default function AlertBanner({
 
     return (
         <div
-            className={`flex gap-3 rounded-lg border p-4 ${config.variantClass} bg-[var(--alert-bg)] border-[var(--alert-border)] ${className}`}
+            className={`flex gap-3 rounded-lg border p-4 ${config.variantClass} border-[var(--alert-border)] bg-[var(--alert-bg)] ${className}`}
             role="alert"
         >
             <Icon

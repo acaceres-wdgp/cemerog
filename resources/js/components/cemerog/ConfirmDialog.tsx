@@ -66,10 +66,10 @@ export default function ConfirmDialog({
                         }
                         onClick={onConfirm}
                         disabled={isLoading}
-                        style={
+                        className={
                             variant === 'default'
-                                ? { backgroundColor: '#2E8B3E' }
-                                : undefined
+                                ? 'bg-primary hover:bg-primary-hover'
+                                : ''
                         }
                     >
                         {confirmLabel}
