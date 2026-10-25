@@ -10,6 +10,7 @@ use App\Http\Requests\RegisterArrivalRequest;
 use App\Http\Requests\UpdatePatientRequest;
 use App\Models\Doctor;
 use App\Models\Patient;
+use App\Models\Turn;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
@@ -115,15 +116,17 @@ class RegistroController extends Controller
             'last_attended_at' => $patient->turns()->max('arrived_at')
                 ? Carbon::parse($patient->turns()->max('arrived_at'))->format('d/m/Y')
                 : null,
-            'has_open_turn_today' => $patient->turns()
+            'open_turns_today' => $patient->turns()
+                ->with('doctor')
                 ->whereDate('arrived_at', today())
                 ->whereIn('status', ['espera', 'en_consulta'])
-                ->exists(),
-            'open_turn' => $patient->turns()
-                ->whereDate('arrived_at', today())
-                ->whereIn('status', ['espera', 'en_consulta'])
-                ->with('doctor.specialty')
-                ->first()?->only(['id', 'turn_number', 'status']),
+                ->get()
+                ->map(fn (Turn $t) => [
+                    'doctor_name' => $t->doctor->name,
+                    'status' => $t->status,
+                ])
+                ->values()
+                ->all(),
         ]);
     }
 }

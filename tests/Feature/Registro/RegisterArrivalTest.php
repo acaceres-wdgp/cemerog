@@ -215,6 +215,200 @@ test('GET /registro retorna 403 para roles sin permiso', function () {
         ->assertForbidden();
 });
 
+// C9 – different doctor: patient CAN register a second turn the same day
+test('paciente con turno abierto con médico A puede registrar turno con médico B el mismo día', function () {
+    $specialty = Specialty::factory()->create(['name' => 'Pediatría']);
+    $doctorB = Doctor::factory()->create(['specialty_id' => $specialty->id, 'is_active' => true]);
+
+    $patient = Patient::factory()->create();
+    Turn::factory()->create([
+        'patient_id' => $patient->id,
+        'doctor_id' => $this->doctor->id,
+        'status' => 'espera',
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($this->secretaria)
+        ->post('/registro', [
+            'patient_id' => $patient->id,
+            'first_names' => $patient->first_names,
+            'last_names' => $patient->last_names,
+            'document_type' => $patient->document_type,
+            'document_number' => $patient->document_number,
+            'birth_date' => $patient->birth_date->format('Y-m-d'),
+            'sex' => $patient->sex,
+            'phone' => $patient->phone ?? '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $doctorB->id,  // different doctor
+        ])
+        ->assertRedirect('/tablero');
+
+    expect(Turn::where('patient_id', $patient->id)->count())->toBe(2);
+});
+
+// C10 – same doctor: patient CANNOT open a second turn today with the same doctor
+test('paciente con turno abierto con médico A no puede abrir otro turno con médico A', function () {
+    $patient = Patient::factory()->create();
+    Turn::factory()->create([
+        'patient_id' => $patient->id,
+        'doctor_id' => $this->doctor->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($this->secretaria)
+        ->post('/registro', [
+            'patient_id' => $patient->id,
+            'first_names' => $patient->first_names,
+            'last_names' => $patient->last_names,
+            'document_type' => $patient->document_type,
+            'document_number' => $patient->document_number,
+            'birth_date' => $patient->birth_date->format('Y-m-d'),
+            'sex' => $patient->sex,
+            'phone' => $patient->phone ?? '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,  // same doctor
+        ])
+        ->assertSessionHasErrors(['open_turn']);
+
+    expect(Turn::where('patient_id', $patient->id)->count())->toBe(1);
+});
+
+// C11 – closed turn: patient CAN open a new turn with the same doctor after a closed turn
+test('turno cerrado con médico A permite abrir nuevo turno con médico A el mismo día', function () {
+    $patient = Patient::factory()->create();
+    Turn::factory()->create([
+        'patient_id' => $patient->id,
+        'doctor_id' => $this->doctor->id,
+        'status' => 'atendido',  // closed status
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($this->secretaria)
+        ->post('/registro', [
+            'patient_id' => $patient->id,
+            'first_names' => $patient->first_names,
+            'last_names' => $patient->last_names,
+            'document_type' => $patient->document_type,
+            'document_number' => $patient->document_number,
+            'birth_date' => $patient->birth_date->format('Y-m-d'),
+            'sex' => $patient->sex,
+            'phone' => $patient->phone ?? '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
+        ])
+        ->assertRedirect('/tablero');
+
+    expect(Turn::where('patient_id', $patient->id)->count())->toBe(2);
+});
+
+// C12 – the exception message names the doctor
+test('el mensaje de error nombra al médico con turno abierto', function () {
+    $patient = Patient::factory()->create();
+    Turn::factory()->create([
+        'patient_id' => $patient->id,
+        'doctor_id' => $this->doctor->id,
+        'status' => 'espera',
+        'arrived_at' => now(),
+    ]);
+
+    $response = $this->actingAs($this->secretaria)
+        ->post('/registro', [
+            'patient_id' => $patient->id,
+            'first_names' => $patient->first_names,
+            'last_names' => $patient->last_names,
+            'document_type' => $patient->document_type,
+            'document_number' => $patient->document_number,
+            'birth_date' => $patient->birth_date->format('Y-m-d'),
+            'sex' => $patient->sex,
+            'phone' => $patient->phone ?? '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
+        ]);
+
+    $response->assertSessionHasErrors(['open_turn']);
+    $errors = session('errors')->toArray();
+    expect($errors['open_turn'][0])->toContain($this->doctor->name);
+});
+
+// C13 – POST /tablero/turnos: different doctor is allowed
+test('POST /tablero/turnos permite segundo turno con médico diferente el mismo día', function () {
+    $user = User::factory()->create();
+    $user->givePermissionTo('module.tablero.access');
+
+    $specialty = Specialty::factory()->create(['name' => 'Cardiología']);
+    $doctorB = Doctor::factory()->create(['specialty_id' => $specialty->id, 'is_active' => true]);
+
+    $patient = Patient::factory()->create();
+    Turn::factory()->create([
+        'patient_id' => $patient->id,
+        'doctor_id' => $this->doctor->id,
+        'status' => 'espera',
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($user)
+        ->post('/tablero/turnos', [
+            'patient_id' => $patient->id,
+            'doctor_id' => $doctorB->id,  // different doctor
+        ])
+        ->assertRedirect('/tablero');
+
+    expect(Turn::where('patient_id', $patient->id)->count())->toBe(2);
+});
+
+// C14 – POST /tablero/turnos: same doctor is blocked
+test('POST /tablero/turnos rechaza turno con mismo médico si ya hay uno abierto hoy', function () {
+    $user = User::factory()->create();
+    $user->givePermissionTo('module.tablero.access');
+
+    $patient = Patient::factory()->create();
+    Turn::factory()->create([
+        'patient_id' => $patient->id,
+        'doctor_id' => $this->doctor->id,
+        'status' => 'espera',
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($user)
+        ->post('/tablero/turnos', [
+            'patient_id' => $patient->id,
+            'doctor_id' => $this->doctor->id,
+        ])
+        ->assertSessionHasErrors(['open_turn']);
+
+    expect(Turn::where('patient_id', $patient->id)->count())->toBe(1);
+});
+
+// C15 – search API returns open_turns_today list instead of flat flags
+test('GET /registro/pacientes/buscar retorna open_turns_today como lista de médicos', function () {
+    $specialty = Specialty::factory()->create(['name' => 'Pediatría']);
+    $doctorB = Doctor::factory()->create(['specialty_id' => $specialty->id, 'is_active' => true, 'name' => 'Dr. Gómez']);
+
+    $patient = Patient::factory()->create(['first_names' => 'Carlos', 'last_names' => 'Ramírez']);
+    Turn::factory()->create([
+        'patient_id' => $patient->id,
+        'doctor_id' => $this->doctor->id,
+        'status' => 'espera',
+        'arrived_at' => now(),
+    ]);
+    Turn::factory()->create([
+        'patient_id' => $patient->id,
+        'doctor_id' => $doctorB->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($this->secretaria)
+        ->getJson('/registro/pacientes/buscar?q=Carlos')
+        ->assertOk()
+        ->assertJsonFragment([
+            'id' => $patient->id,
+        ])
+        ->assertJsonPath('0.open_turns_today.0.doctor_name', $this->doctor->name)
+        ->assertJsonPath('0.open_turns_today.1.doctor_name', 'Dr. Gómez');
+});
+
 // D2 – GET /registro?paciente={id} preloads patient
 test('GET /registro?paciente={id} precarga el paciente en la prop patient', function () {
     $patient = Patient::factory()->create();
@@ -232,4 +426,106 @@ test('GET /registro?paciente=9999 retorna 404', function () {
     $this->actingAs($this->secretaria)
         ->get('/registro?paciente=9999')
         ->assertNotFound();
+});
+
+// ─── Adj-1: no duplicate Dr. prefix ──────────────────────────────────────────
+
+// Adj1-A – exception message must not prepend "Dr." when name already has it
+test('el mensaje no duplica el prefijo Dr. cuando el nombre ya lo incluye', function () {
+    $specialty = Specialty::factory()->create(['name' => 'Ginecología']);
+    $doctor = Doctor::factory()->create([
+        'specialty_id' => $specialty->id,
+        'name' => 'Dra. López',
+        'is_active' => true,
+    ]);
+
+    $patient = Patient::factory()->create();
+    Turn::factory()->create([
+        'patient_id' => $patient->id,
+        'doctor_id' => $doctor->id,
+        'status' => 'espera',
+        'arrived_at' => now(),
+    ]);
+
+    $response = $this->actingAs($this->secretaria)
+        ->post('/registro', [
+            'patient_id' => $patient->id,
+            'first_names' => $patient->first_names,
+            'last_names' => $patient->last_names,
+            'document_type' => $patient->document_type,
+            'document_number' => $patient->document_number,
+            'birth_date' => $patient->birth_date->format('Y-m-d'),
+            'sex' => $patient->sex,
+            'phone' => $patient->phone ?? '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $doctor->id,
+        ]);
+
+    $response->assertSessionHasErrors(['open_turn']);
+    $errors = session('errors')->toArray();
+    expect($errors['open_turn'][0])->toContain('con Dra. López');
+    expect($errors['open_turn'][0])->not->toContain('Dr. Dra.');
+});
+
+// ─── Adj-2: status shown as human-readable label in exception message ─────────
+
+// Adj2-A – exception message shows "En espera" not raw "espera"
+test('el mensaje de error muestra "En espera" en lugar del estado raw espera', function () {
+    $patient = Patient::factory()->create();
+    Turn::factory()->create([
+        'patient_id' => $patient->id,
+        'doctor_id' => $this->doctor->id,
+        'status' => 'espera',
+        'arrived_at' => now(),
+    ]);
+
+    $response = $this->actingAs($this->secretaria)
+        ->post('/registro', [
+            'patient_id' => $patient->id,
+            'first_names' => $patient->first_names,
+            'last_names' => $patient->last_names,
+            'document_type' => $patient->document_type,
+            'document_number' => $patient->document_number,
+            'birth_date' => $patient->birth_date->format('Y-m-d'),
+            'sex' => $patient->sex,
+            'phone' => $patient->phone ?? '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
+        ]);
+
+    $response->assertSessionHasErrors(['open_turn']);
+    $errors = session('errors')->toArray();
+    expect($errors['open_turn'][0])->toContain('En espera');
+    expect($errors['open_turn'][0])->not->toContain('espera,');
+    expect($errors['open_turn'][0])->not->toContain('(espera)');
+});
+
+// Adj2-B – exception message shows "En consulta" not raw "en_consulta"
+test('el mensaje de error muestra "En consulta" en lugar del estado raw en_consulta', function () {
+    $patient = Patient::factory()->create();
+    Turn::factory()->create([
+        'patient_id' => $patient->id,
+        'doctor_id' => $this->doctor->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
+    $response = $this->actingAs($this->secretaria)
+        ->post('/registro', [
+            'patient_id' => $patient->id,
+            'first_names' => $patient->first_names,
+            'last_names' => $patient->last_names,
+            'document_type' => $patient->document_type,
+            'document_number' => $patient->document_number,
+            'birth_date' => $patient->birth_date->format('Y-m-d'),
+            'sex' => $patient->sex,
+            'phone' => $patient->phone ?? '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
+        ]);
+
+    $response->assertSessionHasErrors(['open_turn']);
+    $errors = session('errors')->toArray();
+    expect($errors['open_turn'][0])->toContain('En consulta');
+    expect($errors['open_turn'][0])->not->toContain('(en_consulta)');
 });

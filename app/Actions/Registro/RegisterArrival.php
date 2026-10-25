@@ -43,10 +43,12 @@ class RegisterArrival
                 $patient->refresh();
             }
 
-            // Refuse if the patient already has an open turn today
+            // Refuse if the patient already has an open turn today with the same doctor
             $openTurn = Turn::where('patient_id', $patient->id)
+                ->where('doctor_id', $attention['doctor_id'])
                 ->whereDate('arrived_at', today())
                 ->whereIn('status', ['espera', 'en_consulta'])
+                ->with('doctor')
                 ->first();
 
             if ($openTurn !== null) {

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
+import AlertBanner from '@/components/cemerog/AlertBanner';
 import FormDialog from '@/components/cemerog/FormDialog';
 import PatientSearch from '@/components/cemerog/PatientSearch';
 import type { PatientResult } from '@/components/cemerog/PatientSearch';
@@ -122,6 +123,11 @@ export function AgregarTurnoModal({
                         className="box-border w-full resize-y rounded-[10px] border border-input-border px-3 py-2 font-[inherit] text-sm leading-relaxed outline-none"
                     />
                 </label>
+                {errors.open_turn && (
+                    <AlertBanner variant="danger">
+                        {errors.open_turn}
+                    </AlertBanner>
+                )}
             </div>
         </FormDialog>
     );

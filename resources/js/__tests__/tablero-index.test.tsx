@@ -12,6 +12,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 const mockPatch = vi.hoisted(() => vi.fn());
 const mockPost = vi.hoisted(() => vi.fn());
 const mockVisit = vi.hoisted(() => vi.fn());
+const mockToastError = vi.hoisted(() => vi.fn());
 
 vi.mock('@inertiajs/react', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@inertiajs/react')>()),
@@ -21,6 +22,8 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
         visit: mockVisit,
     },
 }));
+
+vi.mock('sonner', () => ({ toast: { error: mockToastError } }));
 
 // No Dialog mock needed - tablero uses a custom inline modal
 
@@ -326,7 +329,7 @@ describe('TableroIndex – assignTurnFromCita', () => {
         expect(mockPost).toHaveBeenCalledWith(
             '/tablero/turnos',
             { patient_id: 3, doctor_id: 1, appointment_id: 20 },
-            { preserveScroll: true },
+            expect.objectContaining({ preserveScroll: true }),
         );
     });
 });
@@ -444,5 +447,68 @@ describe('TableroIndex – empty states', () => {
     it('shows empty state for citas when no appointments', () => {
         renderTablero({ appointments: [] });
         expect(screen.getByText(/no hay citas/i)).toBeInTheDocument();
+    });
+});
+
+// ─── Adj-4: assignTurnFromCita onError ───────────────────────────────────────
+
+describe('TableroIndex – assignTurnFromCita onError (open_turn)', () => {
+    it('calls router.post with onError callback when assigning from cita', () => {
+        const cita = makeCita({
+            id: 20,
+            patient_id: 3,
+            doctor_id: 1,
+            has_turn: false,
+        });
+        renderTablero({ appointments: [cita] });
+
+        const asignarBtn = screen.getByRole('button', {
+            name: /asignar turno/i,
+        });
+        fireEvent.click(asignarBtn);
+
+        // router.post should be called with options that include onError
+        expect(mockPost).toHaveBeenCalledWith(
+            '/tablero/turnos',
+            expect.objectContaining({
+                patient_id: 3,
+                doctor_id: 1,
+                appointment_id: 20,
+            }),
+            expect.objectContaining({ onError: expect.any(Function) }),
+        );
+    });
+
+    it('shows toast.error when onError receives open_turn error from server', () => {
+        // Simulate onError being called with open_turn
+        mockPost.mockImplementationOnce(
+            (
+                _url: string,
+                _data: unknown,
+                opts: { onError?: (e: Record<string, string>) => void },
+            ) => {
+                opts.onError?.({
+                    open_turn:
+                        'El paciente ya tiene un turno abierto con Dra. García.',
+                });
+            },
+        );
+
+        const cita = makeCita({
+            id: 20,
+            patient_id: 3,
+            doctor_id: 1,
+            has_turn: false,
+        });
+        renderTablero({ appointments: [cita] });
+
+        const asignarBtn = screen.getByRole('button', {
+            name: /asignar turno/i,
+        });
+        fireEvent.click(asignarBtn);
+
+        expect(mockToastError).toHaveBeenCalledWith(
+            'El paciente ya tiene un turno abierto con Dra. García.',
+        );
     });
 });

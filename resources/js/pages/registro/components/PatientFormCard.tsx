@@ -55,7 +55,6 @@ interface PatientFormCardProps {
     processing: boolean;
     patient: PatientSearchResult;
     onDocumentTypeChange: (type: DocumentType) => void;
-    onDelete: () => void;
 }
 
 export function PatientFormCard({
@@ -65,7 +64,6 @@ export function PatientFormCard({
     processing,
     patient,
     onDocumentTypeChange,
-    onDelete,
 }: PatientFormCardProps) {
     const docNumberField = () => {
         if (data.document_type === 'no_tiene') {
@@ -335,29 +333,20 @@ export function PatientFormCard({
                 </div>
             </div>
 
-            <div className="flex items-center justify-between gap-2 border-t border-divider p-[14px_20px]">
-                <button
-                    type="button"
-                    onClick={onDelete}
-                    className="h-9 cursor-pointer rounded-[10px] border border-error-border bg-error-bg px-[14px] font-[inherit] text-sm font-medium text-error"
+            <div className="flex items-center justify-end gap-2 border-t border-divider p-[14px_20px]">
+                <a
+                    href="/registro"
+                    className="inline-flex h-9 items-center rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-[inherit] text-sm font-medium text-text-heading no-underline"
                 >
-                    Eliminar paciente
+                    Cancelar
+                </a>
+                <button
+                    type="submit"
+                    disabled={processing}
+                    className={`inline-flex h-9 items-center gap-2 rounded-[10px] border-0 px-[14px] font-[inherit] text-sm font-medium text-white ${processing ? 'cursor-not-allowed bg-primary-disabled' : 'cursor-pointer bg-primary'}`}
+                >
+                    ✓ Guardar cambios
                 </button>
-                <div className="flex gap-2">
-                    <a
-                        href="/registro"
-                        className="inline-flex h-9 items-center rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-[inherit] text-sm font-medium text-text-heading no-underline"
-                    >
-                        Cancelar
-                    </a>
-                    <button
-                        type="submit"
-                        disabled={processing}
-                        className={`inline-flex h-9 items-center gap-2 rounded-[10px] border-0 px-[14px] font-[inherit] text-sm font-medium text-white ${processing ? 'cursor-not-allowed bg-primary-disabled' : 'cursor-pointer bg-primary'}`}
-                    >
-                        ✓ Guardar cambios
-                    </button>
-                </div>
             </div>
         </div>
     );
