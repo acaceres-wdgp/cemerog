@@ -52,7 +52,7 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 - Un paciente no puede tener más de una atención abierta el mismo día; el sistema muestra un aviso si intenta registrarse de nuevo.
 - La creación del paciente y la asignación del turno ocurren en una sola transacción (`RegisterArrival`).
 - `expediente_number` = `P-` + id con cero a la izquierda (5 dígitos mínimo).
-- `document_number` y `phone` se guardan cifrados; se indexan mediante hash HMAC-SHA256 de solo los dígitos para búsquedas exactas entre distintos formatos de entrada.
+- `document_number` y `phone` se guardan cifrados; se indexan mediante `document_number_hash` y `phone_hash` (HMAC-SHA256) para búsquedas exactas. `document_number_hash` usa normalización por tipo: solo dígitos para `cedula`, mayúsculas [A-Z0-9] para `pasaporte`/`cedula_extranjera`/`no_tiene` (`Pii::documentHash`). `phone_hash` siempre usa solo dígitos (`Pii::hash`). Ver ADR-014.
 
 ### Citas
 

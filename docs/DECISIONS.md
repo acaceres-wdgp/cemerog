@@ -232,6 +232,48 @@ Todos los endpoints que muestran listas de registros relacionados (`/tablero`, `
 
 ---
 
+## ADR-014: Hash por tipo de documento (documentHash)
+
+**Fecha**: 2026-10-25
+**Estado**: Aceptado
+
+### Contexto
+
+ADR-010 introdujo `document_number_hash` calculado solo sobre los dígitos del valor, lo cual era correcto para cédulas dominicanas (formato `NNN-NNNNNNN-N`). Sin embargo, dos pasaportes con letras distintas pero los mismos dígitos —p.ej. `AB123456` y `XY123456`— producían el mismo hash `hash('123456')`, violando la unicidad en DB o silenciando duplicados en búsquedas.
+
+El mismo problema afectaba los códigos generados para `no_tiene` (prefijo `GEN-` + caracteres alfanuméricos).
+
+### Decisión
+
+Reemplazar la normalización de solo-dígitos por una normalización dependiente del tipo de documento:
+
+| Tipo                                         | Normalización antes del hash           |
+| -------------------------------------------- | -------------------------------------- |
+| `cedula`                                     | Solo dígitos (`/[^\d]/` eliminado)     |
+| `pasaporte`, `cedula_extranjera`, `no_tiene` | Mayúsculas [A-Z0-9] (letras + dígitos) |
+
+La lógica centralizada vive en `Pii::documentHash(string $type, string $number): string`.
+
+`Pii::hash()` queda sin cambios para `phone_hash` (dígitos siguen siendo la normalización correcta para teléfonos).
+
+### Cambios
+
+- `app/Support/Pii.php`: nuevo método `documentHash()`.
+- `app/Models/Patient.php`: el hash se calcula en el evento `saving` (en lugar del setter) para garantizar que `document_type` ya esté disponible.
+- `app/Rules/UniqueDocumentNumber.php`: acepta `type` como segundo parámetro.
+- `app/Http/Requests/StorePatientRequest.php`, `UpdatePatientRequest.php`, `RegisterArrivalRequest.php`: pasan `document_type` al construir la regla.
+- `app/Actions/CreatePatient.php`, `app/Actions/Patients/SearchPatients.php`: usan `documentHash`.
+- `app/Http/Controllers/Modules/PacientesController.php`: `exists()` y `index()` usan `documentHash`.
+- `resources/js/pages/registro/index.tsx`: envía parámetro `tipo` al endpoint `/registro/pacientes/existe`.
+- Migración `2026_10_25_233835_recalculate_document_number_hashes.php`: recalcula todos los hashes existentes con la nueva lógica; aborta si detecta que los nuevos hashes producirían duplicados.
+
+### Consecuencias
+
+- Dos pasaportes con distintos prefijos de letras pero mismos dígitos ya no colisionan.
+- La función `down()` de la migración restaura el algoritmo antiguo (solo dígitos), lo que en sí puede producir duplicados para pasaportes que usaban letras distintas — este es el bug documentado que `up()` corrige.
+
+---
+
 ## ADR-013: Unicidad de turno por médico (no por paciente)
 
 **Fecha**: 2026-10-25

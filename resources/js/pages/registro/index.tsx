@@ -148,7 +148,7 @@ export default function RegistroIndex({
         debounceRef.current = setTimeout(async () => {
             try {
                 const res = await fetch(
-                    `/registro/pacientes/existe?documento=${encodeURIComponent(doc)}`,
+                    `/registro/pacientes/existe?documento=${encodeURIComponent(doc)}&tipo=${encodeURIComponent(data.document_type)}`,
                     {
                         signal: controller.signal,
                         headers: {

@@ -29,7 +29,7 @@ class RegisterArrivalRequest extends FormRequest
             'document_number' => [
                 'required_unless:document_type,no_tiene',
                 'nullable', 'string', 'max:50',
-                new UniqueDocumentNumber($patientId),
+                new UniqueDocumentNumber(ignoreId: $patientId, type: $this->input('document_type', 'cedula')),
             ],
             'email' => ['nullable', 'string', 'email', 'max:150'],
             'first_names' => ['required_without:patient_id', 'nullable', 'string', 'max:100'],

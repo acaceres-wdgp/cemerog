@@ -57,6 +57,22 @@ class Patient extends Model
     /** @use HasFactory<PatientFactory> */
     use HasFactory, SoftDeletes;
 
+    /**
+     * Recompute document_number_hash whenever the model is saved, so the hash
+     * is always consistent with both document_type and document_number regardless
+     * of the order in which those attributes are assigned.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (Patient $patient): void {
+            $raw = $patient->document_number;
+            $type = (string) $patient->document_type;
+            if ($raw !== '' && $type !== '') {
+                $patient->document_number_hash = Pii::documentHash($type, $raw);
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [
@@ -75,10 +91,10 @@ class Patient extends Model
     {
         return Attribute::make(
             get: fn (string $value) => Pii::decrypt($value) ?? $value,
-            set: fn (string $value) => [
-                'document_number' => Pii::encrypt($value),
-                'document_number_hash' => Pii::hash($value, fallbackToFull: true),
-            ],
+            // Hash is intentionally NOT computed here; it is computed in the
+            // `saving` event (see booted()) so that document_type is guaranteed
+            // to be available regardless of attribute assignment order.
+            set: fn (string $value) => ['document_number' => Pii::encrypt($value)],
         );
     }
 

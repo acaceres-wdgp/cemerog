@@ -49,6 +49,34 @@ final class Pii
     }
 
     /**
+     * Compute an HMAC-SHA256 hash for a document number, normalised by document type.
+     *
+     * Normalisation rules:
+     *   - cedula:             digits only          (001-1234567-8 → 00112345678)
+     *   - pasaporte /
+     *     cedula_extranjera:  uppercase [A-Z0-9]   (ab-123 456 → AB123456)
+     *   - no_tiene:           uppercase [A-Z0-9]   (GEN-ab12cd34 → GENAB12CD34)
+     *
+     * This guarantees that two passports / foreign IDs with the same characters
+     * but different letters do NOT produce the same hash (unlike the old digits-only
+     * approach that mapped AB123456 and XY123456 to the same value).
+     */
+    public static function documentHash(string $type, string $number): string
+    {
+        $normalized = match ($type) {
+            'cedula' => preg_replace('/[^\d]/', '', $number) ?? $number,
+            default => strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $number) ?? $number),
+        };
+
+        // Safety: if normalisation produced an empty string, fall back to full value.
+        if ($normalized === '') {
+            $normalized = $number;
+        }
+
+        return hash_hmac('sha256', $normalized, config('app.key'));
+    }
+
+    /**
      * Compute an HMAC-SHA256 hash over digits-only normalised value.
      *
      * @param  bool  $fallbackToFull  When true and no digits are found, hash the full string.

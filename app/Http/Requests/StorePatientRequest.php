@@ -20,7 +20,7 @@ class StorePatientRequest extends FormRequest
     {
         return [
             'document_type' => ['required', 'string', Rule::in(['cedula', 'pasaporte', 'cedula_extranjera', 'no_tiene'])],
-            'document_number' => ['required_unless:document_type,no_tiene', 'nullable', 'string', 'max:50', new UniqueDocumentNumber],
+            'document_number' => ['required_unless:document_type,no_tiene', 'nullable', 'string', 'max:50', new UniqueDocumentNumber(type: $this->input('document_type', 'cedula'))],
             'email' => ['nullable', 'string', 'email', 'max:150'],
             'first_names' => ['required', 'string', 'max:100'],
             'last_names' => ['required', 'string', 'max:100'],

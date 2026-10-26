@@ -28,15 +28,37 @@ class PacientesController extends Controller
 
         if (mb_strlen($q) >= 3) {
             $digitsOnly = preg_replace('/[^\d]/', '', $q) ?? '';
+            $words = preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY) ?: [$q];
 
             if ($digitsOnly !== '' && ! preg_match('/[a-zA-ZÀ-ÖØ-öø-ÿ]/', $q)) {
-                $hash = hash_hmac('sha256', $digitsOnly, config('app.key'));
-                $baseQuery->where(function ($inner) use ($hash) {
-                    $inner->where('document_number_hash', $hash)
-                        ->orWhere('phone_hash', $hash);
+                // Pure-digit query: cedula / phone exact match.
+                $cedulaHash = Pii::documentHash('cedula', $q);
+                $phoneHash = Pii::hash($digitsOnly);
+                $baseQuery->where(function ($inner) use ($cedulaHash, $phoneHash) {
+                    $inner->where('document_number_hash', $cedulaHash)
+                        ->orWhere('phone_hash', $phoneHash);
+                });
+            } elseif (
+                count($words) === 1
+                && $digitsOnly !== ''
+                && preg_match('/[a-zA-Z]/', $q)
+                && ! preg_match('/[À-ÖØ-öø-ÿ]/', $q)
+            ) {
+                // Single alphanumeric term with at least one digit and letter:
+                // match passport / foreign-ID hash OR name LIKE.
+                $passportHash = Pii::documentHash('pasaporte', $q);
+                $baseQuery->where(function ($outer) use ($passportHash, $words) {
+                    $outer->where('document_number_hash', $passportHash);
+                    $outer->orWhere(function ($nameQuery) use ($words) {
+                        foreach ($words as $word) {
+                            $nameQuery->where(function ($inner) use ($word) {
+                                $inner->where('first_names', 'like', "%{$word}%")
+                                    ->orWhere('last_names', 'like', "%{$word}%");
+                            });
+                        }
+                    });
                 });
             } else {
-                $words = preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY) ?: [$q];
                 foreach ($words as $word) {
                     $baseQuery->where(function ($inner) use ($word) {
                         $inner->where('first_names', 'like', "%{$word}%")
@@ -188,12 +210,17 @@ class PacientesController extends Controller
     public function exists(Request $request): JsonResponse|HttpResponse
     {
         $raw = trim((string) $request->string('documento'));
+        $tipo = trim((string) $request->string('tipo', 'cedula'));
 
-        $hash = Pii::hash($raw, fallbackToFull: true);
+        if (! in_array($tipo, ['cedula', 'pasaporte', 'cedula_extranjera', 'no_tiene'], true)) {
+            $tipo = 'cedula';
+        }
 
-        if ($hash === null) {
+        if ($raw === '') {
             return response()->make('null', 200, ['Content-Type' => 'application/json']);
         }
+
+        $hash = Pii::documentHash($tipo, $raw);
 
         $patient = Patient::where('document_number_hash', $hash)->first();
 

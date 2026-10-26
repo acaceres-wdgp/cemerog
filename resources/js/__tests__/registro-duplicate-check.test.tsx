@@ -134,11 +134,13 @@ describe('Registro – detección de duplicado por documento', () => {
 
         expect(global.fetch).toHaveBeenCalledTimes(1);
         expect(global.fetch).toHaveBeenCalledWith(
-            expect.stringContaining(
-                '/registro/pacientes/existe?documento=001-1234567-8',
-            ),
+            expect.stringContaining('/registro/pacientes/existe'),
             expect.any(Object),
         );
+        const url = (global.fetch as ReturnType<typeof vi.fn>).mock
+            .calls[0][0] as string;
+        expect(url).toContain('documento=001-1234567-8');
+        expect(url).toContain('tipo=cedula');
     });
 
     // D3 – match found: show warning banner with two correct links
