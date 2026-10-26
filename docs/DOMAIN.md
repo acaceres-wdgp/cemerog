@@ -49,8 +49,9 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 
 - Flujo unificado: buscar primero → elegir paciente existente o registrar nuevo → crear turno de atención.
 - Búsqueda con autocompletar (mínimo 3 caracteres, debounce 300 ms).
-- Un paciente no puede tener más de una atención abierta el mismo día; el sistema muestra un aviso si intenta registrarse de nuevo.
+- Un paciente no puede tener más de una atención abierta el mismo día con el mismo médico; el sistema muestra un aviso si intenta registrarse de nuevo (ver ADR-013).
 - La creación del paciente y la asignación del turno ocurren en una sola transacción (`RegisterArrival`).
+- **Registrar sin atención**: en el formulario de registro de nuevo paciente (`mode=new`) existe el botón secundario "Solo registrar paciente" (`POST /registro/pacientes`). Crea el expediente pero no genera turno; redirige a `/pacientes?paciente={id}` con flash "Paciente registrado." Útil para ingresar datos de pacientes nuevos antes de su primera consulta.
 - `expediente_number` = `P-` + id con cero a la izquierda (5 dígitos mínimo).
 - `document_number` y `phone` se guardan cifrados; se indexan mediante `document_number_hash` y `phone_hash` (HMAC-SHA256) para búsquedas exactas. `document_number_hash` usa normalización por tipo: solo dígitos para `cedula`, mayúsculas [A-Z0-9] para `pasaporte`/`cedula_extranjera`/`no_tiene` (`Pii::documentHash`). `phone_hash` siempre usa solo dígitos (`Pii::hash`). Ver ADR-014.
 

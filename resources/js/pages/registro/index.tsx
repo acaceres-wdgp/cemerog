@@ -180,6 +180,10 @@ export default function RegistroIndex({
         post('/registro', { preserveScroll: true });
     };
 
+    const handleStoreOnly = () => {
+        post('/registro/pacientes', { preserveScroll: true });
+    };
+
     const selectedDoctor = doctors.find((d) => d.id === Number(data.doctor_id));
     const isFormValid = !!data.doctor_id;
 
@@ -820,13 +824,28 @@ export default function RegistroIndex({
                             </div>
 
                             {/* Footer */}
-                            <div className="flex items-center justify-end gap-3 border-t border-divider px-5 py-4">
+                            <div className="flex flex-wrap items-center justify-end gap-3 border-t border-divider px-5 py-4">
                                 <Link
                                     href={pacientes.url()}
                                     className="inline-flex h-9 items-center rounded-lg border border-card-border bg-white px-[14px] text-sm font-medium text-text-body hover:bg-app-bg"
                                 >
                                     Cancelar
                                 </Link>
+                                {mode === 'new' && (
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            disabled={processing}
+                                            onClick={handleStoreOnly}
+                                            className="inline-flex h-9 items-center rounded-lg border border-card-border bg-white px-[14px] text-sm font-medium text-text-body hover:bg-app-bg disabled:opacity-60"
+                                        >
+                                            Solo registrar paciente
+                                        </button>
+                                        <span className="text-[12px] text-muted">
+                                            sin crear atención
+                                        </span>
+                                    </div>
+                                )}
                                 <button
                                     type="submit"
                                     disabled={!isFormValid || processing}
