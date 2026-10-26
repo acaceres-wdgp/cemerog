@@ -1,7 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { registro } from '@/routes';
 import { edit as editPaciente } from '@/routes/registro/pacientes';
-import { ChevronRight, Plus, Search, TriangleAlert, X } from 'lucide-react';
+import { ChevronRight, Plus, Search, TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import DataTable, {
@@ -240,19 +240,14 @@ const columns: DataTableColumn<PatientRow>[] = [
 
 // ── Detail Panel ─────────────────────────────────────────────────────────────
 
-function DetailPanel({
-    patient,
-    onClose,
-}: {
-    patient: SelectedPatient;
-    onClose: () => void;
-}) {
+function DetailPanel({ patient }: { patient: SelectedPatient }) {
     const sexLabel = patient.sex === 'F' ? 'Femenino' : 'Masculino';
 
     return (
         <div className="flex h-full flex-col">
             {/* Header */}
-            <div className="flex items-start gap-4 border-b border-divider px-6 py-5">
+            {/* pr-12 leaves room for the Sheet's built-in close button */}
+            <div className="flex items-start gap-4 border-b border-divider py-5 pr-12 pl-6">
                 <PatientAvatar
                     initials={patient.initials}
                     photoUrl={patient.photo_url}
@@ -267,13 +262,6 @@ function DetailPanel({
                         {patient.expediente_number}
                     </p>
                 </div>
-                <button
-                    onClick={onClose}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-app-bg"
-                    aria-label="Cerrar panel"
-                >
-                    <X className="h-4 w-4" />
-                </button>
             </div>
 
             {/* Body */}
@@ -632,10 +620,7 @@ export default function PacientesIndex({
             >
                 <SheetContent side="right" className="w-[460px] max-w-full p-0">
                     {selectedPatient && (
-                        <DetailPanel
-                            patient={selectedPatient}
-                            onClose={handleClosePanel}
-                        />
+                        <DetailPanel patient={selectedPatient} />
                     )}
                 </SheetContent>
             </Sheet>
