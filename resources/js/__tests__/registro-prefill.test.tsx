@@ -35,12 +35,15 @@ vi.mock('@/routes', () => ({
 vi.mock('@/components/cemerog/masked-input', () => ({
     default: ({
         value,
+        onChange: _onChange,
         ...props
     }: {
         value: string;
         onChange: (v: string) => void;
         [k: string]: unknown;
-    }) => <input value={value} readOnly {...props} />,
+    }) => (
+        <input value={value} readOnly onChange={() => undefined} {...props} />
+    ),
 }));
 
 const DOCTORS = [{ id: 1, name: 'Dr. García', specialty: 'Med. General' }];

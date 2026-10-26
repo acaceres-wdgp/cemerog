@@ -23,7 +23,7 @@ test('GET /registro?documento precarga el número de documento en la prop', func
 // P2 – ?nombre passes sanitized value as prefillFirstNames prop
 test('GET /registro?nombre precarga el nombre en la prop', function () {
     $response = $this->actingAs($this->secretaria)
-        ->get('/registro?' . http_build_query(['nombre' => 'María']));
+        ->get('/registro?'.http_build_query(['nombre' => 'María']));
 
     $response->assertOk();
     $response->assertInertia(
@@ -36,7 +36,7 @@ test('GET /registro?nombre precarga el nombre en la prop', function () {
 // P3 – HTML tags are stripped from documento
 test('GET /registro?documento sanitiza etiquetas HTML', function () {
     $response = $this->actingAs($this->secretaria)
-        ->get('/registro?documento=' . urlencode('<script>evil()</script>'));
+        ->get('/registro?documento='.urlencode('<script>evil()</script>'));
 
     $response->assertOk();
     $response->assertInertia(
@@ -48,7 +48,7 @@ test('GET /registro?documento sanitiza etiquetas HTML', function () {
 // P4 – HTML tags are stripped from nombre
 test('GET /registro?nombre sanitiza etiquetas HTML', function () {
     $response = $this->actingAs($this->secretaria)
-        ->get('/registro?nombre=' . urlencode('<b>Ana</b>'));
+        ->get('/registro?nombre='.urlencode('<b>Ana</b>'));
 
     $response->assertOk();
     $response->assertInertia(
@@ -62,7 +62,7 @@ test('GET /registro?documento se trunca a 30 caracteres', function () {
     $long = str_repeat('A', 50);
 
     $response = $this->actingAs($this->secretaria)
-        ->get('/registro?documento=' . urlencode($long));
+        ->get('/registro?documento='.urlencode($long));
 
     $response->assertOk();
     $response->assertInertia(
@@ -76,7 +76,7 @@ test('GET /registro?nombre se trunca a 100 caracteres', function () {
     $long = str_repeat('B', 150);
 
     $response = $this->actingAs($this->secretaria)
-        ->get('/registro?nombre=' . urlencode($long));
+        ->get('/registro?nombre='.urlencode($long));
 
     $response->assertOk();
     $response->assertInertia(
