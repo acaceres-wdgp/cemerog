@@ -83,6 +83,9 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         // Patient search endpoint (shared with /citas)
         Route::get('/pacientes/buscar', [PacientesController::class, 'search'])->name('registro.pacientes.buscar');
 
+        // Exact-match existence check by document hash
+        Route::get('/pacientes/existe', [PacientesController::class, 'exists'])->name('registro.pacientes.exists');
+
         // Patient edit – accessible from Pacientes sheet
         Route::get('/pacientes/{patient}/editar', [RegistroController::class, 'edit'])->name('registro.pacientes.edit');
         Route::put('/pacientes/{patient}', [RegistroController::class, 'update'])->name('registro.pacientes.update');

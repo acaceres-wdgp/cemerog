@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use App\Models\Patient;
+use App\Support\Pii;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
@@ -19,8 +20,7 @@ class UniqueDocumentNumber implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         $raw = (string) $value;
-        $digits = preg_replace('/[^\d]/', '', $raw) ?: $raw;
-        $hash = hash_hmac('sha256', $digits, config('app.key'));
+        $hash = Pii::hash($raw, fallbackToFull: true);
 
         $exists = Patient::where('document_number_hash', $hash)
             ->when($this->ignoreId, fn ($q) => $q->where('id', '!=', $this->ignoreId))

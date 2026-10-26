@@ -6,7 +6,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import RegistroIndex from '@/pages/registro/index';
 
 // ── Shared mock factory ───────────────────────────────────────────────────────
@@ -120,7 +120,7 @@ describe('Registro – detección de duplicado por documento', () => {
         );
         (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
             ok: true,
-            json: async () => [],
+            json: async () => null,
         });
 
         render(<RegistroIndex doctors={DOCTORS} patient={null} />);
@@ -135,7 +135,7 @@ describe('Registro – detección de duplicado por documento', () => {
         expect(global.fetch).toHaveBeenCalledTimes(1);
         expect(global.fetch).toHaveBeenCalledWith(
             expect.stringContaining(
-                '/registro/pacientes/buscar?q=001-1234567-8',
+                '/registro/pacientes/existe?documento=001-1234567-8',
             ),
             expect.any(Object),
         );
@@ -148,7 +148,7 @@ describe('Registro – detección de duplicado por documento', () => {
         );
         (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
             ok: true,
-            json: async () => [DUPLICATE],
+            json: async () => DUPLICATE,
         });
 
         render(<RegistroIndex doctors={DOCTORS} patient={null} />);
@@ -181,7 +181,7 @@ describe('Registro – detección de duplicado por documento', () => {
         );
         (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
             ok: true,
-            json: async () => [],
+            json: async () => null,
         });
 
         render(<RegistroIndex doctors={DOCTORS} patient={null} />);
@@ -214,5 +214,62 @@ describe('Registro – detección de duplicado por documento', () => {
         });
 
         expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    // D6 – stale response from first doc must NOT overwrite match for second doc
+    it('una respuesta tardía del primer documento no pisa el aviso del segundo', async () => {
+        const DUPLICATE_1 = { id: 1, full_name: 'Paciente Primero', age: 40 };
+        const DUPLICATE_2 = { id: 2, full_name: 'Paciente Segundo', age: 30 };
+
+        // First render: doc1 completo
+        const doc1 = '001-1111111-1';
+        const doc2 = '001-2222222-2';
+
+        // First fetch resolves AFTER the second fetch
+        let resolveFirst!: (v: unknown) => void;
+        const firstFetchPromise = new Promise((resolve) => {
+            resolveFirst = resolve;
+        });
+
+        (global.fetch as ReturnType<typeof vi.fn>)
+            .mockReturnValueOnce(firstFetchPromise) // doc1: delayed
+            .mockResolvedValueOnce({
+                // doc2: immediate
+                ok: true,
+                json: async () => DUPLICATE_2,
+            });
+
+        // Render with doc1
+        mockUseForm.mockReturnValue(makeFormReturn({ document_number: doc1 }));
+        const { rerender } = render(
+            <RegistroIndex doctors={DOCTORS} patient={null} />,
+        );
+
+        // Fire debounce for doc1
+        await act(async () => {
+            vi.advanceTimersByTime(400);
+        });
+
+        // Switch to doc2 before doc1 resolves
+        mockUseForm.mockReturnValue(makeFormReturn({ document_number: doc2 }));
+        rerender(<RegistroIndex doctors={DOCTORS} patient={null} />);
+
+        // Fire debounce for doc2
+        await act(async () => {
+            vi.advanceTimersByTime(400);
+            await Promise.resolve();
+        });
+
+        // doc2 response: DUPLICATE_2 should be shown
+        expect(screen.getByText(/Paciente Segundo/)).toBeInTheDocument();
+
+        // Now resolve doc1 late – should be ignored
+        await act(async () => {
+            resolveFirst({ ok: true, json: async () => DUPLICATE_1 });
+            await Promise.resolve();
+        });
+
+        expect(screen.queryByText(/Paciente Primero/)).not.toBeInTheDocument();
+        expect(screen.getByText(/Paciente Segundo/)).toBeInTheDocument();
     });
 });

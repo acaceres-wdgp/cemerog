@@ -120,6 +120,9 @@ export default function RegistroIndex({
         null,
     );
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    // Always reflects the latest document_number without stale closure issues
+    const currentDocRef = useRef(data.document_number);
+    currentDocRef.current = data.document_number;
 
     useEffect(() => {
         if (mode !== 'new') return;
@@ -139,12 +142,15 @@ export default function RegistroIndex({
             return;
         }
 
+        const controller = new AbortController();
+
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(async () => {
             try {
                 const res = await fetch(
-                    `/registro/pacientes/buscar?q=${encodeURIComponent(doc)}`,
+                    `/registro/pacientes/existe?documento=${encodeURIComponent(doc)}`,
                     {
+                        signal: controller.signal,
                         headers: {
                             Accept: 'application/json',
                             'X-Requested-With': 'XMLHttpRequest',
@@ -152,14 +158,17 @@ export default function RegistroIndex({
                     },
                 );
                 if (!res.ok) return;
-                const results: DuplicateMatch[] = await res.json();
-                setDuplicateMatch(results.length > 0 ? results[0] : null);
+                const match: DuplicateMatch | null = await res.json();
+                // Guard: discard if document changed while the request was in flight
+                if (doc !== currentDocRef.current) return;
+                setDuplicateMatch(match);
             } catch {
-                // network error – silently ignore
+                // network error or AbortError – silently ignore
             }
         }, 400);
 
         return () => {
+            controller.abort();
             if (debounceRef.current) clearTimeout(debounceRef.current);
         };
     }, [data.document_number, data.document_type, mode]);
