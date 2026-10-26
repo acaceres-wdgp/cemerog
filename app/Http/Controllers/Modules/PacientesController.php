@@ -6,8 +6,10 @@ use App\Actions\Patients\SearchPatients;
 use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use App\Models\Turn;
+use App\Support\Pii;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -181,6 +183,29 @@ class PacientesController extends Controller
             'recent_turns' => $recentTurns,
             'total_turns' => $totalTurns,
         ];
+    }
+
+    public function exists(Request $request): JsonResponse|HttpResponse
+    {
+        $raw = trim((string) $request->string('documento'));
+
+        $hash = Pii::hash($raw, fallbackToFull: true);
+
+        if ($hash === null) {
+            return response()->make('null', 200, ['Content-Type' => 'application/json']);
+        }
+
+        $patient = Patient::where('document_number_hash', $hash)->first();
+
+        if ($patient === null) {
+            return response()->make('null', 200, ['Content-Type' => 'application/json']);
+        }
+
+        return response()->json([
+            'id' => $patient->id,
+            'full_name' => $patient->full_name,
+            'age' => $patient->age,
+        ]);
     }
 
     public function search(Request $request, SearchPatients $searchPatients): JsonResponse

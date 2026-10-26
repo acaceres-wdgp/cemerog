@@ -41,9 +41,23 @@ class RegistroController extends Controller
                 'specialty' => $d->specialty->name,
             ]);
 
+        // Sanitize optional prefill params from /pacientes empty-state button.
+        $prefillDocumentNumber = '';
+        $prefillFirstNames = '';
+
+        if (request()->filled('documento')) {
+            $prefillDocumentNumber = mb_substr(strip_tags((string) request()->input('documento')), 0, 30);
+        }
+
+        if (request()->filled('nombre')) {
+            $prefillFirstNames = mb_substr(strip_tags((string) request()->input('nombre')), 0, 100);
+        }
+
         return Inertia::render('registro/index', [
             'doctors' => $doctors,
             'patient' => $patient ? $this->patientPayload($patient) : null,
+            'prefillDocumentNumber' => $prefillDocumentNumber,
+            'prefillFirstNames' => $prefillFirstNames,
         ]);
     }
 
