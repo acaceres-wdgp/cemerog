@@ -67,7 +67,10 @@ vi.mock('@/routes', () => ({
 }));
 
 vi.mock('@/routes/registro/pacientes', () => ({
-    buscar: { url: (opts?: unknown) => '/registro/pacientes/buscar' + (opts ? '' : '') },
+    buscar: {
+        url: (opts?: unknown) =>
+            '/registro/pacientes/buscar' + (opts ? '' : ''),
+    },
 }));
 
 vi.mock('@/components/cemerog/masked-input', () => ({
@@ -122,7 +125,9 @@ describe('Registro modo new (sin paciente)', () => {
 
         // No patient search input (id was patient-search-input in the old autocomplete)
         expect(document.getElementById('patient-search-input')).toBeNull();
-        expect(screen.queryByLabelText('Buscar paciente')).not.toBeInTheDocument();
+        expect(
+            screen.queryByLabelText('Buscar paciente'),
+        ).not.toBeInTheDocument();
 
         // Nombres field is present and editable (not disabled)
         const nombresInput = screen.getByLabelText(/Nombres/i);
@@ -139,7 +144,9 @@ describe('Registro modo new (sin paciente)', () => {
     it('muestra el subtítulo correcto para nuevo paciente', () => {
         render(<RegistroIndex doctors={mockDoctors} patient={null} />);
         expect(
-            screen.getByText(/Completa los datos del paciente y crea su primera atención/i),
+            screen.getByText(
+                /Completa los datos del paciente y crea su primera atención/i,
+            ),
         ).toBeInTheDocument();
     });
 

@@ -599,30 +599,29 @@ export default function PacientesIndex({
                         }
                     />
 
-                    {patients.data.length === 0 &&
-                        activeFilter === 'todos' && (
-                            <div className="flex justify-center py-6">
-                                <Link
-                                    href={
-                                        search
-                                            ? /^[\d-]+$/.test(search)
-                                                ? registro.url({
-                                                      query: {
-                                                          documento: search,
-                                                      },
-                                                  })
-                                                : registro.url({
-                                                      query: { nombre: search },
-                                                  })
-                                            : registro.url()
-                                    }
-                                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-card-border bg-white px-3.5 text-sm font-medium text-text-body hover:bg-app-bg"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                    Registrar paciente nuevo
-                                </Link>
-                            </div>
-                        )}
+                    {patients.data.length === 0 && activeFilter === 'todos' && (
+                        <div className="flex justify-center py-6">
+                            <Link
+                                href={
+                                    search
+                                        ? /^[\d-]+$/.test(search)
+                                            ? registro.url({
+                                                  query: {
+                                                      documento: search,
+                                                  },
+                                              })
+                                            : registro.url({
+                                                  query: { nombre: search },
+                                              })
+                                        : registro.url()
+                                }
+                                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-card-border bg-white px-3.5 text-sm font-medium text-text-body hover:bg-app-bg"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Registrar paciente nuevo
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </div>
 

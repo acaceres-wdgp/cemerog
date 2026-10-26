@@ -1,12 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { pacientes } from '@/routes';
 import { differenceInYears } from 'date-fns';
-import {
-    Check,
-    CircleCheck,
-    Loader2,
-    TriangleAlert,
-} from 'lucide-react';
+import { Check, CircleCheck, Loader2, TriangleAlert } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import AlertBanner from '@/components/cemerog/AlertBanner';
@@ -112,8 +107,7 @@ export default function RegistroIndex({
         blood_type: initialPatient?.blood_type ?? '',
         allergies: initialPatient?.allergies ?? '',
         emergency_contact_name: initialPatient?.emergency_contact_name ?? '',
-        emergency_contact_phone:
-            initialPatient?.emergency_contact_phone ?? '',
+        emergency_contact_phone: initialPatient?.emergency_contact_phone ?? '',
         attention_type: 'consulta',
         doctor_id: '' as number | string,
         notes: '',
@@ -122,8 +116,9 @@ export default function RegistroIndex({
 
     // ── Duplicate detection (mode === 'new') ──────────────────────────────────
 
-    const [duplicateMatch, setDuplicateMatch] =
-        useState<DuplicateMatch | null>(null);
+    const [duplicateMatch, setDuplicateMatch] = useState<DuplicateMatch | null>(
+        null,
+    );
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
@@ -134,7 +129,8 @@ export default function RegistroIndex({
         }
 
         const doc = data.document_number;
-        const isCedulaComplete = data.document_type === 'cedula' && doc.length === 13;
+        const isCedulaComplete =
+            data.document_type === 'cedula' && doc.length === 13;
         const isOtherComplete =
             data.document_type !== 'cedula' && doc.length >= 6;
 
@@ -214,20 +210,18 @@ export default function RegistroIndex({
                                     <div className="flex items-start gap-3 rounded-xl border border-success-border bg-accent-bg px-4 py-3 text-[13px] text-success-fg">
                                         <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                                         <div className="flex-1">
-                                            <strong>
-                                                Paciente existente
-                                            </strong>{' '}
+                                            <strong>Paciente existente</strong>{' '}
                                             · Expediente{' '}
-                                            {initialPatient.expediente_number}{' '}
-                                            · {initialPatient.total_turns}{' '}
+                                            {initialPatient.expediente_number} ·{' '}
+                                            {initialPatient.total_turns}{' '}
                                             atenciones
                                             {initialPatient.last_attended_at
                                                 ? ` · última ${initialPatient.last_attended_at}`
                                                 : ''}
                                             .{' '}
                                             <span className="text-table-header-text">
-                                                Verifica que los datos estén
-                                                al día.
+                                                Verifica que los datos estén al
+                                                día.
                                             </span>
                                         </div>
                                         <Link
@@ -371,36 +365,34 @@ export default function RegistroIndex({
                                         )}
 
                                         {/* Duplicate patient warning */}
-                                        {mode === 'new' &&
-                                            duplicateMatch && (
-                                                <div className="mt-2">
-                                                    <AlertBanner variant="warning">
-                                                        Ya existe un paciente con
-                                                        este documento:{' '}
-                                                        <strong>
-                                                            {
-                                                                duplicateMatch.full_name
-                                                            }
-                                                        </strong>{' '}
-                                                        ({duplicateMatch.age}{' '}
-                                                        años).{' '}
-                                                        <Link
-                                                            href={`/pacientes?paciente=${duplicateMatch.id}`}
-                                                            className="font-medium underline hover:no-underline"
-                                                        >
-                                                            Ver ficha
-                                                        </Link>{' '}
-                                                        ·{' '}
-                                                        <Link
-                                                            href={`/registro?paciente=${duplicateMatch.id}`}
-                                                            className="font-medium underline hover:no-underline"
-                                                        >
-                                                            Crear atención para
-                                                            este paciente
-                                                        </Link>
-                                                    </AlertBanner>
-                                                </div>
-                                            )}
+                                        {mode === 'new' && duplicateMatch && (
+                                            <div className="mt-2">
+                                                <AlertBanner variant="warning">
+                                                    Ya existe un paciente con
+                                                    este documento:{' '}
+                                                    <strong>
+                                                        {
+                                                            duplicateMatch.full_name
+                                                        }
+                                                    </strong>{' '}
+                                                    ({duplicateMatch.age} años).{' '}
+                                                    <Link
+                                                        href={`/pacientes?paciente=${duplicateMatch.id}`}
+                                                        className="font-medium underline hover:no-underline"
+                                                    >
+                                                        Ver ficha
+                                                    </Link>{' '}
+                                                    ·{' '}
+                                                    <Link
+                                                        href={`/registro?paciente=${duplicateMatch.id}`}
+                                                        className="font-medium underline hover:no-underline"
+                                                    >
+                                                        Crear atención para este
+                                                        paciente
+                                                    </Link>
+                                                </AlertBanner>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div>
@@ -781,8 +773,7 @@ export default function RegistroIndex({
                                                         key={d.id}
                                                         value={d.id}
                                                     >
-                                                        {d.name} —{' '}
-                                                        {d.specialty}
+                                                        {d.name} — {d.specialty}
                                                     </option>
                                                 ))}
                                             </select>

@@ -52,10 +52,12 @@ const DOCTORS = [{ id: 1, name: 'Dr. García', specialty: 'Med. General' }];
 
 const DUPLICATE = { id: 7, full_name: 'Ana García', age: 34 };
 
-function makeFormReturn(overrides: Partial<{
-    document_type: string;
-    document_number: string;
-}> = {}) {
+function makeFormReturn(
+    overrides: Partial<{
+        document_type: string;
+        document_number: string;
+    }> = {},
+) {
     return {
         data: {
             patient_id: null,
@@ -98,11 +100,15 @@ describe('Registro – detección de duplicado por documento', () => {
 
     // D1 – incomplete cédula: no fetch after debounce
     it('con cédula incompleta no se consulta al servidor', async () => {
-        mockUseForm.mockReturnValue(makeFormReturn({ document_number: '001-1234' }));
+        mockUseForm.mockReturnValue(
+            makeFormReturn({ document_number: '001-1234' }),
+        );
 
         render(<RegistroIndex doctors={DOCTORS} patient={null} />);
 
-        await act(async () => { vi.advanceTimersByTime(500); });
+        await act(async () => {
+            vi.advanceTimersByTime(500);
+        });
 
         expect(global.fetch).not.toHaveBeenCalled();
     });
@@ -122,7 +128,9 @@ describe('Registro – detección de duplicado por documento', () => {
         // Before debounce: no call yet
         expect(global.fetch).not.toHaveBeenCalled();
 
-        await act(async () => { vi.advanceTimersByTime(400); });
+        await act(async () => {
+            vi.advanceTimersByTime(400);
+        });
 
         expect(global.fetch).toHaveBeenCalledTimes(1);
         expect(global.fetch).toHaveBeenCalledWith(
@@ -201,7 +209,9 @@ describe('Registro – detección de duplicado por documento', () => {
 
         render(<RegistroIndex doctors={DOCTORS} patient={null} />);
 
-        await act(async () => { vi.advanceTimersByTime(500); });
+        await act(async () => {
+            vi.advanceTimersByTime(500);
+        });
 
         expect(global.fetch).not.toHaveBeenCalled();
     });
