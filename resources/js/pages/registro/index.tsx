@@ -4,14 +4,10 @@ import { differenceInYears } from 'date-fns';
 import {
     Check,
     CircleCheck,
-    Info,
     Loader2,
-    Search,
     TriangleAlert,
-    UserPlus,
-    X,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import AlertBanner from '@/components/cemerog/AlertBanner';
 import MaskedInput from '@/components/cemerog/masked-input';
@@ -38,29 +34,6 @@ interface OpenTurnToday {
     status: string;
 }
 
-interface PatientSuggestion {
-    id: number;
-    expediente_number: string;
-    full_name: string;
-    initials: string;
-    document_type: string;
-    document_number: string;
-    first_names: string;
-    last_names: string;
-    birth_date: string;
-    age: number;
-    sex: string;
-    phone: string | null;
-    address: string | null;
-    blood_type: string | null;
-    allergies: string | null;
-    emergency_contact_name: string | null;
-    emergency_contact_phone: string | null;
-    open_turns_today: OpenTurnToday[];
-    last_attended_at: string | null;
-    total_turns: number;
-}
-
 interface ExistingPatient {
     id: number;
     expediente_number: string;
@@ -83,9 +56,17 @@ interface ExistingPatient {
     open_turns_today: OpenTurnToday[];
 }
 
+interface DuplicateMatch {
+    id: number;
+    full_name: string;
+    age: number;
+}
+
 interface Props {
     doctors: Doctor[];
     patient: ExistingPatient | null;
+    prefillDocumentNumber?: string;
+    prefillFirstNames?: string;
 }
 
 /** Extends the inferred form errors with `open_turn`, which the server returns
@@ -101,260 +82,15 @@ const DOC_TYPES = [
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
-// ── Autocomplete ─────────────────────────────────────────────────────────────
-
-function PatientAvatar({
-    initials,
-    size = 34,
-}: {
-    initials: string;
-    size?: number;
-}) {
-    return (
-        <div
-            className="flex shrink-0 items-center justify-center rounded-full bg-accent-bg font-semibold text-accent-fg"
-            // dynamic-style: avatar size and font-size are computed from runtime prop
-            style={{ width: size, height: size, fontSize: size * 0.37 }}
-        >
-            {initials}
-        </div>
-    );
-}
-
-interface AutocompleteProps {
-    onSelect: (patient: PatientSuggestion | null) => void;
-    searchPath: string;
-}
-
-function PatientAutocomplete({ onSelect, searchPath }: AutocompleteProps) {
-    const [query, setQuery] = useState('');
-    const [results, setResults] = useState<PatientSuggestion[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [open, setOpen] = useState(false);
-    const [activeIdx, setActiveIdx] = useState(-1);
-    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-        return () => {
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-        };
-    }, []);
-
-    const fetchSuggestions = useCallback(
-        async (q: string) => {
-            if (q.trim().length < 3) {
-                setResults([]);
-                return;
-            }
-            setLoading(true);
-            try {
-                const res = await fetch(
-                    `${searchPath}?q=${encodeURIComponent(q)}`,
-                    {
-                        headers: {
-                            Accept: 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                    },
-                );
-                if (res.ok) setResults(await res.json());
-            } finally {
-                setLoading(false);
-            }
-        },
-        [searchPath],
-    );
-
-    const handleChange = (value: string) => {
-        setQuery(value);
-        setOpen(true);
-        setActiveIdx(-1);
-        if (debounceRef.current) clearTimeout(debounceRef.current);
-        debounceRef.current = setTimeout(() => fetchSuggestions(value), 300);
-    };
-
-    const handleClear = () => {
-        setQuery('');
-        setResults([]);
-        setOpen(false);
-        onSelect(null);
-        inputRef.current?.focus();
-    };
-
-    const selectPatient = (p: PatientSuggestion) => {
-        setQuery(p.full_name);
-        setOpen(false);
-        onSelect(p);
-    };
-
-    const selectNew = () => {
-        setOpen(false);
-        onSelect(null);
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (!open) return;
-        const total = results.length + 1; // +1 for "new patient" option
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            setActiveIdx((i) => Math.min(i + 1, total - 1));
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            setActiveIdx((i) => Math.max(i - 1, -1));
-        } else if (e.key === 'Enter') {
-            e.preventDefault();
-            if (activeIdx >= 0 && activeIdx < results.length) {
-                selectPatient(results[activeIdx]);
-            } else if (activeIdx === results.length) {
-                selectNew();
-            }
-        } else if (e.key === 'Escape') {
-            setOpen(false);
-        }
-    };
-
-    const tooShort = query.trim().length > 0 && query.trim().length < 3;
-
-    return (
-        <div className="relative">
-            <div className="relative">
-                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted" />
-                <input
-                    ref={inputRef}
-                    id="patient-search-input"
-                    type="search"
-                    name="patient-search"
-                    value={query}
-                    onChange={(e) => handleChange(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    onFocus={() => query.trim().length >= 3 && setOpen(true)}
-                    placeholder="Busca primero por cédula para evitar duplicados"
-                    autoComplete="off"
-                    autoFocus
-                    role="combobox"
-                    aria-label="Buscar paciente"
-                    aria-autocomplete="list"
-                    aria-expanded={open}
-                    aria-controls="patient-search-listbox"
-                    aria-activedescendant={
-                        activeIdx >= 0
-                            ? `patient-option-${activeIdx}`
-                            : undefined
-                    }
-                    data-1p-ignore
-                    data-lpignore="true"
-                    data-form-type="other"
-                    className="h-10 w-full rounded-lg border border-card-border bg-white pr-9 pl-9 text-sm placeholder-muted-light outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                />
-                {query && (
-                    <button
-                        type="button"
-                        onClick={handleClear}
-                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted hover:text-text-body"
-                        aria-label="Limpiar búsqueda"
-                    >
-                        <X className="h-4 w-4" />
-                    </button>
-                )}
-            </div>
-
-            {/* Dropdown */}
-            {open && (
-                <ul
-                    id="patient-search-listbox"
-                    role="listbox"
-                    className="absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-card-border bg-white shadow-lg"
-                >
-                    {tooShort ? (
-                        <li className="px-4 py-3 text-sm text-text-tertiary">
-                            Escribe al menos 3 caracteres.
-                        </li>
-                    ) : loading ? (
-                        <li className="flex items-center gap-2 px-4 py-3 text-sm text-muted">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Buscando…
-                        </li>
-                    ) : (
-                        <>
-                            {results.length === 0 && (
-                                <li className="px-4 py-3 text-sm text-text-tertiary">
-                                    Ningún paciente coincide con «{query}».
-                                </li>
-                            )}
-                            {results.map((p, idx) => (
-                                <li
-                                    key={p.id}
-                                    id={`patient-option-${idx}`}
-                                    role="option"
-                                    aria-selected={activeIdx === idx}
-                                    onClick={() => selectPatient(p)}
-                                    className={`flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-table-header-bg ${activeIdx === idx ? 'bg-table-header-bg' : ''}`}
-                                >
-                                    <PatientAvatar initials={p.initials} />
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-medium text-text-heading">
-                                            {p.full_name}
-                                        </p>
-                                        <p className="text-[12px] text-muted">
-                                            {p.document_number} · {p.age} años
-                                            {p.phone ? ` · ${p.phone}` : ''}
-                                        </p>
-                                    </div>
-                                    <div className="flex shrink-0 flex-col items-end gap-1">
-                                        {p.open_turns_today.length > 0 && (
-                                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700">
-                                                Atención abierta
-                                            </span>
-                                        )}
-                                        {p.allergies && (
-                                            <span className="rounded-full bg-error-bg px-2 py-0.5 text-[11px] font-medium text-error">
-                                                Alergias
-                                            </span>
-                                        )}
-                                        {p.last_attended_at && (
-                                            <span className="text-[11px] text-muted-light">
-                                                Últ. {p.last_attended_at}
-                                            </span>
-                                        )}
-                                    </div>
-                                </li>
-                            ))}
-
-                            {/* Always show "Register as new" */}
-                            <li
-                                id={`patient-option-${results.length}`}
-                                role="option"
-                                aria-selected={activeIdx === results.length}
-                                onClick={selectNew}
-                                className={`flex cursor-pointer items-center gap-3 border-t border-divider px-4 py-3 hover:bg-table-header-bg ${activeIdx === results.length ? 'bg-table-header-bg' : ''}`}
-                            >
-                                <div className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-accent-bg">
-                                    <UserPlus className="h-4 w-4 text-primary" />
-                                </div>
-                                <p className="text-sm font-medium text-primary">
-                                    Registrar como paciente nuevo
-                                </p>
-                            </li>
-                        </>
-                    )}
-                </ul>
-            )}
-        </div>
-    );
-}
-
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function RegistroIndex({
     doctors,
     patient: initialPatient,
+    prefillDocumentNumber = '',
+    prefillFirstNames = '',
 }: Props) {
-    const [mode, setMode] = useState<'search' | 'existing' | 'new'>(
-        initialPatient ? 'existing' : 'search',
-    );
-    const [existingPatient, setExistingPatient] =
-        useState<ExistingPatient | null>(initialPatient);
+    const mode: 'new' | 'existing' = initialPatient ? 'existing' : 'new';
 
     const {
         data,
@@ -362,12 +98,12 @@ export default function RegistroIndex({
         post,
         processing,
         errors: rawErrors,
-        reset,
     } = useForm({
         patient_id: initialPatient?.id ?? (null as number | null),
         document_type: initialPatient?.document_type ?? 'cedula',
-        document_number: initialPatient?.document_number ?? '',
-        first_names: initialPatient?.first_names ?? '',
+        document_number:
+            initialPatient?.document_number ?? prefillDocumentNumber,
+        first_names: initialPatient?.first_names ?? prefillFirstNames,
         last_names: initialPatient?.last_names ?? '',
         birth_date: initialPatient?.birth_date ?? '',
         sex: initialPatient?.sex ?? '',
@@ -376,65 +112,63 @@ export default function RegistroIndex({
         blood_type: initialPatient?.blood_type ?? '',
         allergies: initialPatient?.allergies ?? '',
         emergency_contact_name: initialPatient?.emergency_contact_name ?? '',
-        emergency_contact_phone: initialPatient?.emergency_contact_phone ?? '',
+        emergency_contact_phone:
+            initialPatient?.emergency_contact_phone ?? '',
         attention_type: 'consulta',
         doctor_id: '' as number | string,
         notes: '',
     });
     const errors = rawErrors as FormErrors;
 
-    const handleSelectExisting = (p: PatientSuggestion) => {
-        setExistingPatient({
-            id: p.id,
-            expediente_number: p.expediente_number,
-            full_name: p.full_name,
-            initials: p.initials,
-            first_names: p.first_names,
-            last_names: p.last_names,
-            document_type: p.document_type,
-            document_number: p.document_number,
-            birth_date: p.birth_date,
-            sex: p.sex,
-            phone: p.phone,
-            address: p.address,
-            blood_type: p.blood_type,
-            allergies: p.allergies,
-            emergency_contact_name: p.emergency_contact_name,
-            emergency_contact_phone: p.emergency_contact_phone,
-            total_turns: p.total_turns,
-            last_attended_at: p.last_attended_at,
-            open_turns_today: p.open_turns_today,
-        });
-        setMode('existing');
-        setData((prev) => ({
-            ...prev,
-            patient_id: p.id,
-            document_type: p.document_type,
-            document_number: p.document_number,
-            first_names: p.first_names,
-            last_names: p.last_names,
-            birth_date: p.birth_date,
-            sex: p.sex,
-            phone: p.phone ?? '',
-            address: p.address ?? '',
-            blood_type: p.blood_type ?? '',
-            allergies: p.allergies ?? '',
-            emergency_contact_name: p.emergency_contact_name ?? '',
-            emergency_contact_phone: p.emergency_contact_phone ?? '',
-        }));
-    };
+    // ── Duplicate detection (mode === 'new') ──────────────────────────────────
 
-    const handleSelectNew = () => {
-        setExistingPatient(null);
-        setMode('new');
-        setData((prev) => ({ ...prev, patient_id: null }));
-    };
+    const [duplicateMatch, setDuplicateMatch] =
+        useState<DuplicateMatch | null>(null);
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const handleChangePatient = () => {
-        setMode('search');
-        setExistingPatient(null);
-        reset();
-    };
+    useEffect(() => {
+        if (mode !== 'new') return;
+        if (data.document_type === 'no_tiene') {
+            setDuplicateMatch(null);
+            return;
+        }
+
+        const doc = data.document_number;
+        const isCedulaComplete = data.document_type === 'cedula' && doc.length === 13;
+        const isOtherComplete =
+            data.document_type !== 'cedula' && doc.length >= 6;
+
+        if (!isCedulaComplete && !isOtherComplete) {
+            setDuplicateMatch(null);
+            return;
+        }
+
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(async () => {
+            try {
+                const res = await fetch(
+                    `/registro/pacientes/buscar?q=${encodeURIComponent(doc)}`,
+                    {
+                        headers: {
+                            Accept: 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    },
+                );
+                if (!res.ok) return;
+                const results: DuplicateMatch[] = await res.json();
+                setDuplicateMatch(results.length > 0 ? results[0] : null);
+            } catch {
+                // network error – silently ignore
+            }
+        }, 400);
+
+        return () => {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+        };
+    }, [data.document_number, data.document_type, mode]);
+
+    // ── Submit ────────────────────────────────────────────────────────────────
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -442,8 +176,7 @@ export default function RegistroIndex({
     };
 
     const selectedDoctor = doctors.find((d) => d.id === Number(data.doctor_id));
-    const locked = mode === 'search';
-    const isFormValid = !locked && !!data.doctor_id;
+    const isFormValid = !!data.doctor_id;
 
     return (
         <>
@@ -456,8 +189,9 @@ export default function RegistroIndex({
             >
                 {/* Intro */}
                 <p className="text-[13.5px] text-text-secondary">
-                    Busca primero por cédula. Si el paciente no existe, completa
-                    sus datos y crea la atención.
+                    {mode === 'new'
+                        ? 'Completa los datos del paciente y crea su primera atención.'
+                        : 'Crea una nueva atención para este paciente.'}
                 </p>
 
                 {/* Main grid */}
@@ -474,110 +208,70 @@ export default function RegistroIndex({
                             description="Los campos con * son obligatorios."
                             noPadding
                         >
-                            {/* Search zone */}
-                            <div className="border-b border-divider px-5 py-4">
-                                <PatientAutocomplete
-                                    searchPath="/registro/pacientes/buscar"
-                                    onSelect={(p) => {
-                                        if (p) handleSelectExisting(p);
-                                        else handleSelectNew();
-                                    }}
-                                />
-                            </div>
-
                             {/* Banners */}
-                            {mode !== 'search' && (
+                            {mode === 'existing' && initialPatient && (
                                 <div className="flex flex-col gap-3 border-b border-divider px-5 py-4">
-                                    {mode === 'existing' && existingPatient && (
-                                        <div className="flex items-start gap-3 rounded-xl border border-success-border bg-accent-bg px-4 py-3 text-[13px] text-success-fg">
-                                            <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                                            <div className="flex-1">
-                                                <strong>
-                                                    Paciente existente
-                                                </strong>{' '}
-                                                · Expediente{' '}
-                                                {
-                                                    existingPatient.expediente_number
-                                                }{' '}
-                                                · {existingPatient.total_turns}{' '}
-                                                atenciones
-                                                {existingPatient.last_attended_at
-                                                    ? ` · última ${existingPatient.last_attended_at}`
-                                                    : ''}
-                                                .{' '}
-                                                <span className="text-table-header-text">
-                                                    Verifica que los datos estén
-                                                    al día.
-                                                </span>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={handleChangePatient}
-                                                className="shrink-0 text-[12px] font-medium text-primary underline hover:no-underline"
-                                            >
-                                                Cambiar paciente
-                                            </button>
+                                    <div className="flex items-start gap-3 rounded-xl border border-success-border bg-accent-bg px-4 py-3 text-[13px] text-success-fg">
+                                        <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                                        <div className="flex-1">
+                                            <strong>
+                                                Paciente existente
+                                            </strong>{' '}
+                                            · Expediente{' '}
+                                            {initialPatient.expediente_number}{' '}
+                                            · {initialPatient.total_turns}{' '}
+                                            atenciones
+                                            {initialPatient.last_attended_at
+                                                ? ` · última ${initialPatient.last_attended_at}`
+                                                : ''}
+                                            .{' '}
+                                            <span className="text-table-header-text">
+                                                Verifica que los datos estén
+                                                al día.
+                                            </span>
                                         </div>
+                                        <Link
+                                            href={pacientes.url()}
+                                            className="shrink-0 text-[12px] font-medium text-primary underline hover:no-underline"
+                                        >
+                                            Volver a pacientes
+                                        </Link>
+                                    </div>
+
+                                    {initialPatient.open_turns_today.length >
+                                        0 && (
+                                        <AlertBanner variant="warning">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span>
+                                                    <strong>
+                                                        Atención abierta hoy:
+                                                    </strong>{' '}
+                                                    {initialPatient.open_turns_today
+                                                        .map(
+                                                            (t) =>
+                                                                `${t.doctor_name} (${TURN_STATUS_LABELS[t.status] ?? t.status})`,
+                                                        )
+                                                        .join(', ')}
+                                                    . Puedes registrar con otro
+                                                    médico.
+                                                </span>
+                                                <Link
+                                                    href="/tablero"
+                                                    className="shrink-0 text-[12px] font-medium underline hover:no-underline"
+                                                >
+                                                    Ver en el tablero
+                                                </Link>
+                                            </div>
+                                        </AlertBanner>
                                     )}
 
-                                    {mode === 'existing' &&
-                                        existingPatient &&
-                                        existingPatient.open_turns_today
-                                            .length > 0 && (
-                                            <AlertBanner variant="warning">
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span>
-                                                        <strong>
-                                                            Atención abierta
-                                                            hoy:
-                                                        </strong>{' '}
-                                                        {existingPatient.open_turns_today
-                                                            .map(
-                                                                (t) =>
-                                                                    `${t.doctor_name} (${TURN_STATUS_LABELS[t.status] ?? t.status})`,
-                                                            )
-                                                            .join(', ')}
-                                                        . Puedes registrar con
-                                                        otro médico.
-                                                    </span>
-                                                    <Link
-                                                        href="/tablero"
-                                                        className="shrink-0 text-[12px] font-medium underline hover:no-underline"
-                                                    >
-                                                        Ver en el tablero
-                                                    </Link>
-                                                </div>
-                                            </AlertBanner>
-                                        )}
-
-                                    {mode === 'existing' &&
-                                        existingPatient?.allergies && (
-                                            <div className="flex items-start gap-3 rounded-xl border border-error-border bg-error-bg px-4 py-3 text-[13px] text-error-strong">
-                                                <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
-                                                <p>
-                                                    <strong>
-                                                        Alérgico(a) a:
-                                                    </strong>{' '}
-                                                    {existingPatient.allergies}
-                                                </p>
-                                            </div>
-                                        )}
-
-                                    {mode === 'new' && (
-                                        <div className="flex items-start gap-3 rounded-xl border border-sky-200 bg-blue-50 px-4 py-3 text-[13px] text-blue-800">
-                                            <Info className="mt-0.5 h-4 w-4 shrink-0" />
+                                    {initialPatient.allergies && (
+                                        <div className="flex items-start gap-3 rounded-xl border border-error-border bg-error-bg px-4 py-3 text-[13px] text-error-strong">
+                                            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
                                             <p>
-                                                Se registrará como{' '}
-                                                <strong>paciente nuevo</strong>.
-                                                Completa sus datos.
+                                                <strong>Alérgico(a) a:</strong>{' '}
+                                                {initialPatient.allergies}
                                             </p>
-                                            <button
-                                                type="button"
-                                                onClick={handleChangePatient}
-                                                className="ml-auto shrink-0 text-[12px] font-medium text-blue-800 underline hover:no-underline"
-                                            >
-                                                Volver a buscar
-                                            </button>
                                         </div>
                                     )}
 
@@ -590,26 +284,9 @@ export default function RegistroIndex({
                                 </div>
                             )}
 
-                            {/* Form fields – always visible, disabled when locked */}
+                            {/* Form fields */}
                             <div className="px-5 py-4">
-                                {locked && (
-                                    <div className="mb-4 flex items-center gap-2 text-[13px] text-muted">
-                                        <Info className="h-4 w-4 shrink-0" />
-                                        Busca un paciente o elige «Registrar
-                                        como paciente nuevo» para continuar.
-                                    </div>
-                                )}
-                                <div
-                                    className="grid grid-cols-1 gap-x-3.5 gap-y-4 sm:grid-cols-3"
-                                    style={
-                                        locked
-                                            ? {
-                                                  opacity: 0.55,
-                                                  pointerEvents: 'none',
-                                              }
-                                            : undefined
-                                    }
-                                >
+                                <div className="grid grid-cols-1 gap-x-3.5 gap-y-4 sm:grid-cols-3">
                                     <div>
                                         <label className="mb-1 block text-[13px] font-medium text-text-body">
                                             Tipo de documento{' '}
@@ -692,6 +369,38 @@ export default function RegistroIndex({
                                                 {errors.document_number}
                                             </p>
                                         )}
+
+                                        {/* Duplicate patient warning */}
+                                        {mode === 'new' &&
+                                            duplicateMatch && (
+                                                <div className="mt-2">
+                                                    <AlertBanner variant="warning">
+                                                        Ya existe un paciente con
+                                                        este documento:{' '}
+                                                        <strong>
+                                                            {
+                                                                duplicateMatch.full_name
+                                                            }
+                                                        </strong>{' '}
+                                                        ({duplicateMatch.age}{' '}
+                                                        años).{' '}
+                                                        <Link
+                                                            href={`/pacientes?paciente=${duplicateMatch.id}`}
+                                                            className="font-medium underline hover:no-underline"
+                                                        >
+                                                            Ver ficha
+                                                        </Link>{' '}
+                                                        ·{' '}
+                                                        <Link
+                                                            href={`/registro?paciente=${duplicateMatch.id}`}
+                                                            className="font-medium underline hover:no-underline"
+                                                        >
+                                                            Crear atención para
+                                                            este paciente
+                                                        </Link>
+                                                    </AlertBanner>
+                                                </div>
+                                            )}
                                     </div>
 
                                     <div>
@@ -729,13 +438,17 @@ export default function RegistroIndex({
                                     </div>
 
                                     <div>
-                                        <label className="mb-1 block text-[13px] font-medium text-text-body">
+                                        <label
+                                            htmlFor="field-first-names"
+                                            className="mb-1 block text-[13px] font-medium text-text-body"
+                                        >
                                             Nombres{' '}
                                             <span className="text-error">
                                                 *
                                             </span>
                                         </label>
                                         <input
+                                            id="field-first-names"
                                             type="text"
                                             name="patient_first_names"
                                             value={data.first_names}
@@ -969,17 +682,7 @@ export default function RegistroIndex({
                             description="¿Cómo llega el paciente?"
                             noPadding
                         >
-                            <div
-                                className="px-5 py-4"
-                                style={
-                                    locked
-                                        ? {
-                                              opacity: 0.55,
-                                              pointerEvents: 'none',
-                                          }
-                                        : undefined
-                                }
-                            >
+                            <div className="px-5 py-4">
                                 {/* Attention type cards */}
                                 <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
                                     {[
@@ -1050,13 +753,17 @@ export default function RegistroIndex({
                                 {data.attention_type === 'consulta' && (
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         <div>
-                                            <label className="mb-1 block text-[13px] font-medium text-text-body">
+                                            <label
+                                                htmlFor="field-doctor"
+                                                className="mb-1 block text-[13px] font-medium text-text-body"
+                                            >
                                                 Médico{' '}
                                                 <span className="text-error">
                                                     *
                                                 </span>
                                             </label>
                                             <select
+                                                id="field-doctor"
                                                 value={data.doctor_id}
                                                 onChange={(e) =>
                                                     setData(
@@ -1074,7 +781,8 @@ export default function RegistroIndex({
                                                         key={d.id}
                                                         value={d.id}
                                                     >
-                                                        {d.name} — {d.specialty}
+                                                        {d.name} —{' '}
+                                                        {d.specialty}
                                                     </option>
                                                 ))}
                                             </select>
@@ -1100,6 +808,13 @@ export default function RegistroIndex({
                                                 className="w-full rounded-lg border border-card-border bg-white px-3 py-2 text-sm outline-none focus:border-primary"
                                             />
                                         </div>
+                                    </div>
+                                )}
+
+                                {mode === 'existing' && errors.open_turn && (
+                                    <div className="mt-4 flex items-start gap-3 rounded-xl border border-error-border bg-error-bg px-4 py-3 text-[13px] text-error-strong">
+                                        <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                                        <p>{errors.open_turn}</p>
                                     </div>
                                 )}
                             </div>
