@@ -4,6 +4,7 @@ namespace App\Actions\Patients;
 
 use App\Models\Patient;
 use App\Support\Pii;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 /**
@@ -33,25 +34,40 @@ class SearchPatients
             return collect();
         }
 
-        // Strip all non-digit characters to detect a numeric query.
+        return $this->applyTo(Patient::query(), $q)
+            ->orderBy('last_names')
+            ->orderBy('first_names')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Apply search WHERE conditions to an existing query builder.
+     * Returns the query unchanged when $q is shorter than 3 characters.
+     *
+     * @param  Builder<Patient>  $query
+     * @return Builder<Patient>
+     */
+    public function applyTo(Builder $query, string $q): Builder
+    {
+        $q = trim($q);
+
+        if (mb_strlen($q) < 3) {
+            return $query;
+        }
+
         $digitsOnly = preg_replace('/[^\d]/', '', $q) ?? '';
 
-        // Pure-digit query (optionally formatted): cedula / phone exact match.
         if ($digitsOnly !== '' && ! preg_match('/[a-zA-ZÀ-ÖØ-öø-ÿ]/', $q)) {
             $cedulaHash = Pii::documentHash('cedula', $q);
             $phoneHash = Pii::hash($digitsOnly);
 
-            return Patient::query()
-                ->where(function ($inner) use ($cedulaHash, $phoneHash) {
-                    $inner->where('document_number_hash', $cedulaHash)
-                        ->orWhere('phone_hash', $phoneHash);
-                })
-                ->limit($limit)
-                ->get();
+            return $query->where(function ($inner) use ($cedulaHash, $phoneHash) {
+                $inner->where('document_number_hash', $cedulaHash)
+                    ->orWhere('phone_hash', $phoneHash);
+            });
         }
 
-        // Single alphanumeric term with at least one digit and at least one ASCII
-        // letter (no accented chars, no spaces) → also check passport / foreign-ID hash.
         $words = preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY) ?: [$q];
         $isAlphanumericWithDigit = count($words) === 1
             && $digitsOnly !== ''
@@ -61,37 +77,26 @@ class SearchPatients
         if ($isAlphanumericWithDigit) {
             $passportHash = Pii::documentHash('pasaporte', $q);
 
-            return Patient::query()
-                ->where(function ($outer) use ($passportHash, $words) {
-                    $outer->where('document_number_hash', $passportHash);
-                    $outer->orWhere(function ($nameQuery) use ($words) {
-                        foreach ($words as $word) {
-                            $nameQuery->where(function ($inner) use ($word) {
-                                $inner->where('first_names', 'like', "%{$word}%")
-                                    ->orWhere('last_names', 'like', "%{$word}%");
-                            });
-                        }
-                    });
-                })
-                ->orderBy('last_names')
-                ->orderBy('first_names')
-                ->limit($limit)
-                ->get();
+            return $query->where(function ($outer) use ($passportHash, $words) {
+                $outer->where('document_number_hash', $passportHash);
+                $outer->orWhere(function ($nameQuery) use ($words) {
+                    foreach ($words as $word) {
+                        $nameQuery->where(function ($inner) use ($word) {
+                            $inner->where('first_names', 'like', "%{$word}%")
+                                ->orWhere('last_names', 'like', "%{$word}%");
+                        });
+                    }
+                });
+            });
         }
 
-        // Text search: split into words and apply AND between them.
-        return Patient::query()
-            ->where(function ($outer) use ($words) {
-                foreach ($words as $word) {
-                    $outer->where(function ($inner) use ($word) {
-                        $inner->where('first_names', 'like', "%{$word}%")
-                            ->orWhere('last_names', 'like', "%{$word}%");
-                    });
-                }
-            })
-            ->orderBy('last_names')
-            ->orderBy('first_names')
-            ->limit($limit)
-            ->get();
+        foreach ($words as $word) {
+            $query->where(function ($inner) use ($word) {
+                $inner->where('first_names', 'like', "%{$word}%")
+                    ->orWhere('last_names', 'like', "%{$word}%");
+            });
+        }
+
+        return $query;
     }
 }

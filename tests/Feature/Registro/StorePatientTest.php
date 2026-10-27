@@ -44,7 +44,8 @@ test('POST /registro/pacientes creates patient and redirects to pacientes with f
     $this->actingAs($this->secretaria)
         ->post('/registro/pacientes', $payload)
         ->assertRedirect()
-        ->assertSessionHas('success', 'Paciente registrado.');
+        ->assertSessionHas('inertia.flash_data.toast.type', 'success')
+        ->assertSessionHas('inertia.flash_data.toast.message', 'Paciente registrado.');
 
     $patient = Patient::latest('id')->first();
     expect($patient)->not->toBeNull();
@@ -111,7 +112,8 @@ test('POST /registro/pacientes creates patient with no_tiene document type', fun
             'emergency_contact_phone' => '809-000-0000',
         ])
         ->assertRedirect()
-        ->assertSessionHas('success', 'Paciente registrado.');
+        ->assertSessionHas('inertia.flash_data.toast.type', 'success')
+        ->assertSessionHas('inertia.flash_data.toast.message', 'Paciente registrado.');
 
     $patient = Patient::where('first_names', 'Anónimo')->latest('id')->first();
     expect($patient)->not->toBeNull();

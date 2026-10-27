@@ -107,9 +107,9 @@ class RegistroController extends Controller
     {
         $patient = $createPatient->handle($request->validated());
 
-        return redirect()
-            ->route('pacientes', ['paciente' => $patient->id])
-            ->with('success', 'Paciente registrado.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Paciente registrado.']);
+
+        return redirect()->route('pacientes', ['paciente' => $patient->id]);
     }
 
     public function edit(Patient $patient): Response

@@ -26,47 +26,7 @@ class PacientesController extends Controller
         // ── Base query (search only, no filter) ───────────────────────────────────
         $baseQuery = Patient::query();
 
-        if (mb_strlen($q) >= 3) {
-            $digitsOnly = preg_replace('/[^\d]/', '', $q) ?? '';
-            $words = preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY) ?: [$q];
-
-            if ($digitsOnly !== '' && ! preg_match('/[a-zA-ZÀ-ÖØ-öø-ÿ]/', $q)) {
-                // Pure-digit query: cedula / phone exact match.
-                $cedulaHash = Pii::documentHash('cedula', $q);
-                $phoneHash = Pii::hash($digitsOnly);
-                $baseQuery->where(function ($inner) use ($cedulaHash, $phoneHash) {
-                    $inner->where('document_number_hash', $cedulaHash)
-                        ->orWhere('phone_hash', $phoneHash);
-                });
-            } elseif (
-                count($words) === 1
-                && $digitsOnly !== ''
-                && preg_match('/[a-zA-Z]/', $q)
-                && ! preg_match('/[À-ÖØ-öø-ÿ]/', $q)
-            ) {
-                // Single alphanumeric term with at least one digit and letter:
-                // match passport / foreign-ID hash OR name LIKE.
-                $passportHash = Pii::documentHash('pasaporte', $q);
-                $baseQuery->where(function ($outer) use ($passportHash, $words) {
-                    $outer->where('document_number_hash', $passportHash);
-                    $outer->orWhere(function ($nameQuery) use ($words) {
-                        foreach ($words as $word) {
-                            $nameQuery->where(function ($inner) use ($word) {
-                                $inner->where('first_names', 'like', "%{$word}%")
-                                    ->orWhere('last_names', 'like', "%{$word}%");
-                            });
-                        }
-                    });
-                });
-            } else {
-                foreach ($words as $word) {
-                    $baseQuery->where(function ($inner) use ($word) {
-                        $inner->where('first_names', 'like', "%{$word}%")
-                            ->orWhere('last_names', 'like', "%{$word}%");
-                    });
-                }
-            }
-        }
+        (new SearchPatients)->applyTo($baseQuery, $q);
 
         // ── Segment counts (computed over search results, all filters) ────────────
         $counts = [

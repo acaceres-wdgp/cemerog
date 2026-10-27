@@ -211,3 +211,33 @@ test('panel lateral con id inexistente devuelve selected nulo', function () {
         ->assertOk()
         ->assertInertia(fn ($page) => $page->where('selected', null));
 });
+
+// A17 – search by passport without hyphens
+test('búsqueda por pasaporte "AB123456" encuentra al paciente con pasaporte "AB-123456"', function () {
+    Patient::factory()->create([
+        'document_type' => 'pasaporte',
+        'document_number' => 'AB-123456',
+    ]);
+    Patient::factory()->create([
+        'document_type' => 'cedula',
+        'document_number' => '001-1234567-8',
+    ]);
+
+    $this->actingAs($this->user)
+        ->get('/pacientes?q=AB123456')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('patients.total', 1));
+});
+
+// A18 – wrong passport returns no results
+test('búsqueda por pasaporte "XY123456" no encuentra al paciente con pasaporte "AB-123456"', function () {
+    Patient::factory()->create([
+        'document_type' => 'pasaporte',
+        'document_number' => 'AB-123456',
+    ]);
+
+    $this->actingAs($this->user)
+        ->get('/pacientes?q=XY123456')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('patients.total', 0));
+});
