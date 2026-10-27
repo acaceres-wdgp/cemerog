@@ -2,7 +2,6 @@
 
 use App\Models\Patient;
 use App\Models\User;
-use App\Support\Pii;
 
 beforeEach(function () {
     $this->secretaria = User::factory()->create();
@@ -28,12 +27,11 @@ test('GET /registro/pacientes/existe returns 403 without permission', function (
 test('GET /registro/pacientes/existe finds patient by cédula with hyphens', function () {
     $patient = Patient::factory()->create([
         'document_type' => 'cedula',
-        'document_number' => Pii::encrypt('001-1234567-8'),
-        'document_number_hash' => Pii::hash('001-1234567-8', fallbackToFull: true),
+        'document_number' => '001-1234567-8',
     ]);
 
     $this->actingAs($this->secretaria)
-        ->getJson('/registro/pacientes/existe?documento=001-1234567-8')
+        ->getJson('/registro/pacientes/existe?documento=001-1234567-8&tipo=cedula')
         ->assertOk()
         ->assertJsonFragment(['id' => $patient->id]);
 });
@@ -42,12 +40,11 @@ test('GET /registro/pacientes/existe finds patient by cédula with hyphens', fun
 test('GET /registro/pacientes/existe finds patient by cédula without hyphens', function () {
     $patient = Patient::factory()->create([
         'document_type' => 'cedula',
-        'document_number' => Pii::encrypt('001-1234567-8'),
-        'document_number_hash' => Pii::hash('001-1234567-8', fallbackToFull: true),
+        'document_number' => '001-1234567-8',
     ]);
 
     $this->actingAs($this->secretaria)
-        ->getJson('/registro/pacientes/existe?documento=00112345678')
+        ->getJson('/registro/pacientes/existe?documento=00112345678&tipo=cedula')
         ->assertOk()
         ->assertJsonFragment(['id' => $patient->id]);
 });
@@ -57,12 +54,11 @@ test('GET /registro/pacientes/existe finds patient by passport with letters', fu
     $passport = 'AB123456';
     $patient = Patient::factory()->create([
         'document_type' => 'pasaporte',
-        'document_number' => Pii::encrypt($passport),
-        'document_number_hash' => Pii::hash($passport, fallbackToFull: true),
+        'document_number' => $passport,
     ]);
 
     $this->actingAs($this->secretaria)
-        ->getJson('/registro/pacientes/existe?documento=AB123456')
+        ->getJson('/registro/pacientes/existe?documento=AB123456&tipo=pasaporte')
         ->assertOk()
         ->assertJsonFragment(['id' => $patient->id]);
 });
@@ -70,7 +66,7 @@ test('GET /registro/pacientes/existe finds patient by passport with letters', fu
 // E6 – returns null when no patient found
 test('GET /registro/pacientes/existe returns null when no patient exists', function () {
     $this->actingAs($this->secretaria)
-        ->getJson('/registro/pacientes/existe?documento=001-9999999-9')
+        ->getJson('/registro/pacientes/existe?documento=001-9999999-9&tipo=cedula')
         ->assertOk()
         ->assertContent('null');
 });
@@ -79,13 +75,12 @@ test('GET /registro/pacientes/existe returns null when no patient exists', funct
 test('GET /registro/pacientes/existe does not match partial documents', function () {
     Patient::factory()->create([
         'document_type' => 'cedula',
-        'document_number' => Pii::encrypt('001-1234567-8'),
-        'document_number_hash' => Pii::hash('001-1234567-8', fallbackToFull: true),
+        'document_number' => '001-1234567-8',
     ]);
 
     // '001-1234' is a prefix of the stored document but should NOT match
     $this->actingAs($this->secretaria)
-        ->getJson('/registro/pacientes/existe?documento=001-1234')
+        ->getJson('/registro/pacientes/existe?documento=001-1234&tipo=cedula')
         ->assertOk()
         ->assertContent('null');
 });

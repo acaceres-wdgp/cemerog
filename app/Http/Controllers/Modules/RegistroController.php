@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Modules;
 
+use App\Actions\CreatePatient;
 use App\Actions\Registro\RegisterArrival;
 use App\Actions\UpdatePatient;
 use App\Exceptions\PatientHasOpenTurnException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterArrivalRequest;
+use App\Http\Requests\StorePatientRequest;
 use App\Http\Requests\UpdatePatientRequest;
 use App\Models\Doctor;
 use App\Models\Patient;
@@ -95,6 +97,19 @@ class RegistroController extends Controller
                 'type' => 'success',
                 'message' => "Atención creada para {$name} · Turno T-{$turn->turn_number}.",
             ]);
+    }
+
+    /**
+     * Register a new patient without creating a turn.
+     * Redirects to /pacientes?paciente={id} with a success flash.
+     */
+    public function storePatient(StorePatientRequest $request, CreatePatient $createPatient): RedirectResponse
+    {
+        $patient = $createPatient->handle($request->validated());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Paciente registrado.']);
+
+        return redirect()->route('pacientes', ['paciente' => $patient->id]);
     }
 
     public function edit(Patient $patient): Response

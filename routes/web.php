@@ -80,6 +80,9 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::get('/', [RegistroController::class, 'create'])->name('registro');
         Route::post('/', [RegistroController::class, 'store'])->name('registro.store');
 
+        // Register patient without creating a turn
+        Route::post('/pacientes', [RegistroController::class, 'storePatient'])->name('registro.pacientes.store');
+
         // Patient search endpoint (shared with /citas)
         Route::get('/pacientes/buscar', [PacientesController::class, 'search'])->name('registro.pacientes.buscar');
 

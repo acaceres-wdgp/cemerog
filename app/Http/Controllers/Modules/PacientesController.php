@@ -26,25 +26,7 @@ class PacientesController extends Controller
         // ── Base query (search only, no filter) ───────────────────────────────────
         $baseQuery = Patient::query();
 
-        if (mb_strlen($q) >= 3) {
-            $digitsOnly = preg_replace('/[^\d]/', '', $q) ?? '';
-
-            if ($digitsOnly !== '' && ! preg_match('/[a-zA-ZÀ-ÖØ-öø-ÿ]/', $q)) {
-                $hash = hash_hmac('sha256', $digitsOnly, config('app.key'));
-                $baseQuery->where(function ($inner) use ($hash) {
-                    $inner->where('document_number_hash', $hash)
-                        ->orWhere('phone_hash', $hash);
-                });
-            } else {
-                $words = preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY) ?: [$q];
-                foreach ($words as $word) {
-                    $baseQuery->where(function ($inner) use ($word) {
-                        $inner->where('first_names', 'like', "%{$word}%")
-                            ->orWhere('last_names', 'like', "%{$word}%");
-                    });
-                }
-            }
-        }
+        (new SearchPatients)->applyTo($baseQuery, $q);
 
         // ── Segment counts (computed over search results, all filters) ────────────
         $counts = [
@@ -188,12 +170,17 @@ class PacientesController extends Controller
     public function exists(Request $request): JsonResponse|HttpResponse
     {
         $raw = trim((string) $request->string('documento'));
+        $tipo = trim((string) $request->string('tipo', 'cedula'));
 
-        $hash = Pii::hash($raw, fallbackToFull: true);
+        if (! in_array($tipo, ['cedula', 'pasaporte', 'cedula_extranjera', 'no_tiene'], true)) {
+            $tipo = 'cedula';
+        }
 
-        if ($hash === null) {
+        if ($raw === '') {
             return response()->make('null', 200, ['Content-Type' => 'application/json']);
         }
+
+        $hash = Pii::documentHash($tipo, $raw);
 
         $patient = Patient::where('document_number_hash', $hash)->first();
 

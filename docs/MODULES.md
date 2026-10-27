@@ -39,6 +39,18 @@ El módulo `registro` (/registro) no aparece en el sidebar. Se accede únicament
 
 El ítem "Pacientes" en el sidebar usa `activeFor: ['/registro']` para mantenerse resaltado cuando el usuario navega a /registro.
 
+#### Rutas del módulo registro
+
+| Método | Ruta                            | Nombre                    | Descripción                                     |
+| ------ | ------------------------------- | ------------------------- | ----------------------------------------------- |
+| GET    | /registro                       | registro                  | Formulario de registro + nueva atención         |
+| POST   | /registro                       | registro.store            | Crear paciente + turno (`RegisterArrival`)      |
+| POST   | /registro/pacientes             | registro.pacientes.store  | Crear paciente **sin turno** (`CreatePatient`)  |
+| GET    | /registro/pacientes/buscar      | registro.pacientes.buscar | Búsqueda de pacientes existentes                |
+| GET    | /registro/pacientes/existe      | registro.pacientes.exists | Verificar existencia por documento (duplicados) |
+| GET    | /registro/pacientes/{id}/editar | registro.pacientes.edit   | Formulario de edición de paciente               |
+| PUT    | /registro/pacientes/{id}        | registro.pacientes.update | Actualizar datos del paciente                   |
+
 ## Roles
 
 | Rol           | Descripción               | Módulos                                                                                             |

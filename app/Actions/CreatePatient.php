@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Models\Patient;
+use App\Support\Pii;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -15,7 +16,7 @@ class CreatePatient
         if ($data['document_type'] === 'no_tiene') {
             do {
                 $generated = 'GEN-'.strtoupper(Str::random(8));
-                $hash = hash_hmac('sha256', $generated, config('app.key'));
+                $hash = Pii::documentHash('no_tiene', $generated);
             } while (Patient::where('document_number_hash', $hash)->exists());
 
             $data['document_number'] = $generated;

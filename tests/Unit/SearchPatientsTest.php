@@ -112,3 +112,26 @@ test('límite de 10 resultados cuando hay más coincidencias', function () {
     $results = (new SearchPatients)->handle('Carlos');
     expect($results)->toHaveCount(10);
 });
+
+// E10 – passport exact match
+test('pasaporte "AB123456" encuentra al paciente con pasaporte "AB-123456"', function () {
+    $patient = Patient::factory()->create([
+        'document_type' => 'pasaporte',
+        'document_number' => 'AB-123456',
+    ]);
+
+    $results = (new SearchPatients)->handle('AB123456');
+    expect($results)->toHaveCount(1);
+    expect($results->first()->id)->toBe($patient->id);
+});
+
+// E11 – passport no false positive
+test('pasaporte "XY123456" no encuentra al paciente con pasaporte "AB-123456"', function () {
+    Patient::factory()->create([
+        'document_type' => 'pasaporte',
+        'document_number' => 'AB-123456',
+    ]);
+
+    $results = (new SearchPatients)->handle('XY123456');
+    expect($results)->toHaveCount(0);
+});
