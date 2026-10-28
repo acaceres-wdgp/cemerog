@@ -512,3 +512,15 @@ describe('TableroIndex – assignTurnFromCita onError (open_turn)', () => {
         );
     });
 });
+
+// ─── CitasHoyPanel: appointment_time sin segundos ─────────────────────────────
+
+describe('TableroIndex – CitasHoyPanel appointment_time display', () => {
+    it('muestra 09:00 y NO 09:00:00 en la columna hora de citas de hoy', () => {
+        const cita = makeCita({ appointment_time: '09:00', has_turn: false });
+        renderTablero({ appointments: [cita] });
+
+        expect(screen.getAllByText('09:00').length).toBeGreaterThan(0);
+        expect(screen.queryByText('09:00:00')).toBeNull();
+    });
+});

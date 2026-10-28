@@ -13,7 +13,7 @@ type CitasTableProps = {
     date: string;
     is_today: boolean;
     pendingCount: number;
-    bySlot: Record<string, AppointmentRow>;
+    bySlot: Record<string, AppointmentRow[]>;
     noSlot: AppointmentRow[];
     todayRows: AppointmentRow[];
     onNewCita: () => void;

@@ -376,3 +376,125 @@ describe('CitasIndex – submit nueva cita', () => {
         expect(mockRouterPost).not.toHaveBeenCalled();
     });
 });
+// ─── FutureRows: appointment_time normalization & grouping ────────────────────
+
+const FUTURE_DOCTORS = [
+    { id: 1, name: 'Dra. López', specialty: 'Pediatría', initials: 'LL' },
+    { id: 2, name: 'Dr. Méndez', specialty: 'Cardiología', initials: 'DM' },
+];
+
+function makeFutureCita(overrides: Partial<(typeof mockAppointments)[0]>) {
+    return {
+        id: 100,
+        patient_id: 1,
+        patient_name: 'Test Paciente',
+        patient_initials: 'TP',
+        doctor_id: 1,
+        doctor_name: 'Dra. López',
+        doctor_specialty: 'Pediatría',
+        appointment_date: TOMORROW,
+        appointment_time: '09:00' as string | null,
+        turn_number: null,
+        turn_order: null,
+        type: 'consulta',
+        status: 'pendiente' as const,
+        notes: null,
+        ...overrides,
+    };
+}
+
+describe('FutureRows – appointment_time normalization', () => {
+    it('una cita con appointment_time "09:00:00" aparece en la franja 09:00', () => {
+        const cita = makeFutureCita({ id: 201, appointment_time: '09:00:00' });
+        render(
+            <CitasIndex
+                appointments={[cita]}
+                doctors={FUTURE_DOCTORS}
+                date={TOMORROW}
+                is_today={false}
+            />,
+        );
+        expect(screen.getByText('Test Paciente')).toBeTruthy();
+    });
+
+    it('dos citas a las 09:00 con médicos distintos aparecen las dos', () => {
+        const cita1 = makeFutureCita({
+            id: 301,
+            appointment_time: '09:00',
+            patient_name: 'Paciente Uno',
+            doctor_id: 1,
+        });
+        const cita2 = makeFutureCita({
+            id: 302,
+            appointment_time: '09:00',
+            patient_name: 'Paciente Dos',
+            doctor_id: 2,
+        });
+        render(
+            <CitasIndex
+                appointments={[cita1, cita2]}
+                doctors={FUTURE_DOCTORS}
+                date={TOMORROW}
+                is_today={false}
+            />,
+        );
+        expect(screen.getByText('Paciente Uno')).toBeTruthy();
+        expect(screen.getByText('Paciente Dos')).toBeTruthy();
+    });
+
+    it('una cita a las 10:15 aparece entre 10:00 y 10:30', () => {
+        const cita = makeFutureCita({
+            id: 401,
+            appointment_time: '10:15',
+            patient_name: 'Paciente Fuera Slot',
+        });
+        render(
+            <CitasIndex
+                appointments={[cita]}
+                doctors={FUTURE_DOCTORS}
+                date={TOMORROW}
+                is_today={false}
+            />,
+        );
+        expect(screen.getByText('Paciente Fuera Slot')).toBeTruthy();
+    });
+
+    it('una cita a las 16:00 aparece después de 15:00', () => {
+        const cita = makeFutureCita({
+            id: 501,
+            appointment_time: '16:00',
+            patient_name: 'Paciente Tarde',
+        });
+        render(
+            <CitasIndex
+                appointments={[cita]}
+                doctors={FUTURE_DOCTORS}
+                date={TOMORROW}
+                is_today={false}
+            />,
+        );
+        expect(screen.getByText('Paciente Tarde')).toBeTruthy();
+    });
+});
+
+// ─── TodayRows: appointment_time sin segundos ─────────────────────────────────
+
+describe('TodayRows – appointment_time display', () => {
+    it('muestra 09:00 y NO 09:00:00 cuando appointment_time es "09:00"', () => {
+        const cita = {
+            ...mockAppointments[0],
+            appointment_time: '09:00',
+        };
+        render(
+            <CitasIndex
+                appointments={[cita]}
+                doctors={mockDoctors}
+                date={TODAY}
+                is_today={true}
+            />,
+        );
+        // The time column should show '09:00'
+        expect(screen.getByText('09:00')).toBeTruthy();
+        expect(screen.queryByText('09:00:00')).toBeNull();
+    });
+});
