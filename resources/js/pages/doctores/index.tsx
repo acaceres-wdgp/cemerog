@@ -105,7 +105,9 @@ function CredentialsDialog({ credentials, onClose }: CredentialsDialogProps) {
     return (
         <FormDialog
             open={true}
-            onOpenChange={(open) => { if (!open) onClose(); }}
+            onOpenChange={(open) => {
+                if (!open) onClose();
+            }}
             title="Credenciales del médico"
             description="Entrégale estas credenciales al médico. Deberá cambiar la contraseña al entrar."
             footer={
@@ -114,13 +116,25 @@ function CredentialsDialog({ credentials, onClose }: CredentialsDialogProps) {
                         No se volverán a mostrar.
                     </p>
                     <div className="flex gap-2">
-                        <Button type="button" variant="outline" onClick={handlePrint}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handlePrint}
+                        >
                             Imprimir
                         </Button>
-                        <Button type="button" variant="outline" onClick={handleCopy}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleCopy}
+                        >
                             Copiar
                         </Button>
-                        <Button type="button" onClick={onClose} className="bg-primary text-primary-foreground">
+                        <Button
+                            type="button"
+                            onClick={onClose}
+                            className="bg-primary text-primary-foreground"
+                        >
                             Cerrar
                         </Button>
                     </div>
@@ -129,17 +143,29 @@ function CredentialsDialog({ credentials, onClose }: CredentialsDialogProps) {
         >
             <div className="flex flex-col gap-4">
                 <div className="rounded-lg border border-divider bg-app-bg p-4">
-                    <p className="mb-1 text-sm font-medium text-text-secondary">Médico</p>
-                    <p className="font-medium text-text-heading">{credentials.name}</p>
+                    <p className="mb-1 text-sm font-medium text-text-secondary">
+                        Médico
+                    </p>
+                    <p className="font-medium text-text-heading">
+                        {credentials.name}
+                    </p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div className="rounded-lg border border-divider bg-app-bg p-4">
-                        <p className="mb-1 text-sm font-medium text-text-secondary">Usuario</p>
-                        <p className="font-mono font-semibold text-text-heading">{credentials.username}</p>
+                        <p className="mb-1 text-sm font-medium text-text-secondary">
+                            Usuario
+                        </p>
+                        <p className="font-mono font-semibold text-text-heading">
+                            {credentials.username}
+                        </p>
                     </div>
                     <div className="rounded-lg border border-divider bg-app-bg p-4">
-                        <p className="mb-1 text-sm font-medium text-text-secondary">Contraseña temporal</p>
-                        <p className="font-mono font-semibold text-text-heading">{credentials.password}</p>
+                        <p className="mb-1 text-sm font-medium text-text-secondary">
+                            Contraseña temporal
+                        </p>
+                        <p className="font-mono font-semibold text-text-heading">
+                            {credentials.password}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -422,7 +448,9 @@ function DoctorModal({
     const hasLinkedUser = Boolean(doctor?.user_id);
 
     // Default access mode: for new doctor → create_user; for edit without user → create_user; edit with user → none
-    const defaultAccessMode: AccessMode = hasLinkedUser ? 'none' : 'create_user';
+    const defaultAccessMode: AccessMode = hasLinkedUser
+        ? 'none'
+        : 'create_user';
     const [accessMode, setAccessMode] = useState<AccessMode>(defaultAccessMode);
 
     const { data, setData, post, put, transform, processing, errors } = useForm(
@@ -448,7 +476,10 @@ function DoctorModal({
             exequatur: form.exequatur || null,
             phone: form.phone || null,
             specialty_id: parseInt(form.specialty_id, 10),
-            user_id: accessMode === 'link_user' && form.user_id ? parseInt(form.user_id, 10) : null,
+            user_id:
+                accessMode === 'link_user' && form.user_id
+                    ? parseInt(form.user_id, 10)
+                    : null,
             office: form.office || null,
             access_mode: accessMode,
         }));
@@ -462,9 +493,13 @@ function DoctorModal({
 
     const handleResetPassword = () => {
         if (!doctor) return;
-        router.post(`/admin/doctores/${doctor.id}/reset-password`, {}, {
-            onSuccess: onClose,
-        });
+        router.post(
+            `/admin/doctores/${doctor.id}/reset-password`,
+            {},
+            {
+                onSuccess: onClose,
+            },
+        );
     };
 
     return (
@@ -703,7 +738,9 @@ function DoctorModal({
                                 <div className="flex flex-col gap-2">
                                     <div className="flex items-center justify-between rounded-md border border-card-border bg-card-bg px-3 py-2">
                                         <div>
-                                            <p className="text-xs text-text-secondary">Usuario vinculado</p>
+                                            <p className="text-xs text-text-secondary">
+                                                Usuario vinculado
+                                            </p>
                                             <p className="font-mono text-sm font-medium text-text-heading">
                                                 {doctor?.user_username ?? '—'}
                                             </p>
@@ -726,8 +763,12 @@ function DoctorModal({
                                             type="radio"
                                             name="access_mode"
                                             value="create_user"
-                                            checked={accessMode === 'create_user'}
-                                            onChange={() => setAccessMode('create_user')}
+                                            checked={
+                                                accessMode === 'create_user'
+                                            }
+                                            onChange={() =>
+                                                setAccessMode('create_user')
+                                            }
                                             aria-label="Crear usuario nuevo"
                                         />
                                         <span className="text-sm text-text-body">
@@ -740,7 +781,9 @@ function DoctorModal({
                                             name="access_mode"
                                             value="link_user"
                                             checked={accessMode === 'link_user'}
-                                            onChange={() => setAccessMode('link_user')}
+                                            onChange={() =>
+                                                setAccessMode('link_user')
+                                            }
                                             aria-label="Vincular usuario existente"
                                         />
                                         <span className="text-sm text-text-body">
@@ -755,9 +798,16 @@ function DoctorModal({
                                             label="Usuario a vincular"
                                             error={errors.user_id}
                                             value={data.user_id}
-                                            onChange={(e) => setData('user_id', e.target.value)}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'user_id',
+                                                    e.target.value,
+                                                )
+                                            }
                                         >
-                                            <option value="">Seleccionar usuario…</option>
+                                            <option value="">
+                                                Seleccionar usuario…
+                                            </option>
                                             {availableUsers.map((u) => (
                                                 <option key={u.id} value={u.id}>
                                                     {u.name}
@@ -854,7 +904,8 @@ function ToggleButton({ doctor }: { doctor: Doctor }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function DoctoresIndex() {
-    const { specialties, doctors, availableUsers, credentials } = usePage<Props>().props;
+    const { specialties, doctors, availableUsers, credentials } =
+        usePage<Props>().props;
 
     const [selEsp, setSelEsp] = useState<number | null>(
         specialties[0]?.id ?? null,
@@ -863,7 +914,9 @@ export default function DoctoresIndex() {
     const [showDoctorModal, setShowDoctorModal] = useState(false);
     const [editSpecialty, setEditSpecialty] = useState<Specialty | null>(null);
     const [editDoctor, setEditDoctor] = useState<Doctor | null>(null);
-    const [showCredentials, setShowCredentials] = useState(Boolean(credentials));
+    const [showCredentials, setShowCredentials] = useState(
+        Boolean(credentials),
+    );
 
     // When credentials change (new flash), open the dialog
     useEffect(() => {

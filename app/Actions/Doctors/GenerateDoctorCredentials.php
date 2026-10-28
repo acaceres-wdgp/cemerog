@@ -3,7 +3,6 @@
 namespace App\Actions\Doctors;
 
 use App\Models\User;
-use Illuminate\Support\Str;
 
 /**
  * Generates system credentials for a doctor user.

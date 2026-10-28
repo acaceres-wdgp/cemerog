@@ -28,9 +28,7 @@ const page = vi.hoisted(() => ({
             user_username: string | null;
             office: string | null;
         }[],
-        availableUsers: [
-            { id: 10, name: 'Usuario Libre', username: 'ulibre' },
-        ],
+        availableUsers: [{ id: 10, name: 'Usuario Libre', username: 'ulibre' }],
         // credentials flash from server (single-use)
         credentials: null as {
             name: string;
