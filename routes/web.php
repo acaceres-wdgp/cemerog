@@ -173,6 +173,7 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/', [DoctoresController::class, 'storeDoctor'])->name('doctores.store');
         Route::put('/{doctor}', [DoctoresController::class, 'updateDoctor'])->name('doctores.update');
         Route::patch('/{doctor}/toggle', [DoctoresController::class, 'toggleDoctor'])->name('doctores.toggle');
+        Route::post('/{doctor}/reset-password', [DoctoresController::class, 'resetDoctorPassword'])->name('doctores.reset-password');
     });
 
     Route::get('/admin/analisis', [AnalisisController::class, 'index'])

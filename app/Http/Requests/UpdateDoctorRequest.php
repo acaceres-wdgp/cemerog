@@ -21,26 +21,44 @@ class UpdateDoctorRequest extends FormRequest
     {
         /** @var Doctor $doctor */
         $doctor = $this->route('doctor');
+        $accessMode = $this->input('access_mode', 'none');
+        $userId = $this->input('user_id');
+
+        // Apply user_id validation when explicitly linking OR when user_id is provided directly
+        $applyUserValidation = $accessMode === 'link_user' || ($accessMode === 'none' && $userId !== null);
 
         return [
             'name' => ['required', 'string', 'max:100'],
             'exequatur' => ['nullable', 'string', 'max:30'],
             'phone' => ['nullable', 'string', 'max:20'],
             'specialty_id' => ['nullable', 'integer', Rule::exists('specialties', 'id')],
-            'user_id' => [
-                'nullable',
-                'integer',
-                Rule::exists('users', 'id'),
-                Rule::unique('doctors', 'user_id')->ignore($doctor->id),
-                function (string $attribute, mixed $value, \Closure $fail): void {
-                    if ($value !== null) {
-                        $linkedUser = User::find($value);
-                        if (! $linkedUser || ! $linkedUser->hasRole('medico')) {
-                            $fail('El usuario seleccionado debe tener el rol de médico.');
+            'access_mode' => ['nullable', 'string', Rule::in(['none', 'create_user', 'link_user'])],
+            'user_id' => array_merge(
+                ['nullable', 'integer', Rule::exists('users', 'id')],
+                $applyUserValidation ? [
+                    Rule::unique('doctors', 'user_id')->ignore($doctor->id),
+                    function (string $attribute, mixed $value, \Closure $fail): void {
+                        if ($value !== null) {
+                            $linkedUser = User::find($value);
+                            if (! $linkedUser) {
+                                $fail('El usuario seleccionado no existe.');
+
+                                return;
+                            }
+                            if (! $linkedUser->is_active) {
+                                $fail('El usuario seleccionado está inactivo.');
+
+                                return;
+                            }
+                            // When using the old direct linking path, require medico role
+                            $accessMode = $this->input('access_mode', 'none');
+                            if ($accessMode === 'none' && ! $linkedUser->hasRole('medico')) {
+                                $fail('El usuario seleccionado debe tener el rol de médico.');
+                            }
                         }
-                    }
-                },
-            ],
+                    },
+                ] : [],
+            ),
             'office' => ['nullable', 'string', 'max:100'],
         ];
     }

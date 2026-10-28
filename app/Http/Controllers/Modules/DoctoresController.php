@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Modules;
 
 use App\Actions\CreateDoctor;
 use App\Actions\CreateSpecialty;
+use App\Actions\Doctors\ResetDoctorPassword;
 use App\Actions\UpdateDoctor;
 use App\Actions\UpdateSpecialty;
 use App\Http\Controllers\Controller;
@@ -34,15 +35,16 @@ class DoctoresController extends Controller
             'is_active' => $d->is_active,
             'user_id' => $d->user_id,
             'user_name' => $d->user?->name,
+            'user_username' => $d->user?->username,
             'office' => $d->office,
         ]);
 
-        // Available medico users: those with the medico role not yet linked to any doctor
+        // Available users for linking: active users NOT already linked to a doctor
         $linkedUserIds = Doctor::whereNotNull('user_id')->pluck('user_id');
-        $availableUsers = User::role('medico')
+        $availableUsers = User::where('is_active', true)
             ->whereNotIn('id', $linkedUserIds)
             ->orderBy('name')
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'username']);
 
         return Inertia::render('doctores/index', [
             'specialties' => $specialties,
@@ -71,7 +73,11 @@ class DoctoresController extends Controller
 
     public function storeDoctor(StoreDoctorRequest $request, CreateDoctor $action): RedirectResponse
     {
-        $action->handle($request->validated());
+        $result = $action->handle($request->validated());
+
+        if ($result['credentials'] !== null) {
+            Inertia::flash('credentials', $result['credentials']);
+        }
 
         Toast::success('Doctor registrado correctamente.');
 
@@ -80,16 +86,40 @@ class DoctoresController extends Controller
 
     public function updateDoctor(UpdateDoctorRequest $request, Doctor $doctor, UpdateDoctor $action): RedirectResponse
     {
-        $action->handle($doctor, $request->validated());
+        $result = $action->handle($doctor, $request->validated());
+
+        if ($result['credentials'] !== null) {
+            Inertia::flash('credentials', $result['credentials']);
+        }
 
         Toast::success('Doctor actualizado correctamente.');
 
         return redirect()->route('doctores');
     }
 
+    public function resetDoctorPassword(Doctor $doctor, ResetDoctorPassword $action): RedirectResponse
+    {
+        // Authorization handled by route middleware (permission:module.doctores.access)
+
+        $credentials = $action->handle($doctor);
+
+        Inertia::flash('credentials', $credentials);
+
+        Toast::success('Contraseña restablecida correctamente.');
+
+        return redirect()->route('doctores');
+    }
+
     public function toggleDoctor(Doctor $doctor): RedirectResponse
     {
-        $doctor->update(['is_active' => ! $doctor->is_active]);
+        $newStatus = ! $doctor->is_active;
+
+        $doctor->update(['is_active' => $newStatus]);
+
+        // Sync user status
+        if ($doctor->user !== null) {
+            $doctor->user->update(['is_active' => $newStatus]);
+        }
 
         Toast::success('Estado del doctor actualizado.');
 
