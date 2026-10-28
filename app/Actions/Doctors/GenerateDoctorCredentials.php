@@ -76,9 +76,19 @@ class GenerateDoctorCredentials
     }
 
     /**
+     * Particles that are skipped when looking for the first surname.
+     * Common in Dominican Republic and Spanish-speaking world.
+     */
+    private const PARTICLES = ['de', 'del', 'la', 'las', 'los', 'y'];
+
+    /**
      * Build the base username (no suffix) from a doctor name.
-     * Format: first letter of first name + first surname, lowercased, no accents.
-     * Strips Dr./Dra. prefix and handles compound first names.
+     * Format: first letter of first name + first non-particle surname, lowercased, no accents.
+     * Strips Dr./Dra. prefix, skips particles (de, del, la, las, los, y),
+     * and strips hyphens/apostrophes from the chosen surname.
+     *
+     * Compound first names: when 4+ words and words[1] is not a particle,
+     * treat words[0..1] as the first name and start searching for the surname at index 2.
      */
     private function buildBaseUsername(string $doctorName): string
     {
@@ -95,14 +105,35 @@ class GenerateDoctorCredentials
         // First letter of first name (always the first word)
         $firstLetter = mb_strtolower(mb_substr($words[0], 0, 1));
 
-        // First surname: for compound names (4+ words) treat last 2 words as surnames
-        // so surname index = count - 2. For 1-3 words, use word at index 1 (or 0).
-        $surnameIndex = count($words) >= 4 ? count($words) - 2 : 1;
-        $surname = $words[$surnameIndex] ?? $words[0];
+        // Determine starting search index for surname.
+        // For 4+ words: if words[1] is NOT a particle, we have a compound first name
+        // (e.g. "María Isabel Pérez Torres") → start at index 2.
+        // Otherwise: start at index 1 and skip any particles.
+        $start = 1;
+        if (count($words) >= 4 && ! in_array(mb_strtolower($words[1]), self::PARTICLES, true)) {
+            $start = 2;
+        }
 
+        // Walk from $start, skip particles, take first non-particle word as surname
+        $surname = null;
+        for ($i = $start; $i < count($words); $i++) {
+            $lower = mb_strtolower($words[$i]);
+            if (! in_array($lower, self::PARTICLES, true)) {
+                $surname = $words[$i];
+                break;
+            }
+        }
+
+        if ($surname === null) {
+            $surname = $words[0];
+        }
+
+        // Strip hyphens, apostrophes, and any non-alphanumeric after normalization
         $base = $firstLetter.mb_strtolower($surname);
+        $base = $this->removeAccents($base);
+        $base = preg_replace('/[^a-z0-9]/', '', $base) ?? $base;
 
-        return $this->removeAccents($base);
+        return $base;
     }
 
     /**

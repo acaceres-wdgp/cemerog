@@ -120,3 +120,47 @@ test('handle returns the plain password (not hashed)', function () {
     expect($result['plainPassword'])->not->toContain('$2y$');
     expect(strlen($result['plainPassword']))->toBe(10);
 });
+
+// ─── Fix 5: Particles in surnames ────────────────────────────────────────────
+
+test('skips particle "de la" and uses first non-particle surname', function () {
+    $action = new GenerateDoctorCredentials;
+
+    // «María de la Cruz» → mcruz
+    expect($action->previewUsername('María de la Cruz'))->toBe('mcruz');
+});
+
+test('skips particle "de los" and uses first non-particle surname', function () {
+    $action = new GenerateDoctorCredentials;
+
+    // «Juan de los Santos» → jsantos
+    expect($action->previewUsername('Juan de los Santos'))->toBe('jsantos');
+});
+
+test('strips hyphens from compound surnames', function () {
+    $action = new GenerateDoctorCredentials;
+
+    // «Ana Pérez-Gómez» → aperezgomez
+    expect($action->previewUsername('Ana Pérez-Gómez'))->toBe('aperezgomez');
+});
+
+test('strips apostrophes from surnames', function () {
+    $action = new GenerateDoctorCredentials;
+
+    // «Luis D\'Oleo» → ldoleo
+    expect($action->previewUsername("Luis D'Oleo"))->toBe('ldoleo');
+});
+
+test('skips particle "del" and uses first non-particle surname', function () {
+    $action = new GenerateDoctorCredentials;
+
+    // «Carlos del Orbe» → corbe
+    expect($action->previewUsername('Carlos del Orbe'))->toBe('corbe');
+});
+
+test('skips particle "y" between names', function () {
+    $action = new GenerateDoctorCredentials;
+
+    // «Ana y García López» — unusual but "y" is a particle → agarcia
+    expect($action->previewUsername('Ana y García López'))->toBe('agarcia');
+});
