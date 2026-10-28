@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 import { HistorialEntry } from '../types';
 
 // ─── Historial Panel ──────────────────────────────────────────────────────────
@@ -64,14 +65,12 @@ export default function HistorialPanel({
                                 onClick={() =>
                                     setSelId(e.id === selId ? null : e.id)
                                 }
-                                // dynamic-style: selected entry highlight depends on selId
-                                style={{
-                                    background:
-                                        e.id === selId
-                                            ? 'var(--color-list-row-bg)'
-                                            : 'var(--color-card-bg)',
-                                }}
-                                className="flex w-full cursor-pointer items-start gap-3 border-0 border-b border-row-separator px-5 py-3 text-left"
+                                className={cn(
+                                    'flex w-full cursor-pointer items-start gap-3 border-0 border-b border-row-separator px-5 py-3 text-left',
+                                    e.id === selId
+                                        ? 'bg-list-row-bg'
+                                        : 'bg-white',
+                                )}
                             >
                                 <span className="w-[3px] shrink-0 self-stretch rounded-sm bg-consulta-dot" />
                                 <div className="flex min-w-0 flex-1 flex-col gap-[3px]">

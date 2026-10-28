@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
+import { cn } from '@/lib/utils';
 import { AntecedentData, TurnItem } from '../types';
 
 // ─── Antecedentes Panel ────────────────────────────────────────────────────────
@@ -79,19 +80,12 @@ export default function AntecedentesPanel({
                         ))}
                         <span className="text-muted">Alergias</span>
                         <span
-                            // dynamic-style: alergias text color/weight depends on whether value is present
-                            style={{
-                                color:
-                                    (antecedents?.alergias ??
+                            className={cn(
+                                (antecedents?.alergias ??
                                     turn.patient.allergies)
-                                        ? 'var(--color-error)'
-                                        : 'var(--color-muted-light)',
-                                fontWeight:
-                                    (antecedents?.alergias ??
-                                    turn.patient.allergies)
-                                        ? 600
-                                        : 400,
-                            }}
+                                    ? 'font-semibold text-error'
+                                    : 'text-muted-light',
+                            )}
                         >
                             {antecedents?.alergias ??
                                 turn.patient.allergies ??

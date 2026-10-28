@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
+import { cn } from '@/lib/utils';
 import { computeImc } from '../lib/helpers';
 import { AntecedentData, Diagnostico, NoteFormData, TurnItem } from '../types';
 import AntecedentesPanel from './AntecedentesPanel';
@@ -167,7 +168,7 @@ export default function NotaClinica({
                                 </label>
                             ))}
                             {/* IMC (auto-computed) */}
-                            <div className="flex flex-col gap-[2px] rounded-[10px] border border-dashed border-input-border bg-muted-bg px-[10px] py-[6px]">
+                            <div className="flex flex-col gap-[2px] rounded-[10px] border border-dashed border-input-border bg-done-row-bg px-[10px] py-[6px]">
                                 <span className="text-[12px] text-muted">
                                     IMC
                                 </span>
@@ -270,14 +271,12 @@ export default function NotaClinica({
                                     }
                                 }}
                                 placeholder="Ej: N39.0 Infección de vías urinarias"
-                                // dynamic-style: placeholder color depends on diagnosticos list being empty
-                                style={{
-                                    color:
-                                        form.diagnosticos.length === 0
-                                            ? 'var(--color-muted-light)'
-                                            : 'var(--color-text-heading)',
-                                }}
-                                className="min-w-[180px] flex-1 border-0 bg-transparent font-sans text-[13px] outline-none"
+                                className={cn(
+                                    'min-w-[180px] flex-1 border-0 bg-transparent font-sans text-[13px] outline-none',
+                                    form.diagnosticos.length === 0
+                                        ? 'text-muted-light'
+                                        : 'text-text-heading',
+                                )}
                             />
                         </div>
                     </div>

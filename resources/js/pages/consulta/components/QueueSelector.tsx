@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 import { TurnItem } from '../types';
 
 // ─── Queue Selector ───────────────────────────────────────────────────────────
@@ -29,14 +30,10 @@ export default function QueueSelector({
                 <button
                     key={t.id}
                     onClick={() => onSelect(t)}
-                    // dynamic-style: active turn highlight depends on activeTurnId
-                    style={{
-                        background:
-                            t.id === activeTurnId
-                                ? 'var(--color-list-row-bg)'
-                                : 'var(--color-card-bg)',
-                    }}
-                    className="flex cursor-pointer items-center gap-3 border-0 border-b border-row-separator px-5 py-[10px] text-left"
+                    className={cn(
+                        'flex cursor-pointer items-center gap-3 border-0 border-b border-row-separator px-5 py-[10px] text-left',
+                        t.id === activeTurnId ? 'bg-list-row-bg' : 'bg-white',
+                    )}
                 >
                     <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-bg text-[13px] font-bold text-primary">
                         T-{String(t.turn_number).padStart(2, '0')}
@@ -49,20 +46,13 @@ export default function QueueSelector({
                             {t.doctor.full_name} · {t.doctor.specialty}
                         </div>
                     </div>
-                    {/* dynamic-style: status-dependent badge colors */}
                     <span
-                        // dynamic-style: status-dependent colors
-                        style={{
-                            background:
-                                t.status === 'en_consulta'
-                                    ? 'var(--color-badge-consulta-bg)'
-                                    : 'var(--color-app-bg)',
-                            color:
-                                t.status === 'en_consulta'
-                                    ? 'var(--color-consulta-num)'
-                                    : 'var(--color-secondary-fg)',
-                        }}
-                        className="rounded-full px-2 py-[2px] text-[11.5px] font-semibold"
+                        className={cn(
+                            'rounded-full px-2 py-[2px] text-[11.5px] font-semibold',
+                            t.status === 'en_consulta'
+                                ? 'bg-badge-consulta-bg text-consulta-num'
+                                : 'bg-app-bg text-secondary-fg',
+                        )}
                     >
                         {t.status === 'en_consulta'
                             ? 'En consulta'

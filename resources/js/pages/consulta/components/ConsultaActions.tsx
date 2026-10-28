@@ -1,5 +1,6 @@
 import React from 'react';
 import { router } from '@inertiajs/react';
+import { cn } from '@/lib/utils';
 
 // ─── Consulta Actions (tabs + dar alta) ──────────────────────────────────────
 
@@ -25,22 +26,12 @@ export default function ConsultaActions({
                     <button
                         key={t.key}
                         onClick={() => setActiveTab(t.key as typeof activeTab)}
-                        // dynamic-style: active tab background, color, and shadow depend on activeTab
-                        style={{
-                            background:
-                                activeTab === t.key
-                                    ? 'var(--color-card-bg)'
-                                    : 'transparent',
-                            color:
-                                activeTab === t.key
-                                    ? 'var(--color-text-heading)'
-                                    : 'var(--color-secondary-fg)',
-                            boxShadow:
-                                activeTab === t.key
-                                    ? '0 1px 3px rgba(0,0,0,.1)'
-                                    : 'none',
-                        }}
-                        className="h-[30px] cursor-pointer rounded-[10px] border-0 px-3 font-sans text-sm font-medium whitespace-nowrap"
+                        className={cn(
+                            'h-[30px] cursor-pointer rounded-[10px] border-0 px-3 font-sans text-sm font-medium whitespace-nowrap',
+                            activeTab === t.key
+                                ? 'bg-white text-text-heading shadow-[0_1px_3px_rgba(0,0,0,.1)]'
+                                : 'bg-transparent text-secondary-fg',
+                        )}
                     >
                         {t.label}
                     </button>
