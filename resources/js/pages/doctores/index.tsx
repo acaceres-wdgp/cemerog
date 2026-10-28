@@ -3,7 +3,9 @@ import { useState, useEffect } from 'react';
 import { MaskedInput } from '@/components/cemerog/masked-input';
 import FormField from '@/components/cemerog/FormField';
 import FormDialog from '@/components/cemerog/FormDialog';
+import ConfirmDialog from '@/components/cemerog/ConfirmDialog';
 import { Button } from '@/components/ui/button';
+import { resetDoctorPassword as resetDoctorPasswordRoute } from '@/actions/App/Http/Controllers/Modules/DoctoresController';
 
 type Specialty = {
     id: number;
@@ -450,6 +452,7 @@ function DoctorModal({
         ? 'none'
         : 'create_user';
     const [accessMode, setAccessMode] = useState<AccessMode>(defaultAccessMode);
+    const [confirmResetOpen, setConfirmResetOpen] = useState(false);
 
     const { data, setData, post, put, transform, processing, errors } = useForm(
         {
@@ -489,19 +492,29 @@ function DoctorModal({
         }
     };
 
-    const handleResetPassword = () => {
+    const handleResetPasswordConfirm = () => {
         if (!doctor) return;
-        router.post(
-            `/admin/doctores/${doctor.id}/reset-password`,
-            {},
-            {
-                onSuccess: onClose,
-            },
-        );
+        router.visit(resetDoctorPasswordRoute(doctor.id).url, {
+            method: 'post',
+            onSuccess: onClose,
+        });
     };
 
     return (
         <>
+            {confirmResetOpen && (
+                <ConfirmDialog
+                    open={confirmResetOpen}
+                    onOpenChange={setConfirmResetOpen}
+                    title="Restablecer contraseña"
+                    description="Se generará una contraseña temporal nueva. La actual dejará de funcionar. ¿Continuar?"
+                    confirmLabel="Continuar"
+                    onConfirm={() => {
+                        setConfirmResetOpen(false);
+                        handleResetPasswordConfirm();
+                    }}
+                />
+            )}
             <div
                 onClick={onClose}
                 style={{
@@ -748,7 +761,9 @@ function DoctorModal({
                                         type="button"
                                         variant="outline"
                                         className="w-full"
-                                        onClick={handleResetPassword}
+                                        onClick={() =>
+                                            setConfirmResetOpen(true)
+                                        }
                                     >
                                         Restablecer contraseña
                                     </Button>

@@ -110,4 +110,47 @@ describe('doctores forms', () => {
         // Since user_username is not set in the mock (undefined), we show '—'
         expect(screen.getByText('Restablecer contraseña')).toBeDefined();
     });
+
+    it('clicking "Restablecer contraseña" shows a confirmation dialog before sending POST', () => {
+        const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+        render(<DoctoresIndex />);
+
+        // Open the edit modal for the doctor with user_id
+        const specialtyItems = screen.getAllByText('Pediatría');
+        fireEvent.click(specialtyItems[0]);
+        const editButtons = screen.getAllByText('✏');
+        fireEvent.click(editButtons[editButtons.length - 1]);
+
+        // Click "Restablecer contraseña" – should NOT immediately send
+        fireEvent.click(screen.getByText(/Restablecer contraseña/i));
+
+        // The POST must NOT have been sent yet (confirmation required)
+        expect(visit).not.toHaveBeenCalled();
+
+        // The confirmation text should be visible
+        expect(screen.getByText(/dejará de funcionar/i)).toBeDefined();
+    });
+
+    it('reset password POST is sent after confirming the dialog', () => {
+        const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+        render(<DoctoresIndex />);
+
+        // Open the edit modal for the doctor with user_id
+        const specialtyItems = screen.getAllByText('Pediatría');
+        fireEvent.click(specialtyItems[0]);
+        const editButtons = screen.getAllByText('✏');
+        fireEvent.click(editButtons[editButtons.length - 1]);
+
+        // Click "Restablecer contraseña"
+        fireEvent.click(screen.getByText(/Restablecer contraseña/i));
+
+        // Click the confirm button (the button labeled "Continuar")
+        fireEvent.click(screen.getByRole('button', { name: /Continuar/i }));
+
+        // Now the POST should have been sent
+        expect(visit).toHaveBeenCalledTimes(1);
+        const call = visit.mock.calls[0];
+        expect(call[0]).toContain('/admin/doctores/1/reset-password');
+        expect(call[1]).toMatchObject({ method: 'post' });
+    });
 });
