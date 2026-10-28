@@ -22,17 +22,8 @@ export default function AntecedentesPanel({
         alergias: antecedents?.alergias ?? turn.patient.allergies ?? '',
     });
 
-    const inputStyle: React.CSSProperties = {
-        height: 34,
-        padding: '0 10px',
-        border: '1px solid #e4e4e7',
-        borderRadius: 10,
-        outline: 'none',
-        fontFamily: 'inherit',
-        fontSize: 13,
-        width: '100%',
-        boxSizing: 'border-box',
-    };
+    const inputCls =
+        'h-[34px] px-[10px] border border-input-border rounded-[10px] outline-none font-sans text-[13px] w-full';
 
     function handleSaveAnte() {
         router.patch(`/consulta/antecedentes/${patientId}`, anteForm, {
@@ -41,61 +32,22 @@ export default function AntecedentesPanel({
     }
 
     return (
-        <div
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 16,
-                flex: '1 1 320px',
-                minWidth: 0,
-            }}
-        >
-            <div
-                style={{
-                    background: '#fff',
-                    border: '1px solid #e3e9e3',
-                    borderRadius: 14,
-                }}
-            >
-                <div
-                    style={{
-                        padding: '14px 18px',
-                        borderBottom: '1px solid #eef0ec',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: 8,
-                    }}
-                >
-                    <span style={{ fontWeight: 600 }}>Antecedentes</span>
+        <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-4">
+            <div className="rounded-[14px] border border-card-border bg-white">
+                <div className="flex items-center justify-between gap-2 border-b border-divider px-[18px] py-[14px]">
+                    <span className="font-semibold">Antecedentes</span>
                     <button
                         onClick={() =>
                             showAnte ? handleSaveAnte() : setShowAnte(true)
                         }
-                        style={{
-                            border: 'none',
-                            background: 'transparent',
-                            color: '#2E8B3E',
-                            fontWeight: 600,
-                            fontSize: 13,
-                            cursor: 'pointer',
-                            padding: 0,
-                        }}
+                        className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-semibold text-primary"
                     >
                         {showAnte ? 'Guardar' : 'Editar'}
                     </button>
                 </div>
 
                 {!showAnte && (
-                    <div
-                        style={{
-                            padding: '14px 18px',
-                            display: 'grid',
-                            gridTemplateColumns: 'auto 1fr',
-                            gap: '8px 12px',
-                            fontSize: 13,
-                        }}
-                    >
+                    <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 px-[18px] py-[14px] text-[13px]">
                         {[
                             {
                                 label: 'Personales',
@@ -115,26 +67,25 @@ export default function AntecedentesPanel({
                             },
                         ].map((row) => (
                             <React.Fragment key={row.label}>
-                                <span style={{ color: '#71717a' }}>
-                                    {row.label}
-                                </span>
+                                <span className="text-muted">{row.label}</span>
                                 <span>
                                     {row.val || (
-                                        <span style={{ color: '#a1a1aa' }}>
+                                        <span className="text-muted-light">
                                             —
                                         </span>
                                     )}
                                 </span>
                             </React.Fragment>
                         ))}
-                        <span style={{ color: '#71717a' }}>Alergias</span>
+                        <span className="text-muted">Alergias</span>
                         <span
+                            // dynamic-style: alergias text color/weight depends on whether value is present
                             style={{
                                 color:
                                     (antecedents?.alergias ??
                                     turn.patient.allergies)
-                                        ? '#b91c1c'
-                                        : '#a1a1aa',
+                                        ? 'var(--color-error)'
+                                        : 'var(--color-muted-light)',
                                 fontWeight:
                                     (antecedents?.alergias ??
                                     turn.patient.allergies)
@@ -150,15 +101,7 @@ export default function AntecedentesPanel({
                 )}
 
                 {showAnte && (
-                    <div
-                        style={{
-                            padding: '14px 18px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 14,
-                            fontSize: 13,
-                        }}
-                    >
+                    <div className="flex flex-col gap-[14px] px-[18px] py-[14px] text-[13px]">
                         {[
                             { key: 'personales', label: 'Personales' },
                             { key: 'quirurgicos', label: 'Quirúrgicos' },
@@ -170,15 +113,9 @@ export default function AntecedentesPanel({
                         ].map((f) => (
                             <label
                                 key={f.key}
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 6,
-                                }}
+                                className="flex flex-col gap-[6px]"
                             >
-                                <span style={{ fontWeight: 500 }}>
-                                    {f.label}
-                                </span>
+                                <span className="font-medium">{f.label}</span>
                                 <input
                                     value={
                                         anteForm[
@@ -191,26 +128,12 @@ export default function AntecedentesPanel({
                                             [f.key]: e.target.value,
                                         }))
                                     }
-                                    style={inputStyle}
+                                    className={inputCls}
                                 />
                             </label>
                         ))}
-                        <label
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 6,
-                            }}
-                        >
-                            <span
-                                style={{
-                                    fontWeight: 500,
-                                    color: '#b91c1c',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 6,
-                                }}
-                            >
+                        <label className="flex flex-col gap-[6px]">
+                            <span className="inline-flex items-center gap-[6px] font-medium text-error">
                                 ⚠ Alergias
                             </span>
                             <input
@@ -221,10 +144,7 @@ export default function AntecedentesPanel({
                                         alergias: e.target.value,
                                     }))
                                 }
-                                style={{
-                                    ...inputStyle,
-                                    border: '1px solid #fecaca',
-                                }}
+                                className="h-[34px] w-full rounded-[10px] border border-error-border px-[10px] font-sans text-[13px] outline-none"
                             />
                         </label>
                     </div>

@@ -4,71 +4,20 @@ import React from 'react';
 
 export default function CuentaOrdenesTab() {
     return (
-        <div
-            style={{
-                display: 'grid',
-                gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)',
-                gap: 16,
-                alignItems: 'start',
-            }}
-        >
-            <div
-                style={{
-                    background: '#fff',
-                    border: '1px solid #e3e9e3',
-                    borderRadius: 14,
-                    overflow: 'hidden',
-                }}
-            >
-                <div
-                    style={{
-                        padding: '14px 18px',
-                        fontFamily: 'Bitter,Georgia,serif',
-                        fontWeight: 600,
-                        fontSize: 16,
-                        color: '#1f2d22',
-                    }}
-                >
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-4">
+            <div className="overflow-hidden rounded-[14px] border border-card-border bg-white">
+                <div className="px-[18px] py-[14px] font-serif text-[16px] font-semibold text-text-heading">
                     Órdenes
                 </div>
-                <div
-                    style={{
-                        padding: '20px',
-                        color: '#71717a',
-                        fontSize: 13,
-                        textAlign: 'center',
-                    }}
-                >
+                <div className="p-5 text-center text-[13px] text-muted">
                     No hay órdenes para esta consulta.
                 </div>
             </div>
-            <div
-                style={{
-                    background: '#fff',
-                    border: '1px solid #e3e9e3',
-                    borderRadius: 14,
-                    overflow: 'hidden',
-                }}
-            >
-                <div
-                    style={{
-                        padding: '14px 18px',
-                        fontFamily: 'Bitter,Georgia,serif',
-                        fontWeight: 600,
-                        fontSize: 16,
-                        color: '#1f2d22',
-                    }}
-                >
+            <div className="overflow-hidden rounded-[14px] border border-card-border bg-white">
+                <div className="px-[18px] py-[14px] font-serif text-[16px] font-semibold text-text-heading">
                     Cargos a la cuenta
                 </div>
-                <div
-                    style={{
-                        padding: '20px',
-                        color: '#71717a',
-                        fontSize: 13,
-                        textAlign: 'center',
-                    }}
-                >
+                <div className="p-5 text-center text-[13px] text-muted">
                     No hay cargos registrados.
                 </div>
             </div>

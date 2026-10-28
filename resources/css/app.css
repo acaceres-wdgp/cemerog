@@ -126,6 +126,12 @@
     /* ── Info tip box border (accent, soft variant) ──────── */
     --color-accent-tip-border: #c6e5a8;
 
+    /* ── Historial / consulta badge (blue) ───────────────── */
+    --color-badge-consulta-bg: #dbeafe;
+
+    /* ── Patient header footer strip ────────────────────── */
+    --color-patient-footer-bg: #fafbf8;
+
     /* ── Sidebar Themes ──────────────────────────── */
     --color-sidebar-carbon: #2a2e2c;
     --color-sidebar-slate: #1f2b33;

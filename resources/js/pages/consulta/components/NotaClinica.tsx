@@ -121,129 +121,35 @@ export default function NotaClinica({
         );
     }
 
-    const textareaStyle: React.CSSProperties = {
-        padding: '8px 12px',
-        border: '1px solid #e4e4e7',
-        borderRadius: 10,
-        outline: 'none',
-        fontFamily: 'inherit',
-        fontSize: 14,
-        resize: 'vertical',
-        width: '100%',
-        boxSizing: 'border-box',
-    };
+    const textareaCls =
+        'p-2 px-3 border border-input-border rounded-[10px] outline-none font-sans text-sm resize-y w-full';
 
     return (
-        <div
-            style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 16,
-                alignItems: 'flex-start',
-            }}
-        >
+        <div className="flex flex-wrap items-start gap-4">
             {/* Clinical note */}
-            <div
-                style={{
-                    background: '#fff',
-                    border: '1px solid #e3e9e3',
-                    borderRadius: 14,
-                    flex: '2 1 520px',
-                    minWidth: 0,
-                }}
-            >
-                <div
-                    style={{
-                        padding: '16px 20px',
-                        borderBottom: '1px solid #eef0ec',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                    }}
-                >
-                    <div
-                        style={{
-                            fontFamily: 'Bitter,Georgia,serif',
-                            fontWeight: 600,
-                            fontSize: 16,
-                            color: '#1f2d22',
-                        }}
-                    >
+            <div className="min-w-0 flex-[2_1_520px] rounded-[14px] border border-card-border bg-white">
+                <div className="flex items-center justify-between border-b border-divider px-5 py-4">
+                    <div className="font-serif text-[16px] font-semibold text-text-heading">
                         Nota clínica
                     </div>
                 </div>
-                <div
-                    style={{
-                        padding: '16px 20px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 16,
-                    }}
-                >
+                <div className="flex flex-col gap-4 px-5 py-4">
                     {/* Vitals */}
                     <div>
-                        <div
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 8,
-                                marginBottom: 8,
-                                fontSize: 13,
-                                fontWeight: 600,
-                                color: '#2f4a17',
-                            }}
-                        >
-                            <span
-                                style={{
-                                    width: 3,
-                                    height: 14,
-                                    background: '#8CC63F',
-                                    borderRadius: 2,
-                                    display: 'inline-block',
-                                }}
-                            />
+                        <div className="mb-2 flex items-center gap-2 text-[13px] font-semibold text-accent-fg">
+                            <span className="inline-block h-[14px] w-[3px] rounded-sm bg-accent" />
                             Signos vitales
                         </div>
-                        <div
-                            style={{
-                                display: 'grid',
-                                gridTemplateColumns:
-                                    'repeat(auto-fill,minmax(118px,1fr))',
-                                gap: 8,
-                            }}
-                        >
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(118px,1fr))] gap-2">
                             {VITALS.map((v) => (
                                 <label
                                     key={v.key}
-                                    style={{
-                                        border: '1px solid #e4e4e7',
-                                        background: '#fff',
-                                        borderRadius: 10,
-                                        padding: '6px 10px',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: 2,
-                                        cursor: 'text',
-                                    }}
+                                    className="flex cursor-text flex-col gap-[2px] rounded-[10px] border border-input-border bg-white px-[10px] py-[6px]"
                                 >
-                                    <span
-                                        style={{
-                                            fontSize: 12,
-                                            color: '#71717a',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                        }}
-                                    >
+                                    <span className="overflow-hidden text-[12px] text-ellipsis whitespace-nowrap text-muted">
                                         {v.label}
                                     </span>
-                                    <span
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'baseline',
-                                            gap: 4,
-                                        }}
-                                    >
+                                    <span className="flex items-baseline gap-1">
                                         <input
                                             value={form[v.key]}
                                             onChange={(e) =>
@@ -252,78 +158,31 @@ export default function NotaClinica({
                                                     [v.key]: e.target.value,
                                                 }))
                                             }
-                                            style={{
-                                                flex: 1,
-                                                minWidth: 0,
-                                                width: '100%',
-                                                border: 'none',
-                                                outline: 'none',
-                                                background: 'transparent',
-                                                padding: 0,
-                                                fontFamily: 'inherit',
-                                                fontWeight: 600,
-                                                fontVariantNumeric:
-                                                    'tabular-nums',
-                                                color: '#1f2d22',
-                                                fontSize: 14,
-                                            }}
+                                            className="w-full min-w-0 flex-1 border-0 bg-transparent p-0 font-sans text-sm font-semibold text-text-heading tabular-nums outline-none"
                                         />
-                                        <span
-                                            style={{
-                                                fontSize: 11.5,
-                                                color: '#a1a1aa',
-                                                whiteSpace: 'nowrap',
-                                            }}
-                                        >
+                                        <span className="text-[11.5px] whitespace-nowrap text-muted-light">
                                             {v.unit}
                                         </span>
                                     </span>
                                 </label>
                             ))}
                             {/* IMC (auto-computed) */}
-                            <div
-                                style={{
-                                    border: '1px dashed #e4e4e7',
-                                    borderRadius: 10,
-                                    padding: '6px 10px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 2,
-                                    background: '#fafafa',
-                                }}
-                            >
-                                <span
-                                    style={{ fontSize: 12, color: '#71717a' }}
-                                >
+                            <div className="flex flex-col gap-[2px] rounded-[10px] border border-dashed border-input-border bg-muted-bg px-[10px] py-[6px]">
+                                <span className="text-[12px] text-muted">
                                     IMC
                                 </span>
-                                <span
-                                    style={{
-                                        fontWeight: 600,
-                                        fontVariantNumeric: 'tabular-nums',
-                                        color: '#1f2d22',
-                                        fontSize: 14,
-                                    }}
-                                >
+                                <span className="text-sm font-semibold text-text-heading tabular-nums">
                                     {imc}
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    <label
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 6,
-                        }}
-                    >
-                        <span style={{ fontWeight: 500 }}>
-                            Motivo de consulta
-                        </span>
+                    <label className="flex flex-col gap-[6px]">
+                        <span className="font-medium">Motivo de consulta</span>
                         <textarea
                             rows={2}
-                            style={textareaStyle}
+                            className={textareaCls}
                             value={form.motivo_consulta}
                             onChange={(e) =>
                                 setForm((f) => ({
@@ -334,19 +193,13 @@ export default function NotaClinica({
                         />
                     </label>
 
-                    <label
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 6,
-                        }}
-                    >
-                        <span style={{ fontWeight: 500 }}>
+                    <label className="flex flex-col gap-[6px]">
+                        <span className="font-medium">
                             Historia de la enfermedad actual
                         </span>
                         <textarea
                             rows={3}
-                            style={textareaStyle}
+                            className={textareaCls}
                             value={form.historia_enfermedad}
                             onChange={(e) =>
                                 setForm((f) => ({
@@ -357,17 +210,11 @@ export default function NotaClinica({
                         />
                     </label>
 
-                    <label
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 6,
-                        }}
-                    >
-                        <span style={{ fontWeight: 500 }}>Examen físico</span>
+                    <label className="flex flex-col gap-[6px]">
+                        <span className="font-medium">Examen físico</span>
                         <textarea
                             rows={2}
-                            style={textareaStyle}
+                            className={textareaCls}
                             value={form.examen_fisico}
                             onChange={(e) =>
                                 setForm((f) => ({
@@ -379,43 +226,18 @@ export default function NotaClinica({
                     </label>
 
                     {/* Diagnóstico CIE-10 */}
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 6,
-                        }}
-                    >
-                        <span style={{ fontWeight: 500 }}>
+                    <div className="flex flex-col gap-[6px]">
+                        <span className="font-medium">
                             Diagnóstico (CIE-10)
                         </span>
-                        <div
-                            style={{
-                                minHeight: 42,
-                                padding: '5px 8px',
-                                border: '1px solid #e4e4e7',
-                                borderRadius: 10,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 6,
-                                flexWrap: 'wrap',
-                            }}
-                        >
+                        <div className="flex min-h-[42px] flex-wrap items-center gap-[6px] rounded-[10px] border border-input-border px-2 py-[5px]">
                             {form.diagnosticos.map(
                                 (dx: Diagnostico, i: number) => (
                                     <span
                                         key={i}
-                                        style={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: 6,
-                                            padding: '3px 10px',
-                                            borderRadius: 999,
-                                            background: '#f4f4f5',
-                                            fontSize: 13,
-                                        }}
+                                        className="inline-flex items-center gap-[6px] rounded-full bg-muted-bg px-[10px] py-[3px] text-[13px]"
                                     >
-                                        <strong style={{ fontWeight: 600 }}>
+                                        <strong className="font-semibold">
                                             {dx.code}
                                         </strong>{' '}
                                         {dx.label}
@@ -430,20 +252,14 @@ export default function NotaClinica({
                                                         ),
                                                 }))
                                             }
-                                            style={{
-                                                border: 'none',
-                                                background: 'transparent',
-                                                color: '#71717a',
-                                                cursor: 'pointer',
-                                                padding: 0,
-                                                fontSize: 13,
-                                            }}
+                                            className="cursor-pointer border-0 bg-transparent p-0 text-[13px] text-muted"
                                         >
                                             ✕
                                         </button>
                                     </span>
                                 ),
                             )}
+                            {/* dynamic-style: placeholder color depends on diagnosticos length */}
                             <input
                                 value={dxInput}
                                 onChange={(e) => setDxInput(e.target.value)}
@@ -454,36 +270,23 @@ export default function NotaClinica({
                                     }
                                 }}
                                 placeholder="Ej: N39.0 Infección de vías urinarias"
+                                // dynamic-style: placeholder color depends on diagnosticos list being empty
                                 style={{
-                                    border: 'none',
-                                    outline: 'none',
-                                    background: 'transparent',
-                                    fontFamily: 'inherit',
-                                    fontSize: 13,
-                                    flex: 1,
-                                    minWidth: 180,
                                     color:
                                         form.diagnosticos.length === 0
-                                            ? '#a1a1aa'
-                                            : '#1f2d22',
+                                            ? 'var(--color-muted-light)'
+                                            : 'var(--color-text-heading)',
                                 }}
+                                className="min-w-[180px] flex-1 border-0 bg-transparent font-sans text-[13px] outline-none"
                             />
                         </div>
                     </div>
 
-                    <label
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 6,
-                        }}
-                    >
-                        <span style={{ fontWeight: 500 }}>
-                            Plan e indicaciones
-                        </span>
+                    <label className="flex flex-col gap-[6px]">
+                        <span className="font-medium">Plan e indicaciones</span>
                         <textarea
                             rows={2}
-                            style={textareaStyle}
+                            className={textareaCls}
                             value={form.plan_tratamiento}
                             onChange={(e) =>
                                 setForm((f) => ({
@@ -494,34 +297,10 @@ export default function NotaClinica({
                         />
                     </label>
 
-                    <div
-                        style={{
-                            display: 'flex',
-                            justifyContent: 'flex-end',
-                            alignItems: 'center',
-                            gap: 12,
-                            paddingTop: 12,
-                            borderTop: '1px solid #eef0ec',
-                            flexWrap: 'wrap',
-                        }}
-                    >
+                    <div className="flex flex-wrap items-center justify-end gap-3 border-t border-divider pt-3">
                         <button
                             onClick={handleSaveNote}
-                            style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 8,
-                                height: 36,
-                                padding: '0 16px',
-                                borderRadius: 10,
-                                border: 'none',
-                                background: '#2E8B3E',
-                                color: '#fff',
-                                fontWeight: 500,
-                                cursor: 'pointer',
-                                fontFamily: 'inherit',
-                                fontSize: 14,
-                            }}
+                            className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border-0 bg-primary px-4 font-sans text-sm font-medium text-white"
                         >
                             ✓ Guardar nota
                         </button>

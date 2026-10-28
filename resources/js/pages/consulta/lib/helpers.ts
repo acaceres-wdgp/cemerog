@@ -1,20 +1,11 @@
-import React from 'react';
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-export const thStyle: React.CSSProperties = {
-    textAlign: 'left',
-    fontWeight: 600,
-    fontSize: 11.5,
-    letterSpacing: '.05em',
-    textTransform: 'uppercase',
-    color: '#56693f',
-    padding: '0 12px',
-    height: 40,
-    background: '#F6FAF1',
-    borderBottom: '1px solid #DCEBC9',
-    whiteSpace: 'nowrap',
-};
+/**
+ * Tailwind class string for table header cells (RecetaTab).
+ * Replaces the old `thStyle` CSSProperties object.
+ */
+export const thCls =
+    'text-left font-semibold text-[11.5px] tracking-[.05em] uppercase text-table-header-text px-3 h-10 bg-table-header-bg border-b border-success-border whitespace-nowrap';
 
 export function initials(name: string): string {
     const parts = name.trim().split(' ');

@@ -13,87 +13,26 @@ export default function PatientHeader({ turn }: { turn: TurnItem }) {
     const arrivedAt = new Date(turn.arrived_at);
 
     return (
-        <div
-            style={{
-                background: '#fff',
-                border: '1px solid #e3e9e3',
-                borderRadius: 16,
-                boxShadow: '0 10px 24px -16px rgba(16,40,24,.25)',
-                overflow: 'hidden',
-            }}
-        >
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 16,
-                    padding: '16px 20px',
-                    flexWrap: 'wrap',
-                }}
-            >
-                <div
-                    style={{
-                        width: 52,
-                        height: 52,
-                        flexShrink: 0,
-                        borderRadius: '50%',
-                        background: '#2E8B3E',
-                        color: '#fff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 600,
-                        fontSize: 17,
-                        boxShadow: '0 0 0 4px #EEF6E2',
-                    }}
-                >
+        <div className="overflow-hidden rounded-2xl border border-card-border bg-white shadow-[0_10px_24px_-16px_rgba(16,40,24,.25)]">
+            <div className="flex flex-wrap items-center gap-4 px-5 py-4">
+                <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-primary text-[17px] font-semibold text-white shadow-[0_0_0_4px_theme(colors.accent-bg)]">
                     {initials(p.full_name)}
                 </div>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                    <div
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 10,
-                            flexWrap: 'wrap',
-                        }}
-                    >
-                        <span
-                            style={{
-                                fontFamily: 'Bitter,Georgia,serif',
-                                fontWeight: 600,
-                                fontSize: 21,
-                                color: '#1f2d22',
-                            }}
-                        >
+                <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-[10px]">
+                        <span className="font-serif text-[21px] font-semibold text-text-heading">
                             {p.full_name}
                         </span>
                         <StatusBadge state="consulta" />
                     </div>
-                    <div
-                        style={{
-                            display: 'flex',
-                            gap: 6,
-                            flexWrap: 'wrap',
-                            marginTop: 6,
-                        }}
-                    >
+                    <div className="mt-[6px] flex flex-wrap gap-[6px]">
                         {[
                             `${p.age} años`,
                             p.sex === 'M' ? 'Masculino' : 'Femenino',
                         ].map((v) => (
                             <span
                                 key={v}
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    height: 24,
-                                    padding: '0 10px',
-                                    borderRadius: 999,
-                                    background: '#f3f5f1',
-                                    fontSize: 12.5,
-                                    color: '#3f3f46',
-                                }}
+                                className="inline-flex h-6 items-center rounded-full bg-surface px-[10px] text-[12.5px] text-text-dim"
                             >
                                 {v}
                             </span>
@@ -101,58 +40,20 @@ export default function PatientHeader({ turn }: { turn: TurnItem }) {
                     </div>
                 </div>
                 {p.allergies && (
-                    <div
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 10,
-                            padding: '8px 16px 8px 8px',
-                            borderRadius: 12,
-                            background: '#fef2f2',
-                            border: '1px solid #fecaca',
-                            color: '#b91c1c',
-                        }}
-                    >
-                        <span
-                            style={{
-                                width: 34,
-                                height: 34,
-                                flexShrink: 0,
-                                borderRadius: 10,
-                                background: '#dc2626',
-                                color: '#fff',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: 17,
-                            }}
-                        >
+                    <div className="flex items-center gap-[10px] rounded-xl border border-error-border bg-error-bg py-2 pr-4 pl-2 text-error">
+                        <span className="inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] bg-emergencia-dot text-[17px] text-white">
                             ⚠
                         </span>
-                        <div style={{ lineHeight: 1.25 }}>
-                            <div
-                                style={{
-                                    fontSize: 11,
-                                    fontWeight: 600,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '.05em',
-                                }}
-                            >
+                        <div className="leading-[1.25]">
+                            <div className="text-[11px] font-semibold tracking-[.05em] uppercase">
                                 Alergias
                             </div>
-                            <div style={{ fontWeight: 600 }}>{p.allergies}</div>
+                            <div className="font-semibold">{p.allergies}</div>
                         </div>
                     </div>
                 )}
             </div>
-            <div
-                style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    borderTop: '1px solid #eef0ec',
-                    background: '#fafbf8',
-                }}
-            >
+            <div className="flex flex-wrap border-t border-divider bg-patient-footer-bg">
                 {[
                     {
                         label: 'No. de turno',
@@ -167,33 +68,12 @@ export default function PatientHeader({ turn }: { turn: TurnItem }) {
                 ].map((f) => (
                     <div
                         key={f.label}
-                        style={{
-                            flex: '1 1 0',
-                            padding: '10px 20px',
-                            borderRight: '1px solid #eef0ec',
-                            minWidth: 0,
-                        }}
+                        className="min-w-0 flex-1 border-r border-divider px-5 py-[10px]"
                     >
-                        <div
-                            style={{
-                                fontSize: 11,
-                                fontWeight: 600,
-                                color: '#71717a',
-                                textTransform: 'uppercase',
-                                letterSpacing: '.05em',
-                            }}
-                        >
+                        <div className="text-[11px] font-semibold tracking-[.05em] text-muted uppercase">
                             {f.label}
                         </div>
-                        <div
-                            style={{
-                                fontWeight: 600,
-                                fontVariantNumeric: 'tabular-nums',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                            }}
-                        >
+                        <div className="overflow-hidden font-semibold text-ellipsis whitespace-nowrap tabular-nums">
                             {f.val}
                         </div>
                     </div>
