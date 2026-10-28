@@ -54,7 +54,8 @@ test('store specialty flashes success message', function () {
             'consultation_price' => 300000,
         ])
         ->assertRedirect(route('doctores'))
-        ->assertSessionHas('flash');
+        ->assertSessionHas('inertia.flash_data.toast.type', 'success')
+        ->assertSessionHas('inertia.flash_data.toast.message', 'Especialidad creada correctamente.');
 });
 
 test('non-admin cannot create specialty', function () {
@@ -143,6 +144,9 @@ test('admin can update a specialty', function () {
         'name' => 'Medicina Interna',
         'consultation_price' => 150000,
     ]);
+
+    expect(session('inertia.flash_data.toast.type'))->toBe('success');
+    expect(session('inertia.flash_data.toast.message'))->toBe('Especialidad actualizada correctamente.');
 });
 
 test('update specialty allows same name for same record', function () {

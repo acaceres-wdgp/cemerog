@@ -8,6 +8,7 @@ use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Requests\UpdateAppointmentRequest;
 use App\Models\Appointment;
 use App\Models\Doctor;
+use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -75,16 +76,18 @@ class CitasController extends Controller
     {
         $action->handle($request->validated());
 
-        return redirect()->route('citas', ['date' => $request->input('appointment_date')])
-            ->with('flash', ['type' => 'success', 'message' => 'Cita registrada correctamente.']);
+        Toast::success('Cita registrada correctamente.');
+
+        return redirect()->route('citas', ['date' => $request->input('appointment_date')]);
     }
 
     public function update(UpdateAppointmentRequest $request, Appointment $appointment): RedirectResponse
     {
         $appointment->update($request->validated());
 
-        return redirect()->route('citas', ['date' => $appointment->appointment_date->format('Y-m-d')])
-            ->with('flash', ['type' => 'success', 'message' => 'Cita actualizada.']);
+        Toast::success('Cita actualizada.');
+
+        return redirect()->route('citas', ['date' => $appointment->appointment_date->format('Y-m-d')]);
     }
 
     public function cancel(Appointment $appointment): RedirectResponse
@@ -93,7 +96,8 @@ class CitasController extends Controller
 
         $appointment->update(['status' => 'cancelada']);
 
-        return redirect()->route('citas', ['date' => $appointment->appointment_date->format('Y-m-d')])
-            ->with('flash', ['type' => 'success', 'message' => 'Cita cancelada.']);
+        Toast::success('Cita cancelada.');
+
+        return redirect()->route('citas', ['date' => $appointment->appointment_date->format('Y-m-d')]);
     }
 }

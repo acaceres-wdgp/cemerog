@@ -137,7 +137,9 @@ test('admin can create a user', function () {
             'roles' => [],
             'permissions' => [],
         ])
-        ->assertRedirect(route('admin'));
+        ->assertRedirect(route('admin'))
+        ->assertSessionHas('inertia.flash_data.toast.type', 'success')
+        ->assertSessionHas('inertia.flash_data.toast.message', 'Usuario creado exitosamente.');
 
     $this->assertDatabaseHas('users', [
         'username' => 'nuevo.usuario',
@@ -256,7 +258,9 @@ test('admin can update a user', function () {
             'roles' => [],
             'permissions' => [],
         ])
-        ->assertRedirect(route('admin'));
+        ->assertRedirect(route('admin'))
+        ->assertSessionHas('inertia.flash_data.toast.type', 'success')
+        ->assertSessionHas('inertia.flash_data.toast.message', 'Usuario actualizado exitosamente.');
 
     $this->assertDatabaseHas('users', [
         'id' => $user->id,
@@ -349,9 +353,11 @@ test('admin can toggle user active status', function () {
 
     $this->actingAs($this->admin)
         ->patch("/admin/usuarios/{$user->id}/toggle")
-        ->assertRedirect(route('admin'));
+        ->assertRedirect(route('admin'))
+        ->assertSessionHas('inertia.flash_data.toast.type', 'success');
 
     expect($user->fresh()->is_active)->toBeFalse();
+    expect(session('inertia.flash_data.toast.message'))->toBe('Usuario desactivado exitosamente.');
 });
 
 test('admin can re-activate an inactive user', function () {
@@ -383,7 +389,9 @@ test('admin can change a user password', function () {
             'password' => 'newpassword123',
             'password_confirmation' => 'newpassword123',
         ])
-        ->assertRedirect(route('admin'));
+        ->assertRedirect(route('admin'))
+        ->assertSessionHas('inertia.flash_data.toast.type', 'success')
+        ->assertSessionHas('inertia.flash_data.toast.message', 'Contraseña actualizada exitosamente.');
 });
 
 test('change password sets must_change_password when checkbox is checked', function () {

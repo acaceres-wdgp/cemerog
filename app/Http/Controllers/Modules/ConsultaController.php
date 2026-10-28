@@ -9,6 +9,7 @@ use App\Models\Consultation;
 use App\Models\Patient;
 use App\Models\PatientAntecedent;
 use App\Models\Turn;
+use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -58,18 +59,20 @@ class ConsultaController extends Controller
 
         Consultation::create($data);
 
+        Toast::success('Consulta guardada exitosamente.');
+
         return redirect()
-            ->to(route('consulta', ['patient_id' => $data['patient_id']]))
-            ->with('flash', ['type' => 'success', 'message' => 'Consulta guardada exitosamente.']);
+            ->to(route('consulta', ['patient_id' => $data['patient_id']]));
     }
 
     public function alta(Turn $turn): RedirectResponse
     {
         $turn->update(['status' => 'atendido']);
 
+        Toast::success('Paciente dado de alta.');
+
         return redirect()
-            ->to(route('consulta'))
-            ->with('flash', ['type' => 'success', 'message' => 'Paciente dado de alta.']);
+            ->to(route('consulta'));
     }
 
     public function updateAntecedents(UpdateAntecedentRequest $request, Patient $patient): RedirectResponse
@@ -79,10 +82,9 @@ class ConsultaController extends Controller
             $request->validated(),
         );
 
-        return redirect()->back()->with('flash', [
-            'type' => 'success',
-            'message' => 'Antecedentes actualizados.',
-        ]);
+        Toast::success('Antecedentes actualizados.');
+
+        return back();
     }
 
     /** @return list<array<string, mixed>> */

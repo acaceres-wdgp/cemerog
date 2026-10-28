@@ -42,7 +42,8 @@ test('store doctor flashes success message', function () {
             'specialty_id' => $this->specialty->id,
         ])
         ->assertRedirect(route('doctores'))
-        ->assertSessionHas('flash');
+        ->assertSessionHas('inertia.flash_data.toast.type', 'success')
+        ->assertSessionHas('inertia.flash_data.toast.message', 'Doctor registrado correctamente.');
 });
 
 test('admin can create doctor with optional fields omitted', function () {
@@ -152,6 +153,9 @@ test('admin can update a doctor', function () {
         'exequatur' => 'EX-999999',
         'phone' => '849-000-0000',
     ]);
+
+    expect(session('inertia.flash_data.toast.type'))->toBe('success');
+    expect(session('inertia.flash_data.toast.message'))->toBe('Doctor actualizado correctamente.');
 });
 
 test('non-admin cannot update doctor', function () {
@@ -182,6 +186,9 @@ test('admin can toggle doctor active status to inactive', function () {
         'id' => $doctor->id,
         'is_active' => false,
     ]);
+
+    expect(session('inertia.flash_data.toast.type'))->toBe('success');
+    expect(session('inertia.flash_data.toast.message'))->toBe('Estado del doctor actualizado.');
 });
 
 test('admin can toggle doctor active status to active', function () {

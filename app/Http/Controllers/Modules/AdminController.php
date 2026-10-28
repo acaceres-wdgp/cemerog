@@ -9,6 +9,7 @@ use App\Http\Requests\ChangeUserPasswordRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
+use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -109,14 +110,18 @@ class AdminController extends Controller
     {
         $createUser->handle($request->validated());
 
-        return redirect()->route('admin')->with('success', 'Usuario creado exitosamente.');
+        Toast::success('Usuario creado exitosamente.');
+
+        return redirect()->route('admin');
     }
 
     public function update(UpdateUserRequest $request, User $user, UpdateUser $updateUser): RedirectResponse
     {
         $updateUser->handle($user, $request->validated());
 
-        return redirect()->route('admin')->with('success', 'Usuario actualizado exitosamente.');
+        Toast::success('Usuario actualizado exitosamente.');
+
+        return redirect()->route('admin');
     }
 
     public function toggleActive(User $user): RedirectResponse
@@ -125,7 +130,9 @@ class AdminController extends Controller
 
         $status = $user->is_active ? 'activado' : 'desactivado';
 
-        return redirect()->route('admin')->with('success', "Usuario {$status} exitosamente.");
+        Toast::success("Usuario {$status} exitosamente.");
+
+        return redirect()->route('admin');
     }
 
     public function changePassword(ChangeUserPasswordRequest $request, User $user): RedirectResponse
@@ -135,6 +142,8 @@ class AdminController extends Controller
             'must_change_password' => (bool) $request->validated('must_change_password', false),
         ]);
 
-        return redirect()->route('admin')->with('success', 'Contraseña actualizada exitosamente.');
+        Toast::success('Contraseña actualizada exitosamente.');
+
+        return redirect()->route('admin');
     }
 }

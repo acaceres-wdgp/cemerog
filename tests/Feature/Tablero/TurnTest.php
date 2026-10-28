@@ -141,7 +141,8 @@ test('store turn redirects with flash success', function () {
             'doctor_id' => $this->doctor->id,
         ])
         ->assertRedirect()
-        ->assertSessionHas('flash');
+        ->assertSessionHas('inertia.flash_data.toast.type', 'success')
+        ->assertSessionHas('inertia.flash_data.toast.message', 'Turno asignado correctamente.');
 });
 
 // ─── UpdateStatus ─────────────────────────────────────────────────────────────
@@ -158,6 +159,9 @@ test('authorized user can update turn status to en_consulta', function () {
         ->assertRedirect(route('tablero'));
 
     expect($turn->fresh()->status)->toBe('en_consulta');
+
+    expect(session('inertia.flash_data.toast.type'))->toBe('success');
+    expect(session('inertia.flash_data.toast.message'))->toBe('Estado del turno actualizado.');
 });
 
 test('authorized user can mark turn as atendido', function () {
