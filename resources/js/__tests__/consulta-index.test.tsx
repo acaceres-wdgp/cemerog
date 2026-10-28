@@ -33,15 +33,29 @@ const makeTurn = (overrides: Record<string, unknown> = {}) => ({
     turn_order: 1,
     status: 'en_consulta',
     arrived_at: '2026-10-27T09:30:00',
-    patient: { id: 10, full_name: 'María García', age: 35, sex: 'F', allergies: null },
-    doctor: { id: 1, full_name: 'Dr. Rodríguez', specialty: 'Medicina General' },
+    patient: {
+        id: 10,
+        full_name: 'María García',
+        age: 35,
+        sex: 'F',
+        allergies: null,
+    },
+    doctor: {
+        id: 1,
+        full_name: 'Dr. Rodríguez',
+        specialty: 'Medicina General',
+    },
     ...overrides,
 });
 
 const makeHistorial = (overrides: Record<string, unknown> = {}) => ({
     id: 1,
     consulted_at: '2026-09-15T10:00:00',
-    doctor: { id: 1, full_name: 'Dr. Rodríguez', specialty: 'Medicina General' },
+    doctor: {
+        id: 1,
+        full_name: 'Dr. Rodríguez',
+        specialty: 'Medicina General',
+    },
     motivo_consulta: 'Dolor de cabeza',
     historia_enfermedad: null,
     examen_fisico: null,
@@ -80,8 +94,41 @@ describe('ConsultaIndex – queue', () => {
     });
 
     it('shows en_consulta and en_espera turns in the queue', () => {
-        const turnConsulta = makeTurn({ id: 1, turn_number: 1, patient: { id: 10, full_name: 'María García', age: 35, sex: 'F', allergies: null }, doctor: { id: 1, full_name: 'Dr. Rodríguez', specialty: 'Medicina General' }, status: 'en_consulta' });
-        const turnEspera = makeTurn({ id: 2, turn_number: 2, turn_order: 2, patient: { id: 5, full_name: 'Carlos Pérez', age: 40, sex: 'M', allergies: null }, doctor: { id: 1, full_name: 'Dr. Rodríguez', specialty: 'Medicina General' }, status: 'en_espera' });
+        const turnConsulta = makeTurn({
+            id: 1,
+            turn_number: 1,
+            patient: {
+                id: 10,
+                full_name: 'María García',
+                age: 35,
+                sex: 'F',
+                allergies: null,
+            },
+            doctor: {
+                id: 1,
+                full_name: 'Dr. Rodríguez',
+                specialty: 'Medicina General',
+            },
+            status: 'en_consulta',
+        });
+        const turnEspera = makeTurn({
+            id: 2,
+            turn_number: 2,
+            turn_order: 2,
+            patient: {
+                id: 5,
+                full_name: 'Carlos Pérez',
+                age: 40,
+                sex: 'M',
+                allergies: null,
+            },
+            doctor: {
+                id: 1,
+                full_name: 'Dr. Rodríguez',
+                specialty: 'Medicina General',
+            },
+            status: 'en_espera',
+        });
         render(
             <ConsultaIndex
                 turns_en_consulta={[turnConsulta]}
@@ -98,8 +145,18 @@ describe('ConsultaIndex – queue', () => {
             id: 2,
             turn_number: 2,
             turn_order: 2,
-            patient: { id: 5, full_name: 'Carlos Pérez', age: 40, sex: 'M', allergies: null },
-            doctor: { id: 1, full_name: 'Dr. Rodríguez', specialty: 'Medicina General' },
+            patient: {
+                id: 5,
+                full_name: 'Carlos Pérez',
+                age: 40,
+                sex: 'M',
+                allergies: null,
+            },
+            doctor: {
+                id: 1,
+                full_name: 'Dr. Rodríguez',
+                specialty: 'Medicina General',
+            },
             status: 'en_espera',
         });
         render(
@@ -122,12 +179,7 @@ describe('ConsultaIndex – queue', () => {
     });
 
     it('shows "No hay pacientes en turno hoy." when both queues are empty and queue is opened', () => {
-        render(
-            <ConsultaIndex
-                turns_en_consulta={[]}
-                turns_en_espera={[]}
-            />,
-        );
+        render(<ConsultaIndex turns_en_consulta={[]} turns_en_espera={[]} />);
         // The "Sin paciente activo" view has a "☰ Ver cola de turnos" button
         const buttons = screen.getAllByText('☰ Ver cola de turnos');
         fireEvent.click(buttons[0]);
@@ -139,12 +191,7 @@ describe('ConsultaIndex – queue', () => {
 
 describe('ConsultaIndex – sin paciente activo', () => {
     it('shows "Sin paciente activo" when turns_en_consulta is empty', () => {
-        render(
-            <ConsultaIndex
-                turns_en_consulta={[]}
-                turns_en_espera={[]}
-            />,
-        );
+        render(<ConsultaIndex turns_en_consulta={[]} turns_en_espera={[]} />);
         expect(screen.getByText('Sin paciente activo')).toBeTruthy();
     });
 });
@@ -162,13 +209,16 @@ describe('ConsultaIndex – encabezado paciente', () => {
 
     it('shows allergy box when allergies are present', () => {
         const turn = makeTurn({
-            patient: { id: 10, full_name: 'María García', age: 35, sex: 'F', allergies: 'Penicilina' },
+            patient: {
+                id: 10,
+                full_name: 'María García',
+                age: 35,
+                sex: 'F',
+                allergies: 'Penicilina',
+            },
         });
         render(
-            <ConsultaIndex
-                turns_en_consulta={[turn]}
-                turns_en_espera={[]}
-            />,
+            <ConsultaIndex turns_en_consulta={[turn]} turns_en_espera={[]} />,
         );
         expect(screen.getAllByText('Alergias').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Penicilina').length).toBeGreaterThan(0);
@@ -237,17 +287,23 @@ describe('ConsultaIndex – nota clínica guardar', () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
 
         // Fill motivo_consulta
-        const motivoLabel = screen.getByText('Motivo de consulta').closest('label')!;
+        const motivoLabel = screen
+            .getByText('Motivo de consulta')
+            .closest('label')!;
         const motivoTextarea = motivoLabel.querySelector('textarea')!;
         fireEvent.change(motivoTextarea, { target: { value: 'Fiebre' } });
 
         // Fill peso
         const pesoLabel = screen.getByText('Peso').closest('label')!;
-        fireEvent.change(pesoLabel.querySelector('input')!, { target: { value: '70' } });
+        fireEvent.change(pesoLabel.querySelector('input')!, {
+            target: { value: '70' },
+        });
 
         // Fill talla
         const tallaLabel = screen.getByText('Talla').closest('label')!;
-        fireEvent.change(tallaLabel.querySelector('input')!, { target: { value: '170' } });
+        fireEvent.change(tallaLabel.querySelector('input')!, {
+            target: { value: '170' },
+        });
 
         fireEvent.click(screen.getByText('✓ Guardar nota'));
 
@@ -318,33 +374,20 @@ describe('ConsultaIndex – receta', () => {
 
 describe('ConsultaIndex – historial', () => {
     it('shows "Historial en la clínica" with historial entries', () => {
-        render(
-            <ConsultaIndex
-                {...BASE_PROPS}
-                historial={[makeHistorial()]}
-            />,
-        );
-        expect(screen.getAllByText('Historial en la clínica').length).toBeGreaterThan(0);
+        render(<ConsultaIndex {...BASE_PROPS} historial={[makeHistorial()]} />);
+        expect(
+            screen.getAllByText('Historial en la clínica').length,
+        ).toBeGreaterThan(0);
     });
 
     it('clicking a historial entry shows detail (diagnóstico code, motivo, plan)', () => {
-        render(
-            <ConsultaIndex
-                {...BASE_PROPS}
-                historial={[makeHistorial()]}
-            />,
-        );
+        render(<ConsultaIndex {...BASE_PROPS} historial={[makeHistorial()]} />);
         // The entry is already selected by default (first item), so detail should be visible
         expect(screen.getByText('Analgésicos')).toBeTruthy();
     });
 
     it('shows "Sin historial registrado" without historial', () => {
-        render(
-            <ConsultaIndex
-                {...BASE_PROPS}
-                historial={[]}
-            />,
-        );
+        render(<ConsultaIndex {...BASE_PROPS} historial={[]} />);
         expect(screen.getByText('Sin historial registrado')).toBeTruthy();
     });
 });
