@@ -298,3 +298,41 @@ La unicidad del turno abierto se verifica por `(patient_id, doctor_id, fecha, st
 
 - El índice único necesario para prevenir condiciones de carrera sería `(patient_id, doctor_id, DATE(arrived_at), status)`, pero como el status cambia a lo largo del turno, se mantiene la validación en la capa de aplicación (sin índice único en DB).
 - Los tests C9–C15 en `RegisterArrivalTest` cubren todos los escenarios.
+
+---
+
+## ADR-015: Médico = registro en `doctors` vinculado a un usuario; el rol no basta
+
+**Fecha**: 2026-10-27
+**Estado**: Aceptado
+
+### Contexto
+
+Inicialmente se consideró usar únicamente el rol `medico` de spatie/laravel-permission para identificar a los médicos del sistema. Sin embargo, un médico tiene atributos propios (nombre, exequátur, teléfono, especialidad, consultorio) que no pertenecen al modelo `User`. Además, un mismo usuario podría tener múltiples roles (p. ej. `administrador` + `medico`).
+
+### Decisión
+
+Un médico es siempre un registro en la tabla `doctors`. El vínculo con `users` es opcional (`user_id` nullable), pero cuando existe define el acceso al sistema:
+
+1. **Crear usuario nuevo** (`access_mode=create_user`): se genera automáticamente un `User` con rol `medico`, `must_change_password=true` y contraseña temporal de 10 caracteres (alfabeto sin 0/O/l/1). Las credenciales se entregan **una sola vez** via `Inertia::flash('credentials', …)` y nunca se persisten en texto plano.
+
+2. **Vincular usuario existente** (`access_mode=link_user`): se asocia un `User` ya existente y se le añade el rol `medico` sin quitar sus roles actuales (un administrador-médico conserva ambos roles).
+
+3. **Sin acceso** (`access_mode=none` o `user_id=null`): el doctor existe en el catálogo pero no puede iniciar sesión como médico.
+
+El rol `medico` por sí solo no garantiza que el usuario esté vinculado a un registro en `doctors`. La relación es `doctors.user_id → users.id` (BelongsTo).
+
+### Cambios
+
+- `app/Actions/Doctors/GenerateDoctorCredentials.php`: genera username (primera letra del nombre + primer apellido, sin acentos, sin prefijo Dr./Dra., sufijo numérico en colisión) y contraseña temporal.
+- `app/Actions/Doctors/ResetDoctorPassword.php`: genera nueva contraseña temporal y activa `must_change_password`.
+- `app/Actions/CreateDoctor.php` / `UpdateDoctor.php`: transacción que crea/vincula el user junto con el doctor.
+- `DoctoresController`: nuevo endpoint `POST /{doctor}/reset-password`; `toggleDoctor` sincroniza el estado activo del user vinculado; `updateDoctor` sincroniza el nombre del user al cambiar el nombre del doctor.
+- Frontend `doctores/index.tsx`: sección "Sistema de acceso" con radio buttons; diálogo de credenciales de un solo uso con botones Copiar e Imprimir.
+
+### Consecuencias
+
+- No se puede tener dos registros `doctors` apuntando al mismo `user_id` (validado por `Rule::unique`).
+- Desactivar un doctor desactiva su user; reactivarlo lo reactiva.
+- Cambiar el nombre del doctor sincroniza el campo `name` del user (no el `username`).
+- La contraseña temporal nunca se almacena en texto plano; solo viaja en la respuesta inmediata.
