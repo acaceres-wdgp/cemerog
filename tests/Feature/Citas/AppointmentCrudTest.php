@@ -6,6 +6,7 @@ use App\Models\Patient;
 use App\Models\Specialty;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -234,4 +235,92 @@ test('unauthorized user gets 403 on DELETE /citas/{appointment}', function () {
     $this->actingAs($noPerms)
         ->delete("/citas/{$appointment->id}")
         ->assertForbidden();
+});
+
+// ─── appointment_time normalization (HH:MM) ───────────────────────────────────
+
+test('appointment model returns HH:MM when DB has HH:MM:SS', function () {
+    // Simulate what MySQL returns for a TIME column
+    DB::table('appointments')->insert([
+        'patient_id' => $this->patient->id,
+        'doctor_id' => $this->doctor->id,
+        'appointment_date' => Carbon::tomorrow()->toDateString(),
+        'appointment_time' => '09:00:00',
+        'type' => 'consulta',
+        'status' => 'pendiente',
+        'notes' => null,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $appointment = Appointment::latest('id')->first();
+
+    expect($appointment->appointment_time)->toBe('09:00');
+});
+
+test('GET /citas sends appointment_time as HH:MM even when DB has HH:MM:SS', function () {
+    DB::table('appointments')->insert([
+        'patient_id' => $this->patient->id,
+        'doctor_id' => $this->doctor->id,
+        'appointment_date' => Carbon::tomorrow()->toDateString(),
+        'appointment_time' => '09:00:00',
+        'type' => 'consulta',
+        'status' => 'pendiente',
+        'notes' => null,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $date = Carbon::tomorrow()->toDateString();
+
+    $this->actingAs($this->user)
+        ->get("/citas?date={$date}")
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('citas/index')
+            ->where('appointments.0.appointment_time', '09:00')
+        );
+});
+
+test('GET /tablero sends appointment_time as HH:MM even when DB has HH:MM:SS', function () {
+    DB::table('appointments')->insert([
+        'patient_id' => $this->patient->id,
+        'doctor_id' => $this->doctor->id,
+        'appointment_date' => Carbon::today()->toDateString(),
+        'appointment_time' => '09:00:00',
+        'type' => 'consulta',
+        'status' => 'pendiente',
+        'notes' => null,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $tableroUser = User::factory()->create();
+    $tableroUser->givePermissionTo('module.tablero.access');
+
+    $this->actingAs($tableroUser)
+        ->get('/tablero')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('tablero/index')
+            ->where('appointments.0.appointment_time', '09:00')
+        );
+});
+
+test('appointment model returns null appointment_time as null', function () {
+    DB::table('appointments')->insert([
+        'patient_id' => $this->patient->id,
+        'doctor_id' => $this->doctor->id,
+        'appointment_date' => Carbon::tomorrow()->toDateString(),
+        'appointment_time' => null,
+        'type' => 'consulta',
+        'status' => 'pendiente',
+        'notes' => null,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $appointment = Appointment::latest('id')->first();
+
+    expect($appointment->appointment_time)->toBeNull();
 });

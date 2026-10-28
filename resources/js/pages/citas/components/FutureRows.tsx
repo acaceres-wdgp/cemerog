@@ -29,12 +29,87 @@ function palStyle(pal: { bg: string; fg: string }): React.CSSProperties {
 }
 
 type FutureRowsProps = {
-    bySlot: Record<string, AppointmentRow>;
+    bySlot: Record<string, AppointmentRow[]>;
     noSlot: AppointmentRow[];
     doctors: DoctorOption[];
     onNewCita: () => void;
     onCancel: (id: number) => void;
 };
+
+/**
+ * Build the ordered list of time labels to render:
+ * - Start with SLOTS
+ * - Intercalate any extra hours (from bySlot keys not in SLOTS) in chronological order
+ */
+function buildTimeOrder(bySlot: Record<string, AppointmentRow[]>): string[] {
+    const extra = Object.keys(bySlot).filter((t) => !SLOTS.includes(t));
+    const all = [...SLOTS, ...extra].sort();
+    return all;
+}
+
+function CitaRow({
+    cita,
+    doctors,
+    showTime,
+    timeLabel,
+    onCancel,
+}: {
+    cita: AppointmentRow;
+    doctors: DoctorOption[];
+    showTime: boolean;
+    timeLabel: string;
+    onCancel: (id: number) => void;
+}) {
+    const doc = doctors.find((d) => d.id === cita.doctor_id);
+    const pal = docPalette(cita.doctor_id);
+    const canCancel =
+        cita.status === 'pendiente' || cita.status === 'confirmada';
+    return (
+        <tr key={cita.id}>
+            <td className="border-b border-divider py-[10px] pr-3 pl-5 font-semibold text-text-heading tabular-nums">
+                {showTime ? timeLabel : ''}
+            </td>
+            <td className="border-b border-divider px-3 py-[10px]">
+                <div className="font-medium">{cita.patient_name}</div>
+                {cita.notes && (
+                    <div className="text-xs text-muted">
+                        {cita.notes.length > 40
+                            ? cita.notes.slice(0, 40) + '…'
+                            : cita.notes}
+                    </div>
+                )}
+            </td>
+            <td className="border-b border-divider px-3 py-[10px]">
+                <div className="flex items-center gap-2">
+                    {/* dynamic-style: doctor color palette computed from doctor ID */}
+                    <span
+                        style={palStyle(pal)}
+                        className="inline-flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full text-[11px] font-semibold"
+                    >
+                        {doc?.initials ?? '?'}
+                    </span>
+                    <span className="text-[13px]">{cita.doctor_name}</span>
+                </div>
+            </td>
+            <td className="border-b border-divider px-3 py-[10px] text-[13px] text-text-dim">
+                {TYPE_LABELS[cita.type] ?? cita.type}
+            </td>
+            <td className="border-b border-divider px-3 py-[10px]">
+                <StatusBadge state={citaStatusToState(cita.status)} />
+            </td>
+            <td className="border-b border-divider px-3 py-[10px] text-right">
+                {canCancel && (
+                    <button
+                        onClick={() => onCancel(cita.id)}
+                        className="h-7 cursor-pointer rounded-lg border border-secondary-border bg-secondary-bg px-2.5 font-[inherit] text-xs font-medium text-text-dim"
+                    >
+                        Cancelar
+                    </button>
+                )}
+            </td>
+        </tr>
+    );
+}
 
 export function FutureRows({
     bySlot,
@@ -43,15 +118,21 @@ export function FutureRows({
     onNewCita,
     onCancel,
 }: FutureRowsProps) {
+    const timeOrder = buildTimeOrder(bySlot);
+
     return (
         <>
-            {SLOTS.map((slot) => {
-                const cita = bySlot[slot];
-                if (!cita) {
+            {timeOrder.map((time) => {
+                const citas = bySlot[time];
+                const isSlot = SLOTS.includes(time);
+
+                if (!citas || citas.length === 0) {
+                    // Only render empty slot rows for standard SLOTS
+                    if (!isSlot) return null;
                     return (
-                        <tr key={slot}>
+                        <tr key={time}>
                             <td className="w-[60px] border-b border-row-divider py-1.5 pr-3 pl-5 font-semibold text-text-tertiary tabular-nums">
-                                {slot}
+                                {time}
                             </td>
                             <td
                                 colSpan={5}
@@ -67,61 +148,17 @@ export function FutureRows({
                         </tr>
                     );
                 }
-                const doc = doctors.find((d) => d.id === cita.doctor_id);
-                const pal = docPalette(cita.doctor_id);
-                const canCancel =
-                    cita.status === 'pendiente' || cita.status === 'confirmada';
-                return (
-                    <tr key={slot}>
-                        <td className="border-b border-divider py-[10px] pr-3 pl-5 font-semibold text-text-heading tabular-nums">
-                            {slot}
-                        </td>
-                        <td className="border-b border-divider px-3 py-[10px]">
-                            <div className="font-medium">
-                                {cita.patient_name}
-                            </div>
-                            {cita.notes && (
-                                <div className="text-xs text-muted">
-                                    {cita.notes.length > 40
-                                        ? cita.notes.slice(0, 40) + '…'
-                                        : cita.notes}
-                                </div>
-                            )}
-                        </td>
-                        <td className="border-b border-divider px-3 py-[10px]">
-                            <div className="flex items-center gap-2">
-                                {/* dynamic-style: doctor color palette computed from doctor ID */}
-                                <span
-                                    style={palStyle(pal)}
-                                    className="inline-flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full text-[11px] font-semibold"
-                                >
-                                    {doc?.initials ?? '?'}
-                                </span>
-                                <span className="text-[13px]">
-                                    {cita.doctor_name}
-                                </span>
-                            </div>
-                        </td>
-                        <td className="border-b border-divider px-3 py-[10px] text-[13px] text-text-dim">
-                            {TYPE_LABELS[cita.type] ?? cita.type}
-                        </td>
-                        <td className="border-b border-divider px-3 py-[10px]">
-                            <StatusBadge
-                                state={citaStatusToState(cita.status)}
-                            />
-                        </td>
-                        <td className="border-b border-divider px-3 py-[10px] text-right">
-                            {canCancel && (
-                                <button
-                                    onClick={() => onCancel(cita.id)}
-                                    className="h-7 cursor-pointer rounded-lg border border-secondary-border bg-secondary-bg px-2.5 font-[inherit] text-xs font-medium text-text-dim"
-                                >
-                                    Cancelar
-                                </button>
-                            )}
-                        </td>
-                    </tr>
-                );
+
+                return citas.map((cita, idx) => (
+                    <CitaRow
+                        key={cita.id}
+                        cita={cita}
+                        doctors={doctors}
+                        showTime={idx === 0}
+                        timeLabel={time}
+                        onCancel={onCancel}
+                    />
+                ));
             })}
             {noSlot.map((cita) => {
                 const doc = doctors.find((d) => d.id === cita.doctor_id);

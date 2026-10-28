@@ -34,12 +34,14 @@ export default function CitasIndex({
         router.delete(`/citas/${id}`, { preserveScroll: true });
     }
 
-    // Slot-based view (future dates)
-    const bySlot = Object.fromEntries(
-        filtered
-            .filter((a) => a.appointment_time)
-            .map((a) => [a.appointment_time!, a]),
-    );
+    // Slot-based view (future dates): group by HH:MM (defensive slice in case of HH:MM:SS)
+    const bySlot: Record<string, AppointmentRow[]> = {};
+    for (const a of filtered) {
+        if (!a.appointment_time) continue;
+        const key = a.appointment_time.slice(0, 5);
+        if (!bySlot[key]) bySlot[key] = [];
+        bySlot[key].push(a);
+    }
     const noSlot = filtered.filter((a) => !a.appointment_time);
 
     // Today: exclude cancelled, sort by turn_order then time
