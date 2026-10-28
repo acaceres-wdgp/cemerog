@@ -47,7 +47,7 @@ class Appointment extends Model
         ];
     }
 
-    /** Normalize TIME column to HH:MM, handling MySQL's HH:MM:SS. */
+    /** @return Attribute<string|null, never> */
     protected function appointmentTime(): Attribute
     {
         return Attribute::get(

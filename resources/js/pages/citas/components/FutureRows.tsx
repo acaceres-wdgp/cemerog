@@ -52,14 +52,12 @@ function CitaRow({
     doctors,
     showTime,
     timeLabel,
-    onNewCita,
     onCancel,
 }: {
     cita: AppointmentRow;
     doctors: DoctorOption[];
     showTime: boolean;
     timeLabel: string;
-    onNewCita: () => void;
     onCancel: (id: number) => void;
 }) {
     const doc = doctors.find((d) => d.id === cita.doctor_id);
@@ -158,7 +156,6 @@ export function FutureRows({
                         doctors={doctors}
                         showTime={idx === 0}
                         timeLabel={time}
-                        onNewCita={onNewCita}
                         onCancel={onCancel}
                     />
                 ));
