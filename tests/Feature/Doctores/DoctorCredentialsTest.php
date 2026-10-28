@@ -51,6 +51,24 @@ test('creating doctor with create_user returns credentials once via Inertia flas
     expect(strlen($credentials['password']))->toBe(10);
 });
 
+test('credentials flash is consumed after first GET — second GET has no credentials in session', function () {
+    // Step 1: create a doctor (flash set on redirect)
+    $this->actingAs($this->admin)
+        ->post('/admin/doctores', [
+            'name' => 'Dr. Franklin Rodríguez',
+            'specialty_id' => $this->specialty->id,
+            'access_mode' => 'create_user',
+        ])
+        ->assertRedirect(route('doctores'));
+
+    // Step 2: first GET consumes the flash
+    $this->actingAs($this->admin)->get('/admin/doctores');
+
+    // Step 3: second GET — flash must be gone
+    $secondGet = $this->actingAs($this->admin)->get('/admin/doctores');
+    $secondGet->assertSessionMissing('inertia.flash_data.credentials');
+});
+
 test('username collision results in numeric suffix', function () {
     User::factory()->create(['username' => 'frodriguez']);
 

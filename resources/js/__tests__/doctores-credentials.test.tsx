@@ -125,7 +125,7 @@ describe('doctores credentials dialog', () => {
 describe('doctor form access mode selector', () => {
     afterEach(() => {
         vi.restoreAllMocks();
-        page.props.credentials = null;
+        page.flash.credentials = null;
         page.props.doctors = [];
     });
 
