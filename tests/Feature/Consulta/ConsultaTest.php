@@ -160,7 +160,8 @@ test('store consultation redirects with flash success', function () {
             'motivo_consulta' => 'Revisión',
         ])
         ->assertRedirect()
-        ->assertSessionHas('flash');
+        ->assertSessionHas('inertia.flash_data.toast.type', 'success')
+        ->assertSessionHas('inertia.flash_data.toast.message', 'Consulta guardada exitosamente.');
 });
 
 // ─── Historial ────────────────────────────────────────────────────────────────
@@ -201,6 +202,9 @@ test('authorized user can update patient antecedents', function () {
         'personales' => 'HTA, DM2',
         'alergias' => 'Penicilina',
     ]);
+
+    expect(session('inertia.flash_data.toast.type'))->toBe('success');
+    expect(session('inertia.flash_data.toast.message'))->toBe('Antecedentes actualizados.');
 });
 
 test('antecedents upsert: updating twice keeps one record', function () {
@@ -247,7 +251,8 @@ test('alta redirects with flash success', function () {
     $this->actingAs($this->user)
         ->patch("/consulta/turnos/{$turn->id}/alta")
         ->assertRedirect()
-        ->assertSessionHas('flash');
+        ->assertSessionHas('inertia.flash_data.toast.type', 'success')
+        ->assertSessionHas('inertia.flash_data.toast.message', 'Paciente dado de alta.');
 });
 
 test('unauthorized user gets 403 on PATCH /consulta/turnos/{turn}/alta', function () {

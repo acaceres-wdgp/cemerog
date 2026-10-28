@@ -118,7 +118,8 @@ test('store redirects with flash success', function () {
             'type' => 'seguimiento',
         ])
         ->assertRedirect()
-        ->assertSessionHas('flash');
+        ->assertSessionHas('inertia.flash_data.toast.type', 'success')
+        ->assertSessionHas('inertia.flash_data.toast.message', 'Cita registrada correctamente.');
 });
 
 test('unauthorized user gets 403 on POST /citas', function () {
@@ -185,6 +186,9 @@ test('authorized user can update an appointment', function () {
 
     expect($appointment->fresh()->type)->toBe('seguimiento');
     expect($appointment->fresh()->notes)->toBe('Actualización de prueba');
+
+    expect(session('inertia.flash_data.toast.type'))->toBe('success');
+    expect(session('inertia.flash_data.toast.message'))->toBe('Cita actualizada.');
 });
 
 test('unauthorized user gets 403 on PUT /citas/{appointment}', function () {
@@ -215,6 +219,9 @@ test('authorized user can cancel an appointment', function () {
         ->assertRedirect();
 
     expect($appointment->fresh()->status)->toBe('cancelada');
+
+    expect(session('inertia.flash_data.toast.type'))->toBe('success');
+    expect(session('inertia.flash_data.toast.message'))->toBe('Cita cancelada.');
 });
 
 test('unauthorized user gets 403 on DELETE /citas/{appointment}', function () {

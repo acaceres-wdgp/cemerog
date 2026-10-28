@@ -13,6 +13,7 @@ use App\Http\Requests\UpdatePatientRequest;
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\Turn;
+use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
@@ -92,11 +93,9 @@ class RegistroController extends Controller
 
         $name = $turn->patient->full_name;
 
-        return redirect()->route('tablero')
-            ->with('flash', [
-                'type' => 'success',
-                'message' => "Atención creada para {$name} · Turno T-{$turn->turn_number}.",
-            ]);
+        Toast::success("Atención creada para {$name} · Turno T-{$turn->turn_number}.");
+
+        return redirect()->route('tablero');
     }
 
     /**
@@ -123,8 +122,9 @@ class RegistroController extends Controller
     {
         $action->handle($patient, $request->validated());
 
-        return redirect()->route('pacientes')
-            ->with('flash', ['type' => 'success', 'message' => 'Datos del paciente actualizados.']);
+        Toast::success('Datos del paciente actualizados.');
+
+        return redirect()->route('pacientes');
     }
 
     /**

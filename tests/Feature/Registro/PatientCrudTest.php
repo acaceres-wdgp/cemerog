@@ -284,6 +284,9 @@ test('update modifies patient data', function () {
         'id' => $patient->id,
         'first_names' => 'Nuevo Nombre',
     ]);
+
+    expect(session('inertia.flash_data.toast.type'))->toBe('success');
+    expect(session('inertia.flash_data.toast.message'))->toBe('Datos del paciente actualizados.');
 });
 
 test('update allows keeping the same document number', function () {

@@ -11,6 +11,7 @@ use App\Http\Requests\UpdateTurnStatusRequest;
 use App\Models\Patient;
 use App\Models\Turn;
 use App\Models\User;
+use App\Support\Toast;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,16 +43,18 @@ class TurnosController extends Controller
             return back()->withErrors(['open_turn' => $e->getMessage()]);
         }
 
-        return redirect()->route('tablero')
-            ->with('flash', ['type' => 'success', 'message' => 'Turno asignado correctamente.']);
+        Toast::success('Turno asignado correctamente.');
+
+        return redirect()->route('tablero');
     }
 
     public function updateStatus(UpdateTurnStatusRequest $request, Turn $turn): RedirectResponse
     {
         $turn->update(['status' => $request->validated()['status']]);
 
-        return redirect()->route('tablero')
-            ->with('flash', ['type' => 'success', 'message' => 'Estado del turno actualizado.']);
+        Toast::success('Estado del turno actualizado.');
+
+        return redirect()->route('tablero');
     }
 
     public function reorder(Request $request, Turn $turn, ReorderTurn $action): RedirectResponse
@@ -105,6 +108,8 @@ class TurnosController extends Controller
 
         $next->update(['status' => 'en_consulta']);
 
-        return back()->with('flash', ['type' => 'success', 'message' => 'Paciente llamado.']);
+        Toast::success('Paciente llamado.');
+
+        return back();
     }
 }

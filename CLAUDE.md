@@ -105,6 +105,7 @@ No modificar nada dentro de `design/`.
 - No escribir colores hex ni `style={{…}}` en `resources/js/pages/`. Usar los tokens de `resources/css/app.css` (`bg-primary`, `text-text-secondary`, `border-divider`…) y los componentes de `components/cemerog/`. Solo se permite `style` para valores calculados en tiempo de ejecución (p. ej. el tamaño de un avatar). Las páginas migradas están protegidas por `resources/js/__tests__/no-hardcoded-hex.test.ts`
 - No hacer commits de más de ~400 líneas de código de producción; dividir en PRs
 - No mezclar ramas a `main` en local; siempre por PR en GitHub
+- No usar `->with('flash', …)` ni `->with('success', …)` para mensajes al usuario; usar siempre `Inertia::flash('toast', …)` (o `Toast::success`/`Toast::error` de `App\Support\Toast`)
 
 ## Módulos y permisos
 

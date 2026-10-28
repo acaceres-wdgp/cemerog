@@ -34,7 +34,7 @@ test('registrar paciente nuevo crea paciente y turno con flash', function () {
     $this->actingAs($this->secretaria)
         ->post('/registro', validNewPatientPayload($this->doctor->id))
         ->assertRedirect('/tablero')
-        ->assertSessionHas('flash');
+        ->assertSessionHas('inertia.flash_data.toast.type', 'success');
 
     $this->assertDatabaseHas('patients', ['first_names' => 'Ana']);
     $this->assertDatabaseHas('turns', [
@@ -48,9 +48,9 @@ test('el flash contiene el nombre del paciente y el número de turno', function 
     $this->actingAs($this->secretaria)
         ->post('/registro', validNewPatientPayload($this->doctor->id));
 
-    $flash = session('flash');
-    expect($flash['message'])->toContain('Ana Pérez');
-    expect($flash['message'])->toContain('T-1');
+    $flash = session('inertia.flash_data');
+    expect($flash['toast']['message'])->toContain('Ana Pérez');
+    expect($flash['toast']['message'])->toContain('T-1');
 });
 
 // C2 – existing patient: updates data and creates turn

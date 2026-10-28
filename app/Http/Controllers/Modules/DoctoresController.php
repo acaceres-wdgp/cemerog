@@ -14,6 +14,7 @@ use App\Http\Requests\UpdateSpecialtyRequest;
 use App\Models\Doctor;
 use App\Models\Specialty;
 use App\Models\User;
+use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -54,39 +55,44 @@ class DoctoresController extends Controller
     {
         $action->handle($request->validated());
 
-        return redirect()->route('doctores')
-            ->with('flash', ['type' => 'success', 'message' => 'Especialidad creada correctamente.']);
+        Toast::success('Especialidad creada correctamente.');
+
+        return redirect()->route('doctores');
     }
 
     public function updateSpecialty(UpdateSpecialtyRequest $request, Specialty $specialty, UpdateSpecialty $action): RedirectResponse
     {
         $action->handle($specialty, $request->validated());
 
-        return redirect()->route('doctores')
-            ->with('flash', ['type' => 'success', 'message' => 'Especialidad actualizada correctamente.']);
+        Toast::success('Especialidad actualizada correctamente.');
+
+        return redirect()->route('doctores');
     }
 
     public function storeDoctor(StoreDoctorRequest $request, CreateDoctor $action): RedirectResponse
     {
         $action->handle($request->validated());
 
-        return redirect()->route('doctores')
-            ->with('flash', ['type' => 'success', 'message' => 'Doctor registrado correctamente.']);
+        Toast::success('Doctor registrado correctamente.');
+
+        return redirect()->route('doctores');
     }
 
     public function updateDoctor(UpdateDoctorRequest $request, Doctor $doctor, UpdateDoctor $action): RedirectResponse
     {
         $action->handle($doctor, $request->validated());
 
-        return redirect()->route('doctores')
-            ->with('flash', ['type' => 'success', 'message' => 'Doctor actualizado correctamente.']);
+        Toast::success('Doctor actualizado correctamente.');
+
+        return redirect()->route('doctores');
     }
 
     public function toggleDoctor(Doctor $doctor): RedirectResponse
     {
         $doctor->update(['is_active' => ! $doctor->is_active]);
 
-        return redirect()->route('doctores')
-            ->with('flash', ['type' => 'success', 'message' => 'Estado del doctor actualizado.']);
+        Toast::success('Estado del doctor actualizado.');
+
+        return redirect()->route('doctores');
     }
 }
