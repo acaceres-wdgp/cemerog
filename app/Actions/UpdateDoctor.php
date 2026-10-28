@@ -27,9 +27,10 @@ class UpdateDoctor
 
         return DB::transaction(function () use ($doctor, $data, $accessMode, &$plainPassword, &$linkedUser) {
             // If doctor already has a user and we're not changing access mode,
-            // sync the name on name change.
+            // sync the name on name change (strip Dr./Dra. prefix for user name).
             if ($doctor->user_id !== null && $accessMode === 'none') {
-                $doctor->user?->update(['name' => $data['name']]);
+                $userDisplayName = preg_replace('/^Dr[a]?\.\s+/iu', '', trim($data['name'])) ?? trim($data['name']);
+                $doctor->user?->update(['name' => $userDisplayName]);
             }
 
             if ($accessMode === 'create_user' && $doctor->user_id === null) {

@@ -265,11 +265,11 @@ test('toggling doctor without linked user does not error', function () {
     expect($doctor->is_active)->toBeFalse();
 });
 
-test('changing doctor name updates linked user name', function () {
-    $user = User::factory()->create(['name' => 'Dr. Viejo']);
+test('changing doctor name updates linked user name without Dr./Dra. prefix', function () {
+    $user = User::factory()->create(['name' => 'Viejo Nombre']);
     $user->assignRole('medico');
     $doctor = Doctor::factory()->create([
-        'name' => 'Dr. Viejo',
+        'name' => 'Dr. Viejo Nombre',
         'specialty_id' => $this->specialty->id,
         'user_id' => $user->id,
     ]);
@@ -282,7 +282,68 @@ test('changing doctor name updates linked user name', function () {
         ->assertRedirect(route('doctores'));
 
     $user->refresh();
-    expect($user->name)->toBe('Dr. Nuevo Nombre');
+    // User name must not include the prefix — same normalization as create
+    expect($user->name)->toBe('Nuevo Nombre');
+});
+
+// ─── Fix 6: Consistent name normalization create vs edit ──────────────────────
+
+test('user name is stored without Dr./Dra. prefix when creating with create_user', function () {
+    $this->actingAs($this->admin)
+        ->post('/admin/doctores', [
+            'name' => 'Dr. Carlos Méndez',
+            'specialty_id' => $this->specialty->id,
+            'access_mode' => 'create_user',
+        ])
+        ->assertRedirect(route('doctores'));
+
+    $doctor = Doctor::where('name', 'Dr. Carlos Méndez')->first();
+    $user = User::find($doctor->user_id);
+
+    // User name must not include the Dr. prefix
+    expect($user->name)->toBe('Carlos Méndez');
+});
+
+test('user name is stored without Dr./Dra. prefix when editing assigns a new user via create_user', function () {
+    $doctor = Doctor::factory()->create([
+        'name' => 'Dra. Patricia Sosa',
+        'specialty_id' => $this->specialty->id,
+        'user_id' => null,
+    ]);
+
+    $this->actingAs($this->admin)
+        ->put("/admin/doctores/{$doctor->id}", [
+            'name' => 'Dra. Patricia Sosa',
+            'specialty_id' => $this->specialty->id,
+            'access_mode' => 'create_user',
+        ])
+        ->assertRedirect(route('doctores'));
+
+    $doctor->refresh();
+    $user = User::find($doctor->user_id);
+
+    expect($user->name)->toBe('Patricia Sosa');
+});
+
+test('user name is updated without Dr./Dra. prefix when renaming an existing doctor', function () {
+    $user = User::factory()->create(['name' => 'Carlos Antiguo']);
+    $user->assignRole('medico');
+    $doctor = Doctor::factory()->create([
+        'name' => 'Dr. Carlos Antiguo',
+        'specialty_id' => $this->specialty->id,
+        'user_id' => $user->id,
+    ]);
+
+    $this->actingAs($this->admin)
+        ->put("/admin/doctores/{$doctor->id}", [
+            'name' => 'Dr. Carlos Nuevo',
+            'specialty_id' => $this->specialty->id,
+        ])
+        ->assertRedirect(route('doctores'));
+
+    $user->refresh();
+    // User name must not include the Dr. prefix
+    expect($user->name)->toBe('Carlos Nuevo');
 });
 
 // ─── Fix 3: Toggle protection ─────────────────────────────────────────────────
