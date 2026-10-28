@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\AppointmentFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -44,6 +45,14 @@ class Appointment extends Model
         return [
             'appointment_date' => 'date',
         ];
+    }
+
+    /** Normalize TIME column to HH:MM, handling MySQL's HH:MM:SS. */
+    protected function appointmentTime(): Attribute
+    {
+        return Attribute::get(
+            fn (?string $value) => $value !== null ? substr($value, 0, 5) : null,
+        );
     }
 
     /** @return BelongsTo<Patient, $this> */
