@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 import { TurnItem } from '../types';
 
 // ─── Queue Selector ───────────────────────────────────────────────────────────
@@ -17,83 +18,41 @@ export default function QueueSelector({
     const all = [...turnsConsulta, ...turnsEspera];
     if (all.length === 0) {
         return (
-            <div
-                style={{
-                    padding: '16px 20px',
-                    color: '#71717a',
-                    fontSize: 13.5,
-                    textAlign: 'center',
-                }}
-            >
+            <div className="px-5 py-4 text-center text-[13.5px] text-muted">
                 No hay pacientes en turno hoy.
             </div>
         );
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className="flex flex-col">
             {all.map((t) => (
                 <button
                     key={t.id}
                     onClick={() => onSelect(t)}
-                    style={{
-                        textAlign: 'left',
-                        border: 'none',
-                        borderBottom: '1px solid #f4f4f5',
-                        background: t.id === activeTurnId ? '#F8FBF6' : '#fff',
-                        cursor: 'pointer',
-                        padding: '10px 20px',
-                        display: 'flex',
-                        gap: 12,
-                        alignItems: 'center',
-                    }}
+                    className={cn(
+                        'flex cursor-pointer items-center gap-3 border-0 border-b border-row-separator px-5 py-[10px] text-left',
+                        t.id === activeTurnId ? 'bg-list-row-bg' : 'bg-white',
+                    )}
                 >
-                    <span
-                        style={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: '50%',
-                            background: '#EEF6E2',
-                            color: '#2E8B3E',
-                            fontWeight: 700,
-                            fontSize: 13,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                        }}
-                    >
+                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-bg text-[13px] font-bold text-primary">
                         T-{String(t.turn_number).padStart(2, '0')}
                     </span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                            style={{
-                                fontWeight: 600,
-                                fontSize: 13.5,
-                                color: '#1f2d22',
-                            }}
-                        >
+                    <div className="min-w-0 flex-1">
+                        <div className="text-[13.5px] font-semibold text-text-heading">
                             {t.patient.full_name}
                         </div>
-                        <div style={{ fontSize: 12, color: '#71717a' }}>
+                        <div className="text-[12px] text-muted">
                             {t.doctor.full_name} · {t.doctor.specialty}
                         </div>
                     </div>
                     <span
-                        style={{
-                            padding: '2px 8px',
-                            borderRadius: 999,
-                            fontSize: 11.5,
-                            fontWeight: 600,
-                            background:
-                                t.status === 'en_consulta'
-                                    ? '#DBEAFE'
-                                    : '#F3F7F2',
-                            color:
-                                t.status === 'en_consulta'
-                                    ? '#1E40AF'
-                                    : '#52605a',
-                        }}
+                        className={cn(
+                            'rounded-full px-2 py-[2px] text-[11.5px] font-semibold',
+                            t.status === 'en_consulta'
+                                ? 'bg-badge-consulta-bg text-consulta-num'
+                                : 'bg-app-bg text-secondary-fg',
+                        )}
                     >
                         {t.status === 'en_consulta'
                             ? 'En consulta'

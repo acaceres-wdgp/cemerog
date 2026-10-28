@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 import { HistorialEntry } from '../types';
 
 // ─── Historial Panel ──────────────────────────────────────────────────────────
@@ -15,54 +16,19 @@ export default function HistorialPanel({
 
     if (historial.length === 0) {
         return (
-            <div
-                style={{
-                    background: '#fff',
-                    border: '1px solid #e3e9e3',
-                    borderRadius: 14,
-                    overflow: 'hidden',
-                    marginTop: 8,
-                }}
-            >
-                <div
-                    style={{
-                        padding: '14px 20px',
-                        borderBottom: '1px solid #eef0ec',
-                    }}
-                >
-                    <div
-                        style={{
-                            fontFamily: 'Bitter,Georgia,serif',
-                            fontWeight: 600,
-                            fontSize: 16,
-                            color: '#1f2d22',
-                        }}
-                    >
+            <div className="mt-2 overflow-hidden rounded-[14px] border border-card-border bg-white">
+                <div className="border-b border-divider px-5 py-[14px]">
+                    <div className="font-serif text-[16px] font-semibold text-text-heading">
                         Historial en la clínica
                     </div>
-                    <div style={{ fontSize: 13, color: '#71717a' }}>
-                        0 registros
-                    </div>
+                    <div className="text-[13px] text-muted">0 registros</div>
                 </div>
-                <div
-                    style={{
-                        padding: '48px 24px',
-                        textAlign: 'center',
-                        color: '#71717a',
-                    }}
-                >
-                    <div style={{ fontSize: 32, marginBottom: 10 }}>📋</div>
-                    <div
-                        style={{
-                            fontWeight: 600,
-                            fontSize: 14,
-                            color: '#52605a',
-                            marginBottom: 4,
-                        }}
-                    >
+                <div className="px-6 py-12 text-center text-muted">
+                    <div className="mb-[10px] text-[32px]">📋</div>
+                    <div className="mb-1 text-[14px] font-semibold text-secondary-fg">
                         Sin historial registrado
                     </div>
-                    <p style={{ margin: 0, fontSize: 13 }}>
+                    <p className="m-0 text-[13px]">
                         Las consultas guardadas de este paciente aparecerán
                         aquí.
                     </p>
@@ -72,59 +38,20 @@ export default function HistorialPanel({
     }
 
     return (
-        <div
-            style={{
-                background: '#fff',
-                border: '1px solid #e3e9e3',
-                borderRadius: 14,
-                overflow: 'hidden',
-                marginTop: 8,
-            }}
-        >
-            <div
-                style={{
-                    padding: '14px 20px',
-                    borderBottom: '1px solid #eef0ec',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: 12,
-                    flexWrap: 'wrap',
-                }}
-            >
+        <div className="mt-2 overflow-hidden rounded-[14px] border border-card-border bg-white">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-divider px-5 py-[14px]">
                 <div>
-                    <div
-                        style={{
-                            fontFamily: 'Bitter,Georgia,serif',
-                            fontWeight: 600,
-                            fontSize: 16,
-                            color: '#1f2d22',
-                        }}
-                    >
+                    <div className="font-serif text-[16px] font-semibold text-text-heading">
                         Historial en la clínica
                     </div>
-                    <div style={{ fontSize: 13, color: '#71717a' }}>
+                    <div className="text-[13px] text-muted">
                         {historial.length} registros
                     </div>
                 </div>
             </div>
-            <div
-                style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    alignItems: 'stretch',
-                }}
-            >
+            <div className="flex flex-wrap items-stretch">
                 {/* Left list */}
-                <div
-                    style={{
-                        flex: '1 1 320px',
-                        minWidth: 0,
-                        borderRight: '1px solid #eef0ec',
-                        maxHeight: 400,
-                        overflowY: 'auto',
-                    }}
-                >
+                <div className="max-h-[400px] min-w-0 flex-[1_1_320px] overflow-y-auto border-r border-divider">
                     {historial.map((e) => {
                         const dx0 = e.diagnosticos?.[0];
                         const dateStr = format(
@@ -138,98 +65,35 @@ export default function HistorialPanel({
                                 onClick={() =>
                                     setSelId(e.id === selId ? null : e.id)
                                 }
-                                style={{
-                                    width: '100%',
-                                    textAlign: 'left',
-                                    border: 'none',
-                                    borderBottom: '1px solid #f4f4f5',
-                                    background:
-                                        e.id === selId ? '#F8FBF6' : '#fff',
-                                    cursor: 'pointer',
-                                    padding: '12px 20px',
-                                    display: 'flex',
-                                    gap: 12,
-                                    alignItems: 'flex-start',
-                                }}
+                                className={cn(
+                                    'flex w-full cursor-pointer items-start gap-3 border-0 border-b border-row-separator px-5 py-3 text-left',
+                                    e.id === selId
+                                        ? 'bg-list-row-bg'
+                                        : 'bg-white',
+                                )}
                             >
-                                <span
-                                    style={{
-                                        width: 3,
-                                        alignSelf: 'stretch',
-                                        borderRadius: 2,
-                                        background: '#2563EB',
-                                        flexShrink: 0,
-                                    }}
-                                />
-                                <div
-                                    style={{
-                                        flex: 1,
-                                        minWidth: 0,
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: 3,
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            flexWrap: 'wrap',
-                                            alignItems: 'center',
-                                            gap: '4px 8px',
-                                            fontSize: 12,
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                padding: '1px 8px',
-                                                borderRadius: 999,
-                                                background: '#DBEAFE',
-                                                color: '#1E40AF',
-                                                fontWeight: 600,
-                                            }}
-                                        >
+                                <span className="w-[3px] shrink-0 self-stretch rounded-sm bg-consulta-dot" />
+                                <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px]">
+                                        <span className="rounded-full bg-badge-consulta-bg px-2 py-[1px] font-semibold text-consulta-num">
                                             Consulta
                                         </span>
-                                        <span
-                                            style={{
-                                                color: '#71717a',
-                                                fontVariantNumeric:
-                                                    'tabular-nums',
-                                            }}
-                                        >
+                                        <span className="text-muted tabular-nums">
                                             {dateStr}
                                         </span>
                                     </div>
-                                    <div
-                                        style={{
-                                            fontWeight: 600,
-                                            color: '#1f2d22',
-                                            fontSize: 13.5,
-                                        }}
-                                    >
+                                    <div className="text-[13.5px] font-semibold text-text-heading">
                                         {dx0
                                             ? `${dx0.code} – ${dx0.label}`
                                             : (e.motivo_consulta ??
                                               'Sin diagnóstico')}
                                     </div>
-                                    <div
-                                        style={{
-                                            fontSize: 12,
-                                            color: '#71717a',
-                                        }}
-                                    >
+                                    <div className="text-[12px] text-muted">
                                         {e.doctor.full_name} ·{' '}
                                         {e.doctor.specialty ?? ''}
                                     </div>
                                 </div>
-                                <span
-                                    style={{
-                                        fontSize: 15,
-                                        color: '#a1a1aa',
-                                        flexShrink: 0,
-                                        marginTop: 2,
-                                    }}
-                                >
+                                <span className="mt-[2px] shrink-0 text-[15px] text-muted-light">
                                     ›
                                 </span>
                             </button>
@@ -238,42 +102,14 @@ export default function HistorialPanel({
                 </div>
 
                 {/* Right detail */}
-                <div
-                    style={{
-                        flex: '2 1 480px',
-                        minWidth: 0,
-                        padding: '20px 24px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 16,
-                        fontSize: 13.5,
-                    }}
-                >
+                <div className="flex min-w-0 flex-[2_1_480px] flex-col gap-4 p-5 px-6 text-[13.5px]">
                     {sel ? (
                         <>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    gap: 8,
-                                    alignItems: 'center',
-                                    flexWrap: 'wrap',
-                                }}
-                            >
-                                <span
-                                    style={{
-                                        padding: '2px 10px',
-                                        borderRadius: 999,
-                                        background: '#DBEAFE',
-                                        color: '#1E40AF',
-                                        fontWeight: 600,
-                                        fontSize: 12,
-                                    }}
-                                >
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="rounded-full bg-badge-consulta-bg px-[10px] py-[2px] text-[12px] font-semibold text-consulta-num">
                                     Consulta
                                 </span>
-                                <span
-                                    style={{ color: '#71717a', fontSize: 12.5 }}
-                                >
+                                <span className="text-[12.5px] text-muted">
                                     {format(
                                         new Date(sel.consulted_at),
                                         'dd/MM/yyyy HH:mm',
@@ -281,59 +117,27 @@ export default function HistorialPanel({
                                     )}
                                 </span>
                             </div>
-                            <div
-                                style={{
-                                    fontFamily: 'Bitter,Georgia,serif',
-                                    fontWeight: 600,
-                                    fontSize: 19,
-                                    color: '#1f2d22',
-                                }}
-                            >
+                            <div className="font-serif text-[19px] font-semibold text-text-heading">
                                 {sel.diagnosticos?.[0]
                                     ? `${sel.diagnosticos[0].code} – ${sel.diagnosticos[0].label}`
                                     : (sel.motivo_consulta ??
                                       'Sin diagnóstico')}
                             </div>
-                            <div style={{ color: '#52525b' }}>
+                            <div className="text-text-dim">
                                 {sel.doctor.full_name} · {sel.doctor.specialty}
                             </div>
 
                             {sel.diagnosticos &&
                                 sel.diagnosticos.length > 0 && (
-                                    <div
-                                        style={{
-                                            padding: '10px 14px',
-                                            borderRadius: 10,
-                                            background: '#F6FAF1',
-                                            border: '1px solid #DCEBC9',
-                                        }}
-                                    >
-                                        <div
-                                            style={{
-                                                fontSize: 11,
-                                                fontWeight: 600,
-                                                color: '#56693f',
-                                                textTransform: 'uppercase',
-                                                letterSpacing: '.05em',
-                                            }}
-                                        >
+                                    <div className="rounded-[10px] border border-success-border bg-table-header-bg px-[14px] py-[10px]">
+                                        <div className="text-[11px] font-semibold tracking-[.05em] text-table-header-text uppercase">
                                             Diagnóstico(s)
                                         </div>
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: 4,
-                                                marginTop: 4,
-                                            }}
-                                        >
+                                        <div className="mt-1 flex flex-col gap-1">
                                             {sel.diagnosticos.map((dx, i) => (
                                                 <div
                                                     key={i}
-                                                    style={{
-                                                        fontWeight: 600,
-                                                        color: '#1f2d22',
-                                                    }}
+                                                    className="font-semibold text-text-heading"
                                                 >
                                                     {dx.code} – {dx.label}
                                                 </div>
@@ -344,19 +148,10 @@ export default function HistorialPanel({
 
                             {sel.motivo_consulta && (
                                 <div>
-                                    <div
-                                        style={{
-                                            fontSize: 11,
-                                            fontWeight: 600,
-                                            color: '#71717a',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '.05em',
-                                            marginBottom: 4,
-                                        }}
-                                    >
+                                    <div className="mb-1 text-[11px] font-semibold tracking-[.05em] text-muted uppercase">
                                         Motivo
                                     </div>
-                                    <p style={{ margin: 0, color: '#1f2d22' }}>
+                                    <p className="m-0 text-text-heading">
                                         {sel.motivo_consulta}
                                     </p>
                                 </div>
@@ -364,32 +159,17 @@ export default function HistorialPanel({
 
                             {sel.plan_tratamiento && (
                                 <div>
-                                    <div
-                                        style={{
-                                            fontSize: 11,
-                                            fontWeight: 600,
-                                            color: '#71717a',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '.05em',
-                                            marginBottom: 4,
-                                        }}
-                                    >
+                                    <div className="mb-1 text-[11px] font-semibold tracking-[.05em] text-muted uppercase">
                                         Plan
                                     </div>
-                                    <p style={{ margin: 0, color: '#1f2d22' }}>
+                                    <p className="m-0 text-text-heading">
                                         {sel.plan_tratamiento}
                                     </p>
                                 </div>
                             )}
                         </>
                     ) : (
-                        <div
-                            style={{
-                                color: '#71717a',
-                                textAlign: 'center',
-                                padding: '40px 0',
-                            }}
-                        >
+                        <div className="py-10 text-center text-muted">
                             Selecciona un registro para ver el detalle.
                         </div>
                     )}

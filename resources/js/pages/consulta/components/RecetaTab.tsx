@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { thStyle } from '../lib/helpers';
+import { thCls } from '../lib/helpers';
 
 // ─── Receta Tab ───────────────────────────────────────────────────────────────
 
@@ -9,113 +9,35 @@ export default function RecetaTab() {
     ]);
 
     return (
-        <div
-            style={{
-                background: '#fff',
-                border: '1px solid #e3e9e3',
-                borderRadius: 14,
-            }}
-        >
-            <div
-                style={{
-                    padding: '14px 18px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: 12,
-                    flexWrap: 'wrap',
-                }}
-            >
+        <div className="rounded-[14px] border border-card-border bg-white">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-[18px] py-[14px]">
                 <div>
-                    <div
-                        style={{
-                            fontFamily: 'Bitter,Georgia,serif',
-                            fontWeight: 600,
-                            fontSize: 16,
-                            color: '#1f2d22',
-                        }}
-                    >
+                    <div className="font-serif text-[16px] font-semibold text-text-heading">
                         Receta
                     </div>
-                    <div
-                        style={{
-                            fontSize: 13,
-                            color: '#71717a',
-                        }}
-                    >
+                    <div className="text-[13px] text-muted">
                         {rxRows.length} medicamentos
                     </div>
                 </div>
             </div>
-            <div style={{ overflowX: 'auto' }}>
-                <table
-                    style={{
-                        width: '100%',
-                        borderCollapse: 'collapse',
-                        minWidth: 820,
-                    }}
-                >
+            <div className="overflow-x-auto">
+                <table className="w-full min-w-[820px] border-collapse">
                     <thead>
                         <tr>
-                            <th
-                                style={{
-                                    ...thStyle,
-                                    paddingLeft: 18,
-                                    width: '34%',
-                                }}
-                            >
+                            <th className={`${thCls} w-[34%] pl-[18px]`}>
                                 Medicamento
                             </th>
-                            <th
-                                style={{
-                                    ...thStyle,
-                                    width: '14%',
-                                }}
-                            >
-                                Dosis
-                            </th>
-                            <th
-                                style={{
-                                    ...thStyle,
-                                    width: '22%',
-                                }}
-                            >
-                                Frecuencia
-                            </th>
-                            <th
-                                style={{
-                                    ...thStyle,
-                                    width: '24%',
-                                }}
-                            >
-                                Duración
-                            </th>
-                            <th
-                                style={{
-                                    ...thStyle,
-                                    width: 44,
-                                }}
-                            ></th>
+                            <th className={`${thCls} w-[14%]`}>Dosis</th>
+                            <th className={`${thCls} w-[22%]`}>Frecuencia</th>
+                            <th className={`${thCls} w-[24%]`}>Duración</th>
+                            <th className={`${thCls} w-11`}></th>
                         </tr>
                     </thead>
                     <tbody>
                         {rxRows.map((m, i) => (
                             <tr key={i}>
-                                <td
-                                    style={{
-                                        padding: '8px',
-                                        borderBottom: '1px solid #eef0ec',
-                                        verticalAlign: 'top',
-                                        paddingLeft: 18,
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: 6,
-                                        }}
-                                    >
+                                <td className="border-b border-divider p-2 pl-[18px] align-top">
+                                    <div className="flex flex-col gap-[6px]">
                                         <input
                                             value={m.med}
                                             onChange={(e) =>
@@ -132,17 +54,7 @@ export default function RecetaTab() {
                                                 )
                                             }
                                             placeholder="Medicamento"
-                                            style={{
-                                                height: 34,
-                                                width: '100%',
-                                                padding: '0 10px',
-                                                border: '1px solid #e4e4e7',
-                                                borderRadius: 8,
-                                                outline: 'none',
-                                                fontFamily: 'inherit',
-                                                fontSize: 13.5,
-                                                fontWeight: 500,
-                                            }}
+                                            className="h-[34px] w-full rounded-lg border border-input-border px-[10px] font-sans text-[13.5px] font-medium outline-none"
                                         />
                                         <input
                                             value={m.via}
@@ -160,27 +72,11 @@ export default function RecetaTab() {
                                                 )
                                             }
                                             placeholder="Vía"
-                                            style={{
-                                                height: 28,
-                                                width: '100%',
-                                                padding: '0 10px',
-                                                border: '1px solid #eef0ec',
-                                                borderRadius: 8,
-                                                outline: 'none',
-                                                fontFamily: 'inherit',
-                                                fontSize: 12.5,
-                                                color: '#52525b',
-                                            }}
+                                            className="h-7 w-full rounded-lg border border-divider px-[10px] font-sans text-[12.5px] text-text-dim outline-none"
                                         />
                                     </div>
                                 </td>
-                                <td
-                                    style={{
-                                        padding: 8,
-                                        borderBottom: '1px solid #eef0ec',
-                                        verticalAlign: 'top',
-                                    }}
-                                >
+                                <td className="border-b border-divider p-2 align-top">
                                     <input
                                         value={m.dosis}
                                         onChange={(e) =>
@@ -197,25 +93,10 @@ export default function RecetaTab() {
                                             )
                                         }
                                         placeholder="Dosis"
-                                        style={{
-                                            height: 34,
-                                            width: '100%',
-                                            padding: '0 10px',
-                                            border: '1px solid #e4e4e7',
-                                            borderRadius: 8,
-                                            outline: 'none',
-                                            fontFamily: 'inherit',
-                                            fontSize: 13.5,
-                                        }}
+                                        className="h-[34px] w-full rounded-lg border border-input-border px-[10px] font-sans text-[13.5px] outline-none"
                                     />
                                 </td>
-                                <td
-                                    style={{
-                                        padding: 8,
-                                        borderBottom: '1px solid #eef0ec',
-                                        verticalAlign: 'top',
-                                    }}
-                                >
+                                <td className="border-b border-divider p-2 align-top">
                                     <input
                                         value={m.frec}
                                         onChange={(e) =>
@@ -232,35 +113,11 @@ export default function RecetaTab() {
                                             )
                                         }
                                         placeholder="Frecuencia"
-                                        style={{
-                                            height: 34,
-                                            width: '100%',
-                                            padding: '0 10px',
-                                            border: '1px solid #e4e4e7',
-                                            borderRadius: 8,
-                                            outline: 'none',
-                                            fontFamily: 'inherit',
-                                            fontSize: 13.5,
-                                        }}
+                                        className="h-[34px] w-full rounded-lg border border-input-border px-[10px] font-sans text-[13.5px] outline-none"
                                     />
                                 </td>
-                                <td
-                                    style={{
-                                        padding: 8,
-                                        borderBottom: '1px solid #eef0ec',
-                                        verticalAlign: 'top',
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            height: 34,
-                                            border: '1px solid #e4e4e7',
-                                            borderRadius: 8,
-                                            background: '#fff',
-                                        }}
-                                    >
+                                <td className="border-b border-divider p-2 align-top">
+                                    <div className="flex h-[34px] items-center rounded-lg border border-input-border bg-white">
                                         <input
                                             value={m.dias}
                                             onChange={(e) =>
@@ -276,53 +133,21 @@ export default function RecetaTab() {
                                                     ),
                                                 )
                                             }
-                                            style={{
-                                                flex: 1,
-                                                minWidth: 0,
-                                                height: 32,
-                                                border: 'none',
-                                                outline: 'none',
-                                                background: 'transparent',
-                                                padding: '0 10px',
-                                                fontFamily: 'inherit',
-                                                fontSize: 13.5,
-                                            }}
+                                            className="h-8 min-w-0 flex-1 border-0 bg-transparent px-[10px] font-sans text-[13.5px] outline-none"
                                         />
-                                        <span
-                                            style={{
-                                                paddingRight: 10,
-                                                fontSize: 12.5,
-                                                color: '#71717a',
-                                            }}
-                                        >
+                                        <span className="pr-[10px] text-[12.5px] text-muted">
                                             días
                                         </span>
                                     </div>
                                 </td>
-                                <td
-                                    style={{
-                                        padding: 8,
-                                        borderBottom: '1px solid #eef0ec',
-                                        verticalAlign: 'top',
-                                        textAlign: 'center',
-                                    }}
-                                >
+                                <td className="border-b border-divider p-2 text-center align-top">
                                     <button
                                         onClick={() =>
                                             setRxRows((r) =>
                                                 r.filter((_, j) => j !== i),
                                             )
                                         }
-                                        style={{
-                                            width: 34,
-                                            height: 34,
-                                            border: 'none',
-                                            borderRadius: 8,
-                                            background: 'transparent',
-                                            color: '#71717a',
-                                            cursor: 'pointer',
-                                            fontSize: 16,
-                                        }}
+                                        className="h-[34px] w-[34px] cursor-pointer rounded-lg border-0 bg-transparent text-[16px] text-muted"
                                     >
                                         🗑
                                     </button>
@@ -332,12 +157,7 @@ export default function RecetaTab() {
                     </tbody>
                 </table>
             </div>
-            <div
-                style={{
-                    padding: '10px 18px',
-                    borderBottom: '1px solid #eef0ec',
-                }}
-            >
+            <div className="border-b border-divider px-[18px] py-[10px]">
                 <button
                     onClick={() =>
                         setRxRows((r) => [
@@ -351,50 +171,13 @@ export default function RecetaTab() {
                             },
                         ])
                     }
-                    style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        height: 34,
-                        padding: '0 12px',
-                        borderRadius: 10,
-                        border: '1px dashed #B9DC8E',
-                        background: '#F8FBF6',
-                        color: '#2E8B3E',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontFamily: 'inherit',
-                        fontSize: 14,
-                    }}
+                    className="inline-flex h-[34px] cursor-pointer items-center gap-2 rounded-[10px] border border-dashed border-accent-border bg-list-row-bg px-3 font-sans text-sm font-semibold text-primary"
                 >
                     + Agregar medicamento
                 </button>
             </div>
-            <div
-                style={{
-                    padding: '12px 18px',
-                    borderTop: '1px solid #eef0ec',
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                }}
-            >
-                <button
-                    style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        height: 36,
-                        padding: '0 16px',
-                        borderRadius: 10,
-                        border: 'none',
-                        background: '#2E8B3E',
-                        color: '#fff',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        fontFamily: 'inherit',
-                        fontSize: 14,
-                    }}
-                >
+            <div className="flex justify-end border-t border-divider px-[18px] py-3">
+                <button className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border-0 bg-primary px-4 font-sans text-sm font-medium text-white">
                     ✓ Guardar receta
                 </button>
             </div>

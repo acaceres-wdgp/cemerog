@@ -35,6 +35,7 @@ const CLEAN_PAGES = [
     'registro/components/',
     'citas/',
     'tablero/',
+    'consulta/',
 ];
 
 // Matches a 3- or 6-digit hex color, e.g. #2E8B3E or #333
@@ -131,6 +132,23 @@ for (const entry of CLEAN_PAGES) {
         test(`${rel} no static style={{ (use Tailwind tokens instead)`, () => {
             expect(styleViolations).toEqual([]);
         });
+
+        // ── Test 3: no var(--color-) in JSX ──────────────────────────────────
+        // Colors must always be written as Tailwind utility classes, never as
+        // inline CSS variable references — even inside dynamic-style blocks.
+        const varColorViolations: { line: number; text: string }[] = [];
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (/^\s*(\/\/|\/\*|\*)/.test(line)) continue;
+            if (line.includes('var(--color-')) {
+                varColorViolations.push({ line: i + 1, text: line.trim() });
+            }
+        }
+
+        test(`${rel} no var(--color-) inline references (use Tailwind classes instead)`, () => {
+            expect(varColorViolations).toEqual([]);
+        });
     }
 }
 
@@ -185,6 +203,21 @@ for (const { abs, rel } of LAYOUT_FILES) {
     test(`layouts/${rel} no static style={{ (use Tailwind tokens instead)`, () => {
         expect(styleViolations).toEqual([]);
     });
+
+    // ── Test 3: no var(--color-) in JSX ──────────────────────────────────
+    const varColorViolations: { line: number; text: string }[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (/^\s*(\/\/|\/\*|\*)/.test(line)) continue;
+        if (line.includes('var(--color-')) {
+            varColorViolations.push({ line: i + 1, text: line.trim() });
+        }
+    }
+
+    test(`layouts/${rel} no var(--color-) inline references (use Tailwind classes instead)`, () => {
+        expect(varColorViolations).toEqual([]);
+    });
 }
 
 // ── components/cemerog/ scan ──────────────────────────────────────────────────
@@ -238,5 +271,20 @@ for (const { abs, rel } of CEMEROG_FILES) {
 
     test(`cemerog/${rel} no static style={{ (use Tailwind tokens instead)`, () => {
         expect(styleViolations).toEqual([]);
+    });
+
+    // ── Test 3: no var(--color-) in JSX ──────────────────────────────────
+    const varColorViolations: { line: number; text: string }[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (/^\s*(\/\/|\/\*|\*)/.test(line)) continue;
+        if (line.includes('var(--color-')) {
+            varColorViolations.push({ line: i + 1, text: line.trim() });
+        }
+    }
+
+    test(`cemerog/${rel} no var(--color-) inline references (use Tailwind classes instead)`, () => {
+        expect(varColorViolations).toEqual([]);
     });
 }
