@@ -1,7 +1,10 @@
-import { useForm, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { router, useForm, usePage } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
 import { MaskedInput } from '@/components/cemerog/masked-input';
 import FormField from '@/components/cemerog/FormField';
+import FormDialog from '@/components/cemerog/FormDialog';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 type Specialty = {
     id: number;
@@ -20,18 +23,27 @@ type Doctor = {
     is_active: boolean;
     user_id: number | null;
     user_name: string | null;
+    user_username: string | null;
     office: string | null;
 };
 
 type AvailableUser = {
     id: number;
     name: string;
+    username: string;
+};
+
+type Credentials = {
+    name: string;
+    username: string;
+    password: string;
 };
 
 type Props = {
     specialties: Specialty[];
     doctors: Doctor[];
     availableUsers: AvailableUser[];
+    credentials?: Credentials | null;
 };
 
 const thStyle: React.CSSProperties = {
@@ -71,6 +83,68 @@ function initials(name: string): string {
         .filter(Boolean)
         .slice(0, 2)
         .join('');
+}
+
+// ─── Credentials Dialog ───────────────────────────────────────────────────────
+
+type CredentialsDialogProps = {
+    credentials: Credentials;
+    onClose: () => void;
+};
+
+function CredentialsDialog({ credentials, onClose }: CredentialsDialogProps) {
+    const handleCopy = () => {
+        const text = `Usuario: ${credentials.username}\nContraseña: ${credentials.password}`;
+        navigator.clipboard.writeText(text).catch(() => {});
+    };
+
+    const handlePrint = () => {
+        window.print();
+    };
+
+    return (
+        <FormDialog
+            open={true}
+            onOpenChange={(open) => { if (!open) onClose(); }}
+            title="Credenciales del médico"
+            description="Entrégale estas credenciales al médico. Deberá cambiar la contraseña al entrar."
+            footer={
+                <div className="flex w-full items-center justify-between gap-2">
+                    <p className="text-xs text-error">
+                        No se volverán a mostrar.
+                    </p>
+                    <div className="flex gap-2">
+                        <Button type="button" variant="outline" onClick={handlePrint}>
+                            Imprimir
+                        </Button>
+                        <Button type="button" variant="outline" onClick={handleCopy}>
+                            Copiar
+                        </Button>
+                        <Button type="button" onClick={onClose} className="bg-primary text-primary-foreground">
+                            Cerrar
+                        </Button>
+                    </div>
+                </div>
+            }
+        >
+            <div className="flex flex-col gap-4">
+                <div className="rounded-lg border border-divider bg-app-bg p-4">
+                    <p className="mb-1 text-sm font-medium text-text-secondary">Médico</p>
+                    <p className="font-medium text-text-heading">{credentials.name}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="rounded-lg border border-divider bg-app-bg p-4">
+                        <p className="mb-1 text-sm font-medium text-text-secondary">Usuario</p>
+                        <p className="font-mono font-semibold text-text-heading">{credentials.username}</p>
+                    </div>
+                    <div className="rounded-lg border border-divider bg-app-bg p-4">
+                        <p className="mb-1 text-sm font-medium text-text-secondary">Contraseña temporal</p>
+                        <p className="font-mono font-semibold text-text-heading">{credentials.password}</p>
+                    </div>
+                </div>
+            </div>
+        </FormDialog>
+    );
 }
 
 // ─── Specialty Modal ──────────────────────────────────────────────────────────
@@ -327,6 +401,8 @@ function SpecialtyModal({ onClose, specialty }: SpecialtyModalProps) {
 
 // ─── Doctor Modal ─────────────────────────────────────────────────────────────
 
+type AccessMode = 'create_user' | 'link_user' | 'none';
+
 type DoctorModalProps = {
     specialties: Specialty[];
     availableUsers: AvailableUser[];
@@ -343,22 +419,11 @@ function DoctorModal({
     defaultSpecialtyId,
 }: DoctorModalProps) {
     const isEdit = Boolean(doctor);
+    const hasLinkedUser = Boolean(doctor?.user_id);
 
-    // On edit, if the doctor already has a user linked, include that user in the list
-    // with their real name (from user_name) if they're not in availableUsers.
-    const usersForSelect: AvailableUser[] = doctor?.user_id
-        ? [
-              ...availableUsers.filter((u) => u.id !== doctor.user_id),
-              ...(availableUsers.find((u) => u.id === doctor.user_id)
-                  ? []
-                  : [
-                        {
-                            id: doctor.user_id,
-                            name: doctor.user_name ?? '(usuario vinculado)',
-                        },
-                    ]),
-          ]
-        : availableUsers;
+    // Default access mode: for new doctor → create_user; for edit without user → create_user; edit with user → none
+    const defaultAccessMode: AccessMode = hasLinkedUser ? 'none' : 'create_user';
+    const [accessMode, setAccessMode] = useState<AccessMode>(defaultAccessMode);
 
     const { data, setData, post, put, transform, processing, errors } = useForm(
         {
@@ -383,8 +448,9 @@ function DoctorModal({
             exequatur: form.exequatur || null,
             phone: form.phone || null,
             specialty_id: parseInt(form.specialty_id, 10),
-            user_id: form.user_id ? parseInt(form.user_id, 10) : null,
+            user_id: accessMode === 'link_user' && form.user_id ? parseInt(form.user_id, 10) : null,
             office: form.office || null,
+            access_mode: accessMode,
         }));
 
         if (isEdit && doctor) {
@@ -392,6 +458,13 @@ function DoctorModal({
         } else {
             post('/admin/doctores', { onSuccess: onClose });
         }
+    };
+
+    const handleResetPassword = () => {
+        if (!doctor) return;
+        router.post(`/admin/doctores/${doctor.id}/reset-password`, {}, {
+            onSuccess: onClose,
+        });
     };
 
     return (
@@ -480,6 +553,7 @@ function DoctorModal({
                                     setData('name', e.target.value)
                                 }
                                 placeholder="Dr. / Dra."
+                                aria-label="Nombre completo"
                                 style={{
                                     ...inputStyle,
                                     ...(errors.name
@@ -610,21 +684,6 @@ function DoctorModal({
                             )}
                         </label>
                         <FormField
-                            as="select"
-                            name="user_id"
-                            label="Usuario del sistema"
-                            error={errors.user_id}
-                            value={data.user_id}
-                            onChange={(e) => setData('user_id', e.target.value)}
-                        >
-                            <option value="">Sin vincular</option>
-                            {usersForSelect.map((u) => (
-                                <option key={u.id} value={u.id}>
-                                    {u.name}
-                                </option>
-                            ))}
-                        </FormField>
-                        <FormField
                             name="office"
                             label="Consultorio"
                             error={errors.office}
@@ -632,6 +691,83 @@ function DoctorModal({
                             onChange={(e) => setData('office', e.target.value)}
                             placeholder="Ej: Consultorio 1"
                         />
+
+                        {/* ─── Sistema de acceso ─────────────────────── */}
+                        <div className="flex flex-col gap-3 rounded-lg border border-divider bg-app-bg p-4">
+                            <p className="text-sm font-semibold text-text-heading">
+                                Sistema de acceso
+                            </p>
+
+                            {hasLinkedUser ? (
+                                // Edit mode: doctor already has a user
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center justify-between rounded-md border border-card-border bg-card-bg px-3 py-2">
+                                        <div>
+                                            <p className="text-xs text-text-secondary">Usuario vinculado</p>
+                                            <p className="font-mono text-sm font-medium text-text-heading">
+                                                {doctor?.user_username ?? '—'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="w-full"
+                                        onClick={handleResetPassword}
+                                    >
+                                        Restablecer contraseña
+                                    </Button>
+                                </div>
+                            ) : (
+                                // New doctor or edit without user: choose mode
+                                <div className="flex flex-col gap-3">
+                                    <label className="flex cursor-pointer items-center gap-3">
+                                        <input
+                                            type="radio"
+                                            name="access_mode"
+                                            value="create_user"
+                                            checked={accessMode === 'create_user'}
+                                            onChange={() => setAccessMode('create_user')}
+                                            aria-label="Crear usuario nuevo"
+                                        />
+                                        <span className="text-sm text-text-body">
+                                            Crear usuario nuevo
+                                        </span>
+                                    </label>
+                                    <label className="flex cursor-pointer items-center gap-3">
+                                        <input
+                                            type="radio"
+                                            name="access_mode"
+                                            value="link_user"
+                                            checked={accessMode === 'link_user'}
+                                            onChange={() => setAccessMode('link_user')}
+                                            aria-label="Vincular usuario existente"
+                                        />
+                                        <span className="text-sm text-text-body">
+                                            Vincular usuario existente
+                                        </span>
+                                    </label>
+
+                                    {accessMode === 'link_user' && (
+                                        <FormField
+                                            as="select"
+                                            name="user_id_link"
+                                            label="Usuario a vincular"
+                                            error={errors.user_id}
+                                            value={data.user_id}
+                                            onChange={(e) => setData('user_id', e.target.value)}
+                                        >
+                                            <option value="">Seleccionar usuario…</option>
+                                            {availableUsers.map((u) => (
+                                                <option key={u.id} value={u.id}>
+                                                    {u.name}
+                                                </option>
+                                            ))}
+                                        </FormField>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
                     <div
                         style={{
@@ -718,7 +854,7 @@ function ToggleButton({ doctor }: { doctor: Doctor }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function DoctoresIndex() {
-    const { specialties, doctors, availableUsers } = usePage<Props>().props;
+    const { specialties, doctors, availableUsers, credentials } = usePage<Props>().props;
 
     const [selEsp, setSelEsp] = useState<number | null>(
         specialties[0]?.id ?? null,
@@ -727,6 +863,14 @@ export default function DoctoresIndex() {
     const [showDoctorModal, setShowDoctorModal] = useState(false);
     const [editSpecialty, setEditSpecialty] = useState<Specialty | null>(null);
     const [editDoctor, setEditDoctor] = useState<Doctor | null>(null);
+    const [showCredentials, setShowCredentials] = useState(Boolean(credentials));
+
+    // When credentials change (new flash), open the dialog
+    useEffect(() => {
+        if (credentials) {
+            setShowCredentials(true);
+        }
+    }, [credentials]);
 
     const filteredDoctors = selEsp
         ? doctors.filter((d) => d.specialty_id === selEsp)
@@ -756,6 +900,14 @@ export default function DoctoresIndex() {
 
     return (
         <div className="flex flex-col gap-5">
+            {/* Credentials dialog (single-use flash) */}
+            {showCredentials && credentials && (
+                <CredentialsDialog
+                    credentials={credentials}
+                    onClose={() => setShowCredentials(false)}
+                />
+            )}
+
             {/* Header */}
             <div
                 style={{
