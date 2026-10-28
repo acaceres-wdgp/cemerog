@@ -6,6 +6,7 @@ use App\Models\Patient;
 use App\Models\Specialty;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -240,7 +241,7 @@ test('unauthorized user gets 403 on DELETE /citas/{appointment}', function () {
 
 test('appointment model returns HH:MM when DB has HH:MM:SS', function () {
     // Simulate what MySQL returns for a TIME column
-    \Illuminate\Support\Facades\DB::table('appointments')->insert([
+    DB::table('appointments')->insert([
         'patient_id' => $this->patient->id,
         'doctor_id' => $this->doctor->id,
         'appointment_date' => Carbon::tomorrow()->toDateString(),
@@ -258,7 +259,7 @@ test('appointment model returns HH:MM when DB has HH:MM:SS', function () {
 });
 
 test('GET /citas sends appointment_time as HH:MM even when DB has HH:MM:SS', function () {
-    \Illuminate\Support\Facades\DB::table('appointments')->insert([
+    DB::table('appointments')->insert([
         'patient_id' => $this->patient->id,
         'doctor_id' => $this->doctor->id,
         'appointment_date' => Carbon::tomorrow()->toDateString(),
@@ -282,7 +283,7 @@ test('GET /citas sends appointment_time as HH:MM even when DB has HH:MM:SS', fun
 });
 
 test('GET /tablero sends appointment_time as HH:MM even when DB has HH:MM:SS', function () {
-    \Illuminate\Support\Facades\DB::table('appointments')->insert([
+    DB::table('appointments')->insert([
         'patient_id' => $this->patient->id,
         'doctor_id' => $this->doctor->id,
         'appointment_date' => Carbon::today()->toDateString(),
@@ -307,7 +308,7 @@ test('GET /tablero sends appointment_time as HH:MM even when DB has HH:MM:SS', f
 });
 
 test('appointment model returns null appointment_time as null', function () {
-    \Illuminate\Support\Facades\DB::table('appointments')->insert([
+    DB::table('appointments')->insert([
         'patient_id' => $this->patient->id,
         'doctor_id' => $this->doctor->id,
         'appointment_date' => Carbon::tomorrow()->toDateString(),
