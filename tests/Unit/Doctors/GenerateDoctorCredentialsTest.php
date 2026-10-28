@@ -1,0 +1,122 @@
+<?php
+
+use App\Actions\Doctors\GenerateDoctorCredentials;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
+
+// ─── Username generation ──────────────────────────────────────────────────────
+
+test('generates username from first letter of first name + first surname', function () {
+    $action = new GenerateDoctorCredentials;
+
+    $result = $action->previewUsername('Franklin Rodríguez Jorge');
+
+    expect($result)->toBe('frodriguez');
+});
+
+test('strips Dr. prefix when generating username', function () {
+    $action = new GenerateDoctorCredentials;
+
+    expect($action->previewUsername('Dr. Franklin Rodríguez'))->toBe('frodriguez');
+});
+
+test('strips Dra. prefix when generating username', function () {
+    $action = new GenerateDoctorCredentials;
+
+    expect($action->previewUsername('Dra. Ana García López'))->toBe('agarcia');
+});
+
+test('normalizes accents when generating username', function () {
+    $action = new GenerateDoctorCredentials;
+
+    // é → e, á → a, etc.
+    expect($action->previewUsername('José Martínez'))->toBe('jmartinez');
+});
+
+test('normalizes ñ when generating username', function () {
+    $action = new GenerateDoctorCredentials;
+
+    expect($action->previewUsername('Ingrid Muñoz'))->toBe('imunoz');
+});
+
+test('handles compound first name (uses first word)', function () {
+    $action = new GenerateDoctorCredentials;
+
+    expect($action->previewUsername('María Isabel Pérez Torres'))->toBe('mperez');
+});
+
+test('lowercases the generated username', function () {
+    $action = new GenerateDoctorCredentials;
+
+    expect($action->previewUsername('ANA GARCIA'))->toBe('agarcia');
+});
+
+// ─── Username collision resolution ───────────────────────────────────────────
+
+test('appends 2 when base username already exists', function () {
+    User::factory()->create(['username' => 'frodriguez']);
+
+    $action = new GenerateDoctorCredentials;
+    $result = $action->previewUsername('Franklin Rodríguez');
+
+    expect($result)->toBe('frodriguez2');
+});
+
+test('appends 3 when frodriguez and frodriguez2 both exist', function () {
+    User::factory()->create(['username' => 'frodriguez']);
+    User::factory()->create(['username' => 'frodriguez2']);
+
+    $action = new GenerateDoctorCredentials;
+    $result = $action->previewUsername('Franklin Rodríguez');
+
+    expect($result)->toBe('frodriguez3');
+});
+
+// ─── Password generation ──────────────────────────────────────────────────────
+
+test('generated password is 10 characters long', function () {
+    $action = new GenerateDoctorCredentials;
+
+    $password = $action->generatePassword();
+
+    expect(strlen($password))->toBe(10);
+});
+
+test('generated password only contains readable chars (no 0/O/l/1)', function () {
+    $action = new GenerateDoctorCredentials;
+
+    for ($i = 0; $i < 20; $i++) {
+        $password = $action->generatePassword();
+        expect($password)->not->toContain('0')
+            ->and($password)->not->toContain('O')
+            ->and($password)->not->toContain('l')
+            ->and($password)->not->toContain('1');
+    }
+});
+
+// ─── Full handle: creates user ────────────────────────────────────────────────
+
+test('handle creates a user with role medico and must_change_password', function () {
+    $action = new GenerateDoctorCredentials;
+
+    $result = $action->handle('Dr. Franklin Rodríguez');
+
+    expect($result['user']->id)->toBeInt();
+    expect($result['user']->username)->toBe('frodriguez');
+    expect($result['user']->must_change_password)->toBeTrue();
+    expect($result['user']->is_active)->toBeTrue();
+    expect($result['user']->hasRole('medico'))->toBeTrue();
+    expect($result['plainPassword'])->toHaveLength(10);
+});
+
+test('handle returns the plain password (not hashed)', function () {
+    $action = new GenerateDoctorCredentials;
+
+    $result = $action->handle('Dra. Ana García');
+
+    // The plain password returned should not match any known hash
+    expect($result['plainPassword'])->not->toContain('$2y$');
+    expect(strlen($result['plainPassword']))->toBe(10);
+});
