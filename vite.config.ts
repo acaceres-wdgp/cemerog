@@ -86,6 +86,8 @@ export default defineConfig({
             '.github/**',
             'composer.json',
             'design/**',
+            // Historical prompts given to the agent; kept verbatim
+            'docs/prompts/**',
             'resources/js/components/ui/*',
             'resources/views/mail/*',
         ],
