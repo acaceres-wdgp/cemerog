@@ -17,6 +17,7 @@ use App\Models\Specialty;
 use App\Models\User;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -112,13 +113,24 @@ class DoctoresController extends Controller
 
     public function toggleDoctor(Doctor $doctor): RedirectResponse
     {
+        // Prevent deactivating your own doctor record
+        if (Auth::id() === $doctor->user_id) {
+            Toast::error('No puedes desactivar tu propio registro de médico.');
+
+            return redirect()->route('doctores');
+        }
+
         $newStatus = ! $doctor->is_active;
 
         $doctor->update(['is_active' => $newStatus]);
 
-        // Sync user status
+        // Sync linked user only when their sole role is 'medico'
         if ($doctor->user !== null) {
-            $doctor->user->update(['is_active' => $newStatus]);
+            $roles = $doctor->user->getRoleNames();
+            $soleRole = $roles->count() === 1 && $roles->first() === 'medico';
+            if ($soleRole) {
+                $doctor->user->update(['is_active' => $newStatus]);
+            }
         }
 
         Toast::success('Estado del doctor actualizado.');

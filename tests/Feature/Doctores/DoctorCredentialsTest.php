@@ -284,3 +284,65 @@ test('changing doctor name updates linked user name', function () {
     $user->refresh();
     expect($user->name)->toBe('Dr. Nuevo Nombre');
 });
+
+// ─── Fix 3: Toggle protection ─────────────────────────────────────────────────
+
+test('cannot deactivate own doctor record', function () {
+    // Admin is also a doctor – deactivating their own record should be rejected
+    $this->admin->assignRole('medico');
+    $doctor = Doctor::factory()->create([
+        'specialty_id' => $this->specialty->id,
+        'user_id' => $this->admin->id,
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($this->admin)
+        ->patch("/admin/doctores/{$doctor->id}/toggle")
+        ->assertRedirect(route('doctores'));
+
+    // Doctor status must NOT have changed
+    $doctor->refresh();
+    expect($doctor->is_active)->toBeTrue();
+});
+
+test('deactivating doctor with multi-role user keeps user active', function () {
+    // User has both administrador and medico roles
+    $user = User::factory()->create(['is_active' => true]);
+    $user->assignRole('administrador');
+    $user->assignRole('medico');
+
+    $doctor = Doctor::factory()->create([
+        'specialty_id' => $this->specialty->id,
+        'user_id' => $user->id,
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($this->admin)
+        ->patch("/admin/doctores/{$doctor->id}/toggle")
+        ->assertRedirect(route('doctores'));
+
+    $doctor->refresh();
+    expect($doctor->is_active)->toBeFalse();
+
+    // User must remain active since they have other roles
+    $user->refresh();
+    expect($user->is_active)->toBeTrue();
+});
+
+test('reactivating doctor with sole medico role reactivates user', function () {
+    $user = User::factory()->create(['is_active' => false]);
+    $user->assignRole('medico');
+
+    $doctor = Doctor::factory()->create([
+        'specialty_id' => $this->specialty->id,
+        'user_id' => $user->id,
+        'is_active' => false,
+    ]);
+
+    $this->actingAs($this->admin)
+        ->patch("/admin/doctores/{$doctor->id}/toggle")
+        ->assertRedirect(route('doctores'));
+
+    $user->refresh();
+    expect($user->is_active)->toBeTrue();
+});
