@@ -3,7 +3,13 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { router } from '@inertiajs/react';
 import DoctoresIndex from '@/pages/doctores/index';
 
-// Base page mock – will be customized per test via `page.props`
+type CredentialsFlash = {
+    name: string;
+    username: string;
+    password: string;
+} | null;
+
+// Base page mock – credentials arrive in `page.flash`, NOT in `page.props`
 const page = vi.hoisted(() => ({
     props: {
         errors: {},
@@ -29,12 +35,9 @@ const page = vi.hoisted(() => ({
             office: string | null;
         }[],
         availableUsers: [{ id: 10, name: 'Usuario Libre', username: 'ulibre' }],
-        // credentials flash from server (single-use)
-        credentials: null as {
-            name: string;
-            username: string;
-            password: string;
-        } | null,
+    },
+    flash: {
+        credentials: null as CredentialsFlash,
     },
 }));
 
@@ -47,12 +50,12 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
 describe('doctores credentials dialog', () => {
     afterEach(() => {
         vi.restoreAllMocks();
-        page.props.credentials = null;
+        page.flash.credentials = null;
         page.props.doctors = [];
     });
 
     it('shows credentials dialog with username and password when credentials flash is present', () => {
-        page.props.credentials = {
+        page.flash.credentials = {
             name: 'Dr. Franklin Rodríguez',
             username: 'frodriguez',
             password: 'xK3mPq8nRt',
@@ -65,7 +68,7 @@ describe('doctores credentials dialog', () => {
     });
 
     it('credentials dialog has Copiar button', () => {
-        page.props.credentials = {
+        page.flash.credentials = {
             name: 'Dr. Franklin Rodríguez',
             username: 'frodriguez',
             password: 'xK3mPq8nRt',
@@ -77,7 +80,7 @@ describe('doctores credentials dialog', () => {
     });
 
     it('credentials dialog has Imprimir button', () => {
-        page.props.credentials = {
+        page.flash.credentials = {
             name: 'Dr. Franklin Rodríguez',
             username: 'frodriguez',
             password: 'xK3mPq8nRt',
@@ -89,7 +92,7 @@ describe('doctores credentials dialog', () => {
     });
 
     it('credentials dialog warns about single-use', () => {
-        page.props.credentials = {
+        page.flash.credentials = {
             name: 'Dr. Franklin Rodríguez',
             username: 'frodriguez',
             password: 'xK3mPq8nRt',
@@ -100,9 +103,19 @@ describe('doctores credentials dialog', () => {
         expect(screen.getByText(/no se volverán a mostrar/i)).toBeDefined();
     });
 
-    it('no credentials dialog when credentials prop is null', () => {
-        page.props.credentials = null;
+    it('no credentials dialog when credentials flash is null', () => {
+        page.flash.credentials = null;
 
+        render(<DoctoresIndex />);
+
+        expect(screen.queryByText('frodriguez')).toBeNull();
+    });
+
+    it('credentials in page.props (not flash) are NOT shown', () => {
+        // Inertia 3 only delivers flash via page.flash, not page.props
+        page.flash.credentials = null;
+        // The old Props type no longer has credentials — this test ensures
+        // that passing credentials only in props has no effect.
         render(<DoctoresIndex />);
 
         expect(screen.queryByText('frodriguez')).toBeNull();

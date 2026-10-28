@@ -30,6 +30,13 @@ const page = vi.hoisted(() => ({
         ],
         availableUsers: [],
     },
+    flash: {
+        credentials: null as {
+            name: string;
+            username: string;
+            password: string;
+        } | null,
+    },
 }));
 
 vi.mock('@inertiajs/react', async (importOriginal) => ({

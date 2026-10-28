@@ -4,7 +4,6 @@ import { MaskedInput } from '@/components/cemerog/masked-input';
 import FormField from '@/components/cemerog/FormField';
 import FormDialog from '@/components/cemerog/FormDialog';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 type Specialty = {
     id: number;
@@ -43,7 +42,6 @@ type Props = {
     specialties: Specialty[];
     doctors: Doctor[];
     availableUsers: AvailableUser[];
-    credentials?: Credentials | null;
 };
 
 const thStyle: React.CSSProperties = {
@@ -904,8 +902,9 @@ function ToggleButton({ doctor }: { doctor: Doctor }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function DoctoresIndex() {
-    const { specialties, doctors, availableUsers, credentials } =
-        usePage<Props>().props;
+    const { specialties, doctors, availableUsers } = usePage<Props>().props;
+    const flash = usePage().flash as { credentials?: Credentials | null };
+    const credentials = flash.credentials ?? null;
 
     const [selEsp, setSelEsp] = useState<number | null>(
         specialties[0]?.id ?? null,
