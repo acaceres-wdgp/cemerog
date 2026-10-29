@@ -7,9 +7,11 @@ use App\Models\User;
 /**
  * Verify that module routes enforce authentication and permissions.
  *
- * Note: /consulta uses the 'attend-patients' middleware which requires BOTH
- * module.consulta.access AND an active linked doctor. It is excluded from the
- * generic permission-only datasets and tested separately below.
+ * Note: /consulta uses the 'attend-patients' middleware which requires
+ * module.consulta.access for all methods. GET /consulta returns 200 with
+ * can_attend: false when the user has no active linked doctor; write routes
+ * still return 403 in that case. It is excluded from the generic
+ * permission-only datasets and tested separately below.
  */
 dataset('modules', [
     'inicio' => ['/inicio', 'inicio'],
@@ -64,11 +66,14 @@ test('user without permission gets 403 on /consulta', function () {
     $this->actingAs($user)->get('/consulta')->assertForbidden();
 });
 
-test('user with module.consulta.access but no linked doctor gets 403 on /consulta', function () {
+test('user with module.consulta.access but no linked doctor gets 200 with can_attend false on /consulta', function () {
     $user = User::factory()->create();
     $user->givePermissionTo('module.consulta.access');
     // No doctor linked
-    $this->actingAs($user)->get('/consulta')->assertForbidden();
+    $this->actingAs($user)
+        ->get('/consulta')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('can_attend', false));
 });
 
 test('medico with active linked doctor can access /consulta', function () {
