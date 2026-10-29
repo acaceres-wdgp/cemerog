@@ -2,13 +2,54 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Turn;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreConsultationRequest extends FormRequest
 {
+    /**
+     * Authorize the request.
+     *
+     * The authenticated user must:
+     *   - have an active linked doctor
+     *   - supply a turn_id that exists and belongs to today
+     *   - own that turn (turn->doctor_id === auth user's doctor id)
+     *   - have the turn in a status that allows recording (espera or en_consulta)
+     */
     public function authorize(): bool
     {
-        return true;
+        /** @var User $user */
+        $user = $this->user();
+
+        if ($user->doctor === null || ! $user->doctor->is_active) {
+            return false;
+        }
+
+        $turnId = $this->input('turn_id');
+
+        if (! $turnId) {
+            return false;
+        }
+
+        $turn = Turn::find($turnId);
+
+        if ($turn === null) {
+            return false;
+        }
+
+        // Turn must be for today
+        if (! $turn->arrived_at->isToday()) {
+            return false;
+        }
+
+        // Turn must be in a recordable state
+        if (! in_array($turn->status, ['espera', 'en_consulta'], true)) {
+            return false;
+        }
+
+        // Turn must belong to the authenticated doctor
+        return $turn->doctor_id === $user->doctor->id;
     }
 
     /**
@@ -17,9 +58,11 @@ class StoreConsultationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'patient_id' => ['required', 'integer', 'exists:patients,id'],
-            'doctor_id' => ['required', 'integer', 'exists:doctors,id'],
-            'turn_id' => ['nullable', 'integer', 'exists:turns,id'],
+            // turn_id is required; doctor_id and patient_id are derived from it in the controller
+            'turn_id' => ['required', 'integer', 'exists:turns,id'],
+            // doctor_id / patient_id may arrive from the frontend but are ignored; kept for backward-compat validation only
+            'doctor_id' => ['nullable', 'integer', 'exists:doctors,id'],
+            'patient_id' => ['nullable', 'integer', 'exists:patients,id'],
             'peso' => ['nullable', 'integer', 'min:0'],
             'talla' => ['nullable', 'integer', 'min:0'],
             'temp' => ['nullable', 'integer', 'min:0'],

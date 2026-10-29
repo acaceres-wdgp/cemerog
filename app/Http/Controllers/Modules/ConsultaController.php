@@ -9,6 +9,7 @@ use App\Models\Consultation;
 use App\Models\Patient;
 use App\Models\PatientAntecedent;
 use App\Models\Turn;
+use App\Models\User;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,9 +20,14 @@ class ConsultaController extends Controller
 {
     public function index(Request $request): Response
     {
+        /** @var User $user */
+        $user = $request->user();
+        $doctorId = $user->doctor->id;
+
         $turnsEnConsulta = Turn::with(['patient', 'doctor.specialty'])
             ->whereDate('arrived_at', today())
             ->where('status', 'en_consulta')
+            ->where('doctor_id', $doctorId)
             ->orderBy('turn_order')
             ->get()
             ->map(fn (Turn $t) => $this->formatTurn($t));
@@ -29,6 +35,7 @@ class ConsultaController extends Controller
         $turnsEnEspera = Turn::with(['patient', 'doctor.specialty'])
             ->whereDate('arrived_at', today())
             ->where('status', 'espera')
+            ->where('doctor_id', $doctorId)
             ->orderBy('turn_order')
             ->get()
             ->map(fn (Turn $t) => $this->formatTurn($t));
@@ -55,18 +62,36 @@ class ConsultaController extends Controller
 
     public function store(StoreConsultationRequest $request): RedirectResponse
     {
-        $data = $request->validated();
+        /** @var User $user */
+        $user = $request->user();
+
+        $validated = $request->validated();
+
+        /** @var Turn $turn */
+        $turn = Turn::findOrFail($validated['turn_id']);
+
+        // doctor_id and patient_id are always taken from the turn, never from the request
+        $data = collect($validated)
+            ->except(['doctor_id', 'patient_id'])
+            ->merge([
+                'doctor_id' => $turn->doctor_id,
+                'patient_id' => $turn->patient_id,
+                'created_by' => $user->id,
+            ])
+            ->all();
 
         Consultation::create($data);
 
         Toast::success('Consulta guardada exitosamente.');
 
         return redirect()
-            ->to(route('consulta', ['patient_id' => $data['patient_id']]));
+            ->to(route('consulta', ['patient_id' => $turn->patient_id]));
     }
 
     public function alta(Turn $turn): RedirectResponse
     {
+        $this->authorizeTurnOwnership($turn);
+
         $turn->update(['status' => 'atendido']);
 
         Toast::success('Paciente dado de alta.');
@@ -77,6 +102,8 @@ class ConsultaController extends Controller
 
     public function updateAntecedents(UpdateAntecedentRequest $request, Patient $patient): RedirectResponse
     {
+        $this->authorizePatientTurnOwnership($patient);
+
         PatientAntecedent::updateOrCreate(
             ['patient_id' => $patient->id],
             $request->validated(),
@@ -85,6 +112,45 @@ class ConsultaController extends Controller
         Toast::success('Antecedentes actualizados.');
 
         return back();
+    }
+
+    /**
+     * Abort 403 unless the authenticated user's doctor owns the given turn.
+     */
+    private function authorizeTurnOwnership(Turn $turn): void
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        if (
+            $user->doctor === null
+            || $turn->doctor_id !== $user->doctor->id
+        ) {
+            abort(403);
+        }
+    }
+
+    /**
+     * Abort 403 unless the authenticated user's doctor has an open turn today for the patient.
+     */
+    private function authorizePatientTurnOwnership(Patient $patient): void
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        if ($user->doctor === null) {
+            abort(403);
+        }
+
+        $hasTurn = Turn::where('doctor_id', $user->doctor->id)
+            ->where('patient_id', $patient->id)
+            ->whereDate('arrived_at', today())
+            ->whereIn('status', ['espera', 'en_consulta'])
+            ->exists();
+
+        if (! $hasTurn) {
+            abort(403);
+        }
     }
 
     /** @return list<array<string, mixed>> */

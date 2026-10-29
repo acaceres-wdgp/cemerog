@@ -9,7 +9,7 @@
 | pacientes     | /pacientes               | pacientes/index     | admin, medico, secretaria                                | Terminado              | 2b          |
 | registro      | /registro                | registro/index      | admin, secretaria                                        | Sin entrada en sidebar | 3           |
 | citas         | /citas                   | citas/index         | admin, medico, secretaria                                | Terminado              | 4           |
-| consulta      | /consulta                | consulta/index      | admin, medico                                            | Terminado              | 5           |
+| consulta      | /consulta                | consulta/index      | medico (ver nota)                                        | Terminado              | 5           |
 | emergencia    | /emergencia              | emergencia/index    | admin, medico, enfermeria                                | Esqueleto              | 6           |
 | internamiento | /internamiento           | internamiento/index | admin, medico, enfermeria                                | Esqueleto              | 7           |
 | cirugia       | /cirugia                 | cirugia/index       | admin, medico, enfermeria                                | Esqueleto              | 8           |
@@ -55,7 +55,7 @@ El ítem "Pacientes" en el sidebar usa `activeFor: ['/registro']` para manteners
 
 | Rol           | Descripción               | Módulos                                                                                             |
 | ------------- | ------------------------- | --------------------------------------------------------------------------------------------------- |
-| administrador | Acceso total              | Todos                                                                                               |
+| administrador | Acceso administrativo     | inicio, tablero, pacientes, registro, citas, emergencia, internamiento, cirugia, lab, img, impresos, caja, cxc, cuadre, almacen, entrada, admin, doctores, analisis, imgcat, precios, habs, tema |
 | medico        | Atención médica completa  | inicio, tablero, pacientes, citas, consulta, emergencia, internamiento, cirugia, lab, img, impresos |
 | enfermeria    | Atención clínica de apoyo | tablero, emergencia, internamiento, cirugia, impresos                                               |
 | secretaria    | Recepción y agendamiento  | inicio, tablero, pacientes, registro, citas, impresos                                               |
@@ -64,13 +64,22 @@ El ítem "Pacientes" en el sidebar usa `activeFor: ['/registro']` para manteners
 | caja          | Facturación y cobros      | inicio, tablero, caja, cxc, cuadre, impresos                                                        |
 | almacen       | Inventario                | almacen, entrada                                                                                    |
 
+### Nota sobre `consulta` y el rol `administrador`
+
+El módulo `consulta` requiere **dos condiciones** simultáneas:
+
+1. Permiso `module.consulta.access` (lo tiene el rol `medico`, no `administrador`).
+2. Usuario vinculado a un médico activo en la tabla `doctors` (middleware `attend-patients`).
+
+El propietario (dueño de la clínica) accede a Consulta porque tiene **ambos roles** (`administrador` + `medico`) y está vinculado a su propio registro de médico. Un administrador puro (sin doctor activo vinculado) no puede entrar a `/consulta`. Ver ADR-015.
+
 ## Permisos
 
 Formato: `module.<clave>.access`
 
 Cada permiso se verifica:
 
-1. En el controlador: `middleware('permission:module.<clave>.access')`
+1. En el controlador: `middleware('attend-patients')` para `/consulta`; `middleware('permission:module.<clave>.access')` para los demás
 2. En la navegación: filtrado por la lista de permisos del usuario
 
 ## Página de inicio por rol
