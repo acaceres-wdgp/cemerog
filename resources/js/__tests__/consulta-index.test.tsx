@@ -461,6 +461,30 @@ describe('ConsultaIndex – historial', () => {
     });
 });
 
+// ─── Historial – display lb and ft ──────────────────────────────────────────────
+
+describe('ConsultaIndex – historial vitals display', () => {
+    it('shows 154 lb and 5′6″ for stored peso=699 and talla=170', () => {
+        const entry = makeHistorial({
+            vitals: {
+                peso: 699,
+                talla: 170,
+                temp: null,
+                presion_arterial: null,
+                frecuencia_cardiaca: null,
+                frecuencia_respiratoria: null,
+                saturacion_o2: null,
+                glucemia: null,
+            },
+        });
+        render(<ConsultaIndex {...BASE_PROPS} historial={[entry]} />);
+        // 699 kg×10 → 154.1 lb (shown as 154.1 lb)
+        expect(screen.getByText(/154\.1 lb/)).toBeTruthy();
+        // 170 cm → 5ft 6in → shown as 5′6″
+        expect(screen.getByText(/5′6″/)).toBeTruthy();
+    });
+});
+
 // ─── Dar de alta ─────────────────────────────────────────────────────────────────
 
 describe('ConsultaIndex – dar de alta', () => {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { formatPesoLb, formatTallaFtIn, computeImcFromMetric } from '@/lib/units';
 import { HistorialEntry } from '../types';
 
 // ─── Historial Panel ──────────────────────────────────────────────────────────
@@ -165,6 +166,73 @@ export default function HistorialPanel({
                                     <p className="m-0 text-text-heading">
                                         {sel.plan_tratamiento}
                                     </p>
+                                </div>
+                            )}
+
+                            {/* Signos vitales del registro histórico */}
+                            {(sel.vitals.peso !== null ||
+                                sel.vitals.talla !== null ||
+                                sel.vitals.presion_arterial !== null ||
+                                sel.vitals.frecuencia_cardiaca !== null ||
+                                sel.vitals.temp !== null) && (
+                                <div>
+                                    <div className="mb-2 text-[11px] font-semibold tracking-[.05em] text-muted uppercase">
+                                        Signos vitales
+                                    </div>
+                                    <div className="flex flex-wrap gap-3 text-[13px]">
+                                        {sel.vitals.peso !== null && (
+                                            <span className="text-text-heading">
+                                                <span className="text-muted">Peso </span>
+                                                {formatPesoLb(sel.vitals.peso)}
+                                            </span>
+                                        )}
+                                        {sel.vitals.talla !== null && (
+                                            <span className="text-text-heading">
+                                                <span className="text-muted">Talla </span>
+                                                {formatTallaFtIn(sel.vitals.talla)}
+                                            </span>
+                                        )}
+                                        {sel.vitals.peso !== null &&
+                                            sel.vitals.talla !== null && (
+                                                <span className="text-text-heading">
+                                                    <span className="text-muted">IMC </span>
+                                                    {computeImcFromMetric(
+                                                        sel.vitals.peso,
+                                                        sel.vitals.talla,
+                                                    ).display}
+                                                </span>
+                                            )}
+                                        {sel.vitals.presion_arterial !== null && (
+                                            <span className="text-text-heading">
+                                                <span className="text-muted">PA </span>
+                                                {sel.vitals.presion_arterial} mmHg
+                                            </span>
+                                        )}
+                                        {sel.vitals.frecuencia_cardiaca !== null && (
+                                            <span className="text-text-heading">
+                                                <span className="text-muted">FC </span>
+                                                {sel.vitals.frecuencia_cardiaca} lpm
+                                            </span>
+                                        )}
+                                        {sel.vitals.temp !== null && (
+                                            <span className="text-text-heading">
+                                                <span className="text-muted">T° </span>
+                                                {(sel.vitals.temp / 10).toFixed(1)} °C
+                                            </span>
+                                        )}
+                                        {sel.vitals.saturacion_o2 !== null && (
+                                            <span className="text-text-heading">
+                                                <span className="text-muted">SpO₂ </span>
+                                                {sel.vitals.saturacion_o2}%
+                                            </span>
+                                        )}
+                                        {sel.vitals.glucemia !== null && (
+                                            <span className="text-text-heading">
+                                                <span className="text-muted">Glucemia </span>
+                                                {sel.vitals.glucemia} mg/dL
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </>
