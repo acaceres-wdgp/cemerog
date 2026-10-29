@@ -103,9 +103,9 @@ class ConsultaController extends Controller
 
     public function discharge(StoreDischargeRequest $request, Turn $turn): RedirectResponse
     {
-        // Check if a discharge already exists for this turn (409 before 403)
+        // Check if a discharge already exists for this turn (422 before 403)
         if (Discharge::where('turn_id', $turn->id)->exists()) {
-            abort(409, 'This turn already has a discharge record.');
+            abort(422, 'Este turno ya tiene un alta registrada.');
         }
 
         if (! $turn->isOpenToday()) {
@@ -135,22 +135,6 @@ class ConsultaController extends Controller
         Toast::success('Paciente dado de alta.');
 
         return redirect()->to(route('consulta'));
-    }
-
-    public function alta(Turn $turn): RedirectResponse
-    {
-        $this->authorizeTurnOwnership($turn);
-
-        if (! $turn->isOpenToday()) {
-            abort(403);
-        }
-
-        $turn->update(['status' => 'atendido']);
-
-        Toast::success('Paciente dado de alta.');
-
-        return redirect()
-            ->to(route('consulta'));
     }
 
     public function updateAntecedents(UpdateAntecedentRequest $request, Patient $patient): RedirectResponse

@@ -157,11 +157,20 @@ test('turn cannot have two discharges returns 422', function () {
     // Reset turn status to allow second attempt
     $this->turn->update(['status' => 'en_consulta']);
 
-    // Second discharge attempt
+    // Second discharge attempt → 422 with message
     $this->actingAs($this->user)
         ->postJson("/consulta/turnos/{$this->turn->id}/alta", [
             'type' => 'recuperado',
             'discharge_diagnosis' => 'Gripe resuelta de nuevo',
         ])
-        ->assertStatus(409);
+        ->assertUnprocessable()
+        ->assertJson(['message' => 'Este turno ya tiene un alta registrada.']);
+});
+
+// ─── Old PATCH route is gone (405) ───────────────────────────────────────────
+
+test('PATCH /consulta/turnos/{turn}/alta returns 405 (route removed)', function () {
+    $this->actingAs($this->user)
+        ->patch("/consulta/turnos/{$this->turn->id}/alta")
+        ->assertStatus(405);
 });

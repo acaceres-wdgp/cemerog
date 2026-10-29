@@ -74,7 +74,10 @@ test('admin without linked doctor gets 403 on alta', function () {
     ]);
 
     $this->actingAs($admin)
-        ->patch("/consulta/turnos/{$turn->id}/alta")
+        ->postJson("/consulta/turnos/{$turn->id}/alta", [
+            'type' => 'recuperado',
+            'discharge_diagnosis' => 'Control',
+        ])
         ->assertForbidden();
 });
 
@@ -191,7 +194,10 @@ test('doctor A gets 403 on alta for a turn belonging to doctor B', function () {
     ]);
 
     $this->actingAs($userA)
-        ->patch("/consulta/turnos/{$turnB->id}/alta")
+        ->postJson("/consulta/turnos/{$turnB->id}/alta", [
+            'type' => 'recuperado',
+            'discharge_diagnosis' => 'Control',
+        ])
         ->assertForbidden();
 });
 
