@@ -514,7 +514,9 @@ describe('ConsultaIndex – signos vitales server errors', () => {
 
     it('shows errors.talla message below height fields when present', () => {
         mockUsePage.mockReturnValue({
-            props: { errors: { talla: 'El campo talla no debe ser mayor que 241.' } },
+            props: {
+                errors: { talla: 'El campo talla no debe ser mayor que 241.' },
+            },
         });
         render(<ConsultaIndex {...BASE_PROPS} />);
         expect(
@@ -524,7 +526,9 @@ describe('ConsultaIndex – signos vitales server errors', () => {
 
     it('shows errors.peso message below weight field when present', () => {
         mockUsePage.mockReturnValue({
-            props: { errors: { peso: 'El campo peso no debe ser mayor que 3175.' } },
+            props: {
+                errors: { peso: 'El campo peso no debe ser mayor que 3175.' },
+            },
         });
         render(<ConsultaIndex {...BASE_PROPS} />);
         expect(
