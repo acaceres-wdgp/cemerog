@@ -33,9 +33,12 @@ beforeEach(function () {
 // ─── Rollback ─────────────────────────────────────────────────────────────────
 
 test('discharges migration can be rolled back', function () {
-    $this->artisan('migrate:rollback', ['--step' => 1])->assertSuccessful();
+    $migration = '2026_10_29_170307_create_discharges_table';
+
+    Artisan::call('migrate:rollback', ['--path' => "database/migrations/{$migration}.php"]);
     expect(Schema::hasTable('discharges'))->toBeFalse();
-    $this->artisan('migrate')->assertSuccessful();
+
+    Artisan::call('migrate', ['--path' => "database/migrations/{$migration}.php"]);
     expect(Schema::hasTable('discharges'))->toBeTrue();
 });
 
