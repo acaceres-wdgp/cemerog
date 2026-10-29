@@ -38,7 +38,7 @@ function DisabledActionButton({
     return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <span>
+                <span tabIndex={0}>
                     <button
                         disabled
                         type="button"

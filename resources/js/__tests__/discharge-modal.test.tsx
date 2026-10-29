@@ -4,6 +4,7 @@
  */
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const { mockRouterPost, mockUsePage } = vi.hoisted(() => ({
@@ -77,21 +78,52 @@ describe('ConsultaIndex – disabled action buttons', () => {
         expect(btn.hasAttribute('disabled')).toBe(true);
     });
 
-    it('"Ordenar estudios" has tooltip about Laboratorio', () => {
+    it('"Ordenar estudios" tooltip appears on hover', async () => {
+        const user = userEvent.setup();
         render(<ConsultaIndex {...BASE_PROPS} />);
-        const btn = screen.getByRole('button', { name: /Ordenar estudios/i });
-        // tooltip is stored in title or aria-label attribute
-        const tooltip =
-            btn.getAttribute('title') ??
-            btn.closest('[data-tooltip]')?.getAttribute('data-tooltip') ??
-            btn.getAttribute('aria-description') ??
-            screen.queryByText(/Laboratorio/)?.textContent;
-        // Verify that somewhere there's a tooltip text about Laboratorio
-        expect(
-            btn.getAttribute('title') !== null ||
-                document.body.textContent?.includes('Laboratorio') ||
-                btn.getAttribute('aria-label') !== null,
-        ).toBe(true);
+        const trigger = screen
+            .getByRole('button', { name: /Ordenar estudios/i })
+            .closest('span')!;
+        await user.hover(trigger);
+        await waitFor(() => {
+            expect(screen.getByText(/Laboratorio/i)).toBeTruthy();
+        });
+    });
+
+    it('"Ordenar estudios" tooltip appears on keyboard focus', async () => {
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        const trigger = screen
+            .getByRole('button', { name: /Ordenar estudios/i })
+            .closest('span')!;
+        // Focus the span directly (the disabled button cannot receive focus)
+        trigger.focus();
+        await waitFor(() => {
+            expect(screen.getByText(/Laboratorio/i)).toBeTruthy();
+        });
+    });
+
+    it('"Pasar a emergencia" tooltip appears on hover', async () => {
+        const user = userEvent.setup();
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        const trigger = screen
+            .getByRole('button', { name: /Pasar a emergencia/i })
+            .closest('span')!;
+        await user.hover(trigger);
+        await waitFor(() => {
+            expect(screen.getByText(/Emergencia/i)).toBeTruthy();
+        });
+    });
+
+    it('"Ingresar" tooltip appears on hover', async () => {
+        const user = userEvent.setup();
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        const trigger = screen
+            .getByRole('button', { name: /^Ingresar$/i })
+            .closest('span')!;
+        await user.hover(trigger);
+        await waitFor(() => {
+            expect(screen.getByText(/Internamiento/i)).toBeTruthy();
+        });
     });
 });
 
