@@ -26,10 +26,12 @@ export function feetInchesToCm(ft: number, inches: number): number {
 
 /**
  * Convert cm (storage format) to feet + inches for display.
+ * Uses Math.round so that the stored cm value round-trips back to the
+ * original ft+in that was entered (e.g. 170 cm → 5′7″, not 5′6″).
  * Guaranteed: 0 ≤ inches ≤ 11.
  */
 export function cmToFeetInches(cm: number): { ft: number; inches: number } {
-    const totalInches = Math.floor(cm / CM_PER_INCH);
+    const totalInches = Math.round(cm / CM_PER_INCH);
     const ft = Math.floor(totalInches / INCHES_PER_FOOT);
     const inches = totalInches % INCHES_PER_FOOT;
     return { ft, inches };

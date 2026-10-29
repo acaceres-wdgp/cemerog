@@ -60,25 +60,30 @@ describe('feetInchesToCm', () => {
 });
 
 describe('cmToFeetInches', () => {
-    it('converts 170 cm to 5 ft 6 in (170/2.54 = 66.9in = 5ft 6.9in)', () => {
+    it('converts 170 cm to 5 ft 7 in (Math.round(170/2.54)=67in=5ft7in)', () => {
         const result = cmToFeetInches(170);
         expect(result.ft).toBe(5);
-        expect(result.inches).toBe(6);
+        expect(result.inches).toBe(7);
     });
 
     it('inches is always 0–11', () => {
-        for (let cm = 100; cm <= 250; cm += 5) {
+        for (let cm = 30; cm <= 241; cm += 1) {
             const result = cmToFeetInches(cm);
             expect(result.inches).toBeGreaterThanOrEqual(0);
             expect(result.inches).toBeLessThanOrEqual(11);
         }
     });
 
-    it('round-trip: feetInchesToCm then cmToFeetInches returns original within 1 inch', () => {
-        const { ft, inches } = cmToFeetInches(feetInchesToCm(5, 7));
-        expect(ft).toBe(5);
-        // 170 cm = 66.9 in → 5ft 6in, which is within 1 of original 7 in
-        expect(Math.abs(inches - 7)).toBeLessThanOrEqual(1);
+    it('exhaustive round-trip: feetInchesToCm then cmToFeetInches returns exact same ft and inches (1\'0" to 7\'11")', () => {
+        for (let ft = 1; ft <= 7; ft++) {
+            const maxInches = ft === 7 ? 11 : 11;
+            for (let inches = 0; inches <= maxInches; inches++) {
+                const cm = feetInchesToCm(ft, inches);
+                const result = cmToFeetInches(cm);
+                expect(result.ft).toBe(ft);
+                expect(result.inches).toBe(inches);
+            }
+        }
     });
 });
 
