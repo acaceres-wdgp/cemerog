@@ -34,8 +34,8 @@ Los archivos se guardan **tal como se entregaron**: el formateador los ignora (`
 | [PROMPT-03](PROMPT-03-registro-edit-tokens.md) | `registro/edit`: tokens | #10 | ✅ Mezclado |
 | [PROMPT-04](PROMPT-04-libreria-componentes-tokens.md) | Librería `components/cemerog/`: tokens | #11 | ✅ Mezclado |
 | [PROMPT-12a](PROMPT-12a-consulta-partir.md) | Consulta: tests de caracterización y partir el archivo | #20 | ✅ Mezclado |
-| [PROMPT-12b](PROMPT-12b-consulta-tokens.md) | Consulta: tokens | #21 | 🔄 En revisión |
-| [PROMPT-12c](PROMPT-12c-consulta-ajustes.md) | Consulta: estilos falsamente «dinámicos» e IMC | #21 | ⏳ Pendiente |
+| [PROMPT-12b](PROMPT-12b-consulta-tokens.md) | Consulta: tokens | #21 | ✅ Mezclado |
+| [PROMPT-12c](PROMPT-12c-consulta-ajustes.md) | Consulta: estilos falsamente «dinámicos» e IMC | #21 | ✅ Mezclado |
 
 ### Funcionalidad y correcciones
 
@@ -58,7 +58,8 @@ Los archivos se guardan **tal como se entregaron**: el formateador los ignora (`
 
 | Prompt | Tema | Depende de | Estado |
 |---|---|---|---|
-| [PROMPT-13](PROMPT-13-medico-con-usuario.md) | Al crear un médico se crea su usuario y sus credenciales | — | ⏳ Pendiente |
+| [PROMPT-13](PROMPT-13-medico-con-usuario.md) | Al crear un médico se crea su usuario y sus credenciales | — | 🔄 En revisión (#23) |
+| [PROMPT-13b](PROMPT-13b-medico-con-usuario-ajustes.md) | Ajustes del 13: diálogo de credenciales, lint, desactivar al dueño, confirmación, partículas | 13 | 🔄 En revisión (#23) |
 | [PROMPT-14](PROMPT-14-consulta-acceso-y-autoria.md) | Solo el médico del turno atiende y firma; el administrador no médico no ve Consulta | 13 | ⏳ Pendiente |
 | [PROMPT-15](PROMPT-15-signos-vitales.md) | Signos vitales en libras y pies/pulgadas; IMC; «Plan» | 12c, 14 | ⏳ Pendiente |
 | [PROMPT-16](PROMPT-16-acciones-y-alta.md) | Botones de acción y alta médica con tipo | 15 | ⏳ Pendiente |
