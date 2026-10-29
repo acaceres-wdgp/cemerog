@@ -7,15 +7,18 @@ import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const { mockRouterGet, mockRouterPost, mockRouterPatch } = vi.hoisted(() => ({
-    mockRouterGet: vi.fn(),
-    mockRouterPost: vi.fn(),
-    mockRouterPatch: vi.fn(),
-}));
+const { mockRouterGet, mockRouterPost, mockRouterPatch, mockUsePage } =
+    vi.hoisted(() => ({
+        mockRouterGet: vi.fn(),
+        mockRouterPost: vi.fn(),
+        mockRouterPatch: vi.fn(),
+        mockUsePage: vi.fn(() => ({ props: { errors: {} } })),
+    }));
 
 vi.mock('@inertiajs/react', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@inertiajs/react')>()),
     Head: () => null,
+    usePage: mockUsePage,
     router: {
         get: mockRouterGet,
         post: mockRouterPost,
@@ -308,51 +311,70 @@ describe('ConsultaIndex – antecedentes', () => {
 });
 
 // ─── Nota clínica IMC ───────────────────────────────────────────────────────────
+// Form now accepts lb (weight) and ft+inches (height); BMI is computed live.
 
 describe('ConsultaIndex – nota clínica IMC', () => {
-    it('computes IMC correctly from peso and talla inputs', () => {
+    it('computes IMC ~24.1 Normal from 154 lb and 5 ft 6 in', () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
 
-        // Find peso and talla inputs by their label text
-        const pesoLabel = screen.getByText('Peso').closest('label')!;
-        const tallaLabel = screen.getByText('Talla').closest('label')!;
-        const pesoInput = pesoLabel.querySelector('input')!;
-        const tallaInput = tallaLabel.querySelector('input')!;
+        // Weight in lb
+        const pesoLabel = screen.getByText('Peso (lb)').closest('label')!;
+        fireEvent.change(pesoLabel.querySelector('input')!, {
+            target: { value: '154' },
+        });
 
-        fireEvent.change(pesoInput, { target: { value: '70' } });
-        fireEvent.change(tallaInput, { target: { value: '170' } });
+        // Height: feet field
+        const ftLabel = screen.getByText('Pies').closest('label')!;
+        fireEvent.change(ftLabel.querySelector('input')!, {
+            target: { value: '5' },
+        });
 
-        expect(screen.getByText('24.2 Normal')).toBeTruthy();
+        // Height: inches field
+        const inLabel = screen.getByText('Pulgadas').closest('label')!;
+        fireEvent.change(inLabel.querySelector('input')!, {
+            target: { value: '7' },
+        });
+
+        // IMC for 154 lb / 5'7" ≈ 24.1 Normal
+        // stored: peso=699 (lbToKgTimes10(154)), talla=170 (feetInchesToCm(5,7))
+        // imc = 69.9 / (1.70^2) = 24.1...
+        expect(screen.getByText(/24\.\d Normal/)).toBeTruthy();
     });
 });
 
 // ─── Nota clínica guardar ───────────────────────────────────────────────────────
+// The form converts lb → kg×10 and ft+in → cm before sending to the server.
 
 describe('ConsultaIndex – nota clínica guardar', () => {
     beforeEach(() => {
         mockRouterPost.mockClear();
     });
 
-    it('clicking "✓ Guardar nota" calls router.post with the correct payload', () => {
+    it('clicking "✓ Guardar nota" sends converted metric values (peso=699, talla=170)', () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
 
         // Fill motivo_consulta
         const motivoLabel = screen
             .getByText('Motivo de consulta')
             .closest('label')!;
-        const motivoTextarea = motivoLabel.querySelector('textarea')!;
-        fireEvent.change(motivoTextarea, { target: { value: 'Fiebre' } });
-
-        // Fill peso
-        const pesoLabel = screen.getByText('Peso').closest('label')!;
-        fireEvent.change(pesoLabel.querySelector('input')!, {
-            target: { value: '70' },
+        fireEvent.change(motivoLabel.querySelector('textarea')!, {
+            target: { value: 'Fiebre' },
         });
 
-        // Fill talla
-        const tallaLabel = screen.getByText('Talla').closest('label')!;
-        fireEvent.change(tallaLabel.querySelector('input')!, {
-            target: { value: '170' },
+        // Fill peso in lb (154 lb → 699 kg×10)
+        const pesoLabel = screen.getByText('Peso (lb)').closest('label')!;
+        fireEvent.change(pesoLabel.querySelector('input')!, {
+            target: { value: '154' },
+        });
+
+        // Fill height: 5 ft 7 in → 170 cm
+        const ftLabel = screen.getByText('Pies').closest('label')!;
+        fireEvent.change(ftLabel.querySelector('input')!, {
+            target: { value: '5' },
+        });
+        const inLabel = screen.getByText('Pulgadas').closest('label')!;
+        fireEvent.change(inLabel.querySelector('input')!, {
+            target: { value: '7' },
         });
 
         fireEvent.click(screen.getByText('✓ Guardar nota'));
@@ -364,8 +386,8 @@ describe('ConsultaIndex – nota clínica guardar', () => {
                 doctor_id: 1,
                 turn_id: 1,
                 motivo_consulta: 'Fiebre',
-                peso: 700,
-                talla: 170,
+                peso: 699, // lbToKgTimes10(154)
+                talla: 170, // feetInchesToCm(5, 7)
             }),
             expect.any(Object),
         );
@@ -442,6 +464,30 @@ describe('ConsultaIndex – historial', () => {
     });
 });
 
+// ─── Historial – display lb and ft ──────────────────────────────────────────────
+
+describe('ConsultaIndex – historial vitals display', () => {
+    it('shows 154 lb and 5′7″ for stored peso=699 and talla=170', () => {
+        const entry = makeHistorial({
+            vitals: {
+                peso: 699,
+                talla: 170,
+                temp: null,
+                presion_arterial: null,
+                frecuencia_cardiaca: null,
+                frecuencia_respiratoria: null,
+                saturacion_o2: null,
+                glucemia: null,
+            },
+        });
+        render(<ConsultaIndex {...BASE_PROPS} historial={[entry]} />);
+        // 699 kg×10 → 154 lb (rounded to nearest half-pound)
+        expect(screen.getByText(/154 lb/)).toBeTruthy();
+        // 170 cm → Math.round(170/2.54)=67in → 5ft 7in → shown as 5′7″
+        expect(screen.getByText(/5′7″/)).toBeTruthy();
+    });
+});
+
 // ─── Dar de alta ─────────────────────────────────────────────────────────────────
 
 describe('ConsultaIndex – dar de alta', () => {
@@ -456,5 +502,59 @@ describe('ConsultaIndex – dar de alta', () => {
             '/consulta/turnos/1/alta',
             {},
         );
+    });
+});
+
+// ─── Signos Vitales – validation errors from server ──────────────────────────
+
+describe('ConsultaIndex – signos vitales server errors', () => {
+    beforeEach(() => {
+        mockUsePage.mockClear();
+    });
+
+    it('shows errors.talla message below height fields when present', () => {
+        mockUsePage.mockReturnValue({
+            props: {
+                errors: { talla: 'El campo talla no debe ser mayor que 241.' },
+            },
+        });
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        expect(
+            screen.getByText('El campo talla no debe ser mayor que 241.'),
+        ).toBeTruthy();
+    });
+
+    it('shows errors.peso message below weight field when present', () => {
+        mockUsePage.mockReturnValue({
+            props: {
+                errors: { peso: 'El campo peso no debe ser mayor que 3175.' },
+            },
+        });
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        expect(
+            screen.getByText('El campo peso no debe ser mayor que 3175.'),
+        ).toBeTruthy();
+    });
+});
+
+// ─── Signos Vitales – feet range warning ──────────────────────────────────────
+
+describe('ConsultaIndex – feet range warning', () => {
+    it('shows feet range warning when value is out of 1–7 range', () => {
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        const ftLabel = screen.getByText('Pies').closest('label')!;
+        fireEvent.change(ftLabel.querySelector('input')!, {
+            target: { value: '8' },
+        });
+        expect(screen.getByText('1–7 ft')).toBeTruthy();
+    });
+
+    it('does not show feet range warning when value is within 1–7 range', () => {
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        const ftLabel = screen.getByText('Pies').closest('label')!;
+        fireEvent.change(ftLabel.querySelector('input')!, {
+            target: { value: '5' },
+        });
+        expect(screen.queryByText('1–7 ft')).toBeNull();
     });
 });

@@ -68,8 +68,12 @@ export type NoteFormData = {
     temp: string;
     saturacion_o2: string;
     glucemia: string;
-    peso: string;
-    talla: string;
+    /** Weight entered in pounds (lb). Converted to kg×10 before submitting. */
+    pesoLb: string;
+    /** Height entered in feet. Combined with tallaPulgadas and converted to cm before submitting. */
+    tallaPies: string;
+    /** Height entered in inches (0–11). Combined with tallaPies and converted to cm before submitting. */
+    tallaPulgadas: string;
     diagnosticos: Diagnostico[];
 };
 

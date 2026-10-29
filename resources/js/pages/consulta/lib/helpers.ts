@@ -12,19 +12,3 @@ export function initials(name: string): string {
     if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
     return name.slice(0, 2).toUpperCase();
 }
-
-export function computeImc(peso: number | null, talla: number | null): string {
-    if (!peso || !talla || talla === 0) return '—';
-    const pesoKg = peso / 10;
-    const tallaMt = talla / 100;
-    const imc = pesoKg / (tallaMt * tallaMt);
-    const cat =
-        imc < 18.5
-            ? 'Bajo'
-            : imc < 25
-              ? 'Normal'
-              : imc < 30
-                ? 'Sobrepeso'
-                : 'Obesidad';
-    return `${imc.toFixed(1)} ${cat}`;
-}

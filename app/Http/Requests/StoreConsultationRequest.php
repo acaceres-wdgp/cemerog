@@ -58,8 +58,12 @@ class StoreConsultationRequest extends FormRequest
             // doctor_id / patient_id may arrive from the frontend but are ignored; kept for backward-compat validation only
             'doctor_id' => ['nullable', 'integer', 'exists:doctors,id'],
             'patient_id' => ['nullable', 'integer', 'exists:patients,id'],
-            'peso' => ['nullable', 'integer', 'min:0'],
-            'talla' => ['nullable', 'integer', 'min:0'],
+            // peso stored as kg×10 (converted from lb on the frontend)
+            // 2 lb ≈ 9 kg×10, 700 lb ≈ 3175 kg×10
+            'peso' => ['nullable', 'integer', 'min:9', 'max:3175'],
+            // talla stored in cm (converted from ft+in on the frontend)
+            // 1'0" = 30 cm, 7'11" = 241 cm
+            'talla' => ['nullable', 'integer', 'min:30', 'max:241'],
             'temp' => ['nullable', 'integer', 'min:0'],
             'presion_arterial' => ['nullable', 'string', 'max:20'],
             'frecuencia_cardiaca' => ['nullable', 'integer', 'min:0'],
