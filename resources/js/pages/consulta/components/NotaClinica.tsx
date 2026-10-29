@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { lbToKgTimes10, feetInchesToCm } from '@/lib/units';
-import { AntecedentData, Diagnostico, NoteFormData, TurnItem } from '../types';
+import { AntecedentData, NoteFormData, TurnItem } from '../types';
 import AntecedentesPanel from './AntecedentesPanel';
 import SignosVitales from './SignosVitales';
 import DiagnosticoCie10 from './DiagnosticoCie10';

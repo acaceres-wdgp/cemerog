@@ -1,5 +1,9 @@
 import React from 'react';
-import { computeImcFromMetric, lbToKgTimes10, feetInchesToCm } from '@/lib/units';
+import {
+    computeImcFromMetric,
+    lbToKgTimes10,
+    feetInchesToCm,
+} from '@/lib/units';
 import { NoteFormData } from '../types';
 
 // ─── Signos Vitales ───────────────────────────────────────────────────────────
@@ -30,10 +34,7 @@ type SimpleVitalKey = (typeof SIMPLE_VITALS)[number]['key'];
 type Props = {
     form: Pick<
         NoteFormData,
-        | SimpleVitalKey
-        | 'pesoLb'
-        | 'tallaPies'
-        | 'tallaPulgadas'
+        SimpleVitalKey | 'pesoLb' | 'tallaPies' | 'tallaPulgadas'
     >;
     onChange: (patch: Partial<NoteFormData>) => void;
 };
@@ -95,7 +96,9 @@ export default function SignosVitales({ form, onChange }: Props) {
                             min={2}
                             max={700}
                             value={form.pesoLb}
-                            onChange={(e) => onChange({ pesoLb: e.target.value })}
+                            onChange={(e) =>
+                                onChange({ pesoLb: e.target.value })
+                            }
                             className={inputCls}
                         />
                         <span className="text-[11.5px] whitespace-nowrap text-muted-light">
@@ -103,7 +106,8 @@ export default function SignosVitales({ form, onChange }: Props) {
                         </span>
                     </span>
                     {form.pesoLb &&
-                        (Number(form.pesoLb) < 2 || Number(form.pesoLb) > 700) && (
+                        (Number(form.pesoLb) < 2 ||
+                            Number(form.pesoLb) > 700) && (
                             <span className="text-[11px] text-error">
                                 Rango: 2–700 lb
                             </span>
@@ -121,7 +125,9 @@ export default function SignosVitales({ form, onChange }: Props) {
                             min={1}
                             max={7}
                             value={form.tallaPies}
-                            onChange={(e) => onChange({ tallaPies: e.target.value })}
+                            onChange={(e) =>
+                                onChange({ tallaPies: e.target.value })
+                            }
                             className={inputCls}
                         />
                         <span className="text-[11.5px] whitespace-nowrap text-muted-light">
