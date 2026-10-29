@@ -360,7 +360,8 @@ test('talla=30 (lower bound) saves OK', function () {
             'turn_id' => $turn->id,
             'talla' => 30,
         ])
-        ->assertRedirect();
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
 });
 
 test('talla=241 (upper bound) saves OK', function () {
@@ -376,7 +377,8 @@ test('talla=241 (upper bound) saves OK', function () {
             'turn_id' => $turn->id,
             'talla' => 241,
         ])
-        ->assertRedirect();
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
 });
 
 test('peso=9 (lower bound) saves OK', function () {
@@ -392,7 +394,8 @@ test('peso=9 (lower bound) saves OK', function () {
             'turn_id' => $turn->id,
             'peso' => 9,
         ])
-        ->assertRedirect();
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
 });
 
 test('peso=3175 (upper bound) saves OK', function () {
@@ -408,5 +411,6 @@ test('peso=3175 (upper bound) saves OK', function () {
             'turn_id' => $turn->id,
             'peso' => 3175,
         ])
-        ->assertRedirect();
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
 });
