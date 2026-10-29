@@ -58,9 +58,10 @@ Los archivos se guardan **tal como se entregaron**: el formateador los ignora (`
 
 | Prompt | Tema | Depende de | Estado |
 |---|---|---|---|
-| [PROMPT-13](PROMPT-13-medico-con-usuario.md) | Al crear un médico se crea su usuario y sus credenciales | — | 🔄 En revisión (#23) |
-| [PROMPT-13b](PROMPT-13b-medico-con-usuario-ajustes.md) | Ajustes del 13: diálogo de credenciales, lint, desactivar al dueño, confirmación, partículas | 13 | 🔄 En revisión (#23) |
-| [PROMPT-14](PROMPT-14-consulta-acceso-y-autoria.md) | Solo el médico del turno atiende y firma; el administrador no médico no ve Consulta | 13 | ⏳ Pendiente |
+| [PROMPT-13](PROMPT-13-medico-con-usuario.md) | Al crear un médico se crea su usuario y sus credenciales | — | ✅ Mezclado (#23) |
+| [PROMPT-13b](PROMPT-13b-medico-con-usuario-ajustes.md) | Ajustes del 13: diálogo de credenciales, lint, desactivar al dueño, confirmación, partículas | 13 | ✅ Mezclado (#23) |
+| [PROMPT-14](PROMPT-14-consulta-acceso-y-autoria.md) | Solo el médico del turno atiende y firma; el administrador no médico no ve Consulta | 13 | 🔄 En revisión (#25) |
+| [PROMPT-14b](PROMPT-14b-consulta-acceso-ajustes.md) | Ajustes del 14: estado vacío, menú y alta solo de turnos abiertos | 14 | 🔄 En revisión (#25) |
 | [PROMPT-15](PROMPT-15-signos-vitales.md) | Signos vitales en libras y pies/pulgadas; IMC; «Plan» | 12c, 14 | ⏳ Pendiente |
 | [PROMPT-16](PROMPT-16-acciones-y-alta.md) | Botones de acción y alta médica con tipo | 15 | ⏳ Pendiente |
 | [PROMPT-17](PROMPT-17-receta.md) | Receta: guardar, imprimir y ver en el historial | 16 | ⏳ Pendiente |
