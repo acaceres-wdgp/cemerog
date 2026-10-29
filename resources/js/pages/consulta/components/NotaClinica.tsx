@@ -387,7 +387,7 @@ export default function NotaClinica({
                     </div>
 
                     <label className="flex flex-col gap-[6px]">
-                        <span className="font-medium">Plan e indicaciones</span>
+                        <span className="font-medium">Plan</span>
                         <textarea
                             rows={2}
                             className={textareaCls}
