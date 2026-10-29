@@ -30,6 +30,7 @@ const page = vi.hoisted(() => ({
             },
         },
         permissions: [] as string[],
+        can_attend: true,
         sidebarOpen: true,
     },
 }));
@@ -62,6 +63,7 @@ beforeEach(() => {
     page.component = 'inicio/index';
     page.props.auth.user.roles = ['administrador'];
     page.props.permissions = ALL_PERMISSIONS;
+    page.props.can_attend = true;
     // Clear sidebar cookies so each test starts from a known state
     document.cookie =
         'sidebar_state=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
@@ -230,6 +232,37 @@ describe('user menu', () => {
         fireEvent.click(screen.getByRole('button', { name: /Ana Gómez/i }));
         // Role is shown in the dropdown (may appear more than once across topbar + dropdown)
         expect(screen.getAllByText(/administrador/i).length).toBeGreaterThan(0);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Test: Consulta hidden when can_attend is false
+// ---------------------------------------------------------------------------
+describe('consulta nav item visibility (can_attend)', () => {
+    it('hides Consulta when user has permission but can_attend is false', () => {
+        page.props.permissions = [
+            'module.inicio.access',
+            'module.consulta.access',
+        ];
+        page.props.can_attend = false;
+        render(<AppLayout>x</AppLayout>);
+
+        expect(
+            screen.queryByRole('link', { name: 'Consulta' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows Consulta when user has permission and can_attend is true', () => {
+        page.props.permissions = [
+            'module.inicio.access',
+            'module.consulta.access',
+        ];
+        page.props.can_attend = true;
+        render(<AppLayout>x</AppLayout>);
+
+        expect(
+            screen.getByRole('link', { name: 'Consulta' }),
+        ).toBeInTheDocument();
     });
 });
 

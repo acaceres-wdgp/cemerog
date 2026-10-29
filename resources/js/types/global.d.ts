@@ -23,6 +23,7 @@ export interface DoctorProp {
     id: number;
     name: string;
     office: string;
+    is_active: boolean;
 }
 
 // Queue optional prop resolved on partial reloads (only for users with a doctor)
@@ -39,6 +40,7 @@ export interface QueueProp {
 export interface PageProps {
     auth: Auth;
     permissions: string[];
+    can_attend: boolean;
     name: string;
     sidebarOpen: boolean;
     doctor?: DoctorProp | null;
