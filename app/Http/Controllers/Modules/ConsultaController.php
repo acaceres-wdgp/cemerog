@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Modules;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreConsultationRequest;
+use App\Http\Requests\StoreDischargeRequest;
 use App\Http\Requests\UpdateAntecedentRequest;
 use App\Models\Consultation;
+use App\Models\Discharge;
 use App\Models\Patient;
 use App\Models\PatientAntecedent;
 use App\Models\Turn;
@@ -13,6 +15,7 @@ use App\Models\User;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -96,6 +99,42 @@ class ConsultaController extends Controller
 
         return redirect()
             ->to(route('consulta', ['patient_id' => $turn->patient_id]));
+    }
+
+    public function discharge(StoreDischargeRequest $request, Turn $turn): RedirectResponse
+    {
+        // Check if a discharge already exists for this turn (409 before 403)
+        if (Discharge::where('turn_id', $turn->id)->exists()) {
+            abort(409, 'This turn already has a discharge record.');
+        }
+
+        if (! $turn->isOpenToday()) {
+            abort(403);
+        }
+
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        $validated = $request->validated();
+
+        DB::transaction(function () use ($turn, $validated, $user): void {
+            Discharge::create([
+                'turn_id' => $turn->id,
+                'patient_id' => $turn->patient_id,
+                'doctor_id' => $turn->doctor_id,
+                'type' => $validated['type'],
+                'destination' => $validated['destination'] ?? null,
+                'reason' => $validated['reason'] ?? null,
+                'discharge_diagnosis' => $validated['discharge_diagnosis'],
+                'created_by' => $user->id,
+            ]);
+
+            $turn->update(['status' => 'atendido']);
+        });
+
+        Toast::success('Paciente dado de alta.');
+
+        return redirect()->to(route('consulta'));
     }
 
     public function alta(Turn $turn): RedirectResponse
