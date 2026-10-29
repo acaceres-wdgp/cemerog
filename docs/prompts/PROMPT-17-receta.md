@@ -29,6 +29,8 @@ Tabla Medicamento / Vía / Dosis / Frecuencia / Duración (días o **Continuo**)
 ## Paso 4 — Documento imprimible (tamaño carta, según el diseño)
 Encabezado de la clínica (logo, nombre, RNC, teléfono, dirección — toma los datos de `config/cemerog.php` o crea las claves si faltan), Paciente, Edad · Sexo, **Alergias en rojo**, Fecha, No. de atención; bloque **Rx** numerado con medicamento en negrita, «Cant.: N» y la instrucción **redactada** a partir de los campos («Tomar 1 tableta por vía oral cada 12 horas durante 7 días.»; si es continuo: «… de forma continua.»); Indicaciones; «Próxima cita: ____»; firma con el nombre del médico. CSS de impresión (`@media print`) que oculte el resto de la app. Ruta propia (p. ej. `/consulta/recetas/{prescription}/imprimir`) accesible a médicos (y desde el historial).
 
+**Acceso a la impresión.** El middleware `attend-patients` (PR #25) deja pasar **cualquier `GET`** a quien tenga `module.consulta.access`, aunque no tenga médico activo; así puede mostrar el estado vacío de Consulta. Por eso la ruta de impresión debe comprobar **ella misma** `$user->canAttendPatients()` y responder 403 si es falso. Agrega un test Pest: usuario `medico` sin médico activo → 403 al imprimir.
+
 ## Paso 5 — Historial
 - La entrada de la consulta en el historial muestra un enlace **«Ver receta»** que abre el detalle (medicamentos e indicaciones) con botón **Imprimir**.
 - Activa el filtro **«Recetas»** del historial (según el diseño).
