@@ -112,7 +112,7 @@ class ConsultaController extends Controller
             abort(403);
         }
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = $request->user();
 
         $validated = $request->validated();
@@ -209,7 +209,7 @@ class ConsultaController extends Controller
     /** @return list<array<string, mixed>> */
     private function loadHistorial(Patient $patient): array
     {
-        return Consultation::with(['doctor.specialty'])
+        return Consultation::with(['doctor.specialty', 'turn.discharge'])
             ->where('patient_id', $patient->id)
             ->orderByDesc('consulted_at')
             ->get()
@@ -236,6 +236,12 @@ class ConsultaController extends Controller
                     'saturacion_o2' => $c->saturacion_o2,
                     'glucemia' => $c->glucemia,
                 ],
+                'discharge' => $c->turn?->discharge ? [
+                    'type' => $c->turn->discharge->type,
+                    'destination' => $c->turn->discharge->destination,
+                    'discharge_diagnosis' => $c->turn->discharge->discharge_diagnosis,
+                    'discharged_at' => $c->turn->discharge->discharged_at,
+                ] : null,
             ])
             ->all();
     }

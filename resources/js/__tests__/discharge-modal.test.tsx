@@ -104,19 +104,28 @@ describe('ConsultaIndex – alta médica modal', () => {
 
     it('clicking "Dar alta médica" opens the modal', () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
-        fireEvent.click(screen.getByRole('button', { name: /Dar alta médica/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /Dar alta médica/i }),
+        );
         expect(screen.getByText('Alta médica')).toBeTruthy();
     });
 
     it('modal shows patient name and turn number', () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
-        fireEvent.click(screen.getByRole('button', { name: /Dar alta médica/i }));
-        expect(screen.getByText(/María García/)).toBeTruthy();
+        fireEvent.click(
+            screen.getByRole('button', { name: /Dar alta médica/i }),
+        );
+        // The modal title is shown
+        expect(screen.getByText('Alta médica')).toBeTruthy();
+        // Patient name appears (patient header + modal description)
+        expect(screen.getAllByText(/María García/).length).toBeGreaterThan(0);
     });
 
     it('modal shows three discharge type options', () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
-        fireEvent.click(screen.getByRole('button', { name: /Dar alta médica/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /Dar alta médica/i }),
+        );
         expect(screen.getByText(/Por alivio/i)).toBeTruthy();
         expect(screen.getByText(/Traslado a otro centro/i)).toBeTruthy();
         expect(screen.getByText(/Defunción/i)).toBeTruthy();
@@ -124,7 +133,9 @@ describe('ConsultaIndex – alta médica modal', () => {
 
     it('destination field is hidden when "Por alivio" is selected', () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
-        fireEvent.click(screen.getByRole('button', { name: /Dar alta médica/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /Dar alta médica/i }),
+        );
         // Select "Por alivio"
         fireEvent.click(screen.getByText(/Por alivio/i));
         expect(screen.queryByLabelText(/Centro de destino/i)).toBeNull();
@@ -132,14 +143,18 @@ describe('ConsultaIndex – alta médica modal', () => {
 
     it('destination field is shown when "Traslado" is selected', () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
-        fireEvent.click(screen.getByRole('button', { name: /Dar alta médica/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /Dar alta médica/i }),
+        );
         fireEvent.click(screen.getByText(/Traslado a otro centro/i));
         expect(screen.getByLabelText(/Centro de destino/i)).toBeTruthy();
     });
 
     it('selecting "Defunción" and confirming shows a second confirmation dialog', async () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
-        fireEvent.click(screen.getByRole('button', { name: /Dar alta médica/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /Dar alta médica/i }),
+        );
         fireEvent.click(screen.getByText(/Defunción/i));
 
         // Fill in discharge diagnosis
@@ -149,19 +164,21 @@ describe('ConsultaIndex – alta médica modal', () => {
         });
 
         // Click confirm
-        fireEvent.click(screen.getByRole('button', { name: /Confirmar alta/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /Confirmar alta/i }),
+        );
 
         // Second confirmation dialog should appear
         await waitFor(() => {
-            expect(
-                screen.getByText(/Confirmo la defunción/i),
-            ).toBeTruthy();
+            expect(screen.getByText(/Confirmo la defunción/i)).toBeTruthy();
         });
     });
 
     it('modal submits correct payload for "recuperado"', () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
-        fireEvent.click(screen.getByRole('button', { name: /Dar alta médica/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /Dar alta médica/i }),
+        );
         fireEvent.click(screen.getByText(/Por alivio/i));
 
         const diagInput = screen.getByLabelText(/Diagnóstico de egreso/i);
@@ -169,7 +186,9 @@ describe('ConsultaIndex – alta médica modal', () => {
             target: { value: 'Gripe resuelta' },
         });
 
-        fireEvent.click(screen.getByRole('button', { name: /Confirmar alta/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /Confirmar alta/i }),
+        );
 
         expect(mockRouterPost).toHaveBeenCalledWith(
             '/consulta/turnos/1/alta',
@@ -183,7 +202,9 @@ describe('ConsultaIndex – alta médica modal', () => {
 
     it('modal submits correct payload for "traslado" with destination', () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
-        fireEvent.click(screen.getByRole('button', { name: /Dar alta médica/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /Dar alta médica/i }),
+        );
         fireEvent.click(screen.getByText(/Traslado a otro centro/i));
 
         const destInput = screen.getByLabelText(/Centro de destino/i);
@@ -196,7 +217,9 @@ describe('ConsultaIndex – alta médica modal', () => {
             target: { value: 'Fractura de fémur' },
         });
 
-        fireEvent.click(screen.getByRole('button', { name: /Confirmar alta/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /Confirmar alta/i }),
+        );
 
         expect(mockRouterPost).toHaveBeenCalledWith(
             '/consulta/turnos/1/alta',

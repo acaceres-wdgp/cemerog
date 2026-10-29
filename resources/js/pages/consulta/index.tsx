@@ -104,7 +104,7 @@ export default function ConsultaIndex({
                     <ConsultaActions
                         activeTab={activeTab}
                         setActiveTab={setActiveTab}
-                        turnId={activeTurn.id}
+                        turn={activeTurn}
                     />
 
                     {/* NOTA */}

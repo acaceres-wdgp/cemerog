@@ -6,12 +6,14 @@ use Database\Factories\TurnFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $patient_id
  * @property int $doctor_id
+ * @property-read Discharge|null $discharge
  * @property int|null $appointment_id
  * @property int $turn_number
  * @property int $turn_order
@@ -65,6 +67,12 @@ class Turn extends Model
     public function appointment(): BelongsTo
     {
         return $this->belongsTo(Appointment::class);
+    }
+
+    /** @return HasOne<Discharge, $this> */
+    public function discharge(): HasOne
+    {
+        return $this->hasOne(Discharge::class);
     }
 
     /**

@@ -7,11 +7,13 @@ test('consultations table has created_by column after migration', function () {
 });
 
 test('migration add_created_by_to_consultations is reversible', function () {
-    // Run down
-    Artisan::call('migrate:rollback', ['--step' => 1]);
+    $migration = '2026_10_29_004203_add_created_by_to_consultations_table';
+
+    // Run down specifically for this migration
+    Artisan::call('migrate:rollback', ['--path' => "database/migrations/{$migration}.php"]);
     expect(Schema::hasColumn('consultations', 'created_by'))->toBeFalse();
 
     // Run up again to restore for subsequent tests
-    Artisan::call('migrate', ['--path' => 'database/migrations/2026_10_29_004203_add_created_by_to_consultations_table.php']);
+    Artisan::call('migrate', ['--path' => "database/migrations/{$migration}.php"]);
     expect(Schema::hasColumn('consultations', 'created_by'))->toBeTrue();
 });

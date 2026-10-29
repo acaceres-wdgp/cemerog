@@ -88,6 +88,14 @@ Tras iniciar sesión, cada usuario aterriza en el primer módulo al que tiene ac
 
 Al agregar un módulo nuevo, añádelo en `resources/js/lib/navigation.ts` y también en la lista de `ResolveHomeRoute`.
 
+## Dependencias pendientes
+
+| Funcionalidad                   | Dependencia                                    | Estado              |
+| ------------------------------- | ---------------------------------------------- | ------------------- |
+| Consulta → _Ordenar estudios_   | Habilitar al terminar Laboratorio (e Imágenes) | Botón deshabilitado |
+| Consulta → _Pasar a emergencia_ | Habilitar con Emergencia                       | Botón deshabilitado |
+| Consulta → _Ingresar_           | Habilitar con Internamiento                    | Botón deshabilitado |
+
 ## Usuarios y contraseñas
 
 Solo el administrador gestiona los accesos y las contraseñas. Los usuarios no tienen ajustes de seguridad propios.
