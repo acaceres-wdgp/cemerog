@@ -22,6 +22,15 @@ class ConsultaController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
+
+        if (! $user->canAttendPatients()) {
+            return Inertia::render('consulta/index', [
+                'can_attend' => false,
+                'turns_en_consulta' => [],
+                'turns_en_espera' => [],
+            ]);
+        }
+
         $doctorId = $user->doctor->id;
 
         $turnsEnConsulta = Turn::with(['patient', 'doctor.specialty'])
@@ -53,6 +62,7 @@ class ConsultaController extends Controller
         }
 
         return Inertia::render('consulta/index', [
+            'can_attend' => true,
             'turns_en_consulta' => $turnsEnConsulta,
             'turns_en_espera' => $turnsEnEspera,
             'historial' => $historial,
@@ -91,6 +101,10 @@ class ConsultaController extends Controller
     public function alta(Turn $turn): RedirectResponse
     {
         $this->authorizeTurnOwnership($turn);
+
+        if (! $turn->isOpenToday()) {
+            abort(403);
+        }
 
         $turn->update(['status' => 'atendido']);
 

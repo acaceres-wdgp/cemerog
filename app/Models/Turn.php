@@ -68,6 +68,16 @@ class Turn extends Model
     }
 
     /**
+     * Returns true when the turn is from today AND in an open status (espera or en_consulta).
+     * Used by ConsultaController::alta() and StoreConsultationRequest.
+     */
+    public function isOpenToday(): bool
+    {
+        return $this->arrived_at->isToday()
+            && in_array($this->status, ['espera', 'en_consulta'], true);
+    }
+
+    /**
      * Return a human-readable label for the given turn status.
      *
      * Known states: espera | en_consulta | atendido | no_asistio

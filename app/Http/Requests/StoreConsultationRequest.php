@@ -38,13 +38,8 @@ class StoreConsultationRequest extends FormRequest
             return false;
         }
 
-        // Turn must be for today
-        if (! $turn->arrived_at->isToday()) {
-            return false;
-        }
-
-        // Turn must be in a recordable state
-        if (! in_array($turn->status, ['espera', 'en_consulta'], true)) {
+        // Turn must be from today and in an open status (espera or en_consulta)
+        if (! $turn->isOpenToday()) {
             return false;
         }
 

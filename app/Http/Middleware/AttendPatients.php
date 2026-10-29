@@ -10,12 +10,11 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Gate middleware for the /consulta route group.
  *
- * Requirements (both must be true):
- *   1. The user has the module.consulta.access permission.
- *   2. The user has a linked doctor record that is currently active.
- *
- * An administrator without a linked doctor cannot enter Consulta.
- * The owner (roles administrador + medico, linked to an active doctor) can.
+ * Requirements:
+ *   1. The user has the module.consulta.access permission (required for ALL methods).
+ *   2. For write methods (POST/PATCH), the user must also have an active linked doctor.
+ *      For GET, a user with the permission but no active doctor gets a 200 empty-state
+ *      response (can_attend: false) — the controller handles the prop.
  */
 class AttendPatients
 {
@@ -24,12 +23,12 @@ class AttendPatients
         /** @var User|null $user */
         $user = $request->user();
 
-        if (
-            $user === null
-            || ! $user->hasPermissionTo('module.consulta.access')
-            || $user->doctor === null
-            || ! $user->doctor->is_active
-        ) {
+        if ($user === null || ! $user->hasPermissionTo('module.consulta.access')) {
+            abort(403);
+        }
+
+        // Write routes require an active linked doctor
+        if (! $request->isMethod('GET') && ! $user->canAttendPatients()) {
             abort(403);
         }
 

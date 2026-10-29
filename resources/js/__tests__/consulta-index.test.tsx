@@ -75,6 +75,7 @@ const makeHistorial = (overrides: Record<string, unknown> = {}) => ({
 });
 
 const BASE_PROPS = {
+    can_attend: true,
     turns_en_consulta: [makeTurn()],
     turns_en_espera: [],
 };
@@ -131,6 +132,7 @@ describe('ConsultaIndex – queue', () => {
         });
         render(
             <ConsultaIndex
+                can_attend={true}
                 turns_en_consulta={[turnConsulta]}
                 turns_en_espera={[turnEspera]}
             />,
@@ -161,6 +163,7 @@ describe('ConsultaIndex – queue', () => {
         });
         render(
             <ConsultaIndex
+                can_attend={true}
                 turns_en_consulta={[makeTurn()]}
                 turns_en_espera={[turnEspera]}
             />,
@@ -179,7 +182,13 @@ describe('ConsultaIndex – queue', () => {
     });
 
     it('shows "No hay pacientes en turno hoy." when both queues are empty and queue is opened', () => {
-        render(<ConsultaIndex turns_en_consulta={[]} turns_en_espera={[]} />);
+        render(
+            <ConsultaIndex
+                can_attend={true}
+                turns_en_consulta={[]}
+                turns_en_espera={[]}
+            />,
+        );
         // The "Sin paciente activo" view has a "☰ Ver cola de turnos" button
         const buttons = screen.getAllByText('☰ Ver cola de turnos');
         fireEvent.click(buttons[0]);
@@ -191,8 +200,45 @@ describe('ConsultaIndex – queue', () => {
 
 describe('ConsultaIndex – sin paciente activo', () => {
     it('shows "Sin paciente activo" when turns_en_consulta is empty', () => {
-        render(<ConsultaIndex turns_en_consulta={[]} turns_en_espera={[]} />);
+        render(
+            <ConsultaIndex
+                can_attend={true}
+                turns_en_consulta={[]}
+                turns_en_espera={[]}
+            />,
+        );
         expect(screen.getByText('Sin paciente activo')).toBeTruthy();
+    });
+});
+
+// ─── can_attend: false ────────────────────────────────────────────────────────
+
+describe('ConsultaIndex – can_attend false', () => {
+    it('shows the unlinked-doctor message when can_attend is false', () => {
+        render(
+            <ConsultaIndex
+                can_attend={false}
+                turns_en_consulta={[]}
+                turns_en_espera={[]}
+            />,
+        );
+        expect(
+            screen.getByText(
+                'Tu usuario no está vinculado a un médico activo. Contacta al administrador.',
+            ),
+        ).toBeTruthy();
+    });
+
+    it('does not show queue or consultation form when can_attend is false', () => {
+        render(
+            <ConsultaIndex
+                can_attend={false}
+                turns_en_consulta={[]}
+                turns_en_espera={[]}
+            />,
+        );
+        expect(screen.queryByText('☰ Ver cola de turnos')).toBeNull();
+        expect(screen.queryByText('Motivo de consulta')).toBeNull();
     });
 });
 
@@ -218,7 +264,11 @@ describe('ConsultaIndex – encabezado paciente', () => {
             },
         });
         render(
-            <ConsultaIndex turns_en_consulta={[turn]} turns_en_espera={[]} />,
+            <ConsultaIndex
+                can_attend={true}
+                turns_en_consulta={[turn]}
+                turns_en_espera={[]}
+            />,
         );
         expect(screen.getAllByText('Alergias').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Penicilina').length).toBeGreaterThan(0);

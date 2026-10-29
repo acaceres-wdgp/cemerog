@@ -284,3 +284,29 @@ test('unauthorized user gets 403 on PATCH /consulta/turnos/{turn}/alta', functio
         ->patch("/consulta/turnos/{$turn->id}/alta")
         ->assertForbidden();
 });
+
+test('alta of a turn from yesterday returns 403', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($this->user)
+        ->patch("/consulta/turnos/{$turn->id}/alta")
+        ->assertForbidden();
+});
+
+test('alta of an already atendido turn returns 403', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'atendido',
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($this->user)
+        ->patch("/consulta/turnos/{$turn->id}/alta")
+        ->assertForbidden();
+});

@@ -73,3 +73,52 @@ test('usuario sin doctor vinculado recibe el prop doctor como null', function ()
             ->where('doctor', null)
         );
 });
+
+// ─── can_attend shared prop ───────────────────────────────────────────────────
+
+test('shared data can_attend is true for medico with active doctor', function () {
+    $user = User::factory()->create();
+    $user->assignRole('medico');
+
+    $specialty = Specialty::factory()->create();
+    Doctor::factory()->create([
+        'specialty_id' => $specialty->id,
+        'user_id' => $user->id,
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($user)
+        ->get('/tablero')
+        ->assertInertia(fn ($page) => $page
+            ->where('can_attend', true)
+        );
+});
+
+test('shared data can_attend is false for medico with inactive doctor', function () {
+    $user = User::factory()->create();
+    $user->assignRole('medico');
+
+    $specialty = Specialty::factory()->create();
+    Doctor::factory()->create([
+        'specialty_id' => $specialty->id,
+        'user_id' => $user->id,
+        'is_active' => false,
+    ]);
+
+    $this->actingAs($user)
+        ->get('/tablero')
+        ->assertInertia(fn ($page) => $page
+            ->where('can_attend', false)
+        );
+});
+
+test('shared data can_attend is false for user without linked doctor', function () {
+    $user = User::factory()->create();
+    $user->assignRole('secretaria');
+
+    $this->actingAs($user)
+        ->get('/tablero')
+        ->assertInertia(fn ($page) => $page
+            ->where('can_attend', false)
+        );
+});

@@ -51,4 +51,13 @@ class User extends Authenticatable
     {
         return $this->hasOne(Doctor::class);
     }
+
+    /**
+     * Returns true when the user has a linked doctor that is currently active.
+     * Used by AttendPatients middleware, ConsultaController, and HandleInertiaRequests.
+     */
+    public function canAttendPatients(): bool
+    {
+        return $this->doctor !== null && $this->doctor->is_active;
+    }
 }

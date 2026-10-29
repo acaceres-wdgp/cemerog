@@ -339,15 +339,42 @@ test('patient with turns to A and B on same day: each doctor saves their own con
 
 // ─── Medico without linked doctor: sees empty state, cannot save ──────────────
 
-test('medico without linked doctor gets 403 on GET /consulta', function () {
+test('medico without linked doctor gets 200 on GET /consulta with can_attend false', function () {
     $user = User::factory()->create();
     $user->assignRole('medico');
     // No doctor linked
 
-    $this->actingAs($user)->get('/consulta')->assertForbidden();
+    $this->actingAs($user)
+        ->get('/consulta')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('consulta/index')
+            ->where('can_attend', false)
+            ->has('turns_en_consulta', 0)
+            ->has('turns_en_espera', 0)
+        );
 });
 
-test('medico with inactive doctor gets 403 on GET /consulta', function () {
+test('medico without linked doctor gets 403 on POST /consulta', function () {
+    $user = User::factory()->create();
+    $user->assignRole('medico');
+
+    $specialty = Specialty::factory()->create();
+    $doctor = Doctor::factory()->create(['specialty_id' => $specialty->id]);
+    $patient = Patient::factory()->create();
+    $turn = Turn::factory()->create([
+        'doctor_id' => $doctor->id,
+        'patient_id' => $patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($user)
+        ->post('/consulta', ['turn_id' => $turn->id, 'motivo_consulta' => 'Test'])
+        ->assertForbidden();
+});
+
+test('medico with inactive doctor gets 200 on GET /consulta with can_attend false', function () {
     $user = User::factory()->create();
     $user->assignRole('medico');
 
@@ -358,7 +385,36 @@ test('medico with inactive doctor gets 403 on GET /consulta', function () {
         'is_active' => false,
     ]);
 
-    $this->actingAs($user)->get('/consulta')->assertForbidden();
+    $this->actingAs($user)
+        ->get('/consulta')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('consulta/index')
+            ->where('can_attend', false)
+        );
+});
+
+test('medico with inactive doctor gets 403 on POST /consulta', function () {
+    $user = User::factory()->create();
+    $user->assignRole('medico');
+
+    $specialty = Specialty::factory()->create();
+    $doctor = Doctor::factory()->create([
+        'user_id' => $user->id,
+        'specialty_id' => $specialty->id,
+        'is_active' => false,
+    ]);
+    $patient = Patient::factory()->create();
+    $turn = Turn::factory()->create([
+        'doctor_id' => $doctor->id,
+        'patient_id' => $patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($user)
+        ->post('/consulta', ['turn_id' => $turn->id, 'motivo_consulta' => 'Test'])
+        ->assertForbidden();
 });
 
 // ─── History returns consultations from ALL doctors for that patient ──────────
