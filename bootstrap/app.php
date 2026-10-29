@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\ResolveHomeRoute;
+use App\Http\Middleware\AttendPatients;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\HandleAppearance;
@@ -34,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo(fn (Request $request) => app(ResolveHomeRoute::class)->handle($request->user()));
 
         $middleware->alias([
+            'attend-patients' => AttendPatients::class,
             'ensure.password.changed' => EnsurePasswordChanged::class,
             'permission' => PermissionMiddleware::class,
             'role' => RoleMiddleware::class,
