@@ -7,15 +7,18 @@ import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const { mockRouterGet, mockRouterPost, mockRouterPatch } = vi.hoisted(() => ({
-    mockRouterGet: vi.fn(),
-    mockRouterPost: vi.fn(),
-    mockRouterPatch: vi.fn(),
-}));
+const { mockRouterGet, mockRouterPost, mockRouterPatch, mockUsePage } =
+    vi.hoisted(() => ({
+        mockRouterGet: vi.fn(),
+        mockRouterPost: vi.fn(),
+        mockRouterPatch: vi.fn(),
+        mockUsePage: vi.fn(() => ({ props: { errors: {} } })),
+    }));
 
 vi.mock('@inertiajs/react', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@inertiajs/react')>()),
     Head: () => null,
+    usePage: mockUsePage,
     router: {
         get: mockRouterGet,
         post: mockRouterPost,
@@ -499,5 +502,55 @@ describe('ConsultaIndex – dar de alta', () => {
             '/consulta/turnos/1/alta',
             {},
         );
+    });
+});
+
+// ─── Signos Vitales – validation errors from server ──────────────────────────
+
+describe('ConsultaIndex – signos vitales server errors', () => {
+    beforeEach(() => {
+        mockUsePage.mockClear();
+    });
+
+    it('shows errors.talla message below height fields when present', () => {
+        mockUsePage.mockReturnValue({
+            props: { errors: { talla: 'El campo talla no debe ser mayor que 241.' } },
+        });
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        expect(
+            screen.getByText('El campo talla no debe ser mayor que 241.'),
+        ).toBeTruthy();
+    });
+
+    it('shows errors.peso message below weight field when present', () => {
+        mockUsePage.mockReturnValue({
+            props: { errors: { peso: 'El campo peso no debe ser mayor que 3175.' } },
+        });
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        expect(
+            screen.getByText('El campo peso no debe ser mayor que 3175.'),
+        ).toBeTruthy();
+    });
+});
+
+// ─── Signos Vitales – feet range warning ──────────────────────────────────────
+
+describe('ConsultaIndex – feet range warning', () => {
+    it('shows feet range warning when value is out of 1–7 range', () => {
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        const ftLabel = screen.getByText('Pies').closest('label')!;
+        fireEvent.change(ftLabel.querySelector('input')!, {
+            target: { value: '8' },
+        });
+        expect(screen.getByText('1–7 ft')).toBeTruthy();
+    });
+
+    it('does not show feet range warning when value is within 1–7 range', () => {
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        const ftLabel = screen.getByText('Pies').closest('label')!;
+        fireEvent.change(ftLabel.querySelector('input')!, {
+            target: { value: '5' },
+        });
+        expect(screen.queryByText('1–7 ft')).toBeNull();
     });
 });

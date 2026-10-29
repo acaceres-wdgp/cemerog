@@ -310,3 +310,103 @@ test('alta of an already atendido turn returns 403', function () {
         ->patch("/consulta/turnos/{$turn->id}/alta")
         ->assertForbidden();
 });
+
+// ─── Validation range tests ───────────────────────────────────────────────────
+
+test('talla=400 (above max) returns 422', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($this->user)
+        ->postJson('/consulta', [
+            'turn_id' => $turn->id,
+            'talla' => 400,
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['talla']);
+});
+
+test('peso=5000 (above max) returns 422', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($this->user)
+        ->postJson('/consulta', [
+            'turn_id' => $turn->id,
+            'peso' => 5000,
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['peso']);
+});
+
+test('talla=30 (lower bound) saves OK', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($this->user)
+        ->post('/consulta', [
+            'turn_id' => $turn->id,
+            'talla' => 30,
+        ])
+        ->assertRedirect();
+});
+
+test('talla=241 (upper bound) saves OK', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($this->user)
+        ->post('/consulta', [
+            'turn_id' => $turn->id,
+            'talla' => 241,
+        ])
+        ->assertRedirect();
+});
+
+test('peso=9 (lower bound) saves OK', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($this->user)
+        ->post('/consulta', [
+            'turn_id' => $turn->id,
+            'peso' => 9,
+        ])
+        ->assertRedirect();
+});
+
+test('peso=3175 (upper bound) saves OK', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($this->user)
+        ->post('/consulta', [
+            'turn_id' => $turn->id,
+            'peso' => 3175,
+        ])
+        ->assertRedirect();
+});

@@ -37,12 +37,13 @@ type Props = {
         SimpleVitalKey | 'pesoLb' | 'tallaPies' | 'tallaPulgadas'
     >;
     onChange: (patch: Partial<NoteFormData>) => void;
+    errors?: { peso?: string; talla?: string };
 };
 
 const inputCls =
     'w-full min-w-0 flex-1 border-0 bg-transparent p-0 font-sans text-sm font-semibold text-text-heading tabular-nums outline-none';
 
-export default function SignosVitales({ form, onChange }: Props) {
+export default function SignosVitales({ form, onChange, errors }: Props) {
     const pesoKgTimes10 = form.pesoLb
         ? lbToKgTimes10(Number(form.pesoLb))
         : null;
@@ -112,6 +113,11 @@ export default function SignosVitales({ form, onChange }: Props) {
                                 Rango: 2–700 lb
                             </span>
                         )}
+                    {errors?.peso && (
+                        <span className="text-[11px] text-error">
+                            {errors.peso}
+                        </span>
+                    )}
                 </label>
 
                 {/* Height: feet */}
@@ -134,6 +140,13 @@ export default function SignosVitales({ form, onChange }: Props) {
                             ft
                         </span>
                     </span>
+                    {form.tallaPies &&
+                        (Number(form.tallaPies) < 1 ||
+                            Number(form.tallaPies) > 7) && (
+                            <span className="text-[11px] text-error">
+                                1–7 ft
+                            </span>
+                        )}
                 </label>
 
                 {/* Height: inches */}
@@ -163,6 +176,11 @@ export default function SignosVitales({ form, onChange }: Props) {
                                 0–11 in
                             </span>
                         )}
+                    {errors?.talla && (
+                        <span className="text-[11px] text-error">
+                            {errors.talla}
+                        </span>
+                    )}
                 </label>
 
                 {/* IMC (auto-computed) */}

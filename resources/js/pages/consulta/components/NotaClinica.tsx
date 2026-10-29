@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { lbToKgTimes10, feetInchesToCm } from '@/lib/units';
 import { AntecedentData, NoteFormData, TurnItem } from '../types';
 import AntecedentesPanel from './AntecedentesPanel';
@@ -17,6 +17,10 @@ export default function NotaClinica({
     antecedents: AntecedentData;
     patientId: number;
 }) {
+    const pageErrors = usePage().props.errors as
+        | Partial<{ peso: string; talla: string }>
+        | undefined;
+
     const [form, setForm] = useState<NoteFormData>({
         motivo_consulta: '',
         historia_enfermedad: '',
@@ -120,6 +124,7 @@ export default function NotaClinica({
                         onChange={(patch) =>
                             setForm((f) => ({ ...f, ...patch }))
                         }
+                        errors={pageErrors}
                     />
 
                     <label className="flex flex-col gap-[6px]">
