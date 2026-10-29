@@ -11,11 +11,16 @@ export function lbToKgTimes10(lb: number): number {
     return Math.round(lb * LB_TO_KG * 10);
 }
 
-/** Convert from storage format (kg × 10) back to pounds, rounded to 1 decimal. */
+/**
+ * Convert from storage format (kg × 10) back to pounds, rounded to the
+ * nearest half pound (0.5 lb).  The max storage error is ~0.11 lb which is
+ * less than 0.25, so any integer or .5 weight entered by the user comes back
+ * exactly as entered (e.g. 699 → 154 lb, not 154.1 lb).
+ */
 export function kgTimes10ToLb(v: number): number {
     const kg = v / 10;
     const lb = kg / LB_TO_KG;
-    return Math.round(lb * 10) / 10;
+    return Math.round(lb * 2) / 2;
 }
 
 /** Convert feet + inches to cm (storage format), rounded to nearest integer. */

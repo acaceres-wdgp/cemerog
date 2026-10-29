@@ -23,23 +23,22 @@ describe('lbToKgTimes10', () => {
 });
 
 describe('kgTimes10ToLb', () => {
-    it('converts 699 back to ~154.1 lb (round-trip within 0.1 lb)', () => {
-        const result = kgTimes10ToLb(699);
-        expect(Math.abs(result - 154.1)).toBeLessThanOrEqual(0.1);
+    it('converts 699 back to 154 lb (rounded to nearest half-pound)', () => {
+        // 699/10/0.45359237 = 154.101... → rounded to nearest 0.5 → 154
+        expect(kgTimes10ToLb(699)).toBe(154);
     });
 
-    it('round-trip: lbToKgTimes10 then kgTimes10ToLb returns original within 0.1 lb', () => {
-        const original = 154;
-        const stored = lbToKgTimes10(original);
-        const recovered = kgTimes10ToLb(stored);
-        expect(Math.abs(recovered - original)).toBeLessThanOrEqual(0.1);
+    it('exhaustive round-trip: every weight 2–700 lb in 0.5 lb steps displays exact original', () => {
+        for (let lb = 2; lb <= 700; lb += 0.5) {
+            const stored = lbToKgTimes10(lb);
+            const displayed = kgTimes10ToLb(stored);
+            expect(displayed).toBe(lb);
+        }
     });
 
     it('round-trip for 200 lb', () => {
-        const original = 200;
-        const stored = lbToKgTimes10(original);
-        const recovered = kgTimes10ToLb(stored);
-        expect(Math.abs(recovered - original)).toBeLessThanOrEqual(0.1);
+        const stored = lbToKgTimes10(200);
+        expect(kgTimes10ToLb(stored)).toBe(200);
     });
 });
 
