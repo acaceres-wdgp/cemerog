@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { cn } from '@/lib/utils';
-import { computeImc } from '../lib/helpers';
+import {
+    lbToKgTimes10,
+    feetInchesToCm,
+    computeImcFromMetric,
+} from '@/lib/units';
 import { AntecedentData, Diagnostico, NoteFormData, TurnItem } from '../types';
 import AntecedentesPanel from './AntecedentesPanel';
 
@@ -27,41 +31,44 @@ export default function NotaClinica({
         temp: '',
         saturacion_o2: '',
         glucemia: '',
-        peso: '',
-        talla: '',
+        pesoLb: '',
+        tallaPies: '',
+        tallaPulgadas: '',
         diagnosticos: [],
     });
     const [dxInput, setDxInput] = useState('');
 
-    const imc = computeImc(
-        form.peso ? Number(form.peso) * 10 : null,
-        form.talla ? Number(form.talla) : null,
-    );
+    const pesoKgTimes10 = form.pesoLb
+        ? lbToKgTimes10(Number(form.pesoLb))
+        : null;
+    const tallaCm =
+        form.tallaPies || form.tallaPulgadas
+            ? feetInchesToCm(
+                  Number(form.tallaPies) || 0,
+                  Number(form.tallaPulgadas) || 0,
+              )
+            : null;
+    const imc = computeImcFromMetric(pesoKgTimes10, tallaCm);
 
-    const VITALS = [
+    const SIMPLE_VITALS = [
         {
-            key: 'presion_arterial',
+            key: 'presion_arterial' as const,
             label: 'Presión arterial',
             unit: 'mmHg',
-            isString: true,
         },
         {
-            key: 'frecuencia_cardiaca',
+            key: 'frecuencia_cardiaca' as const,
             label: 'Frec. cardíaca',
             unit: 'lpm',
-            isString: false,
         },
         {
-            key: 'frecuencia_respiratoria',
+            key: 'frecuencia_respiratoria' as const,
             label: 'Frec. respiratoria',
             unit: 'rpm',
-            isString: false,
         },
-        { key: 'temp', label: 'Temperatura', unit: '°C', isString: false },
-        { key: 'saturacion_o2', label: 'SpO₂', unit: '%', isString: false },
-        { key: 'glucemia', label: 'Glucemia', unit: 'mg/dL', isString: false },
-        { key: 'peso', label: 'Peso', unit: 'kg', isString: false },
-        { key: 'talla', label: 'Talla', unit: 'cm', isString: false },
+        { key: 'temp' as const, label: 'Temperatura', unit: '°C' },
+        { key: 'saturacion_o2' as const, label: 'SpO₂', unit: '%' },
+        { key: 'glucemia' as const, label: 'Glucemia', unit: 'mg/dL' },
     ] as const;
 
     function handleAddDx() {
@@ -108,8 +115,16 @@ export default function NotaClinica({
                     ? Number(form.saturacion_o2)
                     : null,
                 glucemia: form.glucemia ? Number(form.glucemia) : null,
-                peso: form.peso ? Math.round(Number(form.peso) * 10) : null,
-                talla: form.talla ? Number(form.talla) : null,
+                // Convert lb → kg×10 for storage
+                peso: form.pesoLb ? lbToKgTimes10(Number(form.pesoLb)) : null,
+                // Convert ft+in → cm for storage
+                talla:
+                    form.tallaPies || form.tallaPulgadas
+                        ? feetInchesToCm(
+                              Number(form.tallaPies) || 0,
+                              Number(form.tallaPulgadas) || 0,
+                          )
+                        : null,
                 diagnosticos: form.diagnosticos.length
                     ? form.diagnosticos
                     : null,
@@ -142,7 +157,7 @@ export default function NotaClinica({
                             Signos vitales
                         </div>
                         <div className="grid grid-cols-[repeat(auto-fill,minmax(118px,1fr))] gap-2">
-                            {VITALS.map((v) => (
+                            {SIMPLE_VITALS.map((v) => (
                                 <label
                                     key={v.key}
                                     className="flex cursor-text flex-col gap-[2px] rounded-[10px] border border-input-border bg-white px-[10px] py-[6px]"
@@ -167,13 +182,103 @@ export default function NotaClinica({
                                     </span>
                                 </label>
                             ))}
+
+                            {/* Weight in lb */}
+                            <label className="flex cursor-text flex-col gap-[2px] rounded-[10px] border border-input-border bg-white px-[10px] py-[6px]">
+                                <span className="overflow-hidden text-[12px] text-ellipsis whitespace-nowrap text-muted">
+                                    Peso (lb)
+                                </span>
+                                <span className="flex items-baseline gap-1">
+                                    <input
+                                        type="number"
+                                        min={2}
+                                        max={700}
+                                        value={form.pesoLb}
+                                        onChange={(e) =>
+                                            setForm((f) => ({
+                                                ...f,
+                                                pesoLb: e.target.value,
+                                            }))
+                                        }
+                                        className="w-full min-w-0 flex-1 border-0 bg-transparent p-0 font-sans text-sm font-semibold text-text-heading tabular-nums outline-none"
+                                    />
+                                    <span className="text-[11.5px] whitespace-nowrap text-muted-light">
+                                        lb
+                                    </span>
+                                </span>
+                                {form.pesoLb &&
+                                    (Number(form.pesoLb) < 2 ||
+                                        Number(form.pesoLb) > 700) && (
+                                        <span className="text-[11px] text-error">
+                                            Rango: 2–700 lb
+                                        </span>
+                                    )}
+                            </label>
+
+                            {/* Height: feet */}
+                            <label className="flex cursor-text flex-col gap-[2px] rounded-[10px] border border-input-border bg-white px-[10px] py-[6px]">
+                                <span className="overflow-hidden text-[12px] text-ellipsis whitespace-nowrap text-muted">
+                                    Pies
+                                </span>
+                                <span className="flex items-baseline gap-1">
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        max={7}
+                                        value={form.tallaPies}
+                                        onChange={(e) =>
+                                            setForm((f) => ({
+                                                ...f,
+                                                tallaPies: e.target.value,
+                                            }))
+                                        }
+                                        className="w-full min-w-0 flex-1 border-0 bg-transparent p-0 font-sans text-sm font-semibold text-text-heading tabular-nums outline-none"
+                                    />
+                                    <span className="text-[11.5px] whitespace-nowrap text-muted-light">
+                                        ft
+                                    </span>
+                                </span>
+                            </label>
+
+                            {/* Height: inches */}
+                            <label className="flex cursor-text flex-col gap-[2px] rounded-[10px] border border-input-border bg-white px-[10px] py-[6px]">
+                                <span className="overflow-hidden text-[12px] text-ellipsis whitespace-nowrap text-muted">
+                                    Pulgadas
+                                </span>
+                                <span className="flex items-baseline gap-1">
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        max={11}
+                                        value={form.tallaPulgadas}
+                                        onChange={(e) =>
+                                            setForm((f) => ({
+                                                ...f,
+                                                tallaPulgadas: e.target.value,
+                                            }))
+                                        }
+                                        className="w-full min-w-0 flex-1 border-0 bg-transparent p-0 font-sans text-sm font-semibold text-text-heading tabular-nums outline-none"
+                                    />
+                                    <span className="text-[11.5px] whitespace-nowrap text-muted-light">
+                                        in
+                                    </span>
+                                </span>
+                                {form.tallaPulgadas &&
+                                    (Number(form.tallaPulgadas) < 0 ||
+                                        Number(form.tallaPulgadas) > 11) && (
+                                        <span className="text-[11px] text-error">
+                                            0–11 in
+                                        </span>
+                                    )}
+                            </label>
+
                             {/* IMC (auto-computed) */}
                             <div className="flex flex-col gap-[2px] rounded-[10px] border border-dashed border-input-border bg-done-row-bg px-[10px] py-[6px]">
                                 <span className="text-[12px] text-muted">
                                     IMC
                                 </span>
                                 <span className="text-sm font-semibold text-text-heading tabular-nums">
-                                    {imc}
+                                    {imc.display}
                                 </span>
                             </div>
                         </div>

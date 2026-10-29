@@ -308,51 +308,70 @@ describe('ConsultaIndex – antecedentes', () => {
 });
 
 // ─── Nota clínica IMC ───────────────────────────────────────────────────────────
+// Form now accepts lb (weight) and ft+inches (height); BMI is computed live.
 
 describe('ConsultaIndex – nota clínica IMC', () => {
-    it('computes IMC correctly from peso and talla inputs', () => {
+    it('computes IMC ~24.1 Normal from 154 lb and 5 ft 6 in', () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
 
-        // Find peso and talla inputs by their label text
-        const pesoLabel = screen.getByText('Peso').closest('label')!;
-        const tallaLabel = screen.getByText('Talla').closest('label')!;
-        const pesoInput = pesoLabel.querySelector('input')!;
-        const tallaInput = tallaLabel.querySelector('input')!;
+        // Weight in lb
+        const pesoLabel = screen.getByText('Peso (lb)').closest('label')!;
+        fireEvent.change(pesoLabel.querySelector('input')!, {
+            target: { value: '154' },
+        });
 
-        fireEvent.change(pesoInput, { target: { value: '70' } });
-        fireEvent.change(tallaInput, { target: { value: '170' } });
+        // Height: feet field
+        const ftLabel = screen.getByText('Pies').closest('label')!;
+        fireEvent.change(ftLabel.querySelector('input')!, {
+            target: { value: '5' },
+        });
 
-        expect(screen.getByText('24.2 Normal')).toBeTruthy();
+        // Height: inches field
+        const inLabel = screen.getByText('Pulgadas').closest('label')!;
+        fireEvent.change(inLabel.querySelector('input')!, {
+            target: { value: '7' },
+        });
+
+        // IMC for 154 lb / 5'7" ≈ 24.1 Normal
+        // stored: peso=699 (lbToKgTimes10(154)), talla=170 (feetInchesToCm(5,7))
+        // imc = 69.9 / (1.70^2) = 24.1...
+        expect(screen.getByText(/24\.\d Normal/)).toBeTruthy();
     });
 });
 
 // ─── Nota clínica guardar ───────────────────────────────────────────────────────
+// The form converts lb → kg×10 and ft+in → cm before sending to the server.
 
 describe('ConsultaIndex – nota clínica guardar', () => {
     beforeEach(() => {
         mockRouterPost.mockClear();
     });
 
-    it('clicking "✓ Guardar nota" calls router.post with the correct payload', () => {
+    it('clicking "✓ Guardar nota" sends converted metric values (peso=699, talla=170)', () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
 
         // Fill motivo_consulta
         const motivoLabel = screen
             .getByText('Motivo de consulta')
             .closest('label')!;
-        const motivoTextarea = motivoLabel.querySelector('textarea')!;
-        fireEvent.change(motivoTextarea, { target: { value: 'Fiebre' } });
-
-        // Fill peso
-        const pesoLabel = screen.getByText('Peso').closest('label')!;
-        fireEvent.change(pesoLabel.querySelector('input')!, {
-            target: { value: '70' },
+        fireEvent.change(motivoLabel.querySelector('textarea')!, {
+            target: { value: 'Fiebre' },
         });
 
-        // Fill talla
-        const tallaLabel = screen.getByText('Talla').closest('label')!;
-        fireEvent.change(tallaLabel.querySelector('input')!, {
-            target: { value: '170' },
+        // Fill peso in lb (154 lb → 699 kg×10)
+        const pesoLabel = screen.getByText('Peso (lb)').closest('label')!;
+        fireEvent.change(pesoLabel.querySelector('input')!, {
+            target: { value: '154' },
+        });
+
+        // Fill height: 5 ft 7 in → 170 cm
+        const ftLabel = screen.getByText('Pies').closest('label')!;
+        fireEvent.change(ftLabel.querySelector('input')!, {
+            target: { value: '5' },
+        });
+        const inLabel = screen.getByText('Pulgadas').closest('label')!;
+        fireEvent.change(inLabel.querySelector('input')!, {
+            target: { value: '7' },
         });
 
         fireEvent.click(screen.getByText('✓ Guardar nota'));
@@ -364,8 +383,8 @@ describe('ConsultaIndex – nota clínica guardar', () => {
                 doctor_id: 1,
                 turn_id: 1,
                 motivo_consulta: 'Fiebre',
-                peso: 700,
-                talla: 170,
+                peso: 699, // lbToKgTimes10(154)
+                talla: 170, // feetInchesToCm(5, 7)
             }),
             expect.any(Object),
         );
