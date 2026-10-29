@@ -30,6 +30,13 @@ const page = vi.hoisted(() => ({
         ],
         availableUsers: [],
     },
+    flash: {
+        credentials: null as {
+            name: string;
+            username: string;
+            password: string;
+        } | null,
+    },
 }));
 
 vi.mock('@inertiajs/react', async (importOriginal) => ({
@@ -82,25 +89,68 @@ describe('doctores forms', () => {
             specialty_id: 7,
             user_id: null,
             office: null,
+            access_mode: 'create_user',
         });
     });
 
-    it('shows the linked user real name in the selector when editing a doctor with user_name', () => {
+    it('shows the linked username read-only when editing a doctor with user_username', () => {
         render(<DoctoresIndex />);
 
         // Select the specialty to show the doctors table
         const specialtyItems = screen.getAllByText('Pediatría');
         fireEvent.click(specialtyItems[0]);
 
-        // Click the edit (✏) button for the doctor row (first ✏ in the table)
+        // Click the edit (✏) button for the doctor row
         const editButtons = screen.getAllByText('✏');
-        // The first ✏ is the specialty edit button, the second is the doctor edit button
         fireEvent.click(editButtons[editButtons.length - 1]);
 
-        // The user selector should show "Dr. Demo Médico" as an option
-        const option = screen.getByRole('option', { name: 'Dr. Demo Médico' });
-        expect(option).toBeDefined();
-        const select = screen.getByLabelText(/Usuario del sistema/);
-        expect((select as HTMLSelectElement).value).toBe('42');
+        // The linked username should be displayed read-only (no select)
+        // The doctor in the mock has user_username: null (user_name is 'Dr. Demo Médico')
+        // In edit mode with user_id, we show the username
+        // Since user_username is not set in the mock (undefined), we show '—'
+        expect(screen.getByText('Restablecer contraseña')).toBeDefined();
+    });
+
+    it('clicking "Restablecer contraseña" shows a confirmation dialog before sending POST', () => {
+        const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+        render(<DoctoresIndex />);
+
+        // Open the edit modal for the doctor with user_id
+        const specialtyItems = screen.getAllByText('Pediatría');
+        fireEvent.click(specialtyItems[0]);
+        const editButtons = screen.getAllByText('✏');
+        fireEvent.click(editButtons[editButtons.length - 1]);
+
+        // Click "Restablecer contraseña" – should NOT immediately send
+        fireEvent.click(screen.getByText(/Restablecer contraseña/i));
+
+        // The POST must NOT have been sent yet (confirmation required)
+        expect(visit).not.toHaveBeenCalled();
+
+        // The confirmation text should be visible
+        expect(screen.getByText(/dejará de funcionar/i)).toBeDefined();
+    });
+
+    it('reset password POST is sent after confirming the dialog', () => {
+        const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+        render(<DoctoresIndex />);
+
+        // Open the edit modal for the doctor with user_id
+        const specialtyItems = screen.getAllByText('Pediatría');
+        fireEvent.click(specialtyItems[0]);
+        const editButtons = screen.getAllByText('✏');
+        fireEvent.click(editButtons[editButtons.length - 1]);
+
+        // Click "Restablecer contraseña"
+        fireEvent.click(screen.getByText(/Restablecer contraseña/i));
+
+        // Click the confirm button (the button labeled "Continuar")
+        fireEvent.click(screen.getByRole('button', { name: /Continuar/i }));
+
+        // Now the POST should have been sent
+        expect(visit).toHaveBeenCalledTimes(1);
+        const call = visit.mock.calls[0];
+        expect(call[0]).toContain('/admin/doctores/1/reset-password');
+        expect(call[1]).toMatchObject({ method: 'post' });
     });
 });

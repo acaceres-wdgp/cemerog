@@ -132,7 +132,12 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 ### Administración – Doctores y especialidades
 
 - Catálogo de médicos y sus especialidades.
-- **Pendiente de implementar**: CRUD de doctores.
+- Un médico es siempre un registro en `doctors`; el rol `medico` en `users` no es suficiente por sí solo (ver ADR-015).
+- `doctors.user_id` (nullable) vincula al doctor con su cuenta de sistema.
+- Al crear un doctor se puede generar usuario nuevo (credenciales temporales de un solo uso) o vincular un usuario existente (se le añade el rol `medico` sin quitar los demás).
+- Desactivar un doctor desactiva también su usuario vinculado.
+- Cambiar el nombre del doctor sincroniza el campo `name` del usuario (no el `username`).
+- Restablecer contraseña genera nueva contraseña temporal y activa `must_change_password`.
 
 ### Catálogos de precios
 

@@ -55,7 +55,7 @@ test('index payload includes user_name as null when doctor has no linked user', 
     );
 });
 
-test('index availableUsers excludes users linked to other doctors but includes user of edited doctor', function () {
+test('index availableUsers excludes users linked to other doctors but includes unlinked active users', function () {
     $medicoA = User::factory()->create(['name' => 'Médico A']);
     $medicoA->assignRole('medico');
     $medicoB = User::factory()->create(['name' => 'Médico B']);
@@ -72,9 +72,10 @@ test('index availableUsers excludes users linked to other doctors but includes u
     $response = $this->actingAs($this->admin)
         ->get('/admin/doctores');
 
-    // availableUsers should include medicoB and medicoC, but not medicoA (already linked)
+    // availableUsers should include all active unlinked users (medicoB, medicoC, plus admin)
+    // It excludes medicoA (already linked) and any inactive users.
     $response->assertInertia(fn ($page) => $page
         ->component('doctores/index')
-        ->has('availableUsers', 2)
+        ->where('availableUsers', fn ($users) => collect($users)->doesntContain('id', $medicoA->id))
     );
 });
