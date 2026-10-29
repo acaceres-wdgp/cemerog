@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
-import { cn } from '@/lib/utils';
-import {
-    lbToKgTimes10,
-    feetInchesToCm,
-    computeImcFromMetric,
-} from '@/lib/units';
+import { lbToKgTimes10, feetInchesToCm } from '@/lib/units';
 import { AntecedentData, Diagnostico, NoteFormData, TurnItem } from '../types';
 import AntecedentesPanel from './AntecedentesPanel';
+import SignosVitales from './SignosVitales';
+import DiagnosticoCie10 from './DiagnosticoCie10';
 
 // ─── Clinical Note Form ───────────────────────────────────────────────────────
 
@@ -37,39 +34,6 @@ export default function NotaClinica({
         diagnosticos: [],
     });
     const [dxInput, setDxInput] = useState('');
-
-    const pesoKgTimes10 = form.pesoLb
-        ? lbToKgTimes10(Number(form.pesoLb))
-        : null;
-    const tallaCm =
-        form.tallaPies || form.tallaPulgadas
-            ? feetInchesToCm(
-                  Number(form.tallaPies) || 0,
-                  Number(form.tallaPulgadas) || 0,
-              )
-            : null;
-    const imc = computeImcFromMetric(pesoKgTimes10, tallaCm);
-
-    const SIMPLE_VITALS = [
-        {
-            key: 'presion_arterial' as const,
-            label: 'Presión arterial',
-            unit: 'mmHg',
-        },
-        {
-            key: 'frecuencia_cardiaca' as const,
-            label: 'Frec. cardíaca',
-            unit: 'lpm',
-        },
-        {
-            key: 'frecuencia_respiratoria' as const,
-            label: 'Frec. respiratoria',
-            unit: 'rpm',
-        },
-        { key: 'temp' as const, label: 'Temperatura', unit: '°C' },
-        { key: 'saturacion_o2' as const, label: 'SpO₂', unit: '%' },
-        { key: 'glucemia' as const, label: 'Glucemia', unit: 'mg/dL' },
-    ] as const;
 
     function handleAddDx() {
         const raw = dxInput.trim();
@@ -151,138 +115,12 @@ export default function NotaClinica({
                 </div>
                 <div className="flex flex-col gap-4 px-5 py-4">
                     {/* Vitals */}
-                    <div>
-                        <div className="mb-2 flex items-center gap-2 text-[13px] font-semibold text-accent-fg">
-                            <span className="inline-block h-[14px] w-[3px] rounded-sm bg-accent" />
-                            Signos vitales
-                        </div>
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(118px,1fr))] gap-2">
-                            {SIMPLE_VITALS.map((v) => (
-                                <label
-                                    key={v.key}
-                                    className="flex cursor-text flex-col gap-[2px] rounded-[10px] border border-input-border bg-white px-[10px] py-[6px]"
-                                >
-                                    <span className="overflow-hidden text-[12px] text-ellipsis whitespace-nowrap text-muted">
-                                        {v.label}
-                                    </span>
-                                    <span className="flex items-baseline gap-1">
-                                        <input
-                                            value={form[v.key]}
-                                            onChange={(e) =>
-                                                setForm((f) => ({
-                                                    ...f,
-                                                    [v.key]: e.target.value,
-                                                }))
-                                            }
-                                            className="w-full min-w-0 flex-1 border-0 bg-transparent p-0 font-sans text-sm font-semibold text-text-heading tabular-nums outline-none"
-                                        />
-                                        <span className="text-[11.5px] whitespace-nowrap text-muted-light">
-                                            {v.unit}
-                                        </span>
-                                    </span>
-                                </label>
-                            ))}
-
-                            {/* Weight in lb */}
-                            <label className="flex cursor-text flex-col gap-[2px] rounded-[10px] border border-input-border bg-white px-[10px] py-[6px]">
-                                <span className="overflow-hidden text-[12px] text-ellipsis whitespace-nowrap text-muted">
-                                    Peso (lb)
-                                </span>
-                                <span className="flex items-baseline gap-1">
-                                    <input
-                                        type="number"
-                                        min={2}
-                                        max={700}
-                                        value={form.pesoLb}
-                                        onChange={(e) =>
-                                            setForm((f) => ({
-                                                ...f,
-                                                pesoLb: e.target.value,
-                                            }))
-                                        }
-                                        className="w-full min-w-0 flex-1 border-0 bg-transparent p-0 font-sans text-sm font-semibold text-text-heading tabular-nums outline-none"
-                                    />
-                                    <span className="text-[11.5px] whitespace-nowrap text-muted-light">
-                                        lb
-                                    </span>
-                                </span>
-                                {form.pesoLb &&
-                                    (Number(form.pesoLb) < 2 ||
-                                        Number(form.pesoLb) > 700) && (
-                                        <span className="text-[11px] text-error">
-                                            Rango: 2–700 lb
-                                        </span>
-                                    )}
-                            </label>
-
-                            {/* Height: feet */}
-                            <label className="flex cursor-text flex-col gap-[2px] rounded-[10px] border border-input-border bg-white px-[10px] py-[6px]">
-                                <span className="overflow-hidden text-[12px] text-ellipsis whitespace-nowrap text-muted">
-                                    Pies
-                                </span>
-                                <span className="flex items-baseline gap-1">
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        max={7}
-                                        value={form.tallaPies}
-                                        onChange={(e) =>
-                                            setForm((f) => ({
-                                                ...f,
-                                                tallaPies: e.target.value,
-                                            }))
-                                        }
-                                        className="w-full min-w-0 flex-1 border-0 bg-transparent p-0 font-sans text-sm font-semibold text-text-heading tabular-nums outline-none"
-                                    />
-                                    <span className="text-[11.5px] whitespace-nowrap text-muted-light">
-                                        ft
-                                    </span>
-                                </span>
-                            </label>
-
-                            {/* Height: inches */}
-                            <label className="flex cursor-text flex-col gap-[2px] rounded-[10px] border border-input-border bg-white px-[10px] py-[6px]">
-                                <span className="overflow-hidden text-[12px] text-ellipsis whitespace-nowrap text-muted">
-                                    Pulgadas
-                                </span>
-                                <span className="flex items-baseline gap-1">
-                                    <input
-                                        type="number"
-                                        min={0}
-                                        max={11}
-                                        value={form.tallaPulgadas}
-                                        onChange={(e) =>
-                                            setForm((f) => ({
-                                                ...f,
-                                                tallaPulgadas: e.target.value,
-                                            }))
-                                        }
-                                        className="w-full min-w-0 flex-1 border-0 bg-transparent p-0 font-sans text-sm font-semibold text-text-heading tabular-nums outline-none"
-                                    />
-                                    <span className="text-[11.5px] whitespace-nowrap text-muted-light">
-                                        in
-                                    </span>
-                                </span>
-                                {form.tallaPulgadas &&
-                                    (Number(form.tallaPulgadas) < 0 ||
-                                        Number(form.tallaPulgadas) > 11) && (
-                                        <span className="text-[11px] text-error">
-                                            0–11 in
-                                        </span>
-                                    )}
-                            </label>
-
-                            {/* IMC (auto-computed) */}
-                            <div className="flex flex-col gap-[2px] rounded-[10px] border border-dashed border-input-border bg-done-row-bg px-[10px] py-[6px]">
-                                <span className="text-[12px] text-muted">
-                                    IMC
-                                </span>
-                                <span className="text-sm font-semibold text-text-heading tabular-nums">
-                                    {imc.display}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                    <SignosVitales
+                        form={form}
+                        onChange={(patch) =>
+                            setForm((f) => ({ ...f, ...patch }))
+                        }
+                    />
 
                     <label className="flex flex-col gap-[6px]">
                         <span className="font-medium">Motivo de consulta</span>
@@ -332,59 +170,20 @@ export default function NotaClinica({
                     </label>
 
                     {/* Diagnóstico CIE-10 */}
-                    <div className="flex flex-col gap-[6px]">
-                        <span className="font-medium">
-                            Diagnóstico (CIE-10)
-                        </span>
-                        <div className="flex min-h-[42px] flex-wrap items-center gap-[6px] rounded-[10px] border border-input-border px-2 py-[5px]">
-                            {form.diagnosticos.map(
-                                (dx: Diagnostico, i: number) => (
-                                    <span
-                                        key={i}
-                                        className="inline-flex items-center gap-[6px] rounded-full bg-muted-bg px-[10px] py-[3px] text-[13px]"
-                                    >
-                                        <strong className="font-semibold">
-                                            {dx.code}
-                                        </strong>{' '}
-                                        {dx.label}
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setForm((f) => ({
-                                                    ...f,
-                                                    diagnosticos:
-                                                        f.diagnosticos.filter(
-                                                            (_, j) => j !== i,
-                                                        ),
-                                                }))
-                                            }
-                                            className="cursor-pointer border-0 bg-transparent p-0 text-[13px] text-muted"
-                                        >
-                                            ✕
-                                        </button>
-                                    </span>
+                    <DiagnosticoCie10
+                        diagnosticos={form.diagnosticos}
+                        dxInput={dxInput}
+                        onDxInputChange={setDxInput}
+                        onAddDx={handleAddDx}
+                        onRemoveDx={(i) =>
+                            setForm((f) => ({
+                                ...f,
+                                diagnosticos: f.diagnosticos.filter(
+                                    (_, j) => j !== i,
                                 ),
-                            )}
-                            {/* dynamic-style: placeholder color depends on diagnosticos length */}
-                            <input
-                                value={dxInput}
-                                onChange={(e) => setDxInput(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        handleAddDx();
-                                    }
-                                }}
-                                placeholder="Ej: N39.0 Infección de vías urinarias"
-                                className={cn(
-                                    'min-w-[180px] flex-1 border-0 bg-transparent font-sans text-[13px] outline-none',
-                                    form.diagnosticos.length === 0
-                                        ? 'text-muted-light'
-                                        : 'text-text-heading',
-                                )}
-                            />
-                        </div>
-                    </div>
+                            }))
+                        }
+                    />
 
                     <label className="flex flex-col gap-[6px]">
                         <span className="font-medium">Plan</span>
