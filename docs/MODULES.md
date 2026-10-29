@@ -53,16 +53,16 @@ El ítem "Pacientes" en el sidebar usa `activeFor: ['/registro']` para manteners
 
 ## Roles
 
-| Rol           | Descripción               | Módulos                                                                                             |
-| ------------- | ------------------------- | --------------------------------------------------------------------------------------------------- |
+| Rol           | Descripción               | Módulos                                                                                                                                                                                          |
+| ------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | administrador | Acceso administrativo     | inicio, tablero, pacientes, registro, citas, emergencia, internamiento, cirugia, lab, img, impresos, caja, cxc, cuadre, almacen, entrada, admin, doctores, analisis, imgcat, precios, habs, tema |
-| medico        | Atención médica completa  | inicio, tablero, pacientes, citas, consulta, emergencia, internamiento, cirugia, lab, img, impresos |
-| enfermeria    | Atención clínica de apoyo | tablero, emergencia, internamiento, cirugia, impresos                                               |
-| secretaria    | Recepción y agendamiento  | inicio, tablero, pacientes, registro, citas, impresos                                               |
-| bioanalista   | Laboratorio               | lab, impresos                                                                                       |
-| imagenes      | Estudios de imagen        | img                                                                                                 |
-| caja          | Facturación y cobros      | inicio, tablero, caja, cxc, cuadre, impresos                                                        |
-| almacen       | Inventario                | almacen, entrada                                                                                    |
+| medico        | Atención médica completa  | inicio, tablero, pacientes, citas, consulta, emergencia, internamiento, cirugia, lab, img, impresos                                                                                              |
+| enfermeria    | Atención clínica de apoyo | tablero, emergencia, internamiento, cirugia, impresos                                                                                                                                            |
+| secretaria    | Recepción y agendamiento  | inicio, tablero, pacientes, registro, citas, impresos                                                                                                                                            |
+| bioanalista   | Laboratorio               | lab, impresos                                                                                                                                                                                    |
+| imagenes      | Estudios de imagen        | img                                                                                                                                                                                              |
+| caja          | Facturación y cobros      | inicio, tablero, caja, cxc, cuadre, impresos                                                                                                                                                     |
+| almacen       | Inventario                | almacen, entrada                                                                                                                                                                                 |
 
 ### Nota sobre `consulta` y el rol `administrador`
 
