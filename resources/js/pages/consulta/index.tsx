@@ -105,6 +105,10 @@ export default function ConsultaIndex({
                         activeTab={activeTab}
                         setActiveTab={setActiveTab}
                         turn={activeTurn}
+                        turnsEnEspera={turns_en_espera}
+                        onSelectTurn={(t) => {
+                            setActiveTurn(t);
+                        }}
                     />
 
                     {/* NOTA */}

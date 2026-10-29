@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { router } from '@inertiajs/react';
 import {
     FlaskConical,
     Ambulance,
@@ -63,26 +64,60 @@ export default function ConsultaActions({
     activeTab,
     setActiveTab,
     turn,
+    turnsEnEspera,
+    onSelectTurn,
 }: {
     activeTab: 'nota' | 'receta' | 'cuenta';
     setActiveTab: (tab: 'nota' | 'receta' | 'cuenta') => void;
     turn: TurnItem;
+    turnsEnEspera: TurnItem[];
+    onSelectTurn: (t: TurnItem) => void;
 }) {
     const [altaOpen, setAltaOpen] = useState(false);
+
+    const nextTurn = turnsEnEspera[0] ?? null;
+
+    const handleNextPatient = () => {
+        if (!nextTurn) return;
+        onSelectTurn(nextTurn);
+        router.get(
+            '/consulta',
+            { patient_id: String(nextTurn.patient.id) },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                only: ['historial', 'historial_patient'],
+            },
+        );
+    };
 
     return (
         <TooltipProvider delayDuration={300}>
             {/* Row 1 – action buttons */}
             <div className="flex flex-wrap items-center justify-between gap-2">
                 {/* Left: next patient */}
-                <button
-                    type="button"
-                    aria-label="Cargar próximo paciente"
-                    className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-sans text-sm font-medium whitespace-nowrap text-secondary-fg"
-                >
-                    <ChevronRight className="h-4 w-4" />
-                    T-{turn.turn_number} Cargar próximo paciente
-                </button>
+                {nextTurn ? (
+                    <button
+                        type="button"
+                        onClick={handleNextPatient}
+                        aria-label="Cargar próximo paciente"
+                        className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-sans text-sm font-medium whitespace-nowrap text-secondary-fg"
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                        T-{String(nextTurn.turn_number).padStart(2, '0')} Cargar
+                        próximo paciente
+                    </button>
+                ) : (
+                    <button
+                        type="button"
+                        disabled
+                        aria-label="Sin pacientes en espera"
+                        className="inline-flex h-9 cursor-not-allowed items-center gap-2 rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-sans text-sm font-medium whitespace-nowrap text-secondary-fg opacity-50"
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                        Sin pacientes en espera
+                    </button>
+                )}
 
                 {/* Right: disabled + primary */}
                 <div className="flex flex-wrap items-center gap-2">

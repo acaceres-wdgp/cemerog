@@ -7,8 +7,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const { mockRouterPost, mockUsePage } = vi.hoisted(() => ({
+const { mockRouterPost, mockRouterGet, mockUsePage } = vi.hoisted(() => ({
     mockRouterPost: vi.fn(),
+    mockRouterGet: vi.fn(),
     mockUsePage: vi.fn(() => ({ props: { errors: {} } })),
 }));
 
@@ -17,7 +18,7 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
     Head: () => null,
     usePage: mockUsePage,
     router: {
-        get: vi.fn(),
+        get: mockRouterGet,
         post: mockRouterPost,
         patch: vi.fn(),
     },
@@ -277,12 +278,58 @@ describe('ConsultaIndex – tab "Órdenes y cargos"', () => {
 
 // ─── T-NN next patient button ──────────────────────────────────────────────────
 
+const waitingTurn = makeTurn({
+    id: 2,
+    turn_number: 2,
+    turn_order: 2,
+    status: 'espera',
+    patient: {
+        id: 20,
+        full_name: 'Juan Pérez',
+        age: 50,
+        sex: 'M',
+        allergies: null,
+    },
+});
+
 describe('ConsultaIndex – T-NN next patient button', () => {
-    it('shows "Cargar próximo paciente" button with turn number', () => {
-        render(<ConsultaIndex {...BASE_PROPS} />);
-        // T-1 (turn_number=1)
-        expect(
-            screen.getByRole('button', { name: /Cargar próximo paciente/i }),
-        ).toBeTruthy();
+    beforeEach(() => {
+        mockRouterGet.mockClear();
+    });
+
+    it('with a waiting turn: shows turn number and is enabled', () => {
+        render(
+            <ConsultaIndex {...BASE_PROPS} turns_en_espera={[waitingTurn]} />,
+        );
+        const btn = screen.getByRole('button', {
+            name: /T-02.*Cargar próximo paciente|Cargar próximo paciente/i,
+        });
+        expect(btn).toBeTruthy();
+        expect(btn.hasAttribute('disabled')).toBe(false);
+        expect(btn.textContent).toMatch(/T-02/);
+    });
+
+    it('with a waiting turn: clicking the button loads the next patient', () => {
+        render(
+            <ConsultaIndex {...BASE_PROPS} turns_en_espera={[waitingTurn]} />,
+        );
+        const btn = screen.getByRole('button', {
+            name: /Cargar próximo paciente/i,
+        });
+        fireEvent.click(btn);
+        expect(mockRouterGet).toHaveBeenCalledWith(
+            '/consulta',
+            { patient_id: '20' },
+            expect.any(Object),
+        );
+    });
+
+    it('without waiting turns: button is disabled with "Sin pacientes en espera"', () => {
+        render(<ConsultaIndex {...BASE_PROPS} turns_en_espera={[]} />);
+        const btn = screen.getByRole('button', {
+            name: /Sin pacientes en espera/i,
+        });
+        expect(btn).toBeTruthy();
+        expect(btn.hasAttribute('disabled')).toBe(true);
     });
 });
