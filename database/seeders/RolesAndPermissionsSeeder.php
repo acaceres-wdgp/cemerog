@@ -16,7 +16,10 @@ class RolesAndPermissionsSeeder extends Seeder
      */
     private const ROLE_MODULES = [
         'administrador' => [
-            'inicio', 'tablero', 'pacientes', 'registro', 'citas', 'consulta', 'emergencia',
+            // consulta is intentionally absent: access requires module.consulta.access
+            // AND an active linked doctor (attend-patients middleware). The owner
+            // (admin + medico roles) gets it via the medico role. See ADR-015.
+            'inicio', 'tablero', 'pacientes', 'registro', 'citas', 'emergencia',
             'internamiento', 'cirugia', 'lab', 'img', 'impresos',
             'caja', 'cxc', 'cuadre', 'almacen', 'entrada',
             'admin', 'doctores', 'analisis', 'imgcat', 'precios', 'habs', 'tema',

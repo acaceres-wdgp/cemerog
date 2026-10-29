@@ -10,6 +10,8 @@ export interface NavItem {
     href: string;
     permission: string;
     activeFor?: string[];
+    /** When true, also requires can_attend to be true (used for Consulta) */
+    requireCanAttend?: boolean;
 }
 
 export interface NavGroup {
@@ -66,6 +68,7 @@ export const NAV_GROUPS: NavGroup[] = [
                 icon: 'Stethoscope',
                 href: '/consulta',
                 permission: 'module.consulta.access',
+                requireCanAttend: true,
             },
             {
                 key: 'emergencia',

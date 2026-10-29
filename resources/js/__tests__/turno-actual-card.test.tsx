@@ -19,7 +19,12 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
     },
 }));
 
-const doctor = { id: 1, name: 'Dr. Rodríguez', office: 'Consultorio 1' };
+const doctor = {
+    id: 1,
+    name: 'Dr. Rodríguez',
+    office: 'Consultorio 1',
+    is_active: true,
+};
 
 afterEach(() => {
     cleanup();

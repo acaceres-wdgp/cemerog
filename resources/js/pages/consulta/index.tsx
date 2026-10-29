@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
+import { UserX } from 'lucide-react';
 import { Props, TurnItem } from './types';
 import QueueSelector from './components/QueueSelector';
 import PatientHeader from './components/PatientHeader';
@@ -8,10 +9,12 @@ import HistorialPanel from './components/HistorialPanel';
 import RecetaTab from './components/RecetaTab';
 import CuentaOrdenesTab from './components/CuentaOrdenesTab';
 import ConsultaActions from './components/ConsultaActions';
+import EmptyState from '@/components/cemerog/EmptyState';
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ConsultaIndex({
+    can_attend,
     turns_en_consulta,
     turns_en_espera,
     historial,
@@ -27,6 +30,23 @@ export default function ConsultaIndex({
 
     const antecedents = historial_patient?.antecedents ?? null;
     const displayedHistorial = historial ?? [];
+
+    if (!can_attend) {
+        return (
+            <div className="flex flex-col gap-5">
+                <h1 className="m-0 font-serif text-[22px] font-bold text-text-heading">
+                    Consulta
+                </h1>
+                <div className="rounded-2xl border border-card-border bg-white px-6 py-12">
+                    <EmptyState
+                        icon={UserX}
+                        title="Usuario no vinculado a un médico activo"
+                        description="Tu usuario no está vinculado a un médico activo. Contacta al administrador."
+                    />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col gap-5">

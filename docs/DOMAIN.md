@@ -65,7 +65,20 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 
 - Notas SOAP, diagnóstico CIE-10, prescripciones.
 - Genera órdenes de laboratorio e imagen.
-- **Pendiente de implementar**: formulario de consulta completo.
+
+#### Reglas de autoría y acceso (ADR-015)
+
+1. Cada turno pertenece a un médico. Solo ese médico puede llamarlo, registrar la consulta y dar el alta.
+2. En Consulta, cada médico ve únicamente su propia cola del día (`turns` filtrados por `doctor_id = auth user's doctor`).
+3. El médico puede ver el historial completo del paciente (todos los médicos), en modo lectura.
+4. Un paciente puede tener turnos con múltiples médicos el mismo día; cada médico gestiona los suyos de forma independiente.
+5. Para acceder a Consulta se requiere **dos condiciones** simultáneas:
+    - Permiso `module.consulta.access` (lo tiene el rol `medico`; no el rol `administrador`).
+    - Usuario vinculado a un médico activo (`doctors.is_active = true`, `doctors.user_id = auth user`).
+      El propietario accede porque tiene roles `administrador` + `medico` y está vinculado a su doctor. Un administrador puro (sin doctor activo) ve 403 en `/consulta`. Middleware `attend-patients`.
+6. La consulta siempre se guarda con el `doctor_id` y `patient_id` del turno, nunca del cuerpo de la petición.
+7. `consultations.created_by` registra el `user_id` del usuario autenticado que guardó la nota.
+8. `updateAntecedents`: solo el médico con un turno abierto hoy para ese paciente puede modificar sus antecedentes.
 
 ### Emergencia
 

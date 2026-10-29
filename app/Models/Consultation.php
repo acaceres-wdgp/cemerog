@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
  * @property int $patient_id
  * @property int $doctor_id
  * @property int|null $turn_id
+ * @property int|null $created_by
  * @property int|null $peso
  * @property int|null $talla
  * @property int|null $temp
@@ -32,6 +33,7 @@ use Illuminate\Support\Carbon;
  * @property-read Patient $patient
  * @property-read Doctor $doctor
  * @property-read Turn|null $turn
+ * @property-read User|null $creator
  */
 class Consultation extends Model
 {
@@ -42,6 +44,7 @@ class Consultation extends Model
         'patient_id',
         'doctor_id',
         'turn_id',
+        'created_by',
         'peso',
         'talla',
         'temp',
@@ -89,5 +92,11 @@ class Consultation extends Model
     public function turn(): BelongsTo
     {
         return $this->belongsTo(Turn::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

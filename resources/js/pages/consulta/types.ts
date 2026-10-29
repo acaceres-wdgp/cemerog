@@ -74,6 +74,7 @@ export type NoteFormData = {
 };
 
 export type Props = {
+    can_attend: boolean;
     turns_en_consulta: TurnItem[];
     turns_en_espera: TurnItem[];
     historial?: HistorialEntry[];

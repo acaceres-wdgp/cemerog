@@ -102,8 +102,8 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::delete('/{appointment}', [CitasController::class, 'cancel'])->name('citas.cancel');
     });
 
-    // Atencion clinica
-    Route::prefix('/consulta')->middleware('permission:module.consulta.access')->group(function () {
+    // Atencion clinica – requires module.consulta.access AND an active linked doctor
+    Route::prefix('/consulta')->middleware('attend-patients')->group(function () {
         Route::get('/', [ConsultaController::class, 'index'])->name('consulta');
         Route::post('/', [ConsultaController::class, 'store'])->name('consulta.store');
         Route::patch('/turnos/{turn}/alta', [ConsultaController::class, 'alta'])->name('consulta.alta');

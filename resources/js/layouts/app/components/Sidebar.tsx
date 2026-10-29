@@ -98,6 +98,7 @@ export function Sidebar({
     const pageProps = usePage<PageProps>().props;
     const permissions: string[] =
         (pageProps as unknown as { permissions?: string[] }).permissions ?? [];
+    const canAttend: boolean = pageProps.can_attend ?? false;
     const doctor = pageProps.doctor ?? null;
     const queue = pageProps.queue ?? null;
 
@@ -126,8 +127,10 @@ export function Sidebar({
             {/* Navigation */}
             <nav className="flex-1 scrollbar-none overflow-y-auto py-3">
                 {NAV_GROUPS.map((group) => {
-                    const visibleItems = group.items.filter((item) =>
-                        permissions.includes(item.permission),
+                    const visibleItems = group.items.filter(
+                        (item) =>
+                            permissions.includes(item.permission) &&
+                            (!item.requireCanAttend || canAttend),
                     );
                     if (visibleItems.length === 0) return null;
 

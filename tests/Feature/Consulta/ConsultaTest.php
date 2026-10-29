@@ -9,11 +9,16 @@ use App\Models\Turn;
 use App\Models\User;
 
 beforeEach(function () {
+    // A medico with an active linked doctor – satisfies attend-patients middleware
     $this->user = User::factory()->create();
-    $this->user->givePermissionTo('module.consulta.access');
+    $this->user->assignRole('medico');
 
     $this->specialty = Specialty::factory()->create(['name' => 'Medicina General']);
-    $this->doctor = Doctor::factory()->create(['specialty_id' => $this->specialty->id, 'is_active' => true]);
+    $this->doctor = Doctor::factory()->create([
+        'specialty_id' => $this->specialty->id,
+        'user_id' => $this->user->id,
+        'is_active' => true,
+    ]);
     $this->patient = Patient::factory()->create();
 });
 
@@ -82,12 +87,11 @@ test('authorized user can store a consultation', function () {
         'doctor_id' => $this->doctor->id,
         'patient_id' => $this->patient->id,
         'status' => 'en_consulta',
+        'arrived_at' => now(),
     ]);
 
     $this->actingAs($this->user)
         ->post('/consulta', [
-            'patient_id' => $this->patient->id,
-            'doctor_id' => $this->doctor->id,
             'turn_id' => $turn->id,
             'motivo_consulta' => 'Dolor de cabeza',
             'diagnosticos' => [['code' => 'R51', 'label' => 'Cefalea']],
@@ -107,12 +111,11 @@ test('store consultation does NOT auto-mark turn as atendido', function () {
         'doctor_id' => $this->doctor->id,
         'patient_id' => $this->patient->id,
         'status' => 'en_consulta',
+        'arrived_at' => now(),
     ]);
 
     $this->actingAs($this->user)
         ->post('/consulta', [
-            'patient_id' => $this->patient->id,
-            'doctor_id' => $this->doctor->id,
             'turn_id' => $turn->id,
             'motivo_consulta' => 'Control',
         ])
@@ -121,42 +124,40 @@ test('store consultation does NOT auto-mark turn as atendido', function () {
     expect($turn->fresh()->status)->toBe('en_consulta');
 });
 
-test('store consultation without turn_id still works', function () {
-    $this->actingAs($this->user)
-        ->post('/consulta', [
-            'patient_id' => $this->patient->id,
-            'doctor_id' => $this->doctor->id,
-            'motivo_consulta' => 'Consulta espontánea',
-        ])
-        ->assertRedirect();
-
-    $this->assertDatabaseHas('consultations', [
-        'patient_id' => $this->patient->id,
-        'turn_id' => null,
-    ]);
-});
-
-test('store consultation validates required fields', function () {
+test('store consultation without turn_id returns 403 (turn ownership check fails)', function () {
+    // With the new business rule, turn_id is required for authorization.
+    // Without it authorize() returns false → 403, before validation runs.
     $this->actingAs($this->user)
         ->post('/consulta', [])
-        ->assertSessionHasErrors(['patient_id', 'doctor_id']);
+        ->assertForbidden();
 });
 
 test('unauthorized user gets 403 on POST /consulta', function () {
     $noPerms = User::factory()->create();
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
     $this->actingAs($noPerms)
         ->post('/consulta', [
-            'patient_id' => $this->patient->id,
-            'doctor_id' => $this->doctor->id,
+            'turn_id' => $turn->id,
         ])
         ->assertForbidden();
 });
 
 test('store consultation redirects with flash success', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
     $this->actingAs($this->user)
         ->post('/consulta', [
-            'patient_id' => $this->patient->id,
-            'doctor_id' => $this->doctor->id,
+            'turn_id' => $turn->id,
             'motivo_consulta' => 'Revisión',
         ])
         ->assertRedirect()
@@ -187,6 +188,14 @@ test('index loads historial when patient_id is provided', function () {
 // ─── Antecedentes ─────────────────────────────────────────────────────────────
 
 test('authorized user can update patient antecedents', function () {
+    // Doctor needs an open turn for the patient today
+    Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
     $this->actingAs($this->user)
         ->patch("/consulta/antecedentes/{$this->patient->id}", [
             'personales' => 'HTA, DM2',
@@ -208,6 +217,13 @@ test('authorized user can update patient antecedents', function () {
 });
 
 test('antecedents upsert: updating twice keeps one record', function () {
+    Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
     $this->actingAs($this->user)
         ->patch("/consulta/antecedentes/{$this->patient->id}", ['personales' => 'HTA']);
 
@@ -232,6 +248,7 @@ test('authorized user can give alta and turn becomes atendido', function () {
         'doctor_id' => $this->doctor->id,
         'patient_id' => $this->patient->id,
         'status' => 'en_consulta',
+        'arrived_at' => now(),
     ]);
 
     $this->actingAs($this->user)
@@ -246,6 +263,7 @@ test('alta redirects with flash success', function () {
         'doctor_id' => $this->doctor->id,
         'patient_id' => $this->patient->id,
         'status' => 'en_consulta',
+        'arrived_at' => now(),
     ]);
 
     $this->actingAs($this->user)
@@ -263,6 +281,32 @@ test('unauthorized user gets 403 on PATCH /consulta/turnos/{turn}/alta', functio
     ]);
 
     $this->actingAs($noPerms)
+        ->patch("/consulta/turnos/{$turn->id}/alta")
+        ->assertForbidden();
+});
+
+test('alta of a turn from yesterday returns 403', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($this->user)
+        ->patch("/consulta/turnos/{$turn->id}/alta")
+        ->assertForbidden();
+});
+
+test('alta of an already atendido turn returns 403', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'atendido',
+        'arrived_at' => now(),
+    ]);
+
+    $this->actingAs($this->user)
         ->patch("/consulta/turnos/{$turn->id}/alta")
         ->assertForbidden();
 });
