@@ -62,9 +62,10 @@ Los archivos se guardan **tal como se entregaron**: el formateador los ignora (`
 | [PROMPT-13b](PROMPT-13b-medico-con-usuario-ajustes.md) | Ajustes del 13: diálogo de credenciales, lint, desactivar al dueño, confirmación, partículas | 13 | ✅ Mezclado (#23) |
 | [PROMPT-14](PROMPT-14-consulta-acceso-y-autoria.md) | Solo el médico del turno atiende y firma; el administrador no médico no ve Consulta | 13 | ✅ Mezclado (#25) |
 | [PROMPT-14b](PROMPT-14b-consulta-acceso-ajustes.md) | Ajustes del 14: estado vacío, menú y alta solo de turnos abiertos | 14 | ✅ Mezclado (#25) |
-| [PROMPT-15](PROMPT-15-signos-vitales.md) | Signos vitales en libras y pies/pulgadas; IMC; «Plan» | 12c, 14 | 🔄 En revisión (#27) |
-| [PROMPT-15b](PROMPT-15b-signos-vitales-ajustes.md) | Ajustes del 15: ida y vuelta de talla y peso, errores del backend, test de rangos | 15 | 🔄 En revisión (#27) |
-| [PROMPT-16](PROMPT-16-acciones-y-alta.md) | Botones de acción y alta médica con tipo | 15 | ⏳ Pendiente |
+| [PROMPT-15](PROMPT-15-signos-vitales.md) | Signos vitales en libras y pies/pulgadas; IMC; «Plan» | 12c, 14 | ✅ Mezclado (#27) |
+| [PROMPT-15b](PROMPT-15b-signos-vitales-ajustes.md) | Ajustes del 15: ida y vuelta de talla y peso, errores del backend, test de rangos | 15 | ✅ Mezclado (#27) |
+| [PROMPT-16](PROMPT-16-acciones-y-alta.md) | Botones de acción y alta médica con tipo | 15 | 🔄 En revisión (#29) |
+| [PROMPT-16b](PROMPT-16b-acciones-y-alta-ajustes.md) | Ajustes del 16: quitar el alta vieja, tooltips, próximo paciente, errores del modal | 16 | 🔄 En revisión (#29) |
 | [PROMPT-17](PROMPT-17-receta.md) | Receta: guardar, imprimir y ver en el historial | 16 | ⏳ Pendiente |
 | [PROMPT-18](PROMPT-18-cuenta-cargos-honorarios.md) | Cuenta del día, cargos y honorarios del médico | 17 | ⏳ Pendiente |
 
