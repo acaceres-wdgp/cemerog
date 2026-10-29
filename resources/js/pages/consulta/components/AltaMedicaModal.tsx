@@ -1,8 +1,9 @@
 import React, { FormEvent, useState } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import FormDialog from '@/components/cemerog/FormDialog';
 import ConfirmDialog from '@/components/cemerog/ConfirmDialog';
 import { cn } from '@/lib/utils';
+import consulta from '@/routes/consulta';
 import { TurnItem } from '../types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -52,6 +53,15 @@ export default function AltaMedicaModal({
     onOpenChange,
     turn,
 }: AltaMedicaModalProps) {
+    const pageErrors = usePage().props.errors as
+        | Partial<{
+              type: string;
+              destination: string;
+              discharge_diagnosis: string;
+              message: string;
+          }>
+        | undefined;
+
     const [dischargeType, setDischargeType] =
         useState<DischargeType>('recuperado');
     const [destination, setDestination] = useState('');
@@ -59,6 +69,8 @@ export default function AltaMedicaModal({
     const [dischargeDiagnosis, setDischargeDiagnosis] = useState('');
     const [showDefuncionConfirm, setShowDefuncionConfirm] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+
+    const turnLabel = `T-${String(turn.turn_number).padStart(2, '0')}`;
 
     const handleOpenChange = (value: boolean) => {
         if (!value) {
@@ -75,7 +87,7 @@ export default function AltaMedicaModal({
     const submitDischarge = () => {
         setIsLoading(true);
         router.post(
-            `/consulta/turnos/${turn.id}/alta`,
+            consulta.discharge.url(turn.id),
             {
                 type: dischargeType,
                 destination: dischargeType === 'traslado' ? destination : null,
@@ -103,7 +115,7 @@ export default function AltaMedicaModal({
                 open={open}
                 onOpenChange={handleOpenChange}
                 title="Alta médica"
-                description={`${turn.patient.full_name} · Turno T-${turn.turn_number}`}
+                description={`${turn.patient.full_name} · Turno ${turnLabel}`}
                 submitLabel="Confirmar alta"
                 cancelLabel="Cancelar"
                 onSubmit={handleSubmit}
@@ -111,6 +123,13 @@ export default function AltaMedicaModal({
                 maxWidth="sm:max-w-lg"
             >
                 <div className="flex flex-col gap-4">
+                    {/* Duplicate discharge error */}
+                    {pageErrors?.message && (
+                        <p className="text-xs text-error" role="alert">
+                            {pageErrors.message}
+                        </p>
+                    )}
+
                     {/* Type selection */}
                     <div className="flex flex-col gap-2">
                         <OptionCard
@@ -131,6 +150,11 @@ export default function AltaMedicaModal({
                             title="Defunción"
                             description="Requiere confirmación."
                         />
+                        {pageErrors?.type && (
+                            <span className="text-xs text-error" role="alert">
+                                {pageErrors.type}
+                            </span>
+                        )}
                     </div>
 
                     {/* Destination field – only for traslado */}
@@ -145,9 +169,22 @@ export default function AltaMedicaModal({
                                 onChange={(e) => setDestination(e.target.value)}
                                 required
                                 placeholder="Nombre del centro"
-                                className="h-9 rounded-[8px] border border-secondary-border bg-white px-3 text-sm outline-none focus:border-primary"
+                                className={cn(
+                                    'h-9 rounded-[8px] border bg-white px-3 text-sm outline-none focus:border-primary',
+                                    pageErrors?.destination
+                                        ? 'border-error-border'
+                                        : 'border-secondary-border',
+                                )}
                                 aria-label="Centro de destino"
                             />
+                            {pageErrors?.destination && (
+                                <span
+                                    className="text-xs text-error"
+                                    role="alert"
+                                >
+                                    {pageErrors.destination}
+                                </span>
+                            )}
                         </label>
                     )}
 
@@ -164,9 +201,19 @@ export default function AltaMedicaModal({
                             required
                             rows={3}
                             placeholder="Diagnóstico al momento del egreso"
-                            className="rounded-[8px] border border-secondary-border bg-white px-3 py-2 text-sm outline-none focus:border-primary"
+                            className={cn(
+                                'rounded-[8px] border bg-white px-3 py-2 text-sm outline-none focus:border-primary',
+                                pageErrors?.discharge_diagnosis
+                                    ? 'border-error-border'
+                                    : 'border-secondary-border',
+                            )}
                             aria-label="Diagnóstico de egreso"
                         />
+                        {pageErrors?.discharge_diagnosis && (
+                            <span className="text-xs text-error" role="alert">
+                                {pageErrors.discharge_diagnosis}
+                            </span>
+                        )}
                     </label>
                 </div>
             </FormDialog>

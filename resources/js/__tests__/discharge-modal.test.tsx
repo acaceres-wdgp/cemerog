@@ -264,6 +264,35 @@ describe('ConsultaIndex – alta médica modal', () => {
             expect.any(Object),
         );
     });
+
+    it('modal subtitle shows turn number with two digits (T-01)', () => {
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        fireEvent.click(
+            screen.getByRole('button', { name: /Dar alta médica/i }),
+        );
+        // Turn number is 1, modal description should show "Turno T-01"
+        expect(screen.getByText(/Turno T-01/)).toBeTruthy();
+    });
+
+    it('shows discharge_diagnosis error from backend', () => {
+        mockUsePage.mockReturnValue({
+            props: {
+                errors: {
+                    discharge_diagnosis:
+                        'El diagnóstico de egreso es obligatorio.',
+                },
+            },
+        });
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        fireEvent.click(
+            screen.getByRole('button', { name: /Dar alta médica/i }),
+        );
+        expect(
+            screen.getByText(/El diagnóstico de egreso es obligatorio\./i),
+        ).toBeTruthy();
+        // Restore default mock for other tests
+        mockUsePage.mockReturnValue({ props: { errors: {} } });
+    });
 });
 
 // ─── Tab rename ─────────────────────────────────────────────────────────────────
