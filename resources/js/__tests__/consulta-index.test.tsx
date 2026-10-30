@@ -74,6 +74,7 @@ const makeHistorial = (overrides: Record<string, unknown> = {}) => ({
         saturacion_o2: null,
         glucemia: null,
     },
+    discharge: null,
     ...overrides,
 });
 
@@ -408,9 +409,9 @@ describe('ConsultaIndex – pestañas', () => {
         expect(screen.getByText(/1 medicamentos/)).toBeTruthy();
     });
 
-    it('clicking "Cuenta / Órdenes" tab shows "Órdenes" heading', () => {
+    it('clicking "Órdenes y cargos" tab shows "Órdenes" heading', () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
-        fireEvent.click(screen.getByText('Cuenta / Órdenes'));
+        fireEvent.click(screen.getByText('Órdenes y cargos'));
         expect(screen.getByText('Órdenes')).toBeTruthy();
     });
 });
@@ -495,13 +496,12 @@ describe('ConsultaIndex – dar de alta', () => {
         mockRouterPatch.mockClear();
     });
 
-    it('clicking "✓ Dar alta" calls router.patch with the turn id', () => {
+    it('clicking "Dar alta médica" opens the alta modal', () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
-        fireEvent.click(screen.getByText('✓ Dar alta'));
-        expect(mockRouterPatch).toHaveBeenCalledWith(
-            '/consulta/turnos/1/alta',
-            {},
+        fireEvent.click(
+            screen.getByRole('button', { name: /Dar alta médica/i }),
         );
+        expect(screen.getByText('Alta médica')).toBeTruthy();
     });
 });
 

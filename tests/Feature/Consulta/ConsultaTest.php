@@ -241,7 +241,7 @@ test('unauthorized user gets 403 on PATCH /consulta/antecedentes/{patient}', fun
         ->assertForbidden();
 });
 
-// ─── Alta ─────────────────────────────────────────────────────────────────────
+// ─── Alta (discharge) ─────────────────────────────────────────────────────────
 
 test('authorized user can give alta and turn becomes atendido', function () {
     $turn = Turn::factory()->create([
@@ -252,7 +252,10 @@ test('authorized user can give alta and turn becomes atendido', function () {
     ]);
 
     $this->actingAs($this->user)
-        ->patch("/consulta/turnos/{$turn->id}/alta")
+        ->postJson("/consulta/turnos/{$turn->id}/alta", [
+            'type' => 'recuperado',
+            'discharge_diagnosis' => 'Control sin novedad',
+        ])
         ->assertRedirect(route('consulta'));
 
     expect($turn->fresh()->status)->toBe('atendido');
@@ -267,13 +270,16 @@ test('alta redirects with flash success', function () {
     ]);
 
     $this->actingAs($this->user)
-        ->patch("/consulta/turnos/{$turn->id}/alta")
+        ->postJson("/consulta/turnos/{$turn->id}/alta", [
+            'type' => 'recuperado',
+            'discharge_diagnosis' => 'Control sin novedad',
+        ])
         ->assertRedirect()
         ->assertSessionHas('inertia.flash_data.toast.type', 'success')
         ->assertSessionHas('inertia.flash_data.toast.message', 'Paciente dado de alta.');
 });
 
-test('unauthorized user gets 403 on PATCH /consulta/turnos/{turn}/alta', function () {
+test('unauthorized user gets 403 on POST /consulta/turnos/{turn}/alta', function () {
     $noPerms = User::factory()->create();
     $turn = Turn::factory()->create([
         'doctor_id' => $this->doctor->id,
@@ -281,7 +287,10 @@ test('unauthorized user gets 403 on PATCH /consulta/turnos/{turn}/alta', functio
     ]);
 
     $this->actingAs($noPerms)
-        ->patch("/consulta/turnos/{$turn->id}/alta")
+        ->postJson("/consulta/turnos/{$turn->id}/alta", [
+            'type' => 'recuperado',
+            'discharge_diagnosis' => 'Control',
+        ])
         ->assertForbidden();
 });
 
@@ -294,7 +303,10 @@ test('alta of a turn from yesterday returns 403', function () {
     ]);
 
     $this->actingAs($this->user)
-        ->patch("/consulta/turnos/{$turn->id}/alta")
+        ->postJson("/consulta/turnos/{$turn->id}/alta", [
+            'type' => 'recuperado',
+            'discharge_diagnosis' => 'Control',
+        ])
         ->assertForbidden();
 });
 
@@ -307,7 +319,10 @@ test('alta of an already atendido turn returns 403', function () {
     ]);
 
     $this->actingAs($this->user)
-        ->patch("/consulta/turnos/{$turn->id}/alta")
+        ->postJson("/consulta/turnos/{$turn->id}/alta", [
+            'type' => 'recuperado',
+            'discharge_diagnosis' => 'Control',
+        ])
         ->assertForbidden();
 });
 

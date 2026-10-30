@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Modules;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreConsultationRequest;
+use App\Http\Requests\StoreDischargeRequest;
 use App\Http\Requests\UpdateAntecedentRequest;
 use App\Models\Consultation;
+use App\Models\Discharge;
 use App\Models\Patient;
 use App\Models\PatientAntecedent;
 use App\Models\Turn;
@@ -13,6 +15,8 @@ use App\Models\User;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -98,20 +102,42 @@ class ConsultaController extends Controller
             ->to(route('consulta', ['patient_id' => $turn->patient_id]));
     }
 
-    public function alta(Turn $turn): RedirectResponse
+    public function discharge(StoreDischargeRequest $request, Turn $turn): RedirectResponse
     {
-        $this->authorizeTurnOwnership($turn);
+        // Check if a discharge already exists for this turn (422 before 403)
+        if (Discharge::where('turn_id', $turn->id)->exists()) {
+            throw ValidationException::withMessages([
+                'message' => 'Este turno ya tiene un alta registrada.',
+            ]);
+        }
 
         if (! $turn->isOpenToday()) {
             abort(403);
         }
 
-        $turn->update(['status' => 'atendido']);
+        /** @var User $user */
+        $user = $request->user();
+
+        $validated = $request->validated();
+
+        DB::transaction(function () use ($turn, $validated, $user): void {
+            Discharge::create([
+                'turn_id' => $turn->id,
+                'patient_id' => $turn->patient_id,
+                'doctor_id' => $turn->doctor_id,
+                'type' => $validated['type'],
+                'destination' => $validated['destination'] ?? null,
+                'reason' => $validated['reason'] ?? null,
+                'discharge_diagnosis' => $validated['discharge_diagnosis'],
+                'created_by' => $user->id,
+            ]);
+
+            $turn->update(['status' => 'atendido']);
+        });
 
         Toast::success('Paciente dado de alta.');
 
-        return redirect()
-            ->to(route('consulta'));
+        return redirect()->to(route('consulta'));
     }
 
     public function updateAntecedents(UpdateAntecedentRequest $request, Patient $patient): RedirectResponse
@@ -126,22 +152,6 @@ class ConsultaController extends Controller
         Toast::success('Antecedentes actualizados.');
 
         return back();
-    }
-
-    /**
-     * Abort 403 unless the authenticated user's doctor owns the given turn.
-     */
-    private function authorizeTurnOwnership(Turn $turn): void
-    {
-        /** @var User $user */
-        $user = auth()->user();
-
-        if (
-            $user->doctor === null
-            || $turn->doctor_id !== $user->doctor->id
-        ) {
-            abort(403);
-        }
     }
 
     /**
@@ -170,7 +180,7 @@ class ConsultaController extends Controller
     /** @return list<array<string, mixed>> */
     private function loadHistorial(Patient $patient): array
     {
-        return Consultation::with(['doctor.specialty'])
+        return Consultation::with(['doctor.specialty', 'turn.discharge'])
             ->where('patient_id', $patient->id)
             ->orderByDesc('consulted_at')
             ->get()
@@ -197,6 +207,12 @@ class ConsultaController extends Controller
                     'saturacion_o2' => $c->saturacion_o2,
                     'glucemia' => $c->glucemia,
                 ],
+                'discharge' => $c->turn?->discharge ? [
+                    'type' => $c->turn->discharge->type,
+                    'destination' => $c->turn->discharge->destination,
+                    'discharge_diagnosis' => $c->turn->discharge->discharge_diagnosis,
+                    'discharged_at' => $c->turn->discharge->discharged_at,
+                ] : null,
             ])
             ->all();
     }

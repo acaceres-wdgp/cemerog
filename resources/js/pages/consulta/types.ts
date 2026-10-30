@@ -37,6 +37,13 @@ export type TurnItem = {
     doctor: DoctorInfo;
 };
 
+export type DischargeInfo = {
+    type: 'recuperado' | 'traslado' | 'defuncion';
+    destination: string | null;
+    discharge_diagnosis: string;
+    discharged_at: string;
+} | null;
+
 export type HistorialEntry = {
     id: number;
     consulted_at: string;
@@ -47,6 +54,7 @@ export type HistorialEntry = {
     diagnosticos: Diagnostico[] | null;
     plan_tratamiento: string | null;
     vitals: Vitals;
+    discharge: DischargeInfo;
 };
 
 export type AntecedentData = {

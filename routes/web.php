@@ -106,7 +106,7 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
     Route::prefix('/consulta')->middleware('attend-patients')->group(function () {
         Route::get('/', [ConsultaController::class, 'index'])->name('consulta');
         Route::post('/', [ConsultaController::class, 'store'])->name('consulta.store');
-        Route::patch('/turnos/{turn}/alta', [ConsultaController::class, 'alta'])->name('consulta.alta');
+        Route::post('/turnos/{turn}/alta', [ConsultaController::class, 'discharge'])->name('consulta.discharge');
         Route::patch('/antecedentes/{patient}', [ConsultaController::class, 'updateAntecedents'])->name('consulta.antecedentes');
     });
 

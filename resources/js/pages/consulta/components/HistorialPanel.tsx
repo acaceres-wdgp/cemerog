@@ -7,7 +7,45 @@ import {
     formatTallaFtIn,
     computeImcFromMetric,
 } from '@/lib/units';
-import { HistorialEntry } from '../types';
+import { DischargeInfo, HistorialEntry } from '../types';
+
+// ─── Discharge Badge ──────────────────────────────────────────────────────────
+
+const DISCHARGE_LABELS: Record<
+    NonNullable<DischargeInfo>['type'],
+    { label: string; className: string }
+> = {
+    recuperado: {
+        label: 'Por alivio',
+        className: 'bg-badge-consulta-bg text-consulta-num',
+    },
+    traslado: {
+        label: 'Traslado',
+        className: 'bg-surface text-secondary-fg',
+    },
+    defuncion: {
+        label: 'Defunción',
+        className: 'bg-error-bg text-error',
+    },
+};
+
+function DischargeBadge({
+    discharge,
+}: {
+    discharge: NonNullable<DischargeInfo>;
+}) {
+    const cfg = DISCHARGE_LABELS[discharge.type];
+    return (
+        <span
+            className={cn(
+                'rounded-full px-2 py-[1px] text-[11px] font-semibold',
+                cfg.className,
+            )}
+        >
+            {cfg.label}
+        </span>
+    );
+}
 
 // ─── Historial Panel ──────────────────────────────────────────────────────────
 
@@ -83,6 +121,11 @@ export default function HistorialPanel({
                                         <span className="rounded-full bg-badge-consulta-bg px-2 py-[1px] font-semibold text-consulta-num">
                                             Consulta
                                         </span>
+                                        {e.discharge && (
+                                            <DischargeBadge
+                                                discharge={e.discharge}
+                                            />
+                                        )}
                                         <span className="text-muted tabular-nums">
                                             {dateStr}
                                         </span>
@@ -114,6 +157,9 @@ export default function HistorialPanel({
                                 <span className="rounded-full bg-badge-consulta-bg px-[10px] py-[2px] text-[12px] font-semibold text-consulta-num">
                                     Consulta
                                 </span>
+                                {sel.discharge && (
+                                    <DischargeBadge discharge={sel.discharge} />
+                                )}
                                 <span className="text-[12.5px] text-muted">
                                     {format(
                                         new Date(sel.consulted_at),
@@ -170,6 +216,24 @@ export default function HistorialPanel({
                                     <p className="m-0 text-text-heading">
                                         {sel.plan_tratamiento}
                                     </p>
+                                </div>
+                            )}
+
+                            {/* Diagnóstico de egreso */}
+                            {sel.discharge?.discharge_diagnosis && (
+                                <div>
+                                    <div className="mb-1 text-[11px] font-semibold tracking-[.05em] text-muted uppercase">
+                                        Diagnóstico de egreso
+                                    </div>
+                                    <p className="m-0 text-text-heading">
+                                        {sel.discharge.discharge_diagnosis}
+                                    </p>
+                                    {sel.discharge.destination && (
+                                        <p className="m-0 mt-1 text-[13px] text-muted">
+                                            Traslado a:{' '}
+                                            {sel.discharge.destination}
+                                        </p>
+                                    )}
                                 </div>
                             )}
 
