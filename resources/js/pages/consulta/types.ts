@@ -63,6 +63,12 @@ export type PrescriptionData = {
     items: PrescriptionItemData[];
 };
 
+export type HistorialPrescription = {
+    id: number;
+    general_instructions: string | null;
+    items: PrescriptionItemData[];
+};
+
 export type HistorialEntry = {
     id: number;
     consulted_at: string;
@@ -75,6 +81,7 @@ export type HistorialEntry = {
     vitals: Vitals;
     discharge: DischargeInfo;
     prescription_id?: number | null;
+    prescription?: HistorialPrescription | null;
 };
 
 export type AntecedentData = {

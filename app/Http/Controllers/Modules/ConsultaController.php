@@ -193,7 +193,7 @@ class ConsultaController extends Controller
     /** @return list<array<string, mixed>> */
     private function loadHistorial(Patient $patient): array
     {
-        return Consultation::with(['doctor.specialty', 'turn.discharge', 'turn.prescription'])
+        return Consultation::with(['doctor.specialty', 'turn.discharge', 'turn.prescription.items'])
             ->where('patient_id', $patient->id)
             ->orderByDesc('consulted_at')
             ->get()
@@ -227,6 +227,21 @@ class ConsultaController extends Controller
                     'discharged_at' => $c->turn->discharge->discharged_at,
                 ] : null,
                 'prescription_id' => $c->turn?->prescription?->id,
+                'prescription' => $c->turn?->prescription ? [
+                    'id' => $c->turn->prescription->id,
+                    'general_instructions' => $c->turn->prescription->general_instructions,
+                    'items' => $c->turn->prescription->items->map(fn ($item) => [
+                        'id' => $item->id,
+                        'position' => $item->position,
+                        'medication' => $item->medication,
+                        'route' => $item->route,
+                        'dose' => $item->dose,
+                        'frequency' => $item->frequency,
+                        'duration_days' => $item->duration_days,
+                        'is_continuous' => $item->is_continuous,
+                        'quantity' => $item->quantity,
+                    ])->all(),
+                ] : null,
             ])
             ->all();
     }
