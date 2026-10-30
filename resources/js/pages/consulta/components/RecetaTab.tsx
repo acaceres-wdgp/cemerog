@@ -150,21 +150,22 @@ export default function RecetaTab({
         };
 
         const url = `/consulta/turnos/${turn.id}/receta`;
-        const method = savedPrescriptionId ? router.put : router.post;
-
-        method(url, payload, {
+        const options = {
             preserveState: true,
             preserveScroll: true,
             onSuccess: () => {
-                // If this was a first-time save, update savedPrescriptionId from the
-                // reloaded prescriptions prop (Inertia redirect back re-renders page).
                 setIsDirty(false);
-                // For first saves: the turn's prescription now exists on the page,
-                // but we know the id from the prescription prop. We mark it saved.
+                // Mark as saved (id becomes known after Inertia re-renders props)
                 setSavedPrescriptionId((prev) => prev ?? -1);
             },
             onFinish: () => setIsSaving(false),
-        });
+        };
+
+        if (savedPrescriptionId) {
+            router.put(url, payload, options);
+        } else {
+            router.post(url, payload, options);
+        }
     }
 
     function handlePrint() {

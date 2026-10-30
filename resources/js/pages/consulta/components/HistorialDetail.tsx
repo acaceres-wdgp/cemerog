@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -150,7 +150,9 @@ export default function HistorialDetail({
                     <div className="mb-1 text-[11px] font-semibold tracking-[.05em] text-muted uppercase">
                         Motivo
                     </div>
-                    <p className="m-0 text-text-heading">{sel.motivo_consulta}</p>
+                    <p className="m-0 text-text-heading">
+                        {sel.motivo_consulta}
+                    </p>
                 </div>
             )}
 

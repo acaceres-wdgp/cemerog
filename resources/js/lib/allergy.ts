@@ -57,7 +57,10 @@ export function conflict(allergies: string, medication: string): boolean {
             term.endsWith('s') && term.length > 4 ? term.slice(0, -1) : term;
 
         for (const word of medWords) {
-            if (word.startsWith(term) || (stem !== term && word.startsWith(stem))) {
+            if (
+                word.startsWith(term) ||
+                (stem !== term && word.startsWith(stem))
+            ) {
                 return true;
             }
         }

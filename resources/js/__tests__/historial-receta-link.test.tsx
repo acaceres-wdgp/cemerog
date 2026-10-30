@@ -105,7 +105,10 @@ describe('HistorialPanel – Ver receta shows detail panel', () => {
     });
 
     it('does not show "Ver receta" when prescription_id is null', () => {
-        const entry = makeHistorial({ prescription_id: null, prescription: null });
+        const entry = makeHistorial({
+            prescription_id: null,
+            prescription: null,
+        });
         render(<HistorialPanel historial={[entry]} />);
         expect(screen.queryByText('Ver receta')).toBeNull();
     });
