@@ -155,16 +155,50 @@ test('registering via tablero also creates a daily account and charge', function
     expect(AccountCharge::count())->toBe(1);
 });
 
-// ─── A7: Concurrency — two simultaneous GetOrOpenDailyAccount calls ───────────
+// ─── A7: Second arrival same day reuses the open account ─────────────────────
+//
+// Note: true concurrent locking cannot be tested with SQLite (single writer).
+// The production lock is enforced by Patient::lockForUpdate() inside the
+// RegisterArrival transaction, which serialises access in MySQL. Here we verify
+// the sequential behaviour: a second call reuses the existing open account.
 
-test('concurrent arrivals for same patient and date produce only one account', function () {
-    // Simulate by calling the action twice directly inside the same process
-    $action = app(GetOrOpenDailyAccount::class);
-    $today = Carbon::today();
+test('a second arrival the same day reuses the already-open account', function () {
+    $specialtyB = Specialty::factory()->create(['name' => 'Cardiología']);
+    $doctorB = Doctor::factory()->create([
+        'specialty_id' => $specialtyB->id,
+        'is_active' => true,
+        'consultation_price' => 300000,
+        'consultation_fee' => 50000,
+    ]);
 
-    $account1 = $action->handle($this->patient, $today);
-    $account2 = $action->handle($this->patient, $today);
+    $this->actingAs($this->secretaria)
+        ->post('/registro', [
+            'patient_id' => $this->patient->id,
+            'first_names' => $this->patient->first_names,
+            'last_names' => $this->patient->last_names,
+            'document_type' => $this->patient->document_type,
+            'document_number' => $this->patient->document_number,
+            'birth_date' => $this->patient->birth_date->format('Y-m-d'),
+            'sex' => $this->patient->sex,
+            'phone' => $this->patient->phone ?? '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $this->doctor->id,
+        ]);
 
-    expect($account1->id)->toBe($account2->id);
+    $this->actingAs($this->secretaria)
+        ->post('/registro', [
+            'patient_id' => $this->patient->id,
+            'first_names' => $this->patient->first_names,
+            'last_names' => $this->patient->last_names,
+            'document_type' => $this->patient->document_type,
+            'document_number' => $this->patient->document_number,
+            'birth_date' => $this->patient->birth_date->format('Y-m-d'),
+            'sex' => $this->patient->sex,
+            'phone' => $this->patient->phone ?? '809-555-0001',
+            'attention_type' => 'consulta',
+            'doctor_id' => $doctorB->id,
+        ]);
+
     expect(Account::where('patient_id', $this->patient->id)->where('status', 'abierta')->count())->toBe(1);
+    expect(AccountCharge::count())->toBe(2);
 });

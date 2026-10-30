@@ -7,6 +7,10 @@ use App\Models\Patient;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
+// Note: lockForUpdate() on the patient row (done in RegisterArrival) already
+// serialises access in MySQL. The lock here is a belt-and-suspenders guard for
+// callers that do not go through RegisterArrival.
+
 class GetOrOpenDailyAccount
 {
     /**

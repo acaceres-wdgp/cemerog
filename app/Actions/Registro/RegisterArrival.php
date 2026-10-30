@@ -47,9 +47,17 @@ class RegisterArrival
             // Create or update the patient record
             if ($patient === null) {
                 $patient = $this->createPatient->handle($patientData);
-            } elseif ($patientData !== []) {
-                $this->updatePatient->handle($patient, $patientData);
-                $patient->refresh();
+            } else {
+                // Lock the patient row to serialise concurrent arrivals in MySQL.
+                // This prevents two requests from creating two open accounts or
+                // two turns with the same doctor on the same day.
+                // (SQLite is a single writer, so this has no effect in tests.)
+                $patient = Patient::whereKey($patient->id)->lockForUpdate()->firstOrFail();
+
+                if ($patientData !== []) {
+                    $this->updatePatient->handle($patient, $patientData);
+                    $patient->refresh();
+                }
             }
 
             // Refuse if the patient already has an open turn today with the same doctor

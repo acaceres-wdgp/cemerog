@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Modules;
 
+use App\Actions\Accounts\CloseDailyAccountIfDone;
 use App\Actions\Registro\RegisterArrival;
 use App\Actions\ReorderTurn;
 use App\Exceptions\PatientHasOpenTurnException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTurnRequest;
 use App\Http\Requests\UpdateTurnStatusRequest;
+use App\Models\AccountCharge;
 use App\Models\Patient;
 use App\Models\Turn;
 use App\Models\User;
@@ -16,6 +18,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class TurnosController extends Controller
 {
@@ -50,7 +53,24 @@ class TurnosController extends Controller
 
     public function updateStatus(UpdateTurnStatusRequest $request, Turn $turn): RedirectResponse
     {
-        $turn->update(['status' => $request->validated()['status']]);
+        $newStatus = $request->validated()['status'];
+
+        if ($newStatus === 'no_asistio') {
+            $patient = $turn->patient;
+
+            DB::transaction(function () use ($turn, $newStatus, $patient): void {
+                $turn->update(['status' => $newStatus]);
+
+                // Remove the consultation charge for this turn
+                AccountCharge::where('turn_id', $turn->id)
+                    ->where('type', 'consulta')
+                    ->delete();
+
+                app(CloseDailyAccountIfDone::class)->handle($patient);
+            });
+        } else {
+            $turn->update(['status' => $newStatus]);
+        }
 
         Toast::success('Estado del turno actualizado.');
 

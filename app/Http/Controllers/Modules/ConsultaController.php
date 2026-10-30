@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Modules;
 
+use App\Actions\Accounts\CloseDailyAccountIfDone;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreConsultationRequest;
 use App\Http\Requests\StoreDischargeRequest;
@@ -141,7 +142,9 @@ class ConsultaController extends Controller
 
         $validated = $request->validated();
 
-        DB::transaction(function () use ($turn, $validated, $user): void {
+        $patient = $turn->patient;
+
+        DB::transaction(function () use ($turn, $validated, $user, $patient): void {
             Discharge::create([
                 'turn_id' => $turn->id,
                 'patient_id' => $turn->patient_id,
@@ -155,22 +158,7 @@ class ConsultaController extends Controller
 
             $turn->update(['status' => 'atendido']);
 
-            // If no other open turns for this patient today, close the account
-            $otherOpenTurns = Turn::where('patient_id', $turn->patient_id)
-                ->where('id', '!=', $turn->id)
-                ->whereDate('arrived_at', today())
-                ->whereIn('status', ['espera', 'en_consulta'])
-                ->exists();
-
-            if (! $otherOpenTurns) {
-                Account::where('patient_id', $turn->patient_id)
-                    ->whereDate('service_date', today())
-                    ->where('status', 'abierta')
-                    ->update([
-                        'status' => 'pendiente_facturar',
-                        'closed_at' => now(),
-                    ]);
-            }
+            app(CloseDailyAccountIfDone::class)->handle($patient);
         });
 
         Toast::success('Paciente dado de alta.');
