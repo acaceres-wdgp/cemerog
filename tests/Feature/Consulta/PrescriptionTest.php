@@ -155,7 +155,7 @@ test('medication matching allergy returns 422', function () {
             ],
         ])
         ->assertUnprocessable()
-        ->assertJsonFragment(['medication' => 'Ibuprofeno 400mg']);
+        ->assertJsonPath('errors.allergy.1', 'Ibuprofeno 400mg');
 });
 
 // ─── Validation ───────────────────────────────────────────────────────────────
