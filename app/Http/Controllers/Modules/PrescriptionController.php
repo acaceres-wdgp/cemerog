@@ -137,7 +137,7 @@ class PrescriptionController extends Controller
     }
 
     /**
-     * @param array<int, array<string, mixed>> $items
+     * @param  array<int, array<string, mixed>>  $items
      */
     private function checkAllergies(Turn $turn, array $items): void
     {
@@ -154,7 +154,7 @@ class PrescriptionController extends Controller
         foreach ($items as $item) {
             $medNormalized = mb_strtolower(AllergyChecker::normalize($item['medication']));
             foreach ($allergyWords as $word) {
-                if ($word !== '' && str_contains($medNormalized, $word)) {
+                if (str_contains($medNormalized, $word)) {
                     throw ValidationException::withMessages([
                         'allergy' => [
                             'message' => "El medicamento \"{$item['medication']}\" coincide con una alergia del paciente.",

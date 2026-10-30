@@ -65,24 +65,44 @@ describe('RecetaTab – add/remove rows', () => {
     });
 
     it('starts with 1 row', () => {
-        render(<RecetaTab turn={makeTurn()} prescription={null} isDischargedTurn={false} />);
-        expect(screen.getByText(/1 medicamento/)).toBeTruthy();
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
+        expect(screen.getByText(/1 medicamentos/)).toBeTruthy();
     });
 
     it('clicking "+ Agregar medicamento" adds a row', () => {
-        render(<RecetaTab turn={makeTurn()} prescription={null} isDischargedTurn={false} />);
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
         fireEvent.click(screen.getByText('+ Agregar medicamento'));
         expect(screen.getByText(/2 medicamentos/)).toBeTruthy();
     });
 
     it('clicking delete button removes a row', () => {
-        render(<RecetaTab turn={makeTurn()} prescription={null} isDischargedTurn={false} />);
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
         fireEvent.click(screen.getByText('+ Agregar medicamento'));
         expect(screen.getByText(/2 medicamentos/)).toBeTruthy();
 
-        const deleteButtons = screen.getAllByRole('button', { name: /eliminar/i });
+        const deleteButtons = screen.getAllByRole('button', {
+            name: /eliminar/i,
+        });
         fireEvent.click(deleteButtons[0]);
-        expect(screen.getByText(/1 medicamento/)).toBeTruthy();
+        expect(screen.getByText(/1 medicamentos/)).toBeTruthy();
     });
 });
 
@@ -90,7 +110,13 @@ describe('RecetaTab – add/remove rows', () => {
 
 describe('RecetaTab – Continuo checkbox', () => {
     it('checking Continuo disables the duration_days input', () => {
-        render(<RecetaTab turn={makeTurn()} prescription={null} isDischargedTurn={false} />);
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
         const checkbox = screen.getByRole('checkbox', { name: /continuo/i });
         const durationInput = screen.getByPlaceholderText(/días/i);
 
@@ -113,7 +139,13 @@ describe('RecetaTab – allergy alert', () => {
                 allergies: 'Penicilina',
             },
         });
-        render(<RecetaTab turn={turn} prescription={null} isDischargedTurn={false} />);
+        render(
+            <RecetaTab
+                turn={turn}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
 
         const medInput = screen.getByPlaceholderText('Medicamento');
         fireEvent.change(medInput, { target: { value: 'Penicilina 500mg' } });
@@ -133,7 +165,13 @@ describe('RecetaTab – allergy alert', () => {
                 allergies: 'Penicilina',
             },
         });
-        render(<RecetaTab turn={turn} prescription={null} isDischargedTurn={false} />);
+        render(
+            <RecetaTab
+                turn={turn}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
 
         const medInput = screen.getByPlaceholderText('Medicamento');
         fireEvent.change(medInput, { target: { value: 'Penicilina 500mg' } });
@@ -142,7 +180,9 @@ describe('RecetaTab – allergy alert', () => {
             expect(screen.getByText(/alergia/i)).toBeTruthy();
         });
 
-        const saveButton = screen.getByRole('button', { name: /guardar receta/i });
+        const saveButton = screen.getByRole('button', {
+            name: /guardar receta/i,
+        });
         expect(saveButton).toBeDisabled();
     });
 });
@@ -151,7 +191,13 @@ describe('RecetaTab – allergy alert', () => {
 
 describe('RecetaTab – print button', () => {
     it('print button is disabled when prescription is not saved', () => {
-        render(<RecetaTab turn={makeTurn()} prescription={null} isDischargedTurn={false} />);
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
         const printButton = screen.getByRole('button', { name: /imprimir/i });
         expect(printButton).toBeDisabled();
     });
@@ -163,7 +209,13 @@ describe('RecetaTab – print button', () => {
             prescribed_at: '2026-10-27T10:00:00',
             items: [],
         };
-        render(<RecetaTab turn={makeTurn()} prescription={prescription} isDischargedTurn={false} />);
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={prescription}
+                isDischargedTurn={false}
+            />,
+        );
         const printButton = screen.getByRole('button', { name: /imprimir/i });
         expect(printButton).not.toBeDisabled();
     });
@@ -173,9 +225,8 @@ describe('RecetaTab – print button', () => {
 
 describe('buildInstruction', () => {
     it('builds correct instruction for non-continuous item', async () => {
-        const { buildInstruction } = await import(
-            '@/pages/consulta/lib/instructionBuilder'
-        );
+        const { buildInstruction } =
+            await import('@/pages/consulta/lib/instructionBuilder');
         const item = {
             dose: '1 tableta',
             route: 'oral',
@@ -189,9 +240,8 @@ describe('buildInstruction', () => {
     });
 
     it('builds correct instruction for continuous item', async () => {
-        const { buildInstruction } = await import(
-            '@/pages/consulta/lib/instructionBuilder'
-        );
+        const { buildInstruction } =
+            await import('@/pages/consulta/lib/instructionBuilder');
         const item = {
             dose: '1 tableta',
             route: 'oral',

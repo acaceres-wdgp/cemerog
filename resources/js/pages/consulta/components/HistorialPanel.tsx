@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { Link } from '@inertiajs/react';
 import { cn } from '@/lib/utils';
 import {
     formatPesoLb,
@@ -167,6 +168,15 @@ export default function HistorialPanel({
                                         { locale: es },
                                     )}
                                 </span>
+                                {sel.prescription_id && (
+                                    <Link
+                                        href={`/consulta/recetas/${sel.prescription_id}/imprimir`}
+                                        target="_blank"
+                                        className="rounded-full bg-list-row-bg px-[10px] py-[2px] text-[12px] font-semibold text-primary"
+                                    >
+                                        Ver receta
+                                    </Link>
+                                )}
                             </div>
                             <div className="font-serif text-[19px] font-semibold text-text-heading">
                                 {sel.diagnosticos?.[0]

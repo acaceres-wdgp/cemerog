@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -22,7 +23,7 @@ use Illuminate\Support\Carbon;
  * @property-read Patient $patient
  * @property-read Doctor $doctor
  * @property-read User $creator
- * @property-read \Illuminate\Database\Eloquent\Collection<int, PrescriptionItem> $items
+ * @property-read Collection<int, PrescriptionItem> $items
  */
 class Prescription extends Model
 {

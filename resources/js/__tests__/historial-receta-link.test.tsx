@@ -56,7 +56,9 @@ describe('HistorialPanel – Ver receta link', () => {
         const entry = makeHistorial({ prescription_id: 5 });
         render(<HistorialPanel historial={[entry]} />);
         const link = screen.getByText('Ver receta').closest('a');
-        expect(link?.getAttribute('href')).toContain('/consulta/recetas/5/imprimir');
+        expect(link?.getAttribute('href')).toContain(
+            '/consulta/recetas/5/imprimir',
+        );
     });
 
     it('does not show "Ver receta" link when prescription_id is null', () => {
