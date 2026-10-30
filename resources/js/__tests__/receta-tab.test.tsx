@@ -236,6 +236,40 @@ describe('RecetaTab – print button', () => {
     });
 });
 
+// ─── Print after the first save ──────────────────────────────────────────────
+
+describe('RecetaTab – print after the first save', () => {
+    it('opens the print page of the real prescription id sent by the server', () => {
+        const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+        const { rerender } = render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
+        // After saving, the server sends the new prescription in the props
+        rerender(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={{
+                    id: 58,
+                    general_instructions: null,
+                    prescribed_at: '2026-10-30T10:00:00',
+                    items: [],
+                }}
+                isDischargedTurn={false}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: /imprimir/i }));
+        expect(openSpy).toHaveBeenCalledWith(
+            expect.stringMatching(/\/consulta\/recetas\/58\/imprimir$/),
+            '_blank',
+        );
+        openSpy.mockRestore();
+    });
+});
+
 // ─── Rows loaded from prescription prop ──────────────────────────────────────
 
 describe('RecetaTab – rows from prescriptions prop', () => {

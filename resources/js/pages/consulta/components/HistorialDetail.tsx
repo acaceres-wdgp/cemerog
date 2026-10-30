@@ -6,6 +6,7 @@ import {
     formatTallaFtIn,
     computeImcFromMetric,
 } from '@/lib/units';
+import consulta from '@/routes/consulta';
 import { buildInstruction } from '../lib/instructionBuilder';
 import { DischargeBadge } from './HistorialList';
 import { HistorialEntry } from '../types';
@@ -26,7 +27,7 @@ function PrescriptionDetail({
                     Receta
                 </div>
                 <a
-                    href={`/consulta/recetas/${prescriptionId}/imprimir`}
+                    href={consulta.receta.print.url(prescriptionId)}
                     target="_blank"
                     rel="noreferrer"
                     className="rounded-full bg-list-row-bg px-[10px] py-[2px] text-[12px] font-semibold text-primary"

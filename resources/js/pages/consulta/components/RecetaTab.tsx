@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import { cn } from '@/lib/utils';
 import { conflict } from '@/lib/allergy';
+import consulta from '@/routes/consulta';
 import { TurnItem, PrescriptionData } from '../types';
 import { buildInstruction } from '../lib/instructionBuilder';
 import { thCls } from '../lib/helpers';
@@ -83,9 +84,8 @@ export default function RecetaTab({
     const [generalInstructions, setGeneralInstructions] = useState(
         prescription?.general_instructions ?? '',
     );
-    const [savedPrescriptionId, setSavedPrescriptionId] = useState<
-        number | null
-    >(prescription?.id ?? null);
+    // Comes from the server after every save, so it is always the real id
+    const savedPrescriptionId = prescription?.id ?? null;
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -149,31 +149,25 @@ export default function RecetaTab({
             })),
         };
 
-        const url = `/consulta/turnos/${turn.id}/receta`;
         const options = {
             preserveState: true,
             preserveScroll: true,
             onSuccess: () => {
                 setIsDirty(false);
-                // Mark as saved (id becomes known after Inertia re-renders props)
-                setSavedPrescriptionId((prev) => prev ?? -1);
             },
             onFinish: () => setIsSaving(false),
         };
 
         if (savedPrescriptionId) {
-            router.put(url, payload, options);
+            router.put(consulta.receta.update.url(turn.id), payload, options);
         } else {
-            router.post(url, payload, options);
+            router.post(consulta.receta.store.url(turn.id), payload, options);
         }
     }
 
     function handlePrint() {
         if (!savedPrescriptionId) return;
-        window.open(
-            `/consulta/recetas/${savedPrescriptionId}/imprimir`,
-            '_blank',
-        );
+        window.open(consulta.receta.print.url(savedPrescriptionId), '_blank');
     }
 
     const count = rows.length;
