@@ -4,7 +4,7 @@ namespace App\Actions\Accounts;
 
 use App\Models\Account;
 use App\Models\Patient;
-use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
 class GetOrOpenDailyAccount
@@ -15,7 +15,7 @@ class GetOrOpenDailyAccount
      * Uses lockForUpdate() inside a transaction to prevent two concurrent
      * arrivals from creating two separate open accounts on the same day.
      */
-    public function handle(Patient $patient, Carbon $date): Account
+    public function handle(Patient $patient, CarbonInterface $date): Account
     {
         return DB::transaction(function () use ($patient, $date): Account {
             $existing = Account::where('patient_id', $patient->id)

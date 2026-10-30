@@ -2,12 +2,16 @@
 
 namespace App\Actions\Registro;
 
+use App\Actions\Accounts\AddConsultationCharge;
+use App\Actions\Accounts\GetOrOpenDailyAccount;
 use App\Actions\AssignTurn;
 use App\Actions\CreatePatient;
 use App\Actions\UpdatePatient;
 use App\Exceptions\PatientHasOpenTurnException;
 use App\Models\Patient;
 use App\Models\Turn;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -26,6 +30,8 @@ class RegisterArrival
         private readonly CreatePatient $createPatient,
         private readonly UpdatePatient $updatePatient,
         private readonly AssignTurn $assignTurn,
+        private readonly GetOrOpenDailyAccount $getOrOpenDailyAccount,
+        private readonly AddConsultationCharge $addConsultationCharge,
     ) {}
 
     /**
@@ -34,7 +40,10 @@ class RegisterArrival
      */
     public function handle(?Patient $patient, array $patientData, array $attention): Turn
     {
-        return DB::transaction(function () use ($patient, $patientData, $attention) {
+        /** @var User $registrar */
+        $registrar = Auth::user();
+
+        return DB::transaction(function () use ($patient, $patientData, $attention, $registrar) {
             // Create or update the patient record
             if ($patient === null) {
                 $patient = $this->createPatient->handle($patientData);
@@ -55,12 +64,18 @@ class RegisterArrival
                 throw new PatientHasOpenTurnException($patient, $openTurn);
             }
 
-            return $this->assignTurn->handle([
+            $turn = $this->assignTurn->handle([
                 'patient_id' => $patient->id,
                 'doctor_id' => $attention['doctor_id'],
                 'appointment_id' => $attention['appointment_id'] ?? null,
                 'notes' => $attention['notes'] ?? null,
             ]);
+
+            // Get or create the daily account, then add the consultation charge
+            $account = $this->getOrOpenDailyAccount->handle($patient, today());
+            $this->addConsultationCharge->handle($account, $turn, $registrar);
+
+            return $turn;
         });
     }
 }
