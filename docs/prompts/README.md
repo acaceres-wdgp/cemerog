@@ -64,9 +64,10 @@ Los archivos se guardan **tal como se entregaron**: el formateador los ignora (`
 | [PROMPT-14b](PROMPT-14b-consulta-acceso-ajustes.md) | Ajustes del 14: estado vacío, menú y alta solo de turnos abiertos | 14 | ✅ Mezclado (#25) |
 | [PROMPT-15](PROMPT-15-signos-vitales.md) | Signos vitales en libras y pies/pulgadas; IMC; «Plan» | 12c, 14 | ✅ Mezclado (#27) |
 | [PROMPT-15b](PROMPT-15b-signos-vitales-ajustes.md) | Ajustes del 15: ida y vuelta de talla y peso, errores del backend, test de rangos | 15 | ✅ Mezclado (#27) |
-| [PROMPT-16](PROMPT-16-acciones-y-alta.md) | Botones de acción y alta médica con tipo | 15 | 🔄 En revisión (#29) |
-| [PROMPT-16b](PROMPT-16b-acciones-y-alta-ajustes.md) | Ajustes del 16: quitar el alta vieja, tooltips, próximo paciente, errores del modal | 16 | 🔄 En revisión (#29) |
-| [PROMPT-17](PROMPT-17-receta.md) | Receta: guardar, imprimir y ver en el historial | 16 | ⏳ Pendiente |
+| [PROMPT-16](PROMPT-16-acciones-y-alta.md) | Botones de acción y alta médica con tipo | 15 | ✅ Mezclado (#29) |
+| [PROMPT-16b](PROMPT-16b-acciones-y-alta-ajustes.md) | Ajustes del 16: quitar el alta vieja, tooltips, próximo paciente, errores del modal | 16 | ✅ Mezclado (#29) |
+| [PROMPT-17](PROMPT-17-receta.md) | Receta: guardar, imprimir y ver en el historial | 16 | 🔄 En revisión (#31) |
+| [PROMPT-17b](PROMPT-17b-receta-ajustes.md) | Ajustes del 17: guardar e imprimir con Inertia, regla de alergias, migraciones, detalle en el historial | 17 | 🔄 En revisión (#31) |
 | [PROMPT-18](PROMPT-18-cuenta-cargos-honorarios.md) | Cuenta del día, cargos y honorarios del médico | 17 | ⏳ Pendiente |
 
 ### Sin prompt (hechos directamente en la revisión)
