@@ -22,7 +22,7 @@ beforeEach(function () {
 // ─── Migration rollback ───────────────────────────────────────────────────────
 
 test('doctor prices migration can be rolled back', function () {
-    $migration = '2026_10_27_100000_add_prices_to_doctors_table';
+    $migration = '2026_10_31_100000_add_prices_to_doctors_table';
 
     Artisan::call('migrate:rollback', ['--path' => "database/migrations/{$migration}.php"]);
     expect(Schema::hasColumn('doctors', 'consultation_price'))->toBeFalse();

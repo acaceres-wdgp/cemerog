@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 uses(RefreshDatabase::class);
 
 test('accounts migration can be rolled back', function () {
-    $migration = '2026_10_27_200000_create_accounts_table';
+    $migration = '2026_10_31_200000_create_accounts_table';
 
     Artisan::call('migrate:rollback', ['--path' => "database/migrations/{$migration}.php"]);
     expect(Schema::hasTable('accounts'))->toBeFalse();
@@ -17,7 +17,7 @@ test('accounts migration can be rolled back', function () {
 });
 
 test('account_charges migration can be rolled back', function () {
-    $migration = '2026_10_27_200001_create_account_charges_table';
+    $migration = '2026_10_31_200001_create_account_charges_table';
 
     Artisan::call('migrate:rollback', ['--path' => "database/migrations/{$migration}.php"]);
     expect(Schema::hasTable('account_charges'))->toBeFalse();
