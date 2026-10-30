@@ -19,6 +19,17 @@ Dinero **siempre en centavos** (int). Lee `CLAUDE.md` y síguelo.
 - Rama `feat/cuenta-cargos` desde `main` recién actualizado. PR, no lo mezcles. TDD, un commit por paso.
 - Migraciones nuevas con test de reversión. Prohibido: floats para dinero, instalar dependencias, `as any`/`@ts-ignore`/`eslint-disable`, hex o `style={{` estáticos. Muestra montos con `formatMoney()` / `MoneyText`.
 
+## Lecciones de los PR anteriores (obligatorio)
+Estos errores aparecieron en las revisiones de los prompts 13–17. Evítalos desde el principio:
+- **Inertia, no `fetch`.** Todo guardado usa `router.post/put/patch` con las rutas de **Wayfinder**, y el backend responde con redirect + `Toast`. Nada de `JsonResponse` ni de tokens XSRF a mano. Los errores de validación se muestran desde `errors`.
+- **Los tests reflejan la respuesta real del servidor.** No simules respuestas que el backend no envía. Si la pantalla necesita un dato (un id, una lista), comprueba en Pest que el backend lo envía en las props.
+- **Registros clínicos y financieros:** las claves foráneas a `patients`, `doctors` y `users` usan `restrictOnDelete`.
+- **Migraciones:** con la fecha de hoy, y su test de reversión con `--path` (nunca `--step`). Antes de abrir el PR, `git status` debe estar limpio: si renombras o borras un archivo, que el cambio quede en el commit.
+- **Tests de límites válidos:** además del redirect, verifica `assertSessionHasNoErrors()` y el dato guardado.
+- **Lint:** los avisos cuentan como fallo. `npm run lint; echo $?` debe imprimir `0`, y no describas un aviso como «preexistente» sin comprobarlo en `main`.
+- **Tamaño:** ningún archivo pasa de ~250 líneas.
+- **Concurrencia en la cuenta del día:** dos registros simultáneos del mismo paciente no deben crear dos cuentas abiertas. En `GetOrOpenDailyAccount`, bloquea con `lockForUpdate()` dentro de la transacción (por ejemplo, sobre la fila del paciente) y agrega un test.
+
 ## Paso 1 — Precio y honorario del médico
 - Migración: `doctors.consultation_price` y `doctors.consultation_fee` (unsigned int, centavos, default 0). Para los médicos existentes, inicializa `consultation_price` con el `consultation_price` de su especialidad.
 - Formulario de médico: campos «Precio de consulta» y «Honorario por consulta» (RD$), con validación (honorario ≤ precio).
