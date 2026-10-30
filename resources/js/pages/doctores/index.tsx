@@ -26,6 +26,8 @@ type Doctor = {
     user_name: string | null;
     user_username: string | null;
     office: string | null;
+    consultation_price: number;
+    consultation_fee: number;
 };
 
 type AvailableUser = {
@@ -467,6 +469,12 @@ function DoctorModal({
             ),
             user_id: String(doctor?.user_id ?? ''),
             office: doctor?.office ?? '',
+            consultation_price: doctor
+                ? String(doctor.consultation_price / 100)
+                : '',
+            consultation_fee: doctor
+                ? String(doctor.consultation_fee / 100)
+                : '',
         },
     );
 
@@ -483,6 +491,12 @@ function DoctorModal({
                     : null,
             office: form.office || null,
             access_mode: accessMode,
+            consultation_price: Math.round(
+                parseFloat(form.consultation_price || '0') * 100,
+            ),
+            consultation_fee: Math.round(
+                parseFloat(form.consultation_fee || '0') * 100,
+            ),
         }));
 
         if (isEdit && doctor) {
@@ -737,6 +751,148 @@ function DoctorModal({
                             onChange={(e) => setData('office', e.target.value)}
                             placeholder="Ej: Consultorio 1"
                         />
+
+                        {/* ─── Precios ───────────────────────────────── */}
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: 12,
+                            }}
+                        >
+                            <label
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 6,
+                                    fontWeight: 500,
+                                    fontSize: 14,
+                                }}
+                            >
+                                <span>Precio de consulta (RD$)</span>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        height: 36,
+                                        border: `1px solid ${errors.consultation_price ? '#b91c1c' : '#e4e4e7'}`,
+                                        borderRadius: 10,
+                                        overflow: 'hidden',
+                                    }}
+                                >
+                                    <span
+                                        style={{
+                                            padding: '0 8px',
+                                            color: '#71717a',
+                                            fontSize: 13,
+                                            flexShrink: 0,
+                                        }}
+                                    >
+                                        RD$
+                                    </span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={data.consultation_price}
+                                        onChange={(e) =>
+                                            setData(
+                                                'consultation_price',
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder="0.00"
+                                        aria-label="Precio de consulta"
+                                        style={{
+                                            flex: 1,
+                                            height: 34,
+                                            border: 'none',
+                                            outline: 'none',
+                                            background: 'transparent',
+                                            fontFamily: 'inherit',
+                                            fontSize: 14,
+                                            padding: '0 8px 0 0',
+                                        }}
+                                    />
+                                </div>
+                                {errors.consultation_price && (
+                                    <span
+                                        style={{
+                                            color: '#b91c1c',
+                                            fontSize: 12,
+                                        }}
+                                    >
+                                        {errors.consultation_price}
+                                    </span>
+                                )}
+                            </label>
+                            <label
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 6,
+                                    fontWeight: 500,
+                                    fontSize: 14,
+                                }}
+                            >
+                                <span>Honorario (RD$)</span>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        height: 36,
+                                        border: `1px solid ${errors.consultation_fee ? '#b91c1c' : '#e4e4e7'}`,
+                                        borderRadius: 10,
+                                        overflow: 'hidden',
+                                    }}
+                                >
+                                    <span
+                                        style={{
+                                            padding: '0 8px',
+                                            color: '#71717a',
+                                            fontSize: 13,
+                                            flexShrink: 0,
+                                        }}
+                                    >
+                                        RD$
+                                    </span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={data.consultation_fee}
+                                        onChange={(e) =>
+                                            setData(
+                                                'consultation_fee',
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder="0.00"
+                                        aria-label="Honorario por consulta"
+                                        style={{
+                                            flex: 1,
+                                            height: 34,
+                                            border: 'none',
+                                            outline: 'none',
+                                            background: 'transparent',
+                                            fontFamily: 'inherit',
+                                            fontSize: 14,
+                                            padding: '0 8px 0 0',
+                                        }}
+                                    />
+                                </div>
+                                {errors.consultation_fee && (
+                                    <span
+                                        style={{
+                                            color: '#b91c1c',
+                                            fontSize: 12,
+                                        }}
+                                    >
+                                        {errors.consultation_fee}
+                                    </span>
+                                )}
+                            </label>
+                        </div>
 
                         {/* ─── Sistema de acceso ─────────────────────── */}
                         <div className="flex flex-col gap-3 rounded-lg border border-divider bg-app-bg p-4">

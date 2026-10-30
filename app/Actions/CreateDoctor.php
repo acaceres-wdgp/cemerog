@@ -46,6 +46,8 @@ class CreateDoctor
                 'office' => $data['office'] ?? null,
                 'user_id' => $linkedUser?->id,
                 'is_active' => true,
+                'consultation_price' => (int) ($data['consultation_price'] ?? 0),
+                'consultation_fee' => (int) ($data['consultation_fee'] ?? 0),
             ]);
 
             $credentials = null;

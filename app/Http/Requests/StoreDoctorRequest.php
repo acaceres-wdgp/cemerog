@@ -57,6 +57,18 @@ class StoreDoctorRequest extends FormRequest
                 ] : [],
             ),
             'office' => ['nullable', 'string', 'max:100'],
+            'consultation_price' => ['nullable', 'integer', 'min:0'],
+            'consultation_fee' => [
+                'nullable',
+                'integer',
+                'min:0',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    $price = (int) $this->input('consultation_price', 0);
+                    if ((int) $value > $price) {
+                        $fail('El honorario no puede ser mayor que el precio de consulta.');
+                    }
+                },
+            ],
         ];
     }
 
@@ -72,6 +84,8 @@ class StoreDoctorRequest extends FormRequest
             'user_id.exists' => 'El usuario seleccionado no existe.',
             'user_id.unique' => 'Este usuario ya está vinculado a otro doctor.',
             'office.max' => 'El consultorio no puede superar los 100 caracteres.',
+            'consultation_price.integer' => 'El precio debe ser un número entero en centavos.',
+            'consultation_fee.integer' => 'El honorario debe ser un número entero en centavos.',
         ];
     }
 }
