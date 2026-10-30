@@ -90,13 +90,13 @@ Al agregar un módulo nuevo, añádelo en `resources/js/lib/navigation.ts` y tam
 
 ## Dependencias pendientes
 
-| Funcionalidad                        | Dependencia                                             | Estado              |
-| ------------------------------------ | ------------------------------------------------------- | ------------------- |
-| Consulta → _Ordenar estudios_        | Habilitar al terminar Laboratorio (e Imágenes)          | Botón deshabilitado |
-| Consulta → _Pasar a emergencia_      | Habilitar con Emergencia                                | Botón deshabilitado |
-| Consulta → _Ingresar_                | Habilitar con Internamiento                             | Botón deshabilitado |
-| Facturación → leer cuentas           | Depende de `accounts` con `status=pendiente_facturar`   | Tabla disponible    |
-| Honorarios → liquidación por período | Depende de `account_charges.doctor_fee` acumulado       | Dato disponible     |
+| Funcionalidad                        | Dependencia                                           | Estado              |
+| ------------------------------------ | ----------------------------------------------------- | ------------------- |
+| Consulta → _Ordenar estudios_        | Habilitar al terminar Laboratorio (e Imágenes)        | Botón deshabilitado |
+| Consulta → _Pasar a emergencia_      | Habilitar con Emergencia                              | Botón deshabilitado |
+| Consulta → _Ingresar_                | Habilitar con Internamiento                           | Botón deshabilitado |
+| Facturación → leer cuentas           | Depende de `accounts` con `status=pendiente_facturar` | Tabla disponible    |
+| Honorarios → liquidación por período | Depende de `account_charges.doctor_fee` acumulado     | Dato disponible     |
 
 ## Usuarios y contraseñas
 

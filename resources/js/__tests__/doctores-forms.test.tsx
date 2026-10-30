@@ -25,7 +25,10 @@ const page = vi.hoisted(() => ({
                 is_active: true,
                 user_id: 42,
                 user_name: 'Dr. Demo Médico',
+                user_username: null,
                 office: null,
+                consultation_price: 150000,
+                consultation_fee: 20000,
             },
         ],
         availableUsers: [],
@@ -90,6 +93,8 @@ describe('doctores forms', () => {
             user_id: null,
             office: null,
             access_mode: 'create_user',
+            consultation_price: 0,
+            consultation_fee: 0,
         });
     });
 

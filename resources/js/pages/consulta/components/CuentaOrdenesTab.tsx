@@ -35,7 +35,7 @@ export default function CuentaOrdenesTab({ charges, chargesTotal }: Props) {
                 ) : (
                     <>
                         {/* Table header */}
-                        <div className="grid grid-cols-[1fr_auto_auto] gap-x-3 border-b border-divider bg-app-bg px-4 py-2 text-[11.5px] font-semibold uppercase tracking-wide text-text-secondary">
+                        <div className="grid grid-cols-[1fr_auto_auto] gap-x-3 border-b border-divider bg-app-bg px-4 py-2 text-[11.5px] font-semibold tracking-wide text-text-secondary uppercase">
                             <span>Descripción</span>
                             <span className="text-right">Cant.</span>
                             <span className="text-right">Importe</span>

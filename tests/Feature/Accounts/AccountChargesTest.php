@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Accounts\GetOrOpenDailyAccount;
 use App\Models\Account;
 use App\Models\AccountCharge;
 use App\Models\Doctor;
@@ -7,6 +8,7 @@ use App\Models\Patient;
 use App\Models\Specialty;
 use App\Models\Turn;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -157,8 +159,8 @@ test('registering via tablero also creates a daily account and charge', function
 
 test('concurrent arrivals for same patient and date produce only one account', function () {
     // Simulate by calling the action twice directly inside the same process
-    $action = app(\App\Actions\Accounts\GetOrOpenDailyAccount::class);
-    $today = \Carbon\Carbon::today();
+    $action = app(GetOrOpenDailyAccount::class);
+    $today = Carbon::today();
 
     $account1 = $action->handle($this->patient, $today);
     $account2 = $action->handle($this->patient, $today);

@@ -359,9 +359,9 @@ Al llegar un paciente se necesita registrar qué consumió ese día (consultas, 
 4. **Liquidación de honorarios**: la tabla `account_charges.doctor_fee` guarda el honorario por cargo individual. La liquidación total por período es responsabilidad del módulo de Facturación (futuro).
 
 5. **Ciclo de vida de la cuenta**:
-   - `abierta`: desde el primer cargo del día hasta el último alta.
-   - `pendiente_facturar`: cuando el último turno abierto del paciente ese día recibe el alta.
-   - `facturada` / `anulada`: gestionados por Facturación (futuro).
+    - `abierta`: desde el primer cargo del día hasta el último alta.
+    - `pendiente_facturar`: cuando el último turno abierto del paciente ese día recibe el alta.
+    - `facturada` / `anulada`: gestionados por Facturación (futuro).
 
 6. **Visibilidad de cargos en Consulta**: médico+administrador ve todos los cargos de la cuenta; médico sin rol administrador ve solo los cargos que generó él (`doctor_id = user's doctor id`).
 

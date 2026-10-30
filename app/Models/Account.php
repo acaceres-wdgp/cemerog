@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,10 +13,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $patient_id
  * @property string $service_date
  * @property string $status
- * @property \Carbon\Carbon $opened_at
- * @property \Carbon\Carbon|null $closed_at
+ * @property Carbon $opened_at
+ * @property Carbon|null $closed_at
  * @property-read Patient $patient
- * @property-read \Illuminate\Database\Eloquent\Collection<int, AccountCharge> $charges
+ * @property-read Collection<int, AccountCharge> $charges
  */
 class Account extends Model
 {

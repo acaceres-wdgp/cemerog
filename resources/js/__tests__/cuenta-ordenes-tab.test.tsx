@@ -51,7 +51,11 @@ describe('CuentaOrdenesTab', () => {
 
     it('renders multiple charge rows', () => {
         const charges = [
-            makeCharge({ id: 1, description: 'Consulta – Dr. A', total: 200000 }),
+            makeCharge({
+                id: 1,
+                description: 'Consulta – Dr. A',
+                total: 200000,
+            }),
             makeCharge({
                 id: 2,
                 description: 'Consulta – Dra. B',
@@ -59,9 +63,7 @@ describe('CuentaOrdenesTab', () => {
             }),
         ];
 
-        render(
-            <CuentaOrdenesTab charges={charges} chargesTotal={500000} />,
-        );
+        render(<CuentaOrdenesTab charges={charges} chargesTotal={500000} />);
 
         expect(screen.getByText('Consulta – Dr. A')).toBeInTheDocument();
         expect(screen.getByText('Consulta – Dra. B')).toBeInTheDocument();
