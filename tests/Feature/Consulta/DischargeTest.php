@@ -170,6 +170,27 @@ test('turn cannot have two discharges returns 422', function () {
         ->assertJson(['message' => 'Este turno ya tiene un alta registrada.']);
 });
 
+test('second discharge from the app shows the error in the form', function () {
+    $this->actingAs($this->user)
+        ->post("/consulta/turnos/{$this->turn->id}/alta", [
+            'type' => 'recuperado',
+            'discharge_diagnosis' => 'Gripe resuelta',
+        ])
+        ->assertSessionHasNoErrors();
+
+    $this->turn->update(['status' => 'en_consulta']);
+
+    $this->actingAs($this->user)
+        ->post("/consulta/turnos/{$this->turn->id}/alta", [
+            'type' => 'recuperado',
+            'discharge_diagnosis' => 'Gripe resuelta de nuevo',
+        ])
+        ->assertRedirect()
+        ->assertSessionHasErrors(['message' => 'Este turno ya tiene un alta registrada.']);
+
+    expect(Discharge::where('turn_id', $this->turn->id)->count())->toBe(1);
+});
+
 // ─── Old PATCH route is gone (405) ───────────────────────────────────────────
 
 test('PATCH /consulta/turnos/{turn}/alta returns 405 (route removed)', function () {

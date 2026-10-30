@@ -16,6 +16,7 @@ use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -105,7 +106,9 @@ class ConsultaController extends Controller
     {
         // Check if a discharge already exists for this turn (422 before 403)
         if (Discharge::where('turn_id', $turn->id)->exists()) {
-            abort(422, 'Este turno ya tiene un alta registrada.');
+            throw ValidationException::withMessages([
+                'message' => 'Este turno ya tiene un alta registrada.',
+            ]);
         }
 
         if (! $turn->isOpenToday()) {

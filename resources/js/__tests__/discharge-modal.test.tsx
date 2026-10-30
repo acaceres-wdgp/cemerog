@@ -293,6 +293,24 @@ describe('ConsultaIndex – alta médica modal', () => {
         // Restore default mock for other tests
         mockUsePage.mockReturnValue({ props: { errors: {} } });
     });
+
+    it('shows the duplicate discharge error from backend', () => {
+        mockUsePage.mockReturnValue({
+            props: {
+                errors: {
+                    message: 'Este turno ya tiene un alta registrada.',
+                },
+            },
+        });
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        fireEvent.click(
+            screen.getByRole('button', { name: /Dar alta médica/i }),
+        );
+        expect(
+            screen.getByText(/Este turno ya tiene un alta registrada\./i),
+        ).toBeTruthy();
+        mockUsePage.mockReturnValue({ props: { errors: {} } });
+    });
 });
 
 // ─── Tab rename ─────────────────────────────────────────────────────────────────
