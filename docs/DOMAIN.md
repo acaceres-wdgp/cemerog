@@ -51,6 +51,7 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 - Búsqueda con autocompletar (mínimo 3 caracteres, debounce 300 ms).
 - Un paciente no puede tener más de una atención abierta el mismo día con el mismo médico; el sistema muestra un aviso si intenta registrarse de nuevo (ver ADR-013).
 - La creación del paciente y la asignación del turno ocurren en una sola transacción (`RegisterArrival`).
+- Al registrar la llegada se crea automáticamente (o reutiliza) la **cuenta diaria del paciente** (`accounts`) y se agrega un **cargo de consulta** (`account_charges`) con el precio y honorario vigentes del médico en ese momento. Ver ADR-016.
 - **Registrar sin atención**: en el formulario de registro de nuevo paciente (`mode=new`) existe el botón secundario "Solo registrar paciente" (`POST /registro/pacientes`). Crea el expediente pero no genera turno; redirige a `/pacientes?paciente={id}` con flash "Paciente registrado." Útil para ingresar datos de pacientes nuevos antes de su primera consulta.
 - `expediente_number` = `P-` + id con cero a la izquierda (5 dígitos mínimo).
 - `document_number` y `phone` se guardan cifrados; se indexan mediante `document_number_hash` y `phone_hash` (HMAC-SHA256) para búsquedas exactas. `document_number_hash` usa normalización por tipo: solo dígitos para `cedula`, mayúsculas [A-Z0-9] para `pasaporte`/`cedula_extranjera`/`no_tiene` (`Pii::documentHash`). `phone_hash` siempre usa solo dígitos (`Pii::hash`). Ver ADR-014.
@@ -65,6 +66,8 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 
 - Notas SOAP, diagnóstico CIE-10, prescripciones.
 - Genera órdenes de laboratorio e imagen.
+- La pestaña **«Órdenes y cargos»** muestra los cargos de la cuenta diaria del paciente. Visibilidad: médico+admin ve todos los cargos; médico sin admin ve solo los suyos.
+- Al dar de alta al último turno abierto del día, la cuenta pasa a `pendiente_facturar` automáticamente (ver ADR-016).
 
 #### Reglas de autoría y acceso (ADR-015)
 
@@ -151,6 +154,7 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 - Desactivar un doctor desactiva también su usuario vinculado.
 - Cambiar el nombre del doctor sincroniza el campo `name` del usuario (no el `username`).
 - Restablecer contraseña genera nueva contraseña temporal y activa `must_change_password`.
+- `doctors.consultation_price` y `doctors.consultation_fee` (centavos enteros) definen el precio de consulta y el honorario por consulta por médico. Se inicializan con el precio de la especialidad al crear el doctor. Validación: `consultation_fee ≤ consultation_price`. Ver ADR-016.
 
 ### Catálogos de precios
 

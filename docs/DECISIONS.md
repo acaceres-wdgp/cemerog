@@ -336,3 +336,44 @@ El rol `medico` por sí solo no garantiza que el usuario esté vinculado a un re
 - Desactivar un doctor desactiva su user; reactivarlo lo reactiva.
 - Cambiar el nombre del doctor sincroniza el campo `name` del user (no el `username`).
 - La contraseña temporal nunca se almacena en texto plano; solo viaja en la respuesta inmediata.
+
+---
+
+## ADR-016: Cuenta diaria por paciente; precio y honorario por médico guardados en cada cargo
+
+**Fecha**: 2026-10-27
+**Estado**: Aceptado
+
+### Contexto
+
+Al llegar un paciente se necesita registrar qué consumió ese día (consultas, laboratorio, etc.) para poder facturarle. Los médicos cobran honorarios sobre lo facturado, que se liquidan posteriormente. Los precios pueden cambiar, pero los cargos históricos deben preservar el precio vigente al momento de la atención.
+
+### Decisión
+
+1. **Precio y honorario por médico** (`doctors.consultation_price`, `doctors.consultation_fee`, ambos en centavos). La especialidad sigue teniendo `consultation_price` como referencia; al crear un doctor se inicializa con ese valor, pero cada médico puede tener un precio diferente. Validación: `consultation_fee ≤ consultation_price`.
+
+2. **Cuenta diaria por paciente** (`accounts`): una sola cuenta agrupa todo lo consumido por un paciente en un día. Si llega con dos médicos distintos, hay una cuenta con dos cargos. Si la cuenta del día ya fue facturada y el paciente regresa el mismo día, se abre otra cuenta nueva.
+
+3. **Cargo de consulta** (`account_charges`, `type=consulta`): al registrar la llegada se crea un cargo con `unit_price = doctor.consultation_price` y `doctor_fee = doctor.consultation_fee` en ese instante. Cambios posteriores de precio no afectan el cargo guardado.
+
+4. **Liquidación de honorarios**: la tabla `account_charges.doctor_fee` guarda el honorario por cargo individual. La liquidación total por período es responsabilidad del módulo de Facturación (futuro).
+
+5. **Ciclo de vida de la cuenta**:
+   - `abierta`: desde el primer cargo del día hasta el último alta.
+   - `pendiente_facturar`: cuando el último turno abierto del paciente ese día recibe el alta.
+   - `facturada` / `anulada`: gestionados por Facturación (futuro).
+
+6. **Visibilidad de cargos en Consulta**: médico+administrador ve todos los cargos de la cuenta; médico sin rol administrador ve solo los cargos que generó él (`doctor_id = user's doctor id`).
+
+### Justificación
+
+- Capturar el precio al momento del cargo evita disputas cuando los precios cambian.
+- Una sola cuenta por día simplifica la facturación y el cuadre de caja.
+- `lockForUpdate()` en `GetOrOpenDailyAccount` previene que dos llegadas concurrentes creen cuentas duplicadas.
+- El honorario se guarda por cargo (no como porcentaje) para soportar honorarios fijos o mixtos en el futuro.
+
+### Consecuencias
+
+- `RegisterArrival` ahora llama `GetOrOpenDailyAccount` y `AddConsultationCharge` en la misma transacción.
+- El módulo de Facturación deberá leer `accounts` con `status = pendiente_facturar` para generar facturas.
+- La liquidación de honorarios (`doctor_fee` acumulado por médico y período) es responsabilidad de un módulo futuro (`honorarios` o `cuadre`).
