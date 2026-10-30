@@ -21,6 +21,8 @@ export default function ConsultaIndex({
     historial,
     historial_patient,
     prescriptions,
+    charges,
+    charges_total,
 }: Props) {
     const [activeTurn, setActiveTurn] = useState<TurnItem | null>(
         turns_en_consulta[0] ?? null,
@@ -138,7 +140,12 @@ export default function ConsultaIndex({
                     )}
 
                     {/* CUENTA */}
-                    {activeTab === 'cuenta' && <CuentaOrdenesTab />}
+                    {activeTab === 'cuenta' && (
+                        <CuentaOrdenesTab
+                            charges={charges ?? []}
+                            chargesTotal={charges_total ?? 0}
+                        />
+                    )}
                 </>
             ) : (
                 /* No active turn */

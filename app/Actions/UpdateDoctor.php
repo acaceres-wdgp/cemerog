@@ -52,6 +52,12 @@ class UpdateDoctor
                 'specialty_id' => $data['specialty_id'] ?? $doctor->specialty_id,
                 'office' => $data['office'] ?? null,
                 'user_id' => $linkedUser !== null ? $linkedUser->id : $doctor->user_id,
+                'consultation_price' => array_key_exists('consultation_price', $data)
+                    ? (int) $data['consultation_price']
+                    : $doctor->consultation_price,
+                'consultation_fee' => array_key_exists('consultation_fee', $data)
+                    ? (int) $data['consultation_fee']
+                    : $doctor->consultation_fee,
             ]);
 
             $credentials = null;

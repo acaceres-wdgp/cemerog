@@ -244,18 +244,15 @@ describe('TableroIndex – patchTurnStatus', () => {
         );
     });
 
-    it('calls router.patch to mark turn as "atendido"', () => {
+    it('offers no "Atendido" or "No asistió" for a turn in consultation', () => {
+        // A turn only closes with the discharge in Consulta
         const turn = makeTurn({ id: 99, status: 'en_consulta' });
         renderTablero({ turns: [turn] });
 
-        const atendidoBtn = screen.getByRole('button', { name: /atendido/i });
-        fireEvent.click(atendidoBtn);
-
-        expect(mockPatch).toHaveBeenCalledWith(
-            '/tablero/turnos/99/status',
-            { status: 'atendido' },
-            { preserveScroll: true },
-        );
+        expect(
+            screen.queryByRole('button', { name: /atendido/i }),
+        ).not.toBeInTheDocument();
+        expect(screen.queryAllByRole('button', { name: '✕' })).toHaveLength(0);
     });
 
     it('calls router.patch to mark turn as "no_asistio" via ✕ button', () => {

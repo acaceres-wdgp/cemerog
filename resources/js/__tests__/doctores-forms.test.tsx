@@ -25,7 +25,10 @@ const page = vi.hoisted(() => ({
                 is_active: true,
                 user_id: 42,
                 user_name: 'Dr. Demo Médico',
+                user_username: null,
                 office: null,
+                consultation_price: 150000,
+                consultation_fee: 20000,
             },
         ],
         availableUsers: [],
@@ -90,6 +93,8 @@ describe('doctores forms', () => {
             user_id: null,
             office: null,
             access_mode: 'create_user',
+            consultation_price: 0,
+            consultation_fee: 0,
         });
     });
 
@@ -129,6 +134,29 @@ describe('doctores forms', () => {
 
         // The confirmation text should be visible
         expect(screen.getByText(/dejará de funcionar/i)).toBeDefined();
+    });
+
+    it('shows errors.consultation_fee below the honorario field', () => {
+        page.props.errors = {
+            consultation_fee:
+                'El honorario no puede superar el precio de consulta.',
+        } as Record<string, string>;
+
+        // Open the edit modal (doctor has user_id set)
+        render(<DoctoresIndex />);
+        const specialtyItems = screen.getAllByText('Pediatría');
+        fireEvent.click(specialtyItems[0]);
+        const editButtons = screen.getAllByText('✏');
+        fireEvent.click(editButtons[editButtons.length - 1]);
+
+        expect(
+            screen.getByText(
+                'El honorario no puede superar el precio de consulta.',
+            ),
+        ).toBeDefined();
+
+        // Reset errors so other tests are not affected
+        page.props.errors = {};
     });
 
     it('reset password POST is sent after confirming the dialog', () => {

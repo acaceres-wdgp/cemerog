@@ -26,6 +26,8 @@ type Doctor = {
     user_name: string | null;
     user_username: string | null;
     office: string | null;
+    consultation_price: number;
+    consultation_fee: number;
 };
 
 type AvailableUser = {
@@ -321,23 +323,9 @@ function SpecialtyModal({ onClose, specialty }: SpecialtyModalProps) {
                         >
                             <span>Precio de consulta (RD$) *</span>
                             <div
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    height: 36,
-                                    border: `1px solid ${errors.consultation_price ? '#b91c1c' : '#e4e4e7'}`,
-                                    borderRadius: 10,
-                                    overflow: 'hidden',
-                                }}
+                                className={`flex h-9 items-center overflow-hidden rounded-lg border ${errors.consultation_price ? 'border-error' : 'border-divider'}`}
                             >
-                                <span
-                                    style={{
-                                        padding: '0 10px',
-                                        color: '#71717a',
-                                        fontSize: 13,
-                                        flexShrink: 0,
-                                    }}
-                                >
+                                <span className="shrink-0 px-2.5 text-sm text-text-secondary">
                                     RD$
                                 </span>
                                 <input
@@ -352,22 +340,11 @@ function SpecialtyModal({ onClose, specialty }: SpecialtyModalProps) {
                                         )
                                     }
                                     placeholder="0.00"
-                                    style={{
-                                        flex: 1,
-                                        height: 34,
-                                        border: 'none',
-                                        outline: 'none',
-                                        background: 'transparent',
-                                        fontFamily: 'inherit',
-                                        fontSize: 14,
-                                        padding: '0 8px 0 0',
-                                    }}
+                                    className="h-full flex-1 bg-transparent pr-2 text-sm outline-none"
                                 />
                             </div>
                             {errors.consultation_price && (
-                                <span
-                                    style={{ color: '#b91c1c', fontSize: 12 }}
-                                >
+                                <span className="text-xs text-error">
                                     {errors.consultation_price}
                                 </span>
                             )}
@@ -454,6 +431,7 @@ function DoctorModal({
     const [accessMode, setAccessMode] = useState<AccessMode>(defaultAccessMode);
     const [confirmResetOpen, setConfirmResetOpen] = useState(false);
 
+    const pageErrors = usePage().props.errors as Record<string, string>;
     const { data, setData, post, put, transform, processing, errors } = useForm(
         {
             name: doctor?.name ?? '',
@@ -467,6 +445,12 @@ function DoctorModal({
             ),
             user_id: String(doctor?.user_id ?? ''),
             office: doctor?.office ?? '',
+            consultation_price: doctor
+                ? String(doctor.consultation_price / 100)
+                : '',
+            consultation_fee: doctor
+                ? String(doctor.consultation_fee / 100)
+                : '',
         },
     );
 
@@ -483,6 +467,12 @@ function DoctorModal({
                     : null,
             office: form.office || null,
             access_mode: accessMode,
+            consultation_price: Math.round(
+                parseFloat(form.consultation_price || '0') * 100,
+            ),
+            consultation_fee: Math.round(
+                parseFloat(form.consultation_fee || '0') * 100,
+            ),
         }));
 
         if (isEdit && doctor) {
@@ -737,6 +727,88 @@ function DoctorModal({
                             onChange={(e) => setData('office', e.target.value)}
                             placeholder="Ej: Consultorio 1"
                         />
+
+                        {/* ─── Precios ───────────────────────────────── */}
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: 12,
+                            }}
+                        >
+                            <label
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 6,
+                                    fontWeight: 500,
+                                    fontSize: 14,
+                                }}
+                            >
+                                <span>Precio de consulta (RD$)</span>
+                                <div
+                                    className={`flex h-9 items-center overflow-hidden rounded-lg border ${(pageErrors.consultation_price ?? errors.consultation_price) ? 'border-error' : 'border-divider'}`}
+                                >
+                                    <span className="shrink-0 px-2 text-sm text-text-secondary">
+                                        RD$
+                                    </span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={data.consultation_price}
+                                        onChange={(e) =>
+                                            setData(
+                                                'consultation_price',
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder="0.00"
+                                        aria-label="Precio de consulta"
+                                        className="h-full flex-1 bg-transparent pr-2 text-sm outline-none"
+                                    />
+                                </div>
+                                {(pageErrors.consultation_price ??
+                                    errors.consultation_price) && (
+                                    <span className="text-xs text-error">
+                                        {pageErrors.consultation_price ??
+                                            errors.consultation_price}
+                                    </span>
+                                )}
+                            </label>
+                            <label className="flex flex-col gap-1.5 text-sm font-medium">
+                                <span>Honorario (RD$)</span>
+                                <div
+                                    className={`flex h-9 items-center overflow-hidden rounded-lg border ${(pageErrors.consultation_fee ?? errors.consultation_fee) ? 'border-error' : 'border-divider'}`}
+                                >
+                                    <span className="shrink-0 px-2 text-sm text-text-secondary">
+                                        RD$
+                                    </span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={data.consultation_fee}
+                                        onChange={(e) =>
+                                            setData(
+                                                'consultation_fee',
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder="0.00"
+                                        aria-label="Honorario por consulta"
+                                        className="h-full flex-1 bg-transparent pr-2 text-sm outline-none"
+                                    />
+                                </div>
+                                {(pageErrors.consultation_fee ??
+                                    errors.consultation_fee) && (
+                                    <span className="text-xs text-error">
+                                        {pageErrors.consultation_fee ??
+                                            errors.consultation_fee}
+                                    </span>
+                                )}
+                            </label>
+                        </div>
 
                         {/* ─── Sistema de acceso ─────────────────────── */}
                         <div className="flex flex-col gap-3 rounded-lg border border-divider bg-app-bg p-4">

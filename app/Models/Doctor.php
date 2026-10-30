@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $phone
  * @property int $specialty_id
  * @property bool $is_active
+ * @property int $consultation_price
+ * @property int $consultation_fee
  * @property-read Specialty $specialty
  * @property-read User|null $user
  */
@@ -32,6 +34,8 @@ class Doctor extends Model
         'phone',
         'specialty_id',
         'is_active',
+        'consultation_price',
+        'consultation_fee',
     ];
 
     protected $casts = [

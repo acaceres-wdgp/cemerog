@@ -185,33 +185,20 @@ export function TurnosPanel({
                                                     >
                                                         Llamar
                                                     </button>
+                                                    <button
+                                                        onClick={() =>
+                                                            onPatchStatus(
+                                                                r.id,
+                                                                'no_asistio',
+                                                            )
+                                                        }
+                                                        title="No asistió"
+                                                        className="h-[28px] w-[28px] cursor-pointer rounded-[7px] border border-secondary-border bg-secondary-bg font-[inherit] text-xs text-muted"
+                                                    >
+                                                        ✕
+                                                    </button>
                                                 </>
                                             )}
-                                            {r.status === 'en_consulta' && (
-                                                <button
-                                                    onClick={() =>
-                                                        onPatchStatus(
-                                                            r.id,
-                                                            'atendido',
-                                                        )
-                                                    }
-                                                    className="h-[28px] cursor-pointer rounded-[7px] border-0 bg-primary px-[10px] font-[inherit] text-xs font-medium text-white"
-                                                >
-                                                    ✓ Atendido
-                                                </button>
-                                            )}
-                                            <button
-                                                onClick={() =>
-                                                    onPatchStatus(
-                                                        r.id,
-                                                        'no_asistio',
-                                                    )
-                                                }
-                                                title="No asistió"
-                                                className="h-[28px] w-[28px] cursor-pointer rounded-[7px] border border-secondary-border bg-secondary-bg font-[inherit] text-xs text-muted"
-                                            >
-                                                ✕
-                                            </button>
                                         </div>
                                     </td>
                                 </tr>

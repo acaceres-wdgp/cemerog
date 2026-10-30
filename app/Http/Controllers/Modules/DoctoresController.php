@@ -38,6 +38,8 @@ class DoctoresController extends Controller
             'user_name' => $d->user?->name,
             'user_username' => $d->user?->username,
             'office' => $d->office,
+            'consultation_price' => $d->consultation_price,
+            'consultation_fee' => $d->consultation_fee,
         ]);
 
         // Available users for linking: active users NOT already linked to a doctor
