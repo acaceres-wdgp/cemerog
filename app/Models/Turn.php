@@ -25,6 +25,8 @@ use Illuminate\Support\Carbon;
  * @property-read Patient $patient
  * @property-read Doctor $doctor
  * @property-read Appointment|null $appointment
+ * @property-read Consultation|null $consultation
+ * @property-read Prescription|null $prescription
  */
 class Turn extends Model
 {
@@ -73,6 +75,18 @@ class Turn extends Model
     public function discharge(): HasOne
     {
         return $this->hasOne(Discharge::class);
+    }
+
+    /** @return HasOne<Consultation, $this> */
+    public function consultation(): HasOne
+    {
+        return $this->hasOne(Consultation::class);
+    }
+
+    /** @return HasOne<Prescription, $this> */
+    public function prescription(): HasOne
+    {
+        return $this->hasOne(Prescription::class);
     }
 
     /**

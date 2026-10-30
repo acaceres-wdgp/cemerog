@@ -10,6 +10,7 @@ use App\Http\Controllers\Modules\CajaController;
 use App\Http\Controllers\Modules\CirugiaController;
 use App\Http\Controllers\Modules\CitasController;
 use App\Http\Controllers\Modules\ConsultaController;
+use App\Http\Controllers\Modules\PrescriptionController;
 use App\Http\Controllers\Modules\CuadreController;
 use App\Http\Controllers\Modules\CxcController;
 use App\Http\Controllers\Modules\DoctoresController;
@@ -108,6 +109,10 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/', [ConsultaController::class, 'store'])->name('consulta.store');
         Route::post('/turnos/{turn}/alta', [ConsultaController::class, 'discharge'])->name('consulta.discharge');
         Route::patch('/antecedentes/{patient}', [ConsultaController::class, 'updateAntecedents'])->name('consulta.antecedentes');
+        // Prescriptions
+        Route::post('/turnos/{turn}/receta', [PrescriptionController::class, 'store'])->name('consulta.receta.store');
+        Route::put('/turnos/{turn}/receta', [PrescriptionController::class, 'update'])->name('consulta.receta.update');
+        Route::get('/recetas/{prescription}/imprimir', [PrescriptionController::class, 'print'])->name('consulta.receta.print');
     });
 
     Route::get('/emergencia', [EmergenciaController::class, 'index'])
