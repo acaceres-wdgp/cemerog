@@ -1,0 +1,22 @@
+[
+  { "allergies": "No",           "medication": "Naproxeno 500mg",            "expected": false, "label": "No does not block Naproxeno" },
+  { "allergies": "Ninguna",      "medication": "Amoxicilina 500mg",           "expected": false, "label": "Ninguna does not block Amoxicilina" },
+  { "allergies": "Ninguno",      "medication": "Metronidazol",                "expected": false, "label": "Ninguno does not block anything" },
+  { "allergies": "N/A",          "medication": "Nolotil",                     "expected": false, "label": "N/A does not block Nolotil" },
+  { "allergies": "NKDA",         "medication": "Ibuprofeno",                  "expected": false, "label": "NKDA does not block anything" },
+  { "allergies": "niega",        "medication": "Amoxicilina",                 "expected": false, "label": "niega does not block anything" },
+  { "allergies": "No conocidas", "medication": "Paracetamol",                 "expected": false, "label": "No conocidas does not block anything" },
+  { "allergies": "No refiere",   "medication": "Ibuprofeno",                  "expected": false, "label": "No refiere does not block anything" },
+  { "allergies": "desconoce",    "medication": "Aspirina",                    "expected": false, "label": "desconoce does not block anything" },
+  { "allergies": "",             "medication": "Penicilina G",                "expected": false, "label": "Empty allergies does not block anything" },
+  { "allergies": "Penicilina",   "medication": "Penicilina G benzatínica",    "expected": true,  "label": "Penicilina blocks Penicilina G benzatinica" },
+  { "allergies": "Sulfas",       "medication": "Sulfametoxazol",              "expected": true,  "label": "Sulfas blocks Sulfametoxazol" },
+  { "allergies": "Sulfa",        "medication": "Sulfametoxazol",              "expected": true,  "label": "Sulfa blocks Sulfametoxazol" },
+  { "allergies": "PENICILINA",   "medication": "penicilina g benzatínica",    "expected": true,  "label": "Case-insensitive: PENICILINA blocks penicilina g" },
+  { "allergies": "Penicilína",   "medication": "Penicilina benzatinica",      "expected": true,  "label": "Accent-insensitive: Penicilína blocks Penicilina" },
+  { "allergies": "Ibuprofeno",   "medication": "Naproxeno 500mg",             "expected": false, "label": "Ibuprofeno does not block Naproxeno" },
+  { "allergies": "na",           "medication": "Naproxeno",                   "expected": false, "label": "na (short none-term) does not block Naproxeno" },
+  { "allergies": "Aspirina, Penicilina", "medication": "Amoxicilina",         "expected": false, "label": "Aspirina+Penicilina does not block Amoxicilina" },
+  { "allergies": "Aspirina, Penicilina", "medication": "Penicilina G benzatínica", "expected": true, "label": "Aspirina+Penicilina blocks Penicilina G" },
+  { "allergies": "Penicilina",   "medication": "Amoxicilina",                 "expected": false, "label": "Penicilina does not block Amoxicilina" }
+]

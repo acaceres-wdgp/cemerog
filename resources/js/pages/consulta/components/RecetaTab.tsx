@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { conflict } from '@/lib/allergy';
 import { TurnItem, PrescriptionData } from '../types';
 import { buildInstruction } from '../lib/instructionBuilder';
 import { thCls } from '../lib/helpers';
@@ -25,30 +26,16 @@ type Props = {
     isDischargedTurn: boolean;
 };
 
-// ─── Allergy Checker ──────────────────────────────────────────────────────────
-
-function normalizeForAllergy(text: string): string {
-    return text
-        .normalize('NFD')
-        .replace(/\p{Mn}/gu, '')
-        .toLowerCase();
-}
+// ─── Allergy helpers ─────────────────────────────────────────────────────────
 
 function findAllergyConflict(
     rows: RxRow[],
     allergies: string | null,
 ): string | null {
     if (!allergies) return null;
-    const words = allergies
-        .split(/[,;]+/)
-        .map((w) => normalizeForAllergy(w.trim()))
-        .filter(Boolean);
     for (const row of rows) {
-        const medNorm = normalizeForAllergy(row.medication);
-        for (const word of words) {
-            if (word && medNorm.includes(word)) {
-                return row.medication;
-            }
+        if (row.medication && conflict(allergies, row.medication)) {
+            return row.medication;
         }
     }
     return null;
