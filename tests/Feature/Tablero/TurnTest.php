@@ -164,7 +164,22 @@ test('authorized user can update turn status to en_consulta', function () {
     expect(session('inertia.flash_data.toast.message'))->toBe('Estado del turno actualizado.');
 });
 
-test('authorized user can mark turn as atendido', function () {
+test('a turn in consultation can be sent back to the queue', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+    ]);
+
+    $this->actingAs($this->user)
+        ->patch("/tablero/turnos/{$turn->id}/status", ['status' => 'espera'])
+        ->assertRedirect(route('tablero'))
+        ->assertSessionHasNoErrors();
+
+    expect($turn->fresh()->status)->toBe('espera');
+});
+
+test('the Tablero cannot mark a turn as atendido; only the discharge does', function () {
     $turn = Turn::factory()->create([
         'doctor_id' => $this->doctor->id,
         'patient_id' => $this->patient->id,
@@ -173,10 +188,38 @@ test('authorized user can mark turn as atendido', function () {
 
     $this->actingAs($this->user)
         ->patch("/tablero/turnos/{$turn->id}/status", ['status' => 'atendido'])
-        ->assertRedirect(route('tablero'));
+        ->assertSessionHasErrors(['status']);
 
-    expect($turn->fresh()->status)->toBe('atendido');
+    expect($turn->fresh()->status)->toBe('en_consulta');
 });
+
+test('a turn in consultation cannot be marked no_asistio', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+    ]);
+
+    $this->actingAs($this->user)
+        ->patch("/tablero/turnos/{$turn->id}/status", ['status' => 'no_asistio'])
+        ->assertSessionHasErrors(['status']);
+
+    expect($turn->fresh()->status)->toBe('en_consulta');
+});
+
+test('a closed turn cannot be reopened from the Tablero', function (string $closed) {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => $closed,
+    ]);
+
+    $this->actingAs($this->user)
+        ->patch("/tablero/turnos/{$turn->id}/status", ['status' => 'espera'])
+        ->assertSessionHasErrors(['status']);
+
+    expect($turn->fresh()->status)->toBe($closed);
+})->with(['atendido', 'no_asistio']);
 
 test('update turn status validates allowed values', function () {
     $turn = Turn::factory()->create(['doctor_id' => $this->doctor->id, 'patient_id' => $this->patient->id]);
