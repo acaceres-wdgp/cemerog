@@ -154,6 +154,23 @@ class ConsultaController extends Controller
             ]);
 
             $turn->update(['status' => 'atendido']);
+
+            // If no other open turns for this patient today, close the account
+            $otherOpenTurns = Turn::where('patient_id', $turn->patient_id)
+                ->where('id', '!=', $turn->id)
+                ->whereDate('arrived_at', today())
+                ->whereIn('status', ['espera', 'en_consulta'])
+                ->exists();
+
+            if (! $otherOpenTurns) {
+                Account::where('patient_id', $turn->patient_id)
+                    ->whereDate('service_date', today())
+                    ->where('status', 'abierta')
+                    ->update([
+                        'status' => 'pendiente_facturar',
+                        'closed_at' => now(),
+                    ]);
+            }
         });
 
         Toast::success('Paciente dado de alta.');
