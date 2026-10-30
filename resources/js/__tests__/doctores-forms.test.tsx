@@ -136,6 +136,29 @@ describe('doctores forms', () => {
         expect(screen.getByText(/dejará de funcionar/i)).toBeDefined();
     });
 
+    it('shows errors.consultation_fee below the honorario field', () => {
+        page.props.errors = {
+            consultation_fee:
+                'El honorario no puede superar el precio de consulta.',
+        } as Record<string, string>;
+
+        // Open the edit modal (doctor has user_id set)
+        render(<DoctoresIndex />);
+        const specialtyItems = screen.getAllByText('Pediatría');
+        fireEvent.click(specialtyItems[0]);
+        const editButtons = screen.getAllByText('✏');
+        fireEvent.click(editButtons[editButtons.length - 1]);
+
+        expect(
+            screen.getByText(
+                'El honorario no puede superar el precio de consulta.',
+            ),
+        ).toBeDefined();
+
+        // Reset errors so other tests are not affected
+        page.props.errors = {};
+    });
+
     it('reset password POST is sent after confirming the dialog', () => {
         const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
         render(<DoctoresIndex />);

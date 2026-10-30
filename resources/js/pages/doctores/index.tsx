@@ -323,23 +323,9 @@ function SpecialtyModal({ onClose, specialty }: SpecialtyModalProps) {
                         >
                             <span>Precio de consulta (RD$) *</span>
                             <div
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    height: 36,
-                                    border: `1px solid ${errors.consultation_price ? '#b91c1c' : '#e4e4e7'}`,
-                                    borderRadius: 10,
-                                    overflow: 'hidden',
-                                }}
+                                className={`flex h-9 items-center overflow-hidden rounded-lg border ${errors.consultation_price ? 'border-error' : 'border-divider'}`}
                             >
-                                <span
-                                    style={{
-                                        padding: '0 10px',
-                                        color: '#71717a',
-                                        fontSize: 13,
-                                        flexShrink: 0,
-                                    }}
-                                >
+                                <span className="shrink-0 px-2.5 text-sm text-text-secondary">
                                     RD$
                                 </span>
                                 <input
@@ -354,22 +340,11 @@ function SpecialtyModal({ onClose, specialty }: SpecialtyModalProps) {
                                         )
                                     }
                                     placeholder="0.00"
-                                    style={{
-                                        flex: 1,
-                                        height: 34,
-                                        border: 'none',
-                                        outline: 'none',
-                                        background: 'transparent',
-                                        fontFamily: 'inherit',
-                                        fontSize: 14,
-                                        padding: '0 8px 0 0',
-                                    }}
+                                    className="h-full flex-1 bg-transparent pr-2 text-sm outline-none"
                                 />
                             </div>
                             {errors.consultation_price && (
-                                <span
-                                    style={{ color: '#b91c1c', fontSize: 12 }}
-                                >
+                                <span className="text-xs text-error">
                                     {errors.consultation_price}
                                 </span>
                             )}
@@ -456,6 +431,7 @@ function DoctorModal({
     const [accessMode, setAccessMode] = useState<AccessMode>(defaultAccessMode);
     const [confirmResetOpen, setConfirmResetOpen] = useState(false);
 
+    const pageErrors = usePage().props.errors as Record<string, string>;
     const { data, setData, post, put, transform, processing, errors } = useForm(
         {
             name: doctor?.name ?? '',
@@ -771,23 +747,9 @@ function DoctorModal({
                             >
                                 <span>Precio de consulta (RD$)</span>
                                 <div
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        border: `1px solid ${errors.consultation_price ? '#b91c1c' : '#e4e4e7'}`,
-                                        borderRadius: 10,
-                                        overflow: 'hidden',
-                                    }}
+                                    className={`flex h-9 items-center overflow-hidden rounded-lg border ${(pageErrors.consultation_price ?? errors.consultation_price) ? 'border-error' : 'border-divider'}`}
                                 >
-                                    <span
-                                        style={{
-                                            padding: '0 8px',
-                                            color: '#71717a',
-                                            fontSize: 13,
-                                            flexShrink: 0,
-                                        }}
-                                    >
+                                    <span className="shrink-0 px-2 text-sm text-text-secondary">
                                         RD$
                                     </span>
                                     <input
@@ -803,57 +765,23 @@ function DoctorModal({
                                         }
                                         placeholder="0.00"
                                         aria-label="Precio de consulta"
-                                        style={{
-                                            flex: 1,
-                                            height: 34,
-                                            border: 'none',
-                                            outline: 'none',
-                                            background: 'transparent',
-                                            fontFamily: 'inherit',
-                                            fontSize: 14,
-                                            padding: '0 8px 0 0',
-                                        }}
+                                        className="h-full flex-1 bg-transparent pr-2 text-sm outline-none"
                                     />
                                 </div>
-                                {errors.consultation_price && (
-                                    <span
-                                        style={{
-                                            color: '#b91c1c',
-                                            fontSize: 12,
-                                        }}
-                                    >
-                                        {errors.consultation_price}
+                                {(pageErrors.consultation_price ??
+                                    errors.consultation_price) && (
+                                    <span className="text-xs text-error">
+                                        {pageErrors.consultation_price ??
+                                            errors.consultation_price}
                                     </span>
                                 )}
                             </label>
-                            <label
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 6,
-                                    fontWeight: 500,
-                                    fontSize: 14,
-                                }}
-                            >
+                            <label className="flex flex-col gap-1.5 text-sm font-medium">
                                 <span>Honorario (RD$)</span>
                                 <div
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        border: `1px solid ${errors.consultation_fee ? '#b91c1c' : '#e4e4e7'}`,
-                                        borderRadius: 10,
-                                        overflow: 'hidden',
-                                    }}
+                                    className={`flex h-9 items-center overflow-hidden rounded-lg border ${(pageErrors.consultation_fee ?? errors.consultation_fee) ? 'border-error' : 'border-divider'}`}
                                 >
-                                    <span
-                                        style={{
-                                            padding: '0 8px',
-                                            color: '#71717a',
-                                            fontSize: 13,
-                                            flexShrink: 0,
-                                        }}
-                                    >
+                                    <span className="shrink-0 px-2 text-sm text-text-secondary">
                                         RD$
                                     </span>
                                     <input
@@ -869,26 +797,14 @@ function DoctorModal({
                                         }
                                         placeholder="0.00"
                                         aria-label="Honorario por consulta"
-                                        style={{
-                                            flex: 1,
-                                            height: 34,
-                                            border: 'none',
-                                            outline: 'none',
-                                            background: 'transparent',
-                                            fontFamily: 'inherit',
-                                            fontSize: 14,
-                                            padding: '0 8px 0 0',
-                                        }}
+                                        className="h-full flex-1 bg-transparent pr-2 text-sm outline-none"
                                     />
                                 </div>
-                                {errors.consultation_fee && (
-                                    <span
-                                        style={{
-                                            color: '#b91c1c',
-                                            fontSize: 12,
-                                        }}
-                                    >
-                                        {errors.consultation_fee}
+                                {(pageErrors.consultation_fee ??
+                                    errors.consultation_fee) && (
+                                    <span className="text-xs text-error">
+                                        {pageErrors.consultation_fee ??
+                                            errors.consultation_fee}
                                     </span>
                                 )}
                             </label>
