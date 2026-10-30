@@ -152,22 +152,6 @@ class ConsultaController extends Controller
     }
 
     /**
-     * Abort 403 unless the authenticated user's doctor owns the given turn.
-     */
-    private function authorizeTurnOwnership(Turn $turn): void
-    {
-        /** @var User $user */
-        $user = auth()->user();
-
-        if (
-            $user->doctor === null
-            || $turn->doctor_id !== $user->doctor->id
-        ) {
-            abort(403);
-        }
-    }
-
-    /**
      * Abort 403 unless the authenticated user's doctor has an open turn today for the patient.
      */
     private function authorizePatientTurnOwnership(Patient $patient): void
