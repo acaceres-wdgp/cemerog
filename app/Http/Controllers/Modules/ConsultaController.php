@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreConsultationRequest;
 use App\Http\Requests\StoreDischargeRequest;
 use App\Http\Requests\UpdateAntecedentRequest;
+use App\Models\Account;
+use App\Models\AccountCharge;
 use App\Models\Consultation;
 use App\Models\Discharge;
 use App\Models\Patient;
@@ -67,6 +69,8 @@ class ConsultaController extends Controller
 
         $historial = [];
         $historialPatient = null;
+        $charges = [];
+        $chargesTotal = 0;
 
         $patientId = $request->integer('patient_id');
         if ($patientId) {
@@ -74,6 +78,8 @@ class ConsultaController extends Controller
             if ($patient) {
                 $historial = $this->loadHistorial($patient);
                 $historialPatient = $this->formatHistorialPatient($patient);
+
+                [$charges, $chargesTotal] = $this->loadCharges($patient, $user);
             }
         }
 
@@ -84,6 +90,8 @@ class ConsultaController extends Controller
             'historial' => $historial,
             'historial_patient' => $historialPatient,
             'prescriptions' => $prescriptions,
+            'charges' => $charges,
+            'charges_total' => $chargesTotal,
         ]);
     }
 
@@ -165,6 +173,50 @@ class ConsultaController extends Controller
         Toast::success('Antecedentes actualizados.');
 
         return back();
+    }
+
+    /**
+     * Load account charges for a patient's today account, filtered by visibility rule:
+     * - Admin+doctor: sees ALL charges for the account
+     * - Non-admin doctor: sees only their own charges (doctor_id = user's doctor id)
+     *
+     * @return array{0: list<array<string, mixed>>, 1: int}
+     */
+    private function loadCharges(Patient $patient, User $user): array
+    {
+        $account = Account::where('patient_id', $patient->id)
+            ->whereDate('service_date', today())
+            ->where('status', 'abierta')
+            ->first();
+
+        if ($account === null) {
+            return [[], 0];
+        }
+
+        $isAdminDoctor = $user->hasRole('administrador') && $user->doctor !== null;
+
+        $query = AccountCharge::with(['doctor'])
+            ->where('account_id', $account->id);
+
+        if (! $isAdminDoctor && $user->doctor !== null) {
+            $query->where('doctor_id', $user->doctor->id);
+        }
+
+        $charges = $query->orderBy('created_at')->get()->map(fn (AccountCharge $c) => [
+            'id' => $c->id,
+            'type' => $c->type,
+            'description' => $c->description,
+            'quantity' => $c->quantity,
+            'unit_price' => $c->unit_price,
+            'total' => $c->total,
+            'doctor_fee' => $c->doctor_fee,
+            'doctor_id' => $c->doctor_id,
+            'doctor_name' => $c->doctor?->name,
+        ])->all();
+
+        $total = array_sum(array_column($charges, 'total'));
+
+        return [$charges, $total];
     }
 
     /**

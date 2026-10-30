@@ -112,6 +112,18 @@ export type NoteFormData = {
     diagnosticos: Diagnostico[];
 };
 
+export type AccountCharge = {
+    id: number;
+    type: string;
+    description: string;
+    quantity: number;
+    unit_price: number;
+    total: number;
+    doctor_fee: number | null;
+    doctor_id: number | null;
+    doctor_name: string | null;
+};
+
 export type Props = {
     can_attend: boolean;
     turns_en_consulta: TurnItem[];
@@ -119,4 +131,6 @@ export type Props = {
     historial?: HistorialEntry[];
     historial_patient?: PatientInfo & { antecedents: AntecedentData };
     prescriptions?: Record<number, PrescriptionData>;
+    charges?: AccountCharge[];
+    charges_total?: number;
 };
