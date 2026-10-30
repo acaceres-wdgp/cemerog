@@ -131,6 +131,10 @@ class PrescriptionController extends Controller
 
     private function checkDischargelock(Turn $turn): void
     {
+        if (! $turn->isOpenToday()) {
+            abort(403, 'La receta solo puede modificarse en un turno abierto del día.');
+        }
+
         if ($turn->discharge !== null) {
             abort(403, 'La receta no puede modificarse después del alta.');
         }

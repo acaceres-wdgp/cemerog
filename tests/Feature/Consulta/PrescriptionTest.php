@@ -90,6 +90,28 @@ test('edit prescription for same turn updates correctly', function () {
     expect($prescription->items->first()->medication)->toBe('Metronidazol 500mg');
 });
 
+// ─── Open-today guard ─────────────────────────────────────────────────────────
+
+test('store for yesterday turn returns 403', function () {
+    $this->turn->update(['arrived_at' => now()->subDay()]);
+
+    $this->actingAs($this->user)
+        ->postJson("/consulta/turnos/{$this->turn->id}/receta", [
+            'items' => [],
+        ])
+        ->assertForbidden();
+});
+
+test('store for atendido turn returns 403', function () {
+    $this->turn->update(['status' => 'atendido']);
+
+    $this->actingAs($this->user)
+        ->postJson("/consulta/turnos/{$this->turn->id}/receta", [
+            'items' => [],
+        ])
+        ->assertForbidden();
+});
+
 // ─── Discharge lock ───────────────────────────────────────────────────────────
 
 test('edit after discharge returns 403', function () {
