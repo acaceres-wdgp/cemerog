@@ -10,6 +10,7 @@ use App\Models\Consultation;
 use App\Models\Discharge;
 use App\Models\Patient;
 use App\Models\PatientAntecedent;
+use App\Models\Prescription;
 use App\Models\Turn;
 use App\Models\User;
 use App\Support\Toast;
@@ -53,6 +54,17 @@ class ConsultaController extends Controller
             ->get()
             ->map(fn (Turn $t) => $this->formatTurn($t));
 
+        // All turn IDs the doctor has today (en_consulta + espera)
+        $allTurnIds = $turnsEnConsulta->pluck('id')
+            ->merge($turnsEnEspera->pluck('id'));
+
+        $prescriptions = Prescription::with('items')
+            ->whereIn('turn_id', $allTurnIds)
+            ->get()
+            ->mapWithKeys(fn (Prescription $p) => [
+                $p->turn_id => $this->formatPrescriptionForIndex($p),
+            ]);
+
         $historial = [];
         $historialPatient = null;
 
@@ -71,6 +83,7 @@ class ConsultaController extends Controller
             'turns_en_espera' => $turnsEnEspera,
             'historial' => $historial,
             'historial_patient' => $historialPatient,
+            'prescriptions' => $prescriptions,
         ]);
     }
 
@@ -180,7 +193,7 @@ class ConsultaController extends Controller
     /** @return list<array<string, mixed>> */
     private function loadHistorial(Patient $patient): array
     {
-        return Consultation::with(['doctor.specialty', 'turn.discharge'])
+        return Consultation::with(['doctor.specialty', 'turn.discharge', 'turn.prescription.items'])
             ->where('patient_id', $patient->id)
             ->orderByDesc('consulted_at')
             ->get()
@@ -213,6 +226,22 @@ class ConsultaController extends Controller
                     'discharge_diagnosis' => $c->turn->discharge->discharge_diagnosis,
                     'discharged_at' => $c->turn->discharge->discharged_at,
                 ] : null,
+                'prescription_id' => $c->turn?->prescription?->id,
+                'prescription' => $c->turn?->prescription ? [
+                    'id' => $c->turn->prescription->id,
+                    'general_instructions' => $c->turn->prescription->general_instructions,
+                    'items' => $c->turn->prescription->items->map(fn ($item) => [
+                        'id' => $item->id,
+                        'position' => $item->position,
+                        'medication' => $item->medication,
+                        'route' => $item->route,
+                        'dose' => $item->dose,
+                        'frequency' => $item->frequency,
+                        'duration_days' => $item->duration_days,
+                        'is_continuous' => $item->is_continuous,
+                        'quantity' => $item->quantity,
+                    ])->all(),
+                ] : null,
             ])
             ->all();
     }
@@ -227,6 +256,27 @@ class ConsultaController extends Controller
             'sex' => $patient->sex,
             'allergies' => $patient->allergies,
             'antecedents' => $patient->antecedent,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function formatPrescriptionForIndex(Prescription $prescription): array
+    {
+        return [
+            'id' => $prescription->id,
+            'general_instructions' => $prescription->general_instructions,
+            'prescribed_at' => $prescription->prescribed_at,
+            'items' => $prescription->items->map(fn ($item) => [
+                'id' => $item->id,
+                'position' => $item->position,
+                'medication' => $item->medication,
+                'route' => $item->route,
+                'dose' => $item->dose,
+                'frequency' => $item->frequency,
+                'duration_days' => $item->duration_days,
+                'is_continuous' => $item->is_continuous,
+                'quantity' => $item->quantity,
+            ])->all(),
         ];
     }
 

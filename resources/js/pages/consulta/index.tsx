@@ -10,6 +10,7 @@ import RecetaTab from './components/RecetaTab';
 import CuentaOrdenesTab from './components/CuentaOrdenesTab';
 import ConsultaActions from './components/ConsultaActions';
 import EmptyState from '@/components/cemerog/EmptyState';
+import type { PrescriptionData } from './types';
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
@@ -19,6 +20,7 @@ export default function ConsultaIndex({
     turns_en_espera,
     historial,
     historial_patient,
+    prescriptions,
 }: Props) {
     const [activeTurn, setActiveTurn] = useState<TurnItem | null>(
         turns_en_consulta[0] ?? null,
@@ -122,7 +124,18 @@ export default function ConsultaIndex({
                     )}
 
                     {/* RECETA */}
-                    {activeTab === 'receta' && <RecetaTab />}
+                    {activeTab === 'receta' && (
+                        <RecetaTab
+                            key={activeTurn.id}
+                            turn={activeTurn}
+                            prescription={
+                                (prescriptions?.[activeTurn.id] as
+                                    | PrescriptionData
+                                    | undefined) ?? null
+                            }
+                            isDischargedTurn={false}
+                        />
+                    )}
 
                     {/* CUENTA */}
                     {activeTab === 'cuenta' && <CuentaOrdenesTab />}

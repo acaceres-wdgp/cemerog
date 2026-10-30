@@ -44,6 +44,31 @@ export type DischargeInfo = {
     discharged_at: string;
 } | null;
 
+export type PrescriptionItemData = {
+    id: number;
+    position: number;
+    medication: string;
+    route: string | null;
+    dose: string;
+    frequency: string;
+    duration_days: number | null;
+    is_continuous: boolean;
+    quantity: number;
+};
+
+export type PrescriptionData = {
+    id: number;
+    general_instructions: string | null;
+    prescribed_at: string;
+    items: PrescriptionItemData[];
+};
+
+export type HistorialPrescription = {
+    id: number;
+    general_instructions: string | null;
+    items: PrescriptionItemData[];
+};
+
 export type HistorialEntry = {
     id: number;
     consulted_at: string;
@@ -55,6 +80,8 @@ export type HistorialEntry = {
     plan_tratamiento: string | null;
     vitals: Vitals;
     discharge: DischargeInfo;
+    prescription_id?: number | null;
+    prescription?: HistorialPrescription | null;
 };
 
 export type AntecedentData = {
@@ -91,4 +118,5 @@ export type Props = {
     turns_en_espera: TurnItem[];
     historial?: HistorialEntry[];
     historial_patient?: PatientInfo & { antecedents: AntecedentData };
+    prescriptions?: Record<number, PrescriptionData>;
 };

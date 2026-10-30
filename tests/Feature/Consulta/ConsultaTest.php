@@ -4,6 +4,7 @@ use App\Models\Consultation;
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\PatientAntecedent;
+use App\Models\Prescription;
 use App\Models\Specialty;
 use App\Models\Turn;
 use App\Models\User;
@@ -428,4 +429,88 @@ test('peso=3175 (upper bound) saves OK', function () {
         ])
         ->assertRedirect()
         ->assertSessionHasNoErrors();
+});
+
+// ─── Prescriptions prop ───────────────────────────────────────────────────────
+
+test('GET /consulta includes prescriptions prop indexed by turn_id', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
+    $prescription = Prescription::create([
+        'turn_id' => $turn->id,
+        'patient_id' => $this->patient->id,
+        'doctor_id' => $this->doctor->id,
+        'created_by' => $this->user->id,
+        'prescribed_at' => now(),
+        'general_instructions' => 'Reposo.',
+    ]);
+
+    $prescription->items()->create([
+        'position' => 1,
+        'medication' => 'Paracetamol 500mg',
+        'dose' => '1 tableta',
+        'frequency' => 'Cada 6 horas',
+        'duration_days' => 3,
+        'is_continuous' => false,
+        'quantity' => 12,
+    ]);
+
+    $this->actingAs($this->user)
+        ->get('/consulta')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('consulta/index')
+            ->has('prescriptions')
+            ->has("prescriptions.{$turn->id}")
+            ->where("prescriptions.{$turn->id}.id", $prescription->id)
+            ->where("prescriptions.{$turn->id}.general_instructions", 'Reposo.')
+            ->has("prescriptions.{$turn->id}.items", 1)
+        );
+});
+
+test('saving twice (create then update) leaves one prescription with new items', function () {
+    $turn = Turn::factory()->create([
+        'doctor_id' => $this->doctor->id,
+        'patient_id' => $this->patient->id,
+        'status' => 'en_consulta',
+        'arrived_at' => now(),
+    ]);
+
+    $item = [
+        'position' => 1,
+        'medication' => 'Amoxicilina 500mg',
+        'route' => 'oral',
+        'dose' => '1 cápsula',
+        'frequency' => 'Cada 8 horas',
+        'duration_days' => 7,
+        'is_continuous' => false,
+        'quantity' => 21,
+    ];
+
+    // First save → creates prescription, redirects back
+    $this->actingAs($this->user)
+        ->post("/consulta/turnos/{$turn->id}/receta", [
+            'general_instructions' => 'Tomar con agua.',
+            'items' => [$item],
+        ])
+        ->assertRedirect();
+
+    expect(Prescription::where('turn_id', $turn->id)->count())->toBe(1);
+
+    // Second save → updates same prescription
+    $this->actingAs($this->user)
+        ->put("/consulta/turnos/{$turn->id}/receta", [
+            'general_instructions' => 'Actualizado.',
+            'items' => [array_merge($item, ['medication' => 'Metronidazol 500mg', 'duration_days' => 5, 'quantity' => 10])],
+        ])
+        ->assertRedirect();
+
+    expect(Prescription::where('turn_id', $turn->id)->count())->toBe(1);
+    expect(Prescription::where('turn_id', $turn->id)->first()->general_instructions)->toBe('Actualizado.');
+    expect(Prescription::where('turn_id', $turn->id)->first()->items->first()->medication)->toBe('Metronidazol 500mg');
 });

@@ -17,4 +17,17 @@ return [
         'password' => env('ADMIN_PASSWORD', 'Admin123!'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Clinic information (used in printable documents)
+    |--------------------------------------------------------------------------
+    */
+
+    'clinic' => [
+        'name' => env('CLINIC_NAME', 'CEMEROG'),
+        'rnc' => env('CLINIC_RNC', null),
+        'phone' => env('CLINIC_PHONE', null),
+        'address' => env('CLINIC_ADDRESS', null),
+    ],
+
 ];
