@@ -2,7 +2,7 @@
  * Tests for the enhanced RecetaTab component.
  */
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
@@ -24,9 +24,6 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
         patch: vi.fn(),
     },
 }));
-
-// Mock window.fetch for prescription save/update
-global.fetch = vi.fn();
 
 import RecetaTab from '@/pages/consulta/components/RecetaTab';
 
@@ -58,10 +55,6 @@ const makeTurn = (overrides: Record<string, unknown> = {}) => ({
 describe('RecetaTab – add/remove rows', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-            ok: true,
-            json: async () => ({ message: 'Receta guardada.' }),
-        });
     });
 
     it('starts with 1 row', () => {
@@ -190,7 +183,9 @@ describe('RecetaTab – allergy alert', () => {
 // ─── Print button state ───────────────────────────────────────────────────────
 
 describe('RecetaTab – print button', () => {
-    it('print button is disabled when prescription is not saved', () => {
+    beforeEach(() => vi.clearAllMocks());
+
+    it('print button is disabled when prescription is null', () => {
         render(
             <RecetaTab
                 turn={makeTurn()}
@@ -202,7 +197,7 @@ describe('RecetaTab – print button', () => {
         expect(printButton).toBeDisabled();
     });
 
-    it('print button is enabled when prescription exists', () => {
+    it('print button is enabled when prescription exists and no unsaved changes', () => {
         const prescription = {
             id: 42,
             general_instructions: null,
@@ -218,6 +213,110 @@ describe('RecetaTab – print button', () => {
         );
         const printButton = screen.getByRole('button', { name: /imprimir/i });
         expect(printButton).not.toBeDisabled();
+    });
+
+    it('print button is disabled when prescription exists but there are unsaved changes', () => {
+        const prescription = {
+            id: 42,
+            general_instructions: null,
+            prescribed_at: '2026-10-27T10:00:00',
+            items: [],
+        };
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={prescription}
+                isDischargedTurn={false}
+            />,
+        );
+        // Mark dirty by clicking add row
+        fireEvent.click(screen.getByText('+ Agregar medicamento'));
+        const printButton = screen.getByRole('button', { name: /imprimir/i });
+        expect(printButton).toBeDisabled();
+    });
+});
+
+// ─── Rows loaded from prescription prop ──────────────────────────────────────
+
+describe('RecetaTab – rows from prescriptions prop', () => {
+    it('loads rows from prescription items', () => {
+        const prescription = {
+            id: 7,
+            general_instructions: 'Tomar con comida',
+            prescribed_at: '2026-10-27T10:00:00',
+            items: [
+                {
+                    id: 1,
+                    position: 1,
+                    medication: 'Amoxicilina 500mg',
+                    route: 'oral',
+                    dose: '1 cápsula',
+                    frequency: 'Cada 8 horas',
+                    duration_days: 7,
+                    is_continuous: false,
+                    quantity: 21,
+                },
+            ],
+        };
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={prescription}
+                isDischargedTurn={false}
+            />,
+        );
+        expect(screen.getByDisplayValue('Amoxicilina 500mg')).toBeTruthy();
+        expect(screen.getByText(/1 medicamentos/)).toBeTruthy();
+    });
+});
+
+// ─── router.post / router.put ─────────────────────────────────────────────────
+
+describe('RecetaTab – save calls router.post for new, router.put for existing', () => {
+    beforeEach(() => vi.clearAllMocks());
+
+    it('calls router.post when no prescription exists', () => {
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: /guardar receta/i }),
+        );
+        expect(mockRouterPost).toHaveBeenCalledWith(
+            `/consulta/turnos/1/receta`,
+            expect.any(Object),
+            expect.any(Object),
+        );
+        expect(mockRouterPut).not.toHaveBeenCalled();
+    });
+
+    it('calls router.put when prescription already exists', () => {
+        const prescription = {
+            id: 5,
+            general_instructions: null,
+            prescribed_at: '2026-10-27T10:00:00',
+            items: [],
+        };
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={prescription}
+                isDischargedTurn={false}
+            />,
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: /guardar receta/i }),
+        );
+        expect(mockRouterPut).toHaveBeenCalledWith(
+            `/consulta/turnos/1/receta`,
+            expect.any(Object),
+            expect.any(Object),
+        );
+        expect(mockRouterPost).not.toHaveBeenCalled();
     });
 });
 

@@ -33,7 +33,7 @@ beforeEach(function () {
 
 // ─── Create ───────────────────────────────────────────────────────────────────
 
-test('create prescription for turn returns 201', function () {
+test('create prescription for turn redirects back', function () {
     $this->actingAs($this->user)
         ->postJson("/consulta/turnos/{$this->turn->id}/receta", [
             'general_instructions' => 'Tomar con agua.',
@@ -50,7 +50,7 @@ test('create prescription for turn returns 201', function () {
                 ],
             ],
         ])
-        ->assertCreated();
+        ->assertRedirect();
 
     expect(Prescription::where('turn_id', $this->turn->id)->count())->toBe(1);
     expect(Prescription::first()->items->count())->toBe(1);
@@ -83,7 +83,7 @@ test('edit prescription for same turn updates correctly', function () {
                 ],
             ],
         ])
-        ->assertOk();
+        ->assertRedirect();
 
     $prescription->refresh();
     expect($prescription->general_instructions)->toBe('Actualizado.');
@@ -215,7 +215,7 @@ test('duration_days not required when is_continuous is true', function () {
                 ],
             ],
         ])
-        ->assertCreated();
+        ->assertRedirect();
 });
 
 test('two prescriptions for same turn returns 422', function () {

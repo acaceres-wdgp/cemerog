@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { router, usePage } from '@inertiajs/react';
 import { cn } from '@/lib/utils';
 import { conflict } from '@/lib/allergy';
 import { TurnItem, PrescriptionData } from '../types';
@@ -50,6 +51,8 @@ export default function RecetaTab({
     prescription,
     isDischargedTurn,
 }: Props) {
+    const { errors } = usePage().props as { errors: Record<string, string> };
+
     const [rows, setRows] = useState<RxRow[]>(() => {
         if (prescription && prescription.items.length > 0) {
             return prescription.items.map((item) => ({
@@ -85,9 +88,13 @@ export default function RecetaTab({
     >(prescription?.id ?? null);
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [saveError, setSaveError] = useState<string | null>(null);
 
     const allergyConflict = findAllergyConflict(rows, turn.patient.allergies);
+    const saveError = errors?.allergy
+        ? String(errors.allergy)
+        : errors?.turn_id
+          ? String(errors.turn_id)
+          : null;
 
     const markDirty = () => setIsDirty(true);
 
@@ -120,10 +127,9 @@ export default function RecetaTab({
         markDirty();
     }
 
-    async function handleSave() {
+    function handleSave() {
         if (allergyConflict || isSaving) return;
         setIsSaving(true);
-        setSaveError(null);
 
         const payload = {
             general_instructions: generalInstructions || null,
@@ -144,43 +150,21 @@ export default function RecetaTab({
         };
 
         const url = `/consulta/turnos/${turn.id}/receta`;
-        const method = savedPrescriptionId ? 'PUT' : 'POST';
+        const method = savedPrescriptionId ? router.put : router.post;
 
-        try {
-            const res = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-XSRF-TOKEN':
-                        decodeURIComponent(
-                            document.cookie
-                                .split('; ')
-                                .find((c) => c.startsWith('XSRF-TOKEN='))
-                                ?.split('=')[1] ?? '',
-                        ) ?? '',
-                },
-                body: JSON.stringify(payload),
-            });
-
-            if (res.ok) {
-                const data = (await res.json()) as {
-                    id?: number;
-                    prescription?: { id: number };
-                };
-                if (!savedPrescriptionId && data.id) {
-                    setSavedPrescriptionId(data.id);
-                }
+        method(url, payload, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                // If this was a first-time save, update savedPrescriptionId from the
+                // reloaded prescriptions prop (Inertia redirect back re-renders page).
                 setIsDirty(false);
-            } else {
-                const errData = (await res.json()) as { message?: string };
-                setSaveError(errData.message ?? 'Error al guardar la receta.');
-            }
-        } catch {
-            setSaveError('Error de conexión al guardar la receta.');
-        } finally {
-            setIsSaving(false);
-        }
+                // For first saves: the turn's prescription now exists on the page,
+                // but we know the id from the prescription prop. We mark it saved.
+                setSavedPrescriptionId((prev) => prev ?? -1);
+            },
+            onFinish: () => setIsSaving(false),
+        });
     }
 
     function handlePrint() {
@@ -193,6 +177,7 @@ export default function RecetaTab({
 
     const count = rows.length;
     const countLabel = `${count} medicamentos`;
+    const canPrint = !!savedPrescriptionId && !isDirty;
     const statusLabel = isDirty
         ? 'Sin guardar'
         : savedPrescriptionId
@@ -293,7 +278,7 @@ export default function RecetaTab({
             <div className="flex justify-end gap-2 border-t border-divider px-[18px] py-3">
                 <button
                     onClick={handlePrint}
-                    disabled={!savedPrescriptionId}
+                    disabled={!canPrint}
                     aria-label="Imprimir receta"
                     className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border border-secondary-border bg-secondary-bg px-4 font-sans text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
                 >

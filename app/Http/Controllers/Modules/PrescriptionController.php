@@ -8,7 +8,8 @@ use App\Models\Prescription;
 use App\Models\Turn;
 use App\Models\User;
 use App\Support\AllergyChecker;
-use Illuminate\Http\JsonResponse;
+use App\Support\Toast;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -19,9 +20,9 @@ class PrescriptionController extends Controller
 {
     /**
      * Store a new prescription for the given turn.
-     * Returns 201 on success.
+     * Redirects back with a success toast on success.
      */
-    public function store(StorePrescriptionRequest $request, Turn $turn): JsonResponse
+    public function store(StorePrescriptionRequest $request, Turn $turn): RedirectResponse
     {
         if (Prescription::where('turn_id', $turn->id)->exists()) {
             throw ValidationException::withMessages([
@@ -63,13 +64,16 @@ class PrescriptionController extends Controller
             }
         });
 
-        return response()->json(['message' => 'Receta guardada.'], 201);
+        Toast::success('Receta guardada.');
+
+        return back();
     }
 
     /**
      * Update the prescription for the given turn.
+     * Redirects back with a success toast on success.
      */
-    public function update(StorePrescriptionRequest $request, Turn $turn): JsonResponse
+    public function update(StorePrescriptionRequest $request, Turn $turn): RedirectResponse
     {
         $this->checkDischargelock($turn);
 
@@ -101,7 +105,9 @@ class PrescriptionController extends Controller
             }
         });
 
-        return response()->json(['message' => 'Receta actualizada.']);
+        Toast::success('Receta actualizada.');
+
+        return back();
     }
 
     /**
@@ -145,27 +151,16 @@ class PrescriptionController extends Controller
      */
     private function checkAllergies(Turn $turn, array $items): void
     {
-        $allergies = $turn->patient->allergies;
-        if ($allergies === null || $allergies === '') {
-            return;
-        }
-
-        $allergyWords = array_filter(array_map(
-            fn (string $a) => mb_strtolower(trim(AllergyChecker::normalize($a))),
-            preg_split('/[,;]+/', $allergies) ?: []
-        ));
+        $allergies = $turn->patient->allergies ?? '';
 
         foreach ($items as $item) {
-            $medNormalized = mb_strtolower(AllergyChecker::normalize($item['medication']));
-            foreach ($allergyWords as $word) {
-                if (str_contains($medNormalized, $word)) {
-                    throw ValidationException::withMessages([
-                        'allergy' => [
-                            'message' => "El medicamento \"{$item['medication']}\" coincide con una alergia del paciente.",
-                            'medication' => $item['medication'],
-                        ],
-                    ]);
-                }
+            if (AllergyChecker::conflict($allergies, $item['medication'])) {
+                throw ValidationException::withMessages([
+                    'allergy' => [
+                        'message' => "El medicamento \"{$item['medication']}\" coincide con una alergia del paciente.",
+                        'medication' => $item['medication'],
+                    ],
+                ]);
             }
         }
     }
