@@ -34,7 +34,12 @@ export default function PaymentDialog({
     const [lines, setLines] = useState<Line[]>([
         newLine('efectivo', pesos(invoice.balance)),
     ]);
-    const [dueDate, setDueDate] = useState('');
+    // A later installment keeps the due date the credit already has
+    const [dueDate, setDueDate] = useState(() =>
+        invoice.credit_due_date
+            ? invoice.credit_due_date.split('/').reverse().join('-')
+            : '',
+    );
     const [note, setNote] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { formatMoney } from '@/lib/money';
 import { cn } from '@/lib/utils';
+import cuadre from '@/routes/cuadre';
 import type { ClosedShift } from '../types';
 
 const thCls =
@@ -32,6 +33,9 @@ export default function ShiftHistory({ history }: { history: ClosedShift[] }) {
                                 </th>
                                 <th className={`${thCls} text-right`}>
                                     Diferencia
+                                </th>
+                                <th className={thCls}>
+                                    <span className="sr-only">Reporte</span>
                                 </th>
                             </tr>
                         </thead>
@@ -72,6 +76,16 @@ export default function ShiftHistory({ history }: { history: ClosedShift[] }) {
                                         {s.difference === 0
                                             ? 'Cuadrado'
                                             : `${s.difference < 0 ? '−' : '+'}${formatMoney(Math.abs(s.difference))}`}
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <a
+                                            href={cuadre.report.url(s.id)}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-[12.5px] font-semibold text-primary"
+                                        >
+                                            Reporte
+                                        </a>
                                     </td>
                                 </tr>
                             ))}
