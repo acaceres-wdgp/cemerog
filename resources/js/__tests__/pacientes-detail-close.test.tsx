@@ -22,6 +22,12 @@ vi.mock('@/routes', () => ({
     registro: { url: () => '/registro' },
 }));
 
+vi.mock('@/routes/pacientes', () => ({
+    show: {
+        url: ({ patient }: { patient: number }) => `/pacientes/${patient}`,
+    },
+}));
+
 vi.mock('@/routes/registro/pacientes', () => ({
     edit: { url: (id: number) => `/registro/pacientes/${id}/editar` },
 }));
@@ -98,6 +104,14 @@ describe('PacientesIndex – detail sheet close button', () => {
         expect(
             screen.getAllByRole('button', { name: /cerrar|close/i }),
         ).toHaveLength(1);
+    });
+
+    it('links to the patient profile with "Ver perfil"', () => {
+        renderWithSelected();
+
+        expect(
+            screen.getByRole('link', { name: /Ver perfil/ }),
+        ).toHaveAttribute('href', '/pacientes/1');
     });
 
     it('closing the panel clears the selected patient from the URL', () => {

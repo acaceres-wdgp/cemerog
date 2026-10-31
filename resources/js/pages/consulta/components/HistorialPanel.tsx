@@ -70,8 +70,10 @@ function FilterBtn({
 
 export default function HistorialPanel({
     historial,
+    canPrint = true,
 }: {
     historial: ClinicalEntry[];
+    canPrint?: boolean;
 }) {
     const [selIdx, setSelIdx] = useState<number | null>(
         historial.length > 0 ? 0 : null,
@@ -204,7 +206,7 @@ export default function HistorialPanel({
                         selIdx={safeSelIdx}
                         onSelect={(idx) => setSelIdx(idx)}
                     />
-                    <HistorialDetail sel={sel} />
+                    <HistorialDetail sel={sel} canPrint={canPrint} />
                 </div>
             )}
         </div>

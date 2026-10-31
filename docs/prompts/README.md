@@ -75,8 +75,8 @@ Los archivos se guardan **tal como se entregaron**: el formateador los ignora (`
 
 | Prompt | Tema | Depende de | Estado |
 |---|---|---|---|
-| [PROMPT-19](PROMPT-19-visibilidad-alta-historial.md) | Turnos y citas por médico; volver a Consulta tras el alta; historial clínico unificado | 18 | ⏳ Pendiente |
-| [PROMPT-20](PROMPT-20-perfil-paciente.md) | Perfil del paciente (adaptado del prompt 07 de Claude Design) | 19 | ⏳ Pendiente |
+| [PROMPT-19](PROMPT-19-visibilidad-alta-historial.md) | Turnos y citas por médico; volver a Consulta tras el alta; historial clínico unificado | 18 | ✅ Mezclado (#38) |
+| [PROMPT-20](PROMPT-20-perfil-paciente.md) | Perfil del paciente (adaptado del prompt 07 de Claude Design); implementado directamente en la revisión | 19 | 🔄 En revisión |
 
 ### Sin prompt (hechos directamente en la revisión)
 

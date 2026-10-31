@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Modules;
 
+use App\Actions\Patients\BuildPatientProfile;
 use App\Actions\Patients\SearchPatients;
 use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use App\Models\Turn;
+use App\Models\User;
 use App\Support\Pii;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -103,6 +105,27 @@ class PacientesController extends Controller
                 'sort' => in_array($sort, $validSorts) ? $sort : 'ultima_atencion',
             ],
             'selected' => $this->resolveSelected($request),
+        ]);
+    }
+
+    /**
+     * Patient profile: data, antecedents, attentions, clinical history,
+     * prescriptions and (with permission) finances. Read-only.
+     */
+    public function show(Request $request, Patient $patient, BuildPatientProfile $buildProfile): Response
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $validTabs = ['resumen', 'historial', 'recetas', 'estudios', 'finanzas'];
+        $tab = $request->string('tab', 'resumen')->toString();
+        if (! in_array($tab, $validTabs, true) || ($tab === 'finanzas' && ! $buildProfile->canSeeFinances($user))) {
+            $tab = 'resumen';
+        }
+
+        return Inertia::render('pacientes/show', [
+            ...$buildProfile->handle($patient, $user),
+            'tab' => $tab,
         ]);
     }
 

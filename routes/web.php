@@ -74,6 +74,7 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
     Route::prefix('/pacientes')->middleware('permission:module.pacientes.access')->group(function () {
         Route::get('/', [PacientesController::class, 'index'])->name('pacientes');
         Route::get('/buscar', [PacientesController::class, 'search'])->name('pacientes.buscar');
+        Route::get('/{patient}', [PacientesController::class, 'show'])->whereNumber('patient')->name('pacientes.show');
     });
 
     // Registro – unified search + register + turn creation

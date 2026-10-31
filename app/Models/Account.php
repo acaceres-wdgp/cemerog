@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property int $id
  * @property int $patient_id
- * @property string $service_date
+ * @property Carbon $service_date
  * @property string $status
  * @property Carbon $opened_at
  * @property Carbon|null $closed_at

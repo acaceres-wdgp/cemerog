@@ -81,10 +81,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
                           : 'Nuevo paciente',
               }
             : undefined;
+    const profileBreadcrumbFallback = /^\/pacientes\/\d+$/.test(basePath)
+        ? { subPage: 'Perfil del paciente' }
+        : undefined;
     const breadcrumb = resolveBreadcrumb(
         basePath,
         NAV_GROUPS,
-        registroBreadcrumbFallback,
+        registroBreadcrumbFallback ?? profileBreadcrumbFallback,
     );
     const todayLabel = formatTopbarDate(new Date());
 
