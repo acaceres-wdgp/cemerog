@@ -133,6 +133,47 @@ describe('ConsultaIndex – post-discharge navigation', () => {
         expect(screen.getByText('Pedro López')).toBeTruthy();
     });
 
+    it('moves to the next turn when Inertia updates the props before onSuccess, as in the app', async () => {
+        const { rerender } = render(
+            <ConsultaIndex
+                can_attend
+                turns_en_consulta={[makeTurn(), nextTurn]}
+                turns_en_espera={[]}
+            />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: /Dar alta médica/i }),
+        );
+        fireEvent.change(screen.getByLabelText(/Diagnóstico de egreso/i), {
+            target: { value: 'Resuelto' },
+        });
+        fireEvent.click(
+            screen.getByRole('button', { name: /Confirmar alta/i }),
+        );
+
+        const options = mockRouterPost.mock.calls[0][2] as RouterPostOptions;
+
+        // Inertia swaps in the new page props first, then calls onSuccess
+        act(() => {
+            rerender(
+                <ConsultaIndex
+                    can_attend
+                    turns_en_consulta={[nextTurn]}
+                    turns_en_espera={[]}
+                />,
+            );
+        });
+        act(() => {
+            options.onSuccess?.();
+        });
+
+        await waitFor(() => {
+            expect(screen.queryByText('Alta médica')).toBeNull();
+        });
+        expect(screen.getByText('Pedro López')).toBeTruthy();
+    });
+
     it('after onSuccess with no remaining turns, shows empty state', async () => {
         const { rerender } = render(
             <ConsultaIndex

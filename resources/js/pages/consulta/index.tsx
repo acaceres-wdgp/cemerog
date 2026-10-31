@@ -32,7 +32,9 @@ export default function ConsultaIndex({
         'nota',
     );
 
-    // Auto-advance or clear activeTurn when the lists change (e.g. after discharge)
+    // Auto-advance or clear activeTurn when the lists change (e.g. after discharge).
+    // This is the only place that advances: an onSuccess callback would still
+    // hold the pre-discharge lists and pick the discharged turn again.
     useEffect(() => {
         if (activeTurn === null) return;
         const allIds = new Set([
@@ -124,9 +126,6 @@ export default function ConsultaIndex({
                         turnsEnEspera={turns_en_espera}
                         onSelectTurn={(t) => {
                             setActiveTurn(t);
-                        }}
-                        onDischargeSuccess={() => {
-                            setActiveTurn(turns_en_consulta[0] ?? null);
                         }}
                     />
 
