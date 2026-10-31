@@ -8,6 +8,7 @@ use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Requests\UpdateAppointmentRequest;
 use App\Models\Appointment;
 use App\Models\Doctor;
+use App\Models\User;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,6 +20,11 @@ class CitasController extends Controller
 {
     public function index(Request $request): Response
     {
+        /** @var User $user */
+        $user = $request->user();
+        $ownOnly = $user->seesOnlyOwnSchedule();
+        $forceDoctorId = $ownOnly ? $user->doctor->id : null;
+
         $date = $request->filled('date')
             ? Carbon::parse($request->string('date'))->toDateString()
             : today()->toDateString();
@@ -29,8 +35,12 @@ class CitasController extends Controller
             ->whereHas('patient')
             ->whereDate('appointment_date', $date)
             ->when(
-                $request->filled('doctor_id'),
-                fn ($q) => $q->where('doctor_id', $request->integer('doctor_id'))
+                $forceDoctorId !== null,
+                fn ($q) => $q->where('doctor_id', $forceDoctorId),
+                fn ($q) => $q->when(
+                    $request->filled('doctor_id'),
+                    fn ($q2) => $q2->where('doctor_id', $request->integer('doctor_id'))
+                )
             )
             ->orderBy('appointment_time')
             ->get()
@@ -52,6 +62,7 @@ class CitasController extends Controller
 
         $doctors = Doctor::with('specialty')
             ->where('is_active', true)
+            ->when($forceDoctorId !== null, fn ($q) => $q->where('id', $forceDoctorId))
             ->orderBy('name')
             ->get()
             ->map(fn (Doctor $d) => [

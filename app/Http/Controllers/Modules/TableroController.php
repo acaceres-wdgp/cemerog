@@ -6,18 +6,26 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\Turn;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class TableroController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        /** @var User $user */
+        $user = $request->user();
+        $ownOnly = $user->seesOnlyOwnSchedule();
+        $doctorId = $ownOnly ? $user->doctor->id : null;
+
         // Active turns for today, ordered by turn_order
         $turns = Turn::with(['patient', 'doctor.specialty'])
             ->whereHas('patient')
             ->whereDate('arrived_at', today())
             ->whereIn('status', ['espera', 'en_consulta'])
+            ->when($doctorId, fn ($q) => $q->where('doctor_id', $doctorId))
             ->orderBy('turn_order')
             ->get()
             ->map(fn (Turn $t) => [
@@ -42,6 +50,7 @@ class TableroController extends Controller
             ->whereHas('patient')
             ->whereDate('appointment_date', today())
             ->whereNotIn('status', ['cancelada'])
+            ->when($doctorId, fn ($q) => $q->where('doctor_id', $doctorId))
             ->orderBy('appointment_time')
             ->get()
             ->map(fn (Appointment $a) => [

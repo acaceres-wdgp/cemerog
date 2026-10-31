@@ -60,4 +60,16 @@ class User extends Authenticatable
     {
         return $this->doctor !== null && $this->doctor->is_active;
     }
+
+    /**
+     * Returns true when the user is a non-admin doctor who should only see and
+     * manage their own turns and appointments.
+     * Admins (even those with a linked doctor), secretaries, and other roles see everything.
+     */
+    public function seesOnlyOwnSchedule(): bool
+    {
+        return $this->doctor !== null
+            && $this->doctor->is_active
+            && ! $this->hasRole('administrador');
+    }
 }
