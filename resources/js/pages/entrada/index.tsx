@@ -1,513 +1,233 @@
-import { useState } from 'react';
+import React, { FormEvent, useEffect, useState } from 'react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { Check, Plus } from 'lucide-react';
+import { formatMoney, parseMoney } from '@/lib/money';
+import SupplierDialog from '@/pages/almacen/components/SupplierDialog';
+import { almacen } from '@/routes';
+import * as entradaRoutes from '@/routes/entrada';
+import EntryHeaderFields from './components/EntryHeaderFields';
+import EntryLinesTable from './components/EntryLinesTable';
+import NewProductDialog from './components/NewProductDialog';
+import RecentEntries from './components/RecentEntries';
+import type { CatalogOption, EntryLine, RecentEntry } from './types';
 
-type Item = {
-    producto: string;
-    cant: number;
-    costo: number;
-    lote: string;
-    vence: string;
+type Props = {
+    items: CatalogOption[];
+    suppliers: { id: number; name: string }[];
+    next_number: string;
+    recent: RecentEntry[];
+    today: string;
 };
 
-const INITIAL_ITEMS: Item[] = [
-    {
-        producto: 'Amoxicilina 500mg cap. (x100)',
-        cant: 5,
-        costo: 1200,
-        lote: 'AMX-2026-10',
-        vence: '31/03/2027',
-    },
-    {
-        producto: 'Omeprazol 20mg cap. (x30)',
-        cant: 10,
-        costo: 450,
-        lote: 'OME-2026-09',
-        vence: '30/06/2027',
-    },
-];
+let nextKey = 1;
+const emptyLine = (): EntryLine => ({
+    key: nextKey++,
+    itemId: null,
+    newItem: null,
+    quantity: '',
+    lot: '',
+    expires: '',
+    cost: '',
+});
 
-const PROVEEDORES = [
-    'Farmanova SRL',
-    'Distribuidora Medic',
-    'Sumedico RD',
-    'PharmaPro',
-];
+const lineIsComplete = (l: EntryLine) =>
+    (l.itemId !== null || l.newItem !== null) &&
+    (parseInt(l.quantity, 10) || 0) > 0 &&
+    l.cost.trim() !== '';
 
-const inputStyle: React.CSSProperties = {
-    height: 34,
-    padding: '0 8px',
-    border: '1px solid #e4e4e7',
-    borderRadius: 8,
-    outline: 'none',
-    fontFamily: 'inherit',
-    fontSize: 13,
-    width: '100%',
-};
+/** Inventario › Entrada de mercancía */
+export default function EntradaIndex({
+    items,
+    suppliers,
+    next_number,
+    recent,
+    today,
+}: Props) {
+    const page = usePage();
+    const errors = (page.props.errors ?? {}) as Record<string, string>;
+    const flashSupplier =
+        (page.flash as { supplier?: { id: number } | null })?.supplier ?? null;
+    const [supplierId, setSupplierId] = useState('');
+    const [invoiceRef, setInvoiceRef] = useState('');
+    const [receivedOn, setReceivedOn] = useState(today);
+    const [lines, setLines] = useState<EntryLine[]>(() => [emptyLine()]);
+    const [newProductFor, setNewProductFor] = useState<number | null>(null);
+    const [addingSupplier, setAddingSupplier] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
-export default function EntradaIndex() {
-    const [proveedor] = useState(PROVEEDORES[0]);
-    const [noFactura, setNoFactura] = useState('FAC-2026-0045');
-    const [fecha, setFecha] = useState('12/10/2026');
-    const [items, setItems] = useState<Item[]>(INITIAL_ITEMS);
+    // A supplier created from here is selected
+    useEffect(() => {
+        if (flashSupplier) setSupplierId(String(flashSupplier.id));
+    }, [flashSupplier]);
 
-    const total = items.reduce((s, i) => s + i.cant * i.costo, 0);
-    const fmt = (v: number) =>
-        `RD$${v.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+    const change = (key: number, patch: Partial<EntryLine>) =>
+        setLines((ls) =>
+            ls.map((l) => (l.key === key ? { ...l, ...patch } : l)),
+        );
+    const units = lines.reduce(
+        (sum, l) => sum + (parseInt(l.quantity, 10) || 0),
+        0,
+    );
+    const total = lines.reduce(
+        (sum, l) => sum + (parseInt(l.quantity, 10) || 0) * parseMoney(l.cost),
+        0,
+    );
+    const canSubmit =
+        supplierId !== '' && lines.length > 0 && lines.every(lineIsComplete);
 
-    const updateItem = (
-        idx: number,
-        field: keyof Item,
-        value: string | number,
-    ) => {
-        setItems((prev) =>
-            prev.map((it, i) => (i === idx ? { ...it, [field]: value } : it)),
+    const submit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!canSubmit) return;
+        setIsLoading(true);
+        router.post(
+            entradaRoutes.store.url(),
+            {
+                supplier_id: Number(supplierId),
+                invoice_ref: invoiceRef.trim() || null,
+                received_on: receivedOn,
+                lines: lines.map((l) => ({
+                    ...(l.newItem
+                        ? {
+                              new_item: {
+                                  ...l.newItem,
+                                  price: parseMoney(l.newItem.price),
+                                  min_stock:
+                                      parseInt(l.newItem.min_stock, 10) || 0,
+                              },
+                          }
+                        : { inventory_item_id: l.itemId }),
+                    quantity: parseInt(l.quantity, 10),
+                    lot: l.lot.trim() || null,
+                    expires_on: l.expires || null,
+                    unit_cost: parseMoney(l.cost),
+                })),
+            },
+            {
+                onSuccess: () => {
+                    setLines([emptyLine()]);
+                    setInvoiceRef('');
+                },
+                onFinish: () => setIsLoading(false),
+            },
         );
     };
 
-    const addItem = () =>
-        setItems((prev) => [
-            ...prev,
-            { producto: '', cant: 1, costo: 0, lote: '', vence: '' },
-        ]);
-    const removeItem = (idx: number) =>
-        setItems((prev) => prev.filter((_, i) => i !== idx));
-
     return (
-        <div className="flex flex-col gap-5">
-            <div>
-                <h1
-                    style={{
-                        fontFamily: 'Bitter,Georgia,serif',
-                        fontWeight: 600,
-                        fontSize: 26,
-                        color: '#1f2d22',
-                        margin: 0,
-                    }}
-                >
-                    Entrada de mercancía
-                </h1>
-                <p style={{ margin: '4px 0 0', color: '#5f6b64' }}>
-                    Registra la recepción de productos en el almacén
-                </p>
-            </div>
-
-            {/* Header form */}
-            <div
-                style={{
-                    background: '#fff',
-                    border: '1px solid #e3e9e3',
-                    borderRadius: 14,
-                    padding: '16px 20px',
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))',
-                    gap: '14px 16px',
-                }}
+        <div className="flex flex-wrap items-start gap-4">
+            <form
+                onSubmit={submit}
+                className="min-w-0 flex-[3_1_960px] overflow-x-auto rounded-[14px] border border-card-border bg-white"
             >
-                <div
-                    style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
-                >
-                    <span style={{ fontWeight: 500, fontSize: 14 }}>
-                        Proveedor *
+                <div className="border-b border-divider px-5 py-[14px] font-serif text-[16px] font-semibold text-text-heading">
+                    Nueva entrada{' '}
+                    <span className="font-mono text-[13px] font-normal text-muted">
+                        {next_number}
                     </span>
-                    <div
-                        style={{
-                            height: 36,
-                            padding: '0 12px',
-                            border: '1px solid #e4e4e7',
-                            borderRadius: 10,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            cursor: 'pointer',
-                            fontSize: 14,
-                        }}
-                    >
-                        {proveedor} <span>▾</span>
-                    </div>
                 </div>
-                <label
-                    style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
-                >
-                    <span style={{ fontWeight: 500, fontSize: 14 }}>
-                        No. de factura del proveedor *
-                    </span>
-                    <input
-                        value={noFactura}
-                        onChange={(e) => setNoFactura(e.target.value)}
-                        style={{
-                            height: 36,
-                            padding: '0 12px',
-                            border: '1px solid #e4e4e7',
-                            borderRadius: 10,
-                            outline: 'none',
-                            fontFamily: 'inherit',
-                            fontSize: 14,
-                        }}
-                    />
-                </label>
-                <label
-                    style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
-                >
-                    <span style={{ fontWeight: 500, fontSize: 14 }}>
-                        Fecha de recepción *
-                    </span>
-                    <input
-                        value={fecha}
-                        onChange={(e) => setFecha(e.target.value)}
-                        style={{
-                            height: 36,
-                            padding: '0 12px',
-                            border: '1px solid #e4e4e7',
-                            borderRadius: 10,
-                            outline: 'none',
-                            fontFamily: 'inherit',
-                            fontSize: 14,
-                        }}
-                        placeholder="dd/mm/aaaa"
-                    />
-                </label>
-            </div>
-
-            {/* Items table */}
-            <div
-                style={{
-                    background: '#fff',
-                    border: '1px solid #e3e9e3',
-                    borderRadius: 14,
-                    overflow: 'hidden',
-                }}
-            >
-                <div
-                    style={{
-                        padding: '14px 18px',
-                        borderBottom: '1px solid #eef0ec',
-                        fontFamily: 'Bitter,Georgia,serif',
-                        fontWeight: 600,
-                        fontSize: 16,
-                        color: '#1f2d22',
-                    }}
-                >
-                    Productos recibidos
-                </div>
-                <div style={{ overflowX: 'auto' }}>
-                    <table
-                        style={{
-                            width: '100%',
-                            borderCollapse: 'collapse',
-                            minWidth: 800,
-                        }}
-                    >
-                        <thead>
-                            <tr>
-                                {[
-                                    { label: 'Producto', w: '35%' },
-                                    { label: 'Cantidad', w: '10%' },
-                                    { label: 'Costo unitario', w: '15%' },
-                                    { label: 'Total', w: '12%' },
-                                    { label: 'No. lote', w: '14%' },
-                                    { label: 'Vencimiento', w: '12%' },
-                                    { label: '', w: '44px' },
-                                ].map((h) => (
-                                    <th
-                                        key={h.label}
-                                        style={{
-                                            textAlign:
-                                                h.label === 'Cantidad' ||
-                                                h.label === 'Costo unitario' ||
-                                                h.label === 'Total'
-                                                    ? 'right'
-                                                    : 'left',
-                                            fontWeight: 600,
-                                            fontSize: 11.5,
-                                            letterSpacing: '.05em',
-                                            textTransform: 'uppercase',
-                                            color: '#56693f',
-                                            padding:
-                                                h.label === 'Producto'
-                                                    ? '0 18px'
-                                                    : '0 10px',
-                                            height: 40,
-                                            background: '#F6FAF1',
-                                            borderBottom: '1px solid #DCEBC9',
-                                            whiteSpace: 'nowrap',
-                                            width: h.w,
-                                        }}
-                                    >
-                                        {h.label}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {items.map((item, i) => (
-                                <tr key={i}>
-                                    <td
-                                        style={{
-                                            padding: '8px 18px 8px 18px',
-                                            borderBottom: '1px solid #eef0ec',
-                                            verticalAlign: 'top',
-                                        }}
-                                    >
-                                        <input
-                                            value={item.producto}
-                                            onChange={(e) =>
-                                                updateItem(
-                                                    i,
-                                                    'producto',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            style={inputStyle}
-                                            placeholder="Nombre del producto"
-                                        />
-                                    </td>
-                                    <td
-                                        style={{
-                                            padding: '8px 10px',
-                                            borderBottom: '1px solid #eef0ec',
-                                            verticalAlign: 'top',
-                                        }}
-                                    >
-                                        <input
-                                            type="number"
-                                            value={item.cant}
-                                            onChange={(e) =>
-                                                updateItem(
-                                                    i,
-                                                    'cant',
-                                                    Number(e.target.value),
-                                                )
-                                            }
-                                            style={{
-                                                ...inputStyle,
-                                                textAlign: 'right',
-                                            }}
-                                            min={1}
-                                        />
-                                    </td>
-                                    <td
-                                        style={{
-                                            padding: '8px 10px',
-                                            borderBottom: '1px solid #eef0ec',
-                                            verticalAlign: 'top',
-                                        }}
-                                    >
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                height: 34,
-                                                border: '1px solid #e4e4e7',
-                                                borderRadius: 8,
-                                                background: '#fff',
-                                            }}
-                                        >
-                                            <span
-                                                style={{
-                                                    padding: '0 6px',
-                                                    fontSize: 12,
-                                                    color: '#71717a',
-                                                }}
-                                            >
-                                                RD$
-                                            </span>
-                                            <input
-                                                type="number"
-                                                value={item.costo}
-                                                onChange={(e) =>
-                                                    updateItem(
-                                                        i,
-                                                        'costo',
-                                                        Number(e.target.value),
-                                                    )
-                                                }
-                                                style={{
-                                                    flex: 1,
-                                                    height: 32,
-                                                    border: 'none',
-                                                    outline: 'none',
-                                                    background: 'transparent',
-                                                    fontFamily: 'inherit',
-                                                    fontSize: 13,
-                                                    textAlign: 'right',
-                                                    padding: '0 8px 0 0',
-                                                }}
-                                            />
-                                        </div>
-                                    </td>
-                                    <td
-                                        style={{
-                                            padding: '8px 10px',
-                                            borderBottom: '1px solid #eef0ec',
-                                            textAlign: 'right',
-                                            fontVariantNumeric: 'tabular-nums',
-                                            fontWeight: 600,
-                                            fontSize: 13,
-                                            verticalAlign: 'middle',
-                                        }}
-                                    >
-                                        {fmt(item.cant * item.costo)}
-                                    </td>
-                                    <td
-                                        style={{
-                                            padding: '8px 10px',
-                                            borderBottom: '1px solid #eef0ec',
-                                            verticalAlign: 'top',
-                                        }}
-                                    >
-                                        <input
-                                            value={item.lote}
-                                            onChange={(e) =>
-                                                updateItem(
-                                                    i,
-                                                    'lote',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            style={inputStyle}
-                                            placeholder="Lote"
-                                        />
-                                    </td>
-                                    <td
-                                        style={{
-                                            padding: '8px 10px',
-                                            borderBottom: '1px solid #eef0ec',
-                                            verticalAlign: 'top',
-                                        }}
-                                    >
-                                        <input
-                                            value={item.vence}
-                                            onChange={(e) =>
-                                                updateItem(
-                                                    i,
-                                                    'vence',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            style={inputStyle}
-                                            placeholder="dd/mm/aaaa"
-                                        />
-                                    </td>
-                                    <td
-                                        style={{
-                                            padding: '8px',
-                                            borderBottom: '1px solid #eef0ec',
-                                            verticalAlign: 'top',
-                                            textAlign: 'center',
-                                        }}
-                                    >
-                                        <button
-                                            onClick={() => removeItem(i)}
-                                            style={{
-                                                width: 30,
-                                                height: 30,
-                                                border: 'none',
-                                                borderRadius: 6,
-                                                background: 'transparent',
-                                                color: '#71717a',
-                                                cursor: 'pointer',
-                                                fontSize: 14,
-                                            }}
-                                        >
-                                            🗑
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-                <div
-                    style={{
-                        padding: '10px 18px',
-                        borderBottom: '1px solid #eef0ec',
-                    }}
-                >
+                <EntryHeaderFields
+                    suppliers={suppliers}
+                    supplierId={supplierId}
+                    invoiceRef={invoiceRef}
+                    receivedOn={receivedOn}
+                    today={today}
+                    errors={errors}
+                    onSupplier={setSupplierId}
+                    onInvoiceRef={setInvoiceRef}
+                    onReceivedOn={setReceivedOn}
+                    onNewSupplier={() => setAddingSupplier(true)}
+                />
+                <EntryLinesTable
+                    lines={lines}
+                    catalog={items}
+                    errors={errors}
+                    onChange={change}
+                    onRemove={(key) =>
+                        setLines((ls) => ls.filter((l) => l.key !== key))
+                    }
+                    onNewProduct={setNewProductFor}
+                />
+                {errors.lines && (
+                    <p className="m-0 px-5 pt-2 text-xs text-error">
+                        {errors.lines}
+                    </p>
+                )}
+                <div className="flex flex-wrap gap-2 px-5 py-3">
                     <button
-                        onClick={addItem}
-                        style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            height: 34,
-                            padding: '0 12px',
-                            borderRadius: 10,
-                            border: '1px dashed #B9DC8E',
-                            background: '#F8FBF6',
-                            color: '#2E8B3E',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            fontFamily: 'inherit',
-                            fontSize: 14,
-                        }}
+                        type="button"
+                        onClick={() => setLines((ls) => [...ls, emptyLine()])}
+                        className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-medium text-text-body hover:bg-accent-bg"
                     >
-                        + Agregar producto
+                        <Plus className="h-4 w-4" />
+                        Agregar producto
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            const line = emptyLine();
+                            setLines((ls) => [...ls, line]);
+                            setNewProductFor(line.key);
+                        }}
+                        className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border border-dashed border-input-border bg-white px-[14px] font-medium text-text-secondary hover:bg-list-row-bg"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Producto nuevo (no está en catálogo)
                     </button>
                 </div>
-                <div
-                    style={{
-                        padding: '14px 20px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: 12,
-                    }}
-                >
-                    <div
-                        style={{
-                            fontSize: 15,
-                            fontWeight: 700,
-                            color: '#1f2d22',
-                        }}
-                    >
-                        Total del pedido:{' '}
-                        <span
-                            style={{
-                                fontVariantNumeric: 'tabular-nums',
-                                color: '#2E8B3E',
-                            }}
-                        >
-                            {fmt(total)}
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-divider bg-list-row-bg px-5 py-3">
+                    <div className="flex gap-6 tabular-nums">
+                        <span>
+                            Unidades: <strong>{units}</strong>
+                        </span>
+                        <span>
+                            Costo total: <strong>{formatMoney(total)}</strong>
                         </span>
                     </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                        <button
-                            style={{
-                                height: 36,
-                                padding: '0 14px',
-                                borderRadius: 10,
-                                border: '1px solid #dfe7df',
-                                background: '#F6F9F5',
-                                fontWeight: 500,
-                                cursor: 'pointer',
-                                fontFamily: 'inherit',
-                                fontSize: 14,
-                            }}
+                    <div className="flex gap-2">
+                        <Link
+                            href={almacen.url()}
+                            className="inline-flex h-9 items-center rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-medium text-text-body hover:bg-accent-bg"
                         >
                             Cancelar
-                        </button>
+                        </Link>
                         <button
-                            style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 8,
-                                height: 36,
-                                padding: '0 16px',
-                                borderRadius: 10,
-                                border: 'none',
-                                background: '#2E8B3E',
-                                color: '#fff',
-                                fontWeight: 500,
-                                cursor: 'pointer',
-                                fontFamily: 'inherit',
-                                fontSize: 14,
-                            }}
+                            type="submit"
+                            disabled={!canSubmit || isLoading}
+                            className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] bg-primary px-[14px] font-medium text-white hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-primary-disabled"
                         >
-                            ✓ Registrar entrada
+                            <Check className="h-4 w-4" />
+                            Registrar entrada
                         </button>
                     </div>
                 </div>
+            </form>
+            <div className="min-w-0 flex-[1_1_240px]">
+                <RecentEntries entries={recent} />
             </div>
+            {newProductFor !== null && (
+                <NewProductDialog
+                    catalog={items}
+                    onAdd={(newItem, cost) =>
+                        change(newProductFor, { newItem, itemId: null, cost })
+                    }
+                    onUseExisting={(item) =>
+                        change(newProductFor, {
+                            itemId: item.id,
+                            newItem: null,
+                            cost:
+                                item.cost != null
+                                    ? (item.cost / 100).toFixed(2)
+                                    : '',
+                        })
+                    }
+                    onClose={() => setNewProductFor(null)}
+                />
+            )}
+            {addingSupplier && (
+                <SupplierDialog
+                    supplier={null}
+                    onClose={() => setAddingSupplier(false)}
+                />
+            )}
         </div>
     );
 }

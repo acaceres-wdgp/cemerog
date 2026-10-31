@@ -43,8 +43,8 @@ test('the administrator adds a medication and it gets its code', function () {
     expect(InventoryItem::orderBy('id')->pluck('code')->all())->toBe(['MED-001', 'INS-001', 'MED-002']);
 });
 
-test('the catalog lists the items with a low-stock alert', function () {
-    InventoryItem::create([...itemPayload(['stock' => 3]), 'code' => 'MED-001']);
+test('the catalog lists the items with low-stock and expiry alerts, cost and lot', function () {
+    InventoryItem::create([...itemPayload(['stock' => 3]), 'code' => 'MED-001', 'cost' => 6200, 'lot' => 'L1302', 'expires_on' => today()->addMonths(2)->startOfMonth()]);
     InventoryItem::create([...itemPayload(['name' => 'Algodón', 'kind' => 'insumo', 'stock' => 100]), 'code' => 'INS-001']);
 
     $this->actingAs($this->almacen)
@@ -55,15 +55,23 @@ test('the catalog lists the items with a low-stock alert', function () {
             ->has('items', 2)
             ->where('items.0.name', 'Algodón')
             ->where('items.1.low_stock', true)
-            ->where('can_edit', false)
+            ->where('items.1.cost', 6200)
+            ->where('items.1.lot', 'L1302')
+            ->where('items.1.expires_on', today()->addMonths(2)->format('m/Y'))
+            ->where('items.1.expires_soon', true)
+            ->where('items.0.expires_soon', false)
+            ->where('can_edit', true)
         );
 });
 
-test('only an administrator creates or edits items', function () {
-    $this->actingAs($this->almacen)->post('/almacen/articulos', itemPayload())->assertForbidden();
+test('only the warehouse role and administrators create or edit items', function () {
+    $enfermera = User::factory()->create();
+    $enfermera->assignRole('enfermeria');
+
+    $this->actingAs($enfermera)->post('/almacen/articulos', itemPayload())->assertForbidden();
 
     $item = InventoryItem::create([...itemPayload(), 'code' => 'MED-001']);
-    $this->actingAs($this->almacen)->put("/almacen/articulos/{$item->id}", itemPayload(['price' => 1]))->assertForbidden();
+    $this->actingAs($enfermera)->put("/almacen/articulos/{$item->id}", itemPayload(['price' => 1]))->assertForbidden();
 });
 
 test('an item can be edited and deactivated; the code does not change', function () {

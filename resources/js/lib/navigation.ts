@@ -156,6 +156,13 @@ export const NAV_GROUPS: NavGroup[] = [
                 permission: 'module.almacen.access',
             },
             {
+                key: 'proveedores',
+                label: 'Proveedores',
+                icon: 'Truck',
+                href: '/almacen/proveedores',
+                permission: 'module.almacen.access',
+            },
+            {
                 key: 'entrada',
                 label: 'Entrada de mercancía',
                 icon: 'PackagePlus',

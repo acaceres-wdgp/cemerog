@@ -97,6 +97,11 @@ describe('Inventario › Catálogo', () => {
             min_stock: 10,
             is_active: true,
             low_stock: true,
+            cost: null,
+            lot: null,
+            expires_on: null,
+            expires_soon: false,
+            suppliers: [],
         },
         {
             id: 2,
@@ -109,13 +114,18 @@ describe('Inventario › Catálogo', () => {
             min_stock: 10,
             is_active: true,
             low_stock: false,
+            cost: null,
+            lot: null,
+            expires_on: null,
+            expires_soon: false,
+            suppliers: [],
         },
     ];
 
     it('filters by kind and search, and flags low stock', () => {
         render(<AlmacenIndex items={items} can_edit={false} />);
 
-        expect(screen.getByText('Existencia baja')).toBeTruthy();
+        expect(screen.getByText('Bajo mínimo')).toBeTruthy();
         expect(
             screen.queryByRole('button', { name: 'Nuevo artículo' }),
         ).toBeNull();

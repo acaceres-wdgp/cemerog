@@ -6,12 +6,12 @@ use App\Models\InventoryItem;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-/** Create or edit a catalog item: administrators only */
+/** Create or edit a catalog item: administrators and the warehouse role */
 class InventoryItemRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->hasRole('administrador');
+        return $this->user()->hasAnyRole(InventoryItem::EDITOR_ROLES);
     }
 
     /** @return array<string, mixed> */

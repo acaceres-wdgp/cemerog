@@ -3,7 +3,7 @@ import { router, usePage } from '@inertiajs/react';
 import FormDialog from '@/components/cemerog/FormDialog';
 import FormField from '@/components/cemerog/FormField';
 import SegmentedControl from '@/components/cemerog/SegmentedControl';
-import { parseMoney } from '@/lib/money';
+import { formatMoney, parseMoney } from '@/lib/money';
 import * as items from '@/routes/almacen/items';
 import { KIND_LABELS } from '../types';
 import type { InventoryItemRow, ItemKind } from '../types';
@@ -120,6 +120,29 @@ export default function ItemDialog({
                         error={errors.min_stock}
                     />
                 </div>
+                {item && item.suppliers.length > 0 && (
+                    <div className="rounded-[10px] border border-card-border">
+                        <div className="border-b border-divider px-3 py-2 text-[13px] font-semibold text-text-heading">
+                            Costos por proveedor
+                        </div>
+                        {item.suppliers.map((s) => (
+                            <div
+                                key={s.name}
+                                className="flex justify-between gap-3 px-3 py-1.5 text-[13px]"
+                            >
+                                <span>
+                                    {s.name}{' '}
+                                    <span className="text-muted">
+                                        · {s.last_entry_on}
+                                    </span>
+                                </span>
+                                <span className="font-semibold tabular-nums">
+                                    {formatMoney(s.last_cost)}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                )}
                 {item && (
                     <label className="flex cursor-pointer items-center gap-2 text-[14px]">
                         <input
