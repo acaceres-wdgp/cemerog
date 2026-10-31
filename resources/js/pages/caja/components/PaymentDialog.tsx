@@ -11,13 +11,19 @@ import PaymentFields, {
 } from './PaymentFields';
 import type { PaymentState } from './PaymentFields';
 
+/** What the dialog needs of an invoice */
+export type PayableInvoice = Pick<
+    InvoiceDetail,
+    'id' | 'number' | 'balance' | 'credit_due_date'
+> & { patient_name?: string };
+
 /** «Registrar pago» on an issued invoice (also the installments of a credit) */
 export default function PaymentDialog({
     invoice,
     open,
     onOpenChange,
 }: {
-    invoice: InvoiceDetail;
+    invoice: PayableInvoice;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }) {
@@ -54,7 +60,7 @@ export default function PaymentDialog({
             open={open}
             onOpenChange={onOpenChange}
             title="Registrar pago"
-            description={`${invoice.number} · Balance pendiente: ${formatMoney(invoice.balance)}`}
+            description={`${invoice.number}${invoice.patient_name ? ` · ${invoice.patient_name}` : ''} · Balance pendiente: ${formatMoney(invoice.balance)}`}
             submitLabel={
                 payment.method === 'credito'
                     ? 'Registrar crédito'

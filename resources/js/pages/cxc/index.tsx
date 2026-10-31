@@ -1,199 +1,87 @@
-import React from 'react';
-import { router } from '@inertiajs/react';
-import { HandCoins } from 'lucide-react';
-import EmptyState from '@/components/cemerog/EmptyState';
-import SegmentedControl from '@/components/cemerog/SegmentedControl';
+import React, { useMemo, useState } from 'react';
+import { Search } from 'lucide-react';
+import ReceiptReadyBanner from '@/components/caja/ReceiptReadyBanner';
 import { formatMoney } from '@/lib/money';
-import { cn } from '@/lib/utils';
-import AccountPanel from '@/pages/caja/components/AccountPanel';
-import type { InvoiceDetail, InvoiceSummary } from '@/pages/caja/types';
-import { cxc } from '@/routes';
+import AgingCards from './components/AgingCards';
+import { bucketOf, invoicesLabel } from './components/aging';
+import type { Bucket } from './components/aging';
+import ReceivablesTable from './components/ReceivablesTable';
+import type { CxcProps, ReceivableRow } from './types';
 
-type Filter = 'todas' | 'vencidas' | 'al_dia';
+const digits = (s: string) => s.replace(/\D/g, '');
 
-type Receivable = InvoiceSummary & { overdue: boolean };
-
-type CxcProps = {
-    invoices: Receivable[];
-    totals: {
-        receivable: number;
-        overdue: number;
-        count: number;
-        overdue_count: number;
-    };
-    filter: Filter;
-    selected_invoice: InvoiceDetail | null;
-    can_void: boolean;
-};
-
-function Total({
-    label,
-    value,
-    sub,
-    danger = false,
-}: {
-    label: string;
-    value: number;
-    sub: string;
-    danger?: boolean;
-}) {
-    return (
-        <div
-            className={cn(
-                'min-w-[180px] flex-1 rounded-[12px] border px-4 py-3',
-                danger
-                    ? 'border-error-border bg-error-bg'
-                    : 'border-card-border bg-white',
-            )}
-        >
-            <p className="text-[11.5px] font-semibold tracking-[.05em] text-table-header-text uppercase">
-                {label}
-            </p>
-            <p
-                className={cn(
-                    'mt-1 font-serif text-[20px] font-semibold tabular-nums',
-                    danger ? 'text-error' : 'text-text-heading',
-                )}
-            >
-                {formatMoney(value)}
-            </p>
-            <p className="text-[12px] text-muted">{sub}</p>
-        </div>
-    );
+/** Name, cédula (with or without dashes) or invoice number */
+function matches(row: ReceivableRow, query: string): boolean {
+    const q = query.trim().toLowerCase();
+    if (q === '') return true;
+    const text =
+        `${row.patient.full_name} ${row.patient.document_number} ${row.number}`.toLowerCase();
+    if (text.includes(q)) return true;
+    const d = digits(q);
+    return d.length >= 3 && digits(row.patient.document_number).includes(d);
 }
 
-export default function CxcIndex({
-    invoices,
-    totals,
-    filter,
-    selected_invoice,
-    can_void,
-}: CxcProps) {
-    const visit = (query: Record<string, string | number>, only?: string[]) =>
-        router.get(
-            cxc.url({ query }),
-            {},
-            {
-                preserveState: true,
-                preserveScroll: true,
-                ...(only ? { only } : {}),
-            },
-        );
+export default function CxcIndex({ invoices }: CxcProps) {
+    const [bucket, setBucket] = useState<Bucket>('todas');
+    const [query, setQuery] = useState('');
+
+    // Oldest first
+    const rows = useMemo(
+        () =>
+            invoices
+                .filter(
+                    (i) => bucket === 'todas' || bucketOf(i.days) === bucket,
+                )
+                .filter((i) => matches(i, query))
+                .sort((a, b) => b.days - a.days),
+        [invoices, bucket, query],
+    );
+    const sum = (list: ReceivableRow[]) =>
+        list.reduce((total, i) => total + i.balance, 0);
 
     return (
-        <div className="flex flex-col gap-5">
-            <div>
-                <h1 className="m-0 font-serif text-[26px] font-semibold text-text-heading">
-                    Cuentas por cobrar
-                </h1>
-                <p className="mt-1 text-muted">
-                    Facturas emitidas con balance pendiente.
-                </p>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-                <Total
-                    label="Por cobrar"
-                    value={totals.receivable}
-                    sub={`${totals.count} facturas`}
-                />
-                <Total
-                    label="Vencido"
-                    value={totals.overdue}
-                    sub={`${totals.overdue_count} con la fecha compromiso pasada`}
-                    danger={totals.overdue > 0}
-                />
-            </div>
-
-            <SegmentedControl<Filter>
-                segments={[
-                    { value: 'todas', label: 'Todas' },
-                    {
-                        value: 'vencidas',
-                        label: 'Vencidas',
-                        count: totals.overdue_count,
-                    },
-                    { value: 'al_dia', label: 'Al día' },
-                ]}
-                value={filter}
-                onChange={(f) => visit({ filtro: f })}
-                className="self-start"
+        <div className="flex flex-col gap-4">
+            <p className="m-0 text-text-secondary">
+                {invoicesLabel(invoices.length)} con balance · total por cobrar{' '}
+                {formatMoney(sum(invoices))}
+            </p>
+            <ReceiptReadyBanner />
+            <AgingCards
+                invoices={invoices}
+                value={bucket}
+                onChange={setBucket}
             />
-
-            <div className="flex flex-wrap items-start gap-4">
-                <div className="min-w-[280px] flex-[1_1_360px] overflow-hidden rounded-2xl border border-card-border bg-white">
-                    {invoices.length === 0 ? (
-                        <EmptyState
-                            icon={HandCoins}
-                            title="Nada por cobrar"
-                            description="No hay facturas con balance para este filtro."
-                            className="py-8"
+            <section className="overflow-x-auto rounded-[14px] border border-card-border bg-white shadow-[0_1px_2px_rgba(16,40,24,.03)]">
+                <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+                    <label className="flex h-10 w-full max-w-[420px] items-center gap-2 rounded-[10px] border border-input-border bg-white px-3 focus-within:border-primary">
+                        <Search className="h-4 w-4 text-muted" />
+                        <input
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="Buscar paciente, cédula o factura"
+                            aria-label="Buscar paciente, cédula o factura"
+                            className="w-full border-0 bg-transparent outline-none"
                         />
-                    ) : (
-                        <ul className="m-0 list-none divide-y divide-divider p-0">
-                            {invoices.map((i) => (
-                                <li key={i.id}>
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            visit(
-                                                {
-                                                    filtro: filter,
-                                                    factura: i.id,
-                                                },
-                                                ['selected_invoice'],
-                                            )
-                                        }
-                                        className={cn(
-                                            'flex w-full cursor-pointer items-center justify-between gap-3 border-0 border-l-[3px] px-4 py-3 text-left',
-                                            selected_invoice?.id === i.id
-                                                ? 'border-primary bg-accent-bg'
-                                                : 'border-transparent bg-transparent hover:bg-list-row-bg',
-                                        )}
-                                    >
-                                        <span className="min-w-0">
-                                            <span className="block truncate text-[13.5px] font-semibold text-text-heading">
-                                                {i.patient}
-                                            </span>
-                                            <span className="block text-[12px] text-muted">
-                                                {i.number} ·{' '}
-                                                {i.credit_due_date
-                                                    ? `compromiso ${i.credit_due_date}`
-                                                    : 'sin fecha compromiso'}
-                                            </span>
-                                        </span>
-                                        <span className="shrink-0 text-right">
-                                            <span className="block text-[13px] font-semibold text-error tabular-nums">
-                                                {formatMoney(i.balance)}
-                                            </span>
-                                            {i.overdue && (
-                                                <span className="text-[11.5px] font-semibold text-error">
-                                                    Vencida
-                                                </span>
-                                            )}
-                                        </span>
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                    </label>
+                    <span className="text-[13px] text-muted">
+                        {invoicesLabel(rows.length)}
+                    </span>
                 </div>
-                <div className="min-w-[320px] flex-[2_1_520px]">
-                    {selected_invoice ? (
-                        <AccountPanel
-                            invoice={selected_invoice}
-                            canVoid={can_void}
-                        />
-                    ) : (
-                        <div className="rounded-2xl border border-card-border bg-white py-10">
-                            <EmptyState
-                                title="Elige una factura"
-                                description="Desde aquí se registran los abonos."
-                            />
-                        </div>
-                    )}
+                <ReceivablesTable rows={rows} />
+                {rows.length === 0 && (
+                    <div className="p-8 text-center text-muted">
+                        No hay facturas con balance para este filtro.
+                    </div>
+                )}
+                <div className="flex justify-end gap-6 border-t border-divider bg-list-row-bg px-5 py-[14px] tabular-nums">
+                    <span className="text-text-secondary">
+                        Balance filtrado
+                    </span>
+                    <span className="text-[16px] font-bold text-text-heading">
+                        {formatMoney(sum(rows))}
+                    </span>
                 </div>
-            </div>
+            </section>
         </div>
     );
 }
