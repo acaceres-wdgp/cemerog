@@ -31,6 +31,7 @@ use App\Http\Controllers\Modules\PaymentController;
 use App\Http\Controllers\Modules\PreciosController;
 use App\Http\Controllers\Modules\PrescriptionController;
 use App\Http\Controllers\Modules\RegistroController;
+use App\Http\Controllers\Modules\SupplierController;
 use App\Http\Controllers\Modules\TableroController;
 use App\Http\Controllers\Modules\TemaController;
 use App\Http\Controllers\Modules\TurnosController;
@@ -194,11 +195,16 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::get('/', [AlmacenController::class, 'index'])->name('almacen');
         Route::post('/articulos', [AlmacenController::class, 'store'])->name('almacen.items.store');
         Route::put('/articulos/{item}', [AlmacenController::class, 'update'])->name('almacen.items.update');
+        Route::post('/articulos/{item}/ajustes', [AlmacenController::class, 'adjust'])->name('almacen.items.adjust');
+        Route::get('/proveedores', [SupplierController::class, 'index'])->name('almacen.suppliers');
+        Route::post('/proveedores', [SupplierController::class, 'store'])->name('almacen.suppliers.store');
+        Route::put('/proveedores/{supplier}', [SupplierController::class, 'update'])->name('almacen.suppliers.update');
     });
 
-    Route::get('/entrada-mercancia', [EntradaController::class, 'index'])
-        ->middleware('permission:module.entrada.access')
-        ->name('entrada');
+    Route::prefix('/entrada-mercancia')->middleware('permission:module.entrada.access')->group(function () {
+        Route::get('/', [EntradaController::class, 'index'])->name('entrada');
+        Route::post('/', [EntradaController::class, 'store'])->name('entrada.store');
+    });
 
     // Administracion
     Route::prefix('/admin/emergencia')->middleware('permission:module.admin.access')->group(function () {
