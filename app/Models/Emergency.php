@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -46,6 +48,29 @@ class Emergency extends Model
     public function scopeActive(Builder $query): void
     {
         $query->where('status', 'activa');
+    }
+
+    /** @return HasMany<EmergencyVital, $this> */
+    public function vitals(): HasMany
+    {
+        return $this->hasMany(EmergencyVital::class);
+    }
+
+    /** @return HasMany<EmergencyApplication, $this> */
+    public function applications(): HasMany
+    {
+        return $this->hasMany(EmergencyApplication::class);
+    }
+
+    /** @return HasOne<EmergencyVital, $this> */
+    public function latestVital(): HasOne
+    {
+        return $this->hasOne(EmergencyVital::class)->latestOfMany('taken_at');
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === 'activa';
     }
 
     /** @return BelongsTo<Patient, $this> */

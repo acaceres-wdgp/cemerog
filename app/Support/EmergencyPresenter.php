@@ -3,7 +3,10 @@
 namespace App\Support;
 
 use App\Models\Emergency;
+use App\Models\EmergencyApplication;
 use App\Models\EmergencyCubicle;
+use App\Models\EmergencyVital;
+use App\Models\InventoryItem;
 use Illuminate\Support\Collection;
 
 /** Shapes emergencies for the board and the detail */
@@ -22,6 +25,8 @@ class EmergencyPresenter
             'arrived_time' => $e->arrived_at->format('H:i'),
             'reason' => $e->reason,
             'doctor' => $e->doctor->name,
+            'last_vital' => $e->latestVital?->summary(),
+            'last_vital_time' => $e->latestVital?->taken_at->format('H:i'),
             'cubicle' => ['id' => $e->cubicle->id, 'name' => $e->cubicle->name],
             'patient' => [
                 'id' => $p->id,
@@ -60,6 +65,68 @@ class EmergencyPresenter
                 'charges_count' => $charges->count(),
             ],
         ];
+    }
+
+    /**
+     * Readings, newest first.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function vitals(Emergency $e): array
+    {
+        return $e->vitals()->with('taker')->orderByDesc('taken_at')->orderByDesc('id')->get()
+            ->map(fn (EmergencyVital $v): array => [
+                'id' => $v->id,
+                'time' => $v->taken_at->format('H:i'),
+                'presion_arterial' => $v->presion_arterial,
+                'frecuencia_cardiaca' => $v->frecuencia_cardiaca,
+                'frecuencia_respiratoria' => $v->frecuencia_respiratoria,
+                'temp' => $v->temp / 10,
+                'saturacion_o2' => $v->saturacion_o2,
+                'glucemia' => $v->glucemia,
+                'taken_by' => $v->taker->name,
+            ])->values()->all();
+    }
+
+    /**
+     * Medications and supplies, in the order they were applied.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function applications(Emergency $e): array
+    {
+        return $e->applications()->with('applier')->orderBy('applied_at')->orderBy('id')->get()
+            ->map(fn (EmergencyApplication $a): array => [
+                'id' => $a->id,
+                'kind' => $a->kind,
+                'time' => $a->applied_at->format('H:i'),
+                'description' => $a->description,
+                'quantity' => $a->quantity,
+                'route' => $a->route,
+                'total' => $a->total,
+                'brought_by_patient' => $a->brought_by_patient,
+                'stock_left' => $a->stock_left,
+                'applied_by' => $a->applier->name,
+            ])->values()->all();
+    }
+
+    /**
+     * Active catalog items that can be applied.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function catalog(): array
+    {
+        return InventoryItem::where('is_active', true)->orderBy('name')->get()
+            ->map(fn (InventoryItem $i): array => [
+                'id' => $i->id,
+                'code' => $i->code,
+                'name' => $i->name,
+                'presentation' => $i->presentation,
+                'kind' => $i->kind,
+                'price' => $i->price,
+                'stock' => $i->stock,
+            ])->values()->all();
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Actions\Emergencia\AdmitToEmergency;
 use App\Actions\Patients\SearchPatients;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AdmitToEmergencyRequest;
+use App\Http\Requests\EmergencyApplicationRequest;
 use App\Models\Doctor;
 use App\Models\Emergency;
 use App\Models\EmergencyCubicle;
@@ -25,7 +26,7 @@ class EmergenciaController extends Controller
     /** Board: every patient in emergency, oldest arrival first, and the cubicles */
     public function index(EmergencyPresenter $presenter): Response
     {
-        $active = Emergency::active()->with(['patient', 'doctor', 'cubicle'])->orderBy('arrived_at')->get();
+        $active = Emergency::active()->with(['patient', 'doctor', 'cubicle', 'latestVital'])->orderBy('arrived_at')->get();
 
         return Inertia::render('emergencia/index', [
             'emergencies' => $active->map(fn (Emergency $e): array => $presenter->row($e))->values()->all(),
@@ -37,6 +38,10 @@ class EmergenciaController extends Controller
     {
         return Inertia::render('emergencia/show', [
             'emergency' => $presenter->detail($emergency),
+            'vitals' => $presenter->vitals($emergency),
+            'applications' => $presenter->applications($emergency),
+            'catalog' => $emergency->isActive() ? $presenter->catalog() : [],
+            'routes' => EmergencyApplicationRequest::ROUTES,
         ]);
     }
 
