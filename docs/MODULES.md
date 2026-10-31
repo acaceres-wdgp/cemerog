@@ -16,9 +16,9 @@
 | lab           | /laboratorio             | lab/index           | admin, medico, bioanalista                               | Esqueleto              | 9           |
 | img           | /imagenes                | img/index           | admin, medico, imagenes                                  | Esqueleto              | 10          |
 | impresos      | /impresos                | impresos/index      | admin, medico, enfermeria, secretaria, bioanalista, caja | Esqueleto              | 11          |
-| caja          | /facturacion             | caja/index          | admin, caja, secretaria                                  | En desarrollo          | 12          |
-| cxc           | /cuentas-por-cobrar      | cxc/index           | admin, caja, secretaria                                  | En desarrollo          | 13          |
-| cuadre        | /cuadre-de-caja          | cuadre/index        | admin, caja, secretaria                                  | En desarrollo          | 14          |
+| caja          | /facturacion             | caja/index          | admin, caja, secretaria                                  | Terminado              | 12          |
+| cxc           | /cuentas-por-cobrar      | cxc/index           | admin, caja, secretaria                                  | Terminado              | 13          |
+| cuadre        | /cuadre-de-caja          | cuadre/index        | admin, caja, secretaria                                  | Terminado              | 14          |
 | almacen       | /almacen                 | almacen/index       | admin, almacen                                           | Esqueleto              | 15          |
 | entrada       | /entrada-mercancia       | entrada/index       | admin, almacen                                           | Esqueleto              | 16          |
 | admin         | /admin/usuarios          | admin/index         | admin                                                    | Esqueleto              | 17          |

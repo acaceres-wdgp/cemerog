@@ -98,6 +98,13 @@ class RecordPayment
     {
         $due = $credit['due_date'] ?? null;
 
+        // A later installment keeps the due date the credit already has,
+        // even when it is past (the invoice stays overdue)
+        if ($invoice->credit_due_date !== null
+            && ($due === null || $due === '' || Carbon::parse($due)->isSameDay($invoice->credit_due_date))) {
+            return;
+        }
+
         if ($due === null || $due === '') {
             throw ValidationException::withMessages([
                 'credit.due_date' => 'Para dejar un balance a crédito indica la fecha compromiso de pago.',
