@@ -179,9 +179,7 @@ class BuildPatientProfile
             ])->values()->all(),
             'total_cargado' => (int) $charged,
             'pendiente_facturar' => (int) $pending,
-            // TODO(caja): facturas y pagos cuando exista Caja
-            'facturas' => [],
-            'pagos' => [],
+            ...app(BuildPatientBilling::class)->handle($patient),
         ];
     }
 }
