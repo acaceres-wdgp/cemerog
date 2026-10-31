@@ -18,6 +18,7 @@ type Props = {
     cubicles: { id: number; name: string }[];
     doctors: { id: number; name: string; specialty: string | null }[];
     default_doctor_id: number | null;
+    selected_cubicle_id?: number | null;
     emergency_fee: number;
     arrived_at: string;
 };
@@ -28,6 +29,7 @@ export default function EmergenciaIngreso({
     cubicles,
     doctors,
     default_doctor_id,
+    selected_cubicle_id = null,
     emergency_fee,
     arrived_at,
 }: Props) {
@@ -35,9 +37,11 @@ export default function EmergenciaIngreso({
     const [query, setQuery] = useState('');
     const [found, setFound] = useState<Found | null>(null);
     const [patient, setPatient] = useState<NewPatient>(emptyNewPatient);
-    const [cubicleId, setCubicleId] = useState(
-        cubicles[0] ? String(cubicles[0].id) : '',
-    );
+    const [cubicleId, setCubicleId] = useState(() => {
+        const preselected = cubicles.find((c) => c.id === selected_cubicle_id);
+        const first = preselected ?? cubicles[0];
+        return first ? String(first.id) : '';
+    });
     const [doctorId, setDoctorId] = useState(
         default_doctor_id ? String(default_doctor_id) : '',
     );
