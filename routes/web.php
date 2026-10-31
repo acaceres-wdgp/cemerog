@@ -125,6 +125,7 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::get('/ingreso', [EmergenciaController::class, 'create'])->name('emergencia.ingreso');
         Route::post('/ingreso', [EmergenciaController::class, 'store'])->name('emergencia.ingreso.store');
         Route::get('/pacientes/buscar', [EmergenciaController::class, 'searchPatients'])->name('emergencia.pacientes.buscar');
+        Route::get('/{emergency}', [EmergenciaController::class, 'show'])->whereNumber('emergency')->name('emergencia.show');
     });
 
     Route::get('/internamiento', [InternamientoController::class, 'index'])
