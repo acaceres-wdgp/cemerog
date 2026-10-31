@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property-read User $opener
  * @property-read User|null $closer
  * @property-read Collection<int, CashWithdrawal> $withdrawals
+ * @property-read Collection<int, Receipt> $receipts
  */
 class CashShift extends Model
 {
@@ -103,5 +104,11 @@ class CashShift extends Model
     public function withdrawals(): HasMany
     {
         return $this->hasMany(CashWithdrawal::class);
+    }
+
+    /** @return HasMany<Receipt, $this> */
+    public function receipts(): HasMany
+    {
+        return $this->hasMany(Receipt::class);
     }
 }
