@@ -266,7 +266,9 @@ describe('Detalle de Emergencia', () => {
         ).toBeDisabled();
         expect(screen.getByRole('button', { name: /Dar alta/ })).toBeDisabled();
         expect(
-            screen.getByText('Solo un médico puede dar el alta'),
+            screen.getByText(
+                'Solo un médico o un administrador puede dar el alta',
+            ),
         ).toBeTruthy();
     });
 

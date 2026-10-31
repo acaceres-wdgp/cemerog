@@ -46,7 +46,7 @@ class EmergenciaController extends Controller
             'applications' => $presenter->applications($emergency),
             'catalog' => $emergency->isActive() ? $presenter->catalog() : [],
             'routes' => EmergencyApplicationRequest::ROUTES,
-            'can_discharge' => $emergency->isActive() && $user->doctor !== null,
+            'can_discharge' => $emergency->isActive() && Emergency::canBeDischargedBy($user),
             'free_cubicles' => EmergencyCubicle::active()->whereNotIn('id', $occupied)->get()
                 ->map(fn (EmergencyCubicle $c): array => ['id' => $c->id, 'name' => $c->name])->values()->all(),
         ]);

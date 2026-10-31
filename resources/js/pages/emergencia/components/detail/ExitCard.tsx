@@ -44,7 +44,7 @@ export default function ExitCard({
             label: 'Dar alta',
             desc: canDischarge
                 ? 'Por alivio, traslado a otro centro o defunción'
-                : 'Solo un médico puede dar el alta',
+                : 'Solo un médico o un administrador puede dar el alta',
             icon: LogOut,
             tone: 'state-saldada',
             enabled: canDischarge,

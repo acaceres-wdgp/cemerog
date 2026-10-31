@@ -68,6 +68,16 @@ class Emergency extends Model
         return $this->hasOne(EmergencyVital::class)->latestOfMany('taken_at');
     }
 
+    /**
+     * Who gives the discharge: an active doctor, as in Consulta, or an
+     * administrator.
+     */
+    public static function canBeDischargedBy(User $user): bool
+    {
+        return $user->can('module.emergencia.access')
+            && ($user->canAttendPatients() || $user->hasRole('administrador'));
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'activa';
