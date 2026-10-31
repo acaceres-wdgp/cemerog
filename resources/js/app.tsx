@@ -9,7 +9,12 @@ import SettingsLayout from '@/layouts/settings/layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
-const pages = import.meta.glob('./pages/**/*.tsx');
+// Pages only: test files under pages/ must not end up in the build
+const pages = import.meta.glob([
+    './pages/**/*.tsx',
+    '!./pages/**/__tests__/**',
+    '!./pages/**/*.test.tsx',
+]);
 
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),

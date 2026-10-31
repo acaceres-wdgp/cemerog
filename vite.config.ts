@@ -26,7 +26,12 @@ export default defineConfig({
             refresh: true,
             fonts: [
                 bunny('Instrument Sans', {
-                    weights: [400, 500, 600],
+                    weights: [400, 500, 600, 700],
+                }),
+                // Self-hosted with the build: no render-blocking request to
+                // Google Fonts on the first load
+                bunny('Bitter', {
+                    weights: [400, 500, 600, 700],
                 }),
             ],
         }),
