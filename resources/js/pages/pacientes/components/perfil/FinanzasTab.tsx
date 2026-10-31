@@ -1,8 +1,11 @@
 import React from 'react';
 import { TriangleAlert } from 'lucide-react';
+import ReceiptReadyBanner from '@/components/caja/ReceiptReadyBanner';
 import EmptyState from '@/components/cemerog/EmptyState';
 import StatusBadge from '@/components/cemerog/StatusBadge';
 import { formatMoney } from '@/lib/money';
+import InvoicesTable from './InvoicesTable';
+import PaymentsTable from './PaymentsTable';
 import { ACCOUNT_STATUS_LABELS } from './types';
 import type { AccountStatus, Finanzas } from './types';
 
@@ -18,32 +21,42 @@ const ACCOUNT_BADGE: Record<AccountStatus, BadgeState> = {
 const thCls =
     'px-4 py-2 text-left text-[11.5px] font-semibold tracking-[.05em] text-table-header-text uppercase';
 
-function CajaPlaceholder({ title }: { title: string }) {
-    return (
-        <section className="rounded-2xl border border-card-border bg-white">
-            <h2 className="m-0 border-b border-divider px-5 py-3 font-serif text-[16px] font-semibold text-text-heading">
-                {title}
-            </h2>
-            <p className="px-5 py-6 text-center text-[13px] text-muted">
-                Disponible cuando se implemente Caja.
-            </p>
-        </section>
-    );
-}
-
-export default function FinanzasTab({ finanzas }: { finanzas: Finanzas }) {
+export default function FinanzasTab({
+    finanzas,
+    patientName,
+}: {
+    finanzas: Finanzas;
+    patientName: string;
+}) {
     return (
         <div className="flex flex-col gap-4">
+            <ReceiptReadyBanner />
             {finanzas.pendiente_facturar > 0 && (
                 <div className="flex items-center gap-2 rounded-xl border border-error-border bg-error-bg px-4 py-3 text-[13px] text-error-strong">
                     <TriangleAlert className="h-4 w-4 shrink-0" />
-                    Este paciente tiene{' '}
-                    <strong>
-                        {formatMoney(finanzas.pendiente_facturar)}
-                    </strong>{' '}
-                    pendientes de facturar.
+                    <span>
+                        Este paciente tiene{' '}
+                        <strong>
+                            {formatMoney(finanzas.pendiente_facturar)}
+                        </strong>{' '}
+                        pendientes de facturar.
+                    </span>
                 </div>
             )}
+
+            {finanzas.saldo > 0 && (
+                <div className="flex items-center gap-2 rounded-xl border border-error-border bg-error-bg px-4 py-3 text-[13px] text-error-strong">
+                    <TriangleAlert className="h-4 w-4 shrink-0" />
+                    <span>
+                        El paciente adeuda{' '}
+                        <strong>{formatMoney(finanzas.saldo)}</strong>. Cobra
+                        los balances desde la tabla de facturas.
+                    </span>
+                </div>
+            )}
+
+            <InvoicesTable finanzas={finanzas} patientName={patientName} />
+            <PaymentsTable pagos={finanzas.pagos} />
 
             <section className="rounded-2xl border border-card-border bg-white">
                 <h2 className="m-0 border-b border-divider px-5 py-3 font-serif text-[16px] font-semibold text-text-heading">
@@ -129,9 +142,6 @@ export default function FinanzasTab({ finanzas }: { finanzas: Finanzas }) {
                     </div>
                 )}
             </section>
-
-            <CajaPlaceholder title="Facturas" />
-            <CajaPlaceholder title="Pagos recibidos" />
         </div>
     );
 }
