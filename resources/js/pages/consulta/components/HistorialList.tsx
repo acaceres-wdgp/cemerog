@@ -60,9 +60,9 @@ export default function HistorialList({ historial, selIdx, onSelect }: Props) {
                             ? `${dx0.code} – ${dx0.label}`
                             : (e.motivo_consulta ?? 'Sin diagnóstico')
                         : e.type === 'receta'
-                          ? e.prescription?.items?.[0]?.medication ??
-                            'Receta médica'
-                          : e.discharge?.discharge_diagnosis ?? 'Alta médica';
+                          ? (e.prescription?.items?.[0]?.medication ??
+                            'Receta médica')
+                          : (e.discharge?.discharge_diagnosis ?? 'Alta médica');
 
                 return (
                     <button

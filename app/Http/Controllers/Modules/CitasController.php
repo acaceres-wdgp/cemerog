@@ -120,7 +120,7 @@ class CitasController extends Controller
     {
         /** @var User $user */
         $user = auth()->user();
-        abort_unless($user?->can('module.citas.access'), 403);
+        abort_unless($user->can('module.citas.access'), 403);
 
         if ($user->seesOnlyOwnSchedule() && $appointment->doctor_id !== $user->doctor->id) {
             abort(403);

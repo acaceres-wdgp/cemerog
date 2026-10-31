@@ -6,7 +6,13 @@
  * Also: when new props no longer contain the active turn, it should be cleared.
  */
 import React from 'react';
-import { fireEvent, render, screen, waitFor, act } from '@testing-library/react';
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    act,
+} from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 type RouterPostOptions = {
@@ -41,8 +47,18 @@ const makeTurn = (overrides: Record<string, unknown> = {}) => ({
     turn_order: 1,
     status: 'en_consulta',
     arrived_at: '2026-10-27T09:30:00',
-    patient: { id: 10, full_name: 'María García', age: 35, sex: 'F', allergies: null },
-    doctor: { id: 1, full_name: 'Dr. Rodríguez', specialty: 'Medicina General' },
+    patient: {
+        id: 10,
+        full_name: 'María García',
+        age: 35,
+        sex: 'F',
+        allergies: null,
+    },
+    doctor: {
+        id: 1,
+        full_name: 'Dr. Rodríguez',
+        specialty: 'Medicina General',
+    },
     ...overrides,
 });
 
@@ -51,7 +67,13 @@ const nextTurn = makeTurn({
     turn_number: 2,
     turn_order: 2,
     status: 'en_consulta',
-    patient: { id: 20, full_name: 'Pedro López', age: 45, sex: 'M', allergies: null },
+    patient: {
+        id: 20,
+        full_name: 'Pedro López',
+        age: 45,
+        sex: 'M',
+        allergies: null,
+    },
 });
 
 // ─── Post-discharge navigation ────────────────────────────────────────────────
@@ -73,14 +95,18 @@ describe('ConsultaIndex – post-discharge navigation', () => {
         );
 
         // Open the modal for the first turn
-        fireEvent.click(screen.getByRole('button', { name: /Dar alta médica/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /Dar alta médica/i }),
+        );
         expect(screen.getByText('Alta médica')).toBeTruthy();
 
         // Fill in diagnosis and submit
         fireEvent.change(screen.getByLabelText(/Diagnóstico de egreso/i), {
             target: { value: 'Resuelto' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /Confirmar alta/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /Confirmar alta/i }),
+        );
 
         // Get the onSuccess callback from the router.post call
         expect(mockRouterPost).toHaveBeenCalled();
@@ -116,11 +142,15 @@ describe('ConsultaIndex – post-discharge navigation', () => {
             />,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: /Dar alta médica/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /Dar alta médica/i }),
+        );
         fireEvent.change(screen.getByLabelText(/Diagnóstico de egreso/i), {
             target: { value: 'Resuelto' },
         });
-        fireEvent.click(screen.getByRole('button', { name: /Confirmar alta/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /Confirmar alta/i }),
+        );
 
         const options = mockRouterPost.mock.calls[0][2] as RouterPostOptions;
 
@@ -169,7 +199,9 @@ describe('ConsultaIndex – post-discharge navigation', () => {
         await waitFor(() => {
             // Turn 1's patient should no longer be in the patient header
             // (it may still appear in historial, but not as active turn header)
-            expect(screen.queryByRole('heading', { name: /María García/i })).toBeNull();
+            expect(
+                screen.queryByRole('heading', { name: /María García/i }),
+            ).toBeNull();
         });
 
         // Next turn's patient is now active

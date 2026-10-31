@@ -73,7 +73,9 @@ export default function HistorialPanel({
 }: {
     historial: ClinicalEntry[];
 }) {
-    const [selIdx, setSelIdx] = useState<number | null>(historial.length > 0 ? 0 : null);
+    const [selIdx, setSelIdx] = useState<number | null>(
+        historial.length > 0 ? 0 : null,
+    );
     const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
     const [ownerFilter, setOwnerFilter] = useState<OwnerFilter>('all');
 

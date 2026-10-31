@@ -73,9 +73,14 @@ const consultaNoRx: ClinicalEntry = {
     diagnosticos: null,
     plan_tratamiento: null,
     vitals: {
-        peso: null, talla: null, temp: null, presion_arterial: null,
-        frecuencia_cardiaca: null, frecuencia_respiratoria: null,
-        saturacion_o2: null, glucemia: null,
+        peso: null,
+        talla: null,
+        temp: null,
+        presion_arterial: null,
+        frecuencia_cardiaca: null,
+        frecuencia_respiratoria: null,
+        saturacion_o2: null,
+        glucemia: null,
     },
     discharge: null,
     prescription: null,
@@ -85,7 +90,9 @@ describe('HistorialPanel – receta detail panel', () => {
     it('receta entry shows its medication in the detail panel directly', () => {
         render(<HistorialPanel historial={[recetaWithMeds]} />);
         // Auto-selected first entry; medication appears in detail
-        expect(screen.getAllByText('Amoxicilina 500mg').length).toBeGreaterThanOrEqual(1);
+        expect(
+            screen.getAllByText('Amoxicilina 500mg').length,
+        ).toBeGreaterThanOrEqual(1);
     });
 
     it('receta entry shows Imprimir link with correct href', () => {

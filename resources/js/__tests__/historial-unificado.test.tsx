@@ -23,7 +23,11 @@ import type { ClinicalEntry } from '@/pages/consulta/types';
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
-const doctor = { id: 1, full_name: 'Dr. Rodríguez', specialty: 'Medicina General' };
+const doctor = {
+    id: 1,
+    full_name: 'Dr. Rodríguez',
+    specialty: 'Medicina General',
+};
 const doctorB = { id: 2, full_name: 'Dra. Guzmán', specialty: 'Pediatría' };
 
 const consultaEntry: ClinicalEntry = {
@@ -37,9 +41,14 @@ const consultaEntry: ClinicalEntry = {
     diagnosticos: null,
     plan_tratamiento: 'Analgésicos',
     vitals: {
-        peso: null, talla: null, temp: null, presion_arterial: null,
-        frecuencia_cardiaca: null, frecuencia_respiratoria: null,
-        saturacion_o2: null, glucemia: null,
+        peso: null,
+        talla: null,
+        temp: null,
+        presion_arterial: null,
+        frecuencia_cardiaca: null,
+        frecuencia_respiratoria: null,
+        saturacion_o2: null,
+        glucemia: null,
     },
     discharge: null,
     prescription: null,
@@ -56,9 +65,15 @@ const recetaEntry: ClinicalEntry = {
         prescribed_at: '2026-09-14T09:00:00',
         items: [
             {
-                id: 1, position: 1, medication: 'Amoxicilina 500mg',
-                route: 'oral', dose: '1 cápsula', frequency: 'Cada 8 horas',
-                duration_days: 7, is_continuous: false, quantity: 21,
+                id: 1,
+                position: 1,
+                medication: 'Amoxicilina 500mg',
+                route: 'oral',
+                dose: '1 cápsula',
+                frequency: 'Cada 8 horas',
+                duration_days: 7,
+                is_continuous: false,
+                quantity: 21,
             },
         ],
     },
@@ -105,7 +120,9 @@ describe('HistorialPanel – type filter', () => {
                 historial={[consultaEntry, recetaEntry, altaEntry]}
             />,
         );
-        fireEvent.click(screen.getByRole('button', { name: /notas clínicas/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /notas clínicas/i }),
+        );
         expect(screen.getByText('Dolor de cabeza')).toBeTruthy();
         expect(screen.queryByText('Amoxicilina 500mg')).toBeNull();
     });
@@ -169,8 +186,12 @@ describe('HistorialPanel – receta detail', () => {
         render(<HistorialPanel historial={[recetaEntry]} />);
         // The receta entry is auto-selected (first entry)
         // Text appears in both list title and detail panel
-        expect(screen.getAllByText('Amoxicilina 500mg').length).toBeGreaterThanOrEqual(1);
+        expect(
+            screen.getAllByText('Amoxicilina 500mg').length,
+        ).toBeGreaterThanOrEqual(1);
         const link = screen.getByText('Imprimir').closest('a');
-        expect(link?.getAttribute('href')).toContain('/consulta/recetas/5/imprimir');
+        expect(link?.getAttribute('href')).toContain(
+            '/consulta/recetas/5/imprimir',
+        );
     });
 });

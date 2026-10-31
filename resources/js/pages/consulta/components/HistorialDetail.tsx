@@ -88,12 +88,19 @@ function DischargeBlock({ discharge }: { discharge: DischargeDetail }) {
 
 // ─── Vitals block ─────────────────────────────────────────────────────────────
 
-function VitalsBlock({ vitals }: { vitals: NonNullable<ClinicalEntry['vitals']> }) {
+function VitalsBlock({
+    vitals,
+}: {
+    vitals: NonNullable<ClinicalEntry['vitals']>;
+}) {
     if (
-        vitals.peso === null && vitals.talla === null &&
-        vitals.presion_arterial === null && vitals.frecuencia_cardiaca === null &&
+        vitals.peso === null &&
+        vitals.talla === null &&
+        vitals.presion_arterial === null &&
+        vitals.frecuencia_cardiaca === null &&
         vitals.temp === null
-    ) return null;
+    )
+        return null;
     return (
         <div>
             <div className="mb-2 text-[11px] font-semibold tracking-[.05em] text-muted uppercase">
@@ -115,7 +122,10 @@ function VitalsBlock({ vitals }: { vitals: NonNullable<ClinicalEntry['vitals']> 
                 {vitals.peso !== null && vitals.talla !== null && (
                     <span className="text-text-heading">
                         <span className="text-muted">IMC </span>
-                        {computeImcFromMetric(vitals.peso, vitals.talla).display}
+                        {
+                            computeImcFromMetric(vitals.peso, vitals.talla)
+                                .display
+                        }
                     </span>
                 )}
                 {vitals.presion_arterial !== null && (
