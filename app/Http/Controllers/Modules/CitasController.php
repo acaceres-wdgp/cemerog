@@ -85,7 +85,16 @@ class CitasController extends Controller
 
     public function store(StoreAppointmentRequest $request, CreateAppointment $action): RedirectResponse
     {
-        $action->handle($request->validated());
+        /** @var User $user */
+        $user = $request->user();
+        $data = $request->validated();
+
+        // Non-admin doctor can only create appointments for themselves
+        if ($user->seesOnlyOwnSchedule()) {
+            $data['doctor_id'] = $user->doctor->id;
+        }
+
+        $action->handle($data);
 
         Toast::success('Cita registrada correctamente.');
 
@@ -94,6 +103,12 @@ class CitasController extends Controller
 
     public function update(UpdateAppointmentRequest $request, Appointment $appointment): RedirectResponse
     {
+        /** @var User $user */
+        $user = $request->user();
+        if ($user->seesOnlyOwnSchedule() && $appointment->doctor_id !== $user->doctor->id) {
+            abort(403);
+        }
+
         $appointment->update($request->validated());
 
         Toast::success('Cita actualizada.');
@@ -103,7 +118,13 @@ class CitasController extends Controller
 
     public function cancel(Appointment $appointment): RedirectResponse
     {
-        abort_unless(auth()->user()?->can('module.citas.access'), 403);
+        /** @var User $user */
+        $user = auth()->user();
+        abort_unless($user?->can('module.citas.access'), 403);
+
+        if ($user->seesOnlyOwnSchedule() && $appointment->doctor_id !== $user->doctor->id) {
+            abort(403);
+        }
 
         $appointment->update(['status' => 'cancelada']);
 
