@@ -375,23 +375,23 @@ function DetailPanel({ patient }: { patient: SelectedPatient }) {
             </div>
 
             {/* Footer */}
-            <div className="flex flex-wrap items-center justify-end gap-2 border-t border-divider px-6 py-4">
+            <div className="flex flex-wrap items-center gap-2 border-t border-divider px-6 py-4">
                 <Link
                     href={editPaciente.url({ patient: patient.id })}
-                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-card-border bg-white px-3.5 text-sm font-medium whitespace-nowrap text-text-body hover:bg-app-bg"
+                    className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-card-border bg-white px-3 text-sm font-medium whitespace-nowrap text-text-body hover:bg-app-bg"
                 >
                     Editar
                 </Link>
                 <Link
                     href={showPaciente.url({ patient: patient.id })}
-                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-card-border bg-white px-3.5 text-sm font-medium whitespace-nowrap text-text-body hover:bg-app-bg"
+                    className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-card-border bg-white px-3 text-sm font-medium whitespace-nowrap text-text-body hover:bg-app-bg"
                 >
                     Ver perfil
                     <ChevronRight className="h-4 w-4" />
                 </Link>
                 <Link
                     href={registro.url({ query: { paciente: patient.id } })}
-                    className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-sm font-medium whitespace-nowrap text-white hover:bg-primary-hover"
+                    className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-medium whitespace-nowrap text-white hover:bg-primary-hover"
                 >
                     <Plus className="h-4 w-4" />
                     Nueva atención
