@@ -37,6 +37,7 @@ use Illuminate\Support\Carbon;
  * @property-read User $issuer
  * @property-read User|null $voider
  * @property-read Collection<int, InvoiceLine> $lines
+ * @property-read Collection<int, Receipt> $receipts
  */
 class Invoice extends Model
 {
@@ -114,5 +115,11 @@ class Invoice extends Model
     public function lines(): HasMany
     {
         return $this->hasMany(InvoiceLine::class);
+    }
+
+    /** @return HasMany<Receipt, $this> */
+    public function receipts(): HasMany
+    {
+        return $this->hasMany(Receipt::class);
     }
 }

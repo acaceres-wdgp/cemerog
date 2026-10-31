@@ -26,6 +26,8 @@ interface FormDialogProps {
     cancelLabel?: string;
     onSubmit?: (e: FormEvent<HTMLFormElement>) => void;
     isLoading?: boolean;
+    /** Keeps the submit button disabled, e.g. while the form is incomplete */
+    submitDisabled?: boolean;
     footer?: ReactNode;
     maxWidth?: string;
 }
@@ -40,6 +42,7 @@ export default function FormDialog({
     cancelLabel = 'Cancelar',
     onSubmit,
     isLoading = false,
+    submitDisabled = false,
     footer,
     maxWidth = 'sm:max-w-lg',
 }: FormDialogProps) {
@@ -97,7 +100,7 @@ export default function FormDialog({
                                     </Button>
                                     <Button
                                         type="submit"
-                                        disabled={isLoading}
+                                        disabled={isLoading || submitDisabled}
                                         className="bg-primary text-primary-foreground"
                                     >
                                         {submitLabel}

@@ -6,20 +6,22 @@ use App\Actions\Caja\CashShiftSummary;
 use App\Http\Controllers\Controller;
 use App\Models\CashShift;
 use App\Models\CashWithdrawal;
+use App\Models\Receipt;
 use App\Models\User;
 use App\Support\CashDenominations;
+use App\Support\InvoicePresenter;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class CuadreController extends Controller
 {
-    public function index(Request $request, CashShiftSummary $summary): Response
+    public function index(Request $request, CashShiftSummary $summary, InvoicePresenter $presenter): Response
     {
         /** @var User $user */
         $user = $request->user();
 
-        $shift = CashShift::with(['opener', 'withdrawals.creator'])->open()->first();
+        $shift = CashShift::with(['opener', 'withdrawals.creator', 'receipts.payments', 'receipts.creator', 'receipts.invoice.patient'])->open()->first();
 
         $history = CashShift::with(['opener', 'closer'])
             ->where('status', 'cerrado')
@@ -54,6 +56,11 @@ class CuadreController extends Controller
                     'created_by' => $w->creator->name,
                     'time' => $w->created_at?->format('H:i'),
                 ])->all(),
+                'receipts' => $shift->receipts->sortByDesc('id')->map(fn (Receipt $r): array => [
+                    ...$presenter->receiptRow($r),
+                    'invoice_number' => $r->invoice->number,
+                    'patient' => $r->invoice->patient->full_name,
+                ])->values()->all(),
             ] : null,
             'history' => $history,
             'denominations' => CashDenominations::VALUES,

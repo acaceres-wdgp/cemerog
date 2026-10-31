@@ -74,6 +74,8 @@ const invoice: InvoiceDetail = {
     discount_amount: 20000,
     discount_reason: 'Referido',
     credit_due_date: null,
+    credit_note: null,
+    receipts: [],
     void_reason: null,
     voided_by: null,
     voided_at: null,
@@ -204,6 +206,7 @@ describe('Facturación', () => {
                             total: 180000,
                             paid_amount: 0,
                             balance: 180000,
+                            credit_due_date: null,
                         },
                     ],
                 })}

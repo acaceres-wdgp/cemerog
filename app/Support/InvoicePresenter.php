@@ -6,6 +6,8 @@ use App\Models\Account;
 use App\Models\AccountCharge;
 use App\Models\Invoice;
 use App\Models\InvoiceLine;
+use App\Models\Payment;
+use App\Models\Receipt;
 
 /** Shapes accounts and invoices for the billing pages */
 class InvoicePresenter
@@ -46,13 +48,52 @@ class InvoicePresenter
             'total' => $invoice->total,
             'paid_amount' => $invoice->paid_amount,
             'balance' => $invoice->balance(),
+            'credit_due_date' => $invoice->credit_due_date?->format('d/m/Y'),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public function receiptRow(Receipt $receipt): array
+    {
+        return [
+            'id' => $receipt->id,
+            'number' => $receipt->number,
+            'created_at' => $receipt->created_at?->format('d/m/Y H:i'),
+            'created_by' => $receipt->creator->name,
+            'total' => $receipt->total,
+            'voided' => $receipt->voided_at !== null,
+            'void_reason' => $receipt->void_reason,
+            'payments' => $receipt->payments->map(fn (Payment $p): array => [
+                'method' => $p->method,
+                'amount' => $p->amount,
+                'cash_received' => $p->cash_received,
+                'change_given' => $p->change_given,
+                'reference' => $p->reference,
+            ])->values()->all(),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public function receipt(Receipt $receipt): array
+    {
+        $receipt->loadMissing(['payments', 'creator', 'invoice.patient']);
+
+        return [
+            ...$this->receiptRow($receipt),
+            'invoice' => [
+                'number' => $receipt->invoice->number,
+                'total' => $receipt->invoice->total,
+                'paid_amount' => $receipt->invoice->paid_amount,
+                'balance' => $receipt->invoice->balance(),
+            ],
+            'patient' => $receipt->invoice->patient->full_name,
         ];
     }
 
     /** @return array<string, mixed> */
     public function detail(Invoice $invoice): array
     {
-        $invoice->loadMissing(['patient', 'issuer', 'voider', 'lines.doctor', 'account']);
+        $invoice->loadMissing(['patient', 'issuer', 'voider', 'lines.doctor', 'account', 'receipts.payments', 'receipts.creator']);
 
         return [
             ...$this->summary($invoice),
@@ -70,6 +111,8 @@ class InvoicePresenter
             'discount_amount' => $invoice->discount_amount,
             'discount_reason' => $invoice->discount_reason,
             'credit_due_date' => $invoice->credit_due_date?->format('d/m/Y'),
+            'credit_note' => $invoice->credit_note,
+            'receipts' => $invoice->receipts->sortBy('id')->map(fn (Receipt $r): array => $this->receiptRow($r))->values()->all(),
             'void_reason' => $invoice->void_reason,
             'voided_by' => $invoice->voider?->name,
             'voided_at' => $invoice->voided_at?->format('d/m/Y H:i'),

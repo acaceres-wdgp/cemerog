@@ -53,6 +53,7 @@ const openShift: OpenShift = {
         expected_cash: 500000,
     },
     withdrawals: [],
+    receipts: [],
 };
 
 describe('Cuadre de caja', () => {
