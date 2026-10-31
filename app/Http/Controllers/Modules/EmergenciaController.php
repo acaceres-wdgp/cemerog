@@ -12,6 +12,7 @@ use App\Models\EmergencyCubicle;
 use App\Models\Patient;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\EmergencyPresenter;
 use App\Support\Toast;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -21,9 +22,22 @@ use Inertia\Response;
 
 class EmergenciaController extends Controller
 {
-    public function index(): Response
+    /** Board: every patient in emergency, oldest arrival first, and the cubicles */
+    public function index(EmergencyPresenter $presenter): Response
     {
-        return Inertia::render('emergencia/index');
+        $active = Emergency::active()->with(['patient', 'doctor', 'cubicle'])->orderBy('arrived_at')->get();
+
+        return Inertia::render('emergencia/index', [
+            'emergencies' => $active->map(fn (Emergency $e): array => $presenter->row($e))->values()->all(),
+            'cubicles' => $presenter->cubicles($active),
+        ]);
+    }
+
+    public function show(Emergency $emergency, EmergencyPresenter $presenter): Response
+    {
+        return Inertia::render('emergencia/show', [
+            'emergency' => $presenter->detail($emergency),
+        ]);
     }
 
     /** Quick admission: free cubicles, doctors on duty and the fee */
@@ -39,6 +53,8 @@ class EmergenciaController extends Controller
             'doctors' => Doctor::with('specialty')->where('is_active', true)->orderBy('name')->get()
                 ->map(fn (Doctor $d): array => ['id' => $d->id, 'name' => $d->name, 'specialty' => $d->specialty->name])->all(),
             'default_doctor_id' => $user->doctor?->is_active ? $user->doctor->id : null,
+            // A free cubicle clicked on the board comes preselected
+            'selected_cubicle_id' => $request->integer('cubiculo') ?: null,
             'emergency_fee' => Setting::emergencyFee(),
             'arrived_at' => now()->format('d/m/Y · H:i'),
         ]);
@@ -61,7 +77,7 @@ class EmergenciaController extends Controller
 
         Toast::success("{$emergency->patient->full_name} registrado en emergencia · {$emergency->cubicle->name}.");
 
-        return redirect()->route('emergencia');
+        return redirect()->route('emergencia.show', $emergency);
     }
 
     /** Find a registered patient by document (or name) before admitting */
