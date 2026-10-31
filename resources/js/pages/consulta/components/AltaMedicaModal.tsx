@@ -3,8 +3,6 @@ import { router, usePage } from '@inertiajs/react';
 import FormDialog from '@/components/cemerog/FormDialog';
 import ConfirmDialog from '@/components/cemerog/ConfirmDialog';
 import { cn } from '@/lib/utils';
-import consulta from '@/routes/consulta';
-import { TurnItem } from '../types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -13,7 +11,12 @@ type DischargeType = 'recuperado' | 'traslado' | 'defuncion';
 interface AltaMedicaModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    turn: TurnItem;
+    /** Patient's name, for the defunción confirmation */
+    patientName: string;
+    /** «Turno T-02», «E-000004 · Cub. 2» */
+    subtitle: string;
+    /** Where the discharge is posted (Consulta turn or Emergencia) */
+    url: string;
     onDischargeSuccess?: () => void;
 }
 
@@ -52,7 +55,9 @@ function OptionCard({
 export default function AltaMedicaModal({
     open,
     onOpenChange,
-    turn,
+    patientName,
+    subtitle,
+    url,
     onDischargeSuccess,
 }: AltaMedicaModalProps) {
     const pageErrors = usePage().props.errors as
@@ -72,8 +77,6 @@ export default function AltaMedicaModal({
     const [showDefuncionConfirm, setShowDefuncionConfirm] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const turnLabel = `T-${String(turn.turn_number).padStart(2, '0')}`;
-
     const handleOpenChange = (value: boolean) => {
         if (!value) {
             // Reset state on close
@@ -89,7 +92,7 @@ export default function AltaMedicaModal({
     const submitDischarge = () => {
         setIsLoading(true);
         router.post(
-            consulta.discharge.url(turn.id),
+            url,
             {
                 type: dischargeType,
                 destination: dischargeType === 'traslado' ? destination : null,
@@ -121,7 +124,7 @@ export default function AltaMedicaModal({
                 open={open}
                 onOpenChange={handleOpenChange}
                 title="Alta médica"
-                description={`${turn.patient.full_name} · Turno ${turnLabel}`}
+                description={`${patientName} · ${subtitle}`}
                 submitLabel="Confirmar alta"
                 cancelLabel="Cancelar"
                 onSubmit={handleSubmit}
@@ -229,7 +232,7 @@ export default function AltaMedicaModal({
                 open={showDefuncionConfirm}
                 onOpenChange={setShowDefuncionConfirm}
                 title="Confirmar defunción"
-                description={`Confirmo la defunción del paciente ${turn.patient.full_name}. Esta acción no se puede deshacer.`}
+                description={`Confirmo la defunción del paciente ${patientName}. Esta acción no se puede deshacer.`}
                 confirmLabel="Confirmar defunción"
                 cancelLabel="Cancelar"
                 variant="destructive"

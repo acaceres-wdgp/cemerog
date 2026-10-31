@@ -5,11 +5,14 @@ import React from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockPost } = vi.hoisted(() => ({ mockPost: vi.fn() }));
+const { mockPost, mockPatch } = vi.hoisted(() => ({
+    mockPost: vi.fn(),
+    mockPatch: vi.fn(),
+}));
 
 vi.mock('@inertiajs/react', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@inertiajs/react')>()),
-    router: { post: mockPost, get: vi.fn(), visit: vi.fn() },
+    router: { post: mockPost, patch: mockPatch, get: vi.fn(), visit: vi.fn() },
     usePage: () => ({ props: { errors: {} } }),
 }));
 
@@ -75,6 +78,8 @@ const renderShow = (overrides = {}) =>
             applications={[]}
             catalog={catalog}
             routes={['IV', 'IM', 'VO']}
+            can_discharge={false}
+            free_cubicles={[{ id: 3, name: 'Cub. 3' }]}
             {...overrides}
         />,
     );
@@ -250,5 +255,61 @@ describe('Detalle de Emergencia', () => {
             screen.getByRole('button', { name: /Agregar procedimiento/ }),
         ).toBeDisabled();
         expect(screen.getByRole('button', { name: /Ordenar/ })).toBeDisabled();
+    });
+
+    it('only internar and cirugía are disabled; a nurse cannot discharge', () => {
+        renderShow();
+
+        expect(screen.getByRole('button', { name: /Internar/ })).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: /Ingreso para cirugía/ }),
+        ).toBeDisabled();
+        expect(screen.getByRole('button', { name: /Dar alta/ })).toBeDisabled();
+        expect(
+            screen.getByText('Solo un médico puede dar el alta'),
+        ).toBeTruthy();
+    });
+
+    it('the doctor discharges with the same dialog as Consulta', () => {
+        renderShow({ can_discharge: true });
+
+        fireEvent.click(screen.getByRole('button', { name: /Dar alta/ }));
+        const dialog = screen.getByRole('dialog');
+        expect(within(dialog).getByText('Alta médica')).toBeTruthy();
+        fireEvent.change(
+            within(dialog).getByLabelText('Diagnóstico de egreso'),
+            {
+                target: { value: 'Crisis asmática resuelta' },
+            },
+        );
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Confirmar alta' }),
+        );
+
+        expect(mockPost).toHaveBeenCalledWith(
+            '/emergencia/4/alta',
+            {
+                type: 'recuperado',
+                destination: null,
+                reason: null,
+                discharge_diagnosis: 'Crisis asmática resuelta',
+            },
+            expect.anything(),
+        );
+    });
+
+    it('moves the patient to a free cubicle', () => {
+        renderShow();
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Cambiar cubículo' }),
+        );
+        const dialog = screen.getByRole('dialog');
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Mover' }));
+        expect(mockPatch).toHaveBeenCalledWith(
+            '/emergencia/4/cubiculo',
+            { cubicle_id: 3 },
+            expect.anything(),
+        );
     });
 });

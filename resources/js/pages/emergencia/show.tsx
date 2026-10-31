@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { ChevronLeft } from 'lucide-react';
 import { emergencia } from '@/routes';
 import { formatMoney } from '@/lib/money';
 import ApplicationsCard from './components/detail/ApplicationsCard';
 import ComingSoonCard from './components/detail/ComingSoonCard';
+import ExitCard from './components/detail/ExitCard';
+import MoveCubicleDialog from './components/detail/MoveCubicleDialog';
 import PatientCard from './components/detail/PatientCard';
 import VitalsCard from './components/detail/VitalsCard';
 import useNow from './components/useNow';
@@ -22,6 +24,8 @@ type Props = {
     applications: Application[];
     catalog: CatalogItem[];
     routes: string[];
+    can_discharge: boolean;
+    free_cubicles: { id: number; name: string }[];
 };
 
 export default function EmergenciaShow({
@@ -30,8 +34,11 @@ export default function EmergenciaShow({
     applications,
     catalog,
     routes,
+    can_discharge,
+    free_cubicles,
 }: Props) {
     const active = emergency.status === 'activa';
+    const [moving, setMoving] = useState(false);
     const now = useNow();
     const { account } = emergency;
 
@@ -47,10 +54,25 @@ export default function EmergenciaShow({
                         {emergency.arrived_on} · {emergency.doctor}
                     </div>
                 </div>
-                <span className="state-emergencia rounded-full bg-[var(--state-bg)] px-3 py-1 text-[13px] text-[var(--state-text)]">
-                    En emergencia hace{' '}
-                    <strong>{elapsed(emergency.arrived_at, now)}</strong>
-                </span>
+                {active ? (
+                    <span className="state-emergencia rounded-full bg-[var(--state-bg)] px-3 py-1 text-[13px] text-[var(--state-text)]">
+                        En emergencia hace{' '}
+                        <strong>{elapsed(emergency.arrived_at, now)}</strong>
+                    </span>
+                ) : (
+                    <span className="rounded-full bg-muted-bg px-3 py-1 text-[13px] text-text-secondary">
+                        Dado de alta
+                    </span>
+                )}
+                {active && (
+                    <button
+                        type="button"
+                        onClick={() => setMoving(true)}
+                        className="inline-flex h-9 cursor-pointer items-center rounded-[10px] border border-secondary-border bg-secondary-bg px-3 font-medium text-text-body hover:bg-accent-bg"
+                    >
+                        Cambiar cubículo
+                    </button>
+                )}
                 <Link
                     href={emergencia.url()}
                     className="inline-flex h-9 items-center gap-1 rounded-[10px] border border-secondary-border bg-secondary-bg px-3 font-medium text-text-body hover:bg-accent-bg"
@@ -85,6 +107,12 @@ export default function EmergenciaShow({
                 </div>
                 <div className="flex min-w-0 flex-[1_1_300px] flex-col gap-4">
                     <PatientCard emergency={emergency} />
+                    {active && (
+                        <ExitCard
+                            emergency={emergency}
+                            canDischarge={can_discharge}
+                        />
+                    )}
                     <ComingSoonCard
                         title="Laboratorio e imágenes"
                         action="Ordenar"
@@ -107,6 +135,14 @@ export default function EmergenciaShow({
                     </section>
                 </div>
             </div>
+            {moving && (
+                <MoveCubicleDialog
+                    emergencyId={emergency.id}
+                    current={emergency.cubicle.name}
+                    freeCubicles={free_cubicles}
+                    onClose={() => setMoving(false)}
+                />
+            )}
         </div>
     );
 }

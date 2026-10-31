@@ -10,7 +10,7 @@
 | registro      | /registro                | registro/index      | admin, secretaria                                        | Sin entrada en sidebar | 3           |
 | citas         | /citas                   | citas/index         | admin, medico, secretaria                                | Terminado              | 4           |
 | consulta      | /consulta                | consulta/index      | medico (ver nota)                                        | Terminado              | 5           |
-| emergencia    | /emergencia              | emergencia/index    | admin, medico, enfermeria                                | Esqueleto              | 6           |
+| emergencia    | /emergencia              | emergencia/index    | admin, medico, enfermeria (alta: solo médicos)           | En uso (fase 1)        | 6           |
 | internamiento | /internamiento           | internamiento/index | admin, medico, enfermeria                                | Esqueleto              | 7           |
 | cirugia       | /cirugia                 | cirugia/index       | admin, medico, enfermeria                                | Esqueleto              | 8           |
 | lab           | /laboratorio             | lab/index           | admin, medico, bioanalista                               | Esqueleto              | 9           |
