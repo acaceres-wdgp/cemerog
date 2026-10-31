@@ -23,7 +23,7 @@ class CitasController extends Controller
         /** @var User $user */
         $user = $request->user();
         $ownOnly = $user->seesOnlyOwnSchedule();
-        $forceDoctorId = $ownOnly ? $user->doctor->id : null;
+        $forceDoctorId = $ownOnly ? $user->ownScheduleDoctorId() : null;
 
         $date = $request->filled('date')
             ? Carbon::parse($request->string('date'))->toDateString()
@@ -91,7 +91,7 @@ class CitasController extends Controller
 
         // Non-admin doctor can only create appointments for themselves
         if ($user->seesOnlyOwnSchedule()) {
-            $data['doctor_id'] = $user->doctor->id;
+            $data['doctor_id'] = $user->ownScheduleDoctorId();
         }
 
         $action->handle($data);
@@ -105,7 +105,7 @@ class CitasController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-        if ($user->seesOnlyOwnSchedule() && $appointment->doctor_id !== $user->doctor->id) {
+        if ($user->seesOnlyOwnSchedule() && $appointment->doctor_id !== $user->ownScheduleDoctorId()) {
             abort(403);
         }
 
@@ -122,7 +122,7 @@ class CitasController extends Controller
         $user = auth()->user();
         abort_unless($user->can('module.citas.access'), 403);
 
-        if ($user->seesOnlyOwnSchedule() && $appointment->doctor_id !== $user->doctor->id) {
+        if ($user->seesOnlyOwnSchedule() && $appointment->doctor_id !== $user->ownScheduleDoctorId()) {
             abort(403);
         }
 

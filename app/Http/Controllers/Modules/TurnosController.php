@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTurnRequest;
 use App\Http\Requests\UpdateTurnStatusRequest;
 use App\Models\AccountCharge;
+use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\Turn;
 use App\Models\User;
@@ -29,6 +30,22 @@ class TurnosController extends Controller
     public function store(StoreTurnRequest $request, RegisterArrival $registerArrival): RedirectResponse
     {
         $validated = $request->validated();
+
+        // A non-admin doctor only assigns turns to themselves, and only from their own appointments
+        /** @var User $user */
+        $user = $request->user();
+        if ($user->seesOnlyOwnSchedule()) {
+            $ownDoctorId = $user->ownScheduleDoctorId();
+            abort_if($ownDoctorId === 0, 403);
+
+            $appointmentId = $validated['appointment_id'] ?? null;
+            if ($appointmentId !== null) {
+                $appointment = Appointment::findOrFail($appointmentId);
+                abort_if($appointment->doctor_id !== $ownDoctorId, 403);
+            }
+
+            $validated['doctor_id'] = $ownDoctorId;
+        }
 
         $patient = Patient::findOrFail($validated['patient_id']);
 
@@ -55,7 +72,7 @@ class TurnosController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-        if ($user->seesOnlyOwnSchedule() && $turn->doctor_id !== $user->doctor->id) {
+        if ($user->seesOnlyOwnSchedule() && $turn->doctor_id !== $user->ownScheduleDoctorId()) {
             abort(403);
         }
 
@@ -89,7 +106,7 @@ class TurnosController extends Controller
         $authUser = $request->user();
         abort_unless($authUser->can('module.tablero.access'), 403);
 
-        if ($authUser->seesOnlyOwnSchedule() && $turn->doctor_id !== $authUser->doctor->id) {
+        if ($authUser->seesOnlyOwnSchedule() && $turn->doctor_id !== $authUser->ownScheduleDoctorId()) {
             abort(403);
         }
 

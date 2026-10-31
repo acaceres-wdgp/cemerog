@@ -18,14 +18,14 @@ class TableroController extends Controller
         /** @var User $user */
         $user = $request->user();
         $ownOnly = $user->seesOnlyOwnSchedule();
-        $doctorId = $ownOnly ? $user->doctor->id : null;
+        $doctorId = $user->ownScheduleDoctorId();
 
         // Active turns for today, ordered by turn_order
         $turns = Turn::with(['patient', 'doctor.specialty'])
             ->whereHas('patient')
             ->whereDate('arrived_at', today())
             ->whereIn('status', ['espera', 'en_consulta'])
-            ->when($doctorId, fn ($q) => $q->where('doctor_id', $doctorId))
+            ->when($ownOnly, fn ($q) => $q->where('doctor_id', $doctorId))
             ->orderBy('turn_order')
             ->get()
             ->map(fn (Turn $t) => [
@@ -50,7 +50,7 @@ class TableroController extends Controller
             ->whereHas('patient')
             ->whereDate('appointment_date', today())
             ->whereNotIn('status', ['cancelada'])
-            ->when($doctorId, fn ($q) => $q->where('doctor_id', $doctorId))
+            ->when($ownOnly, fn ($q) => $q->where('doctor_id', $doctorId))
             ->orderBy('appointment_time')
             ->get()
             ->map(fn (Appointment $a) => [
@@ -72,6 +72,7 @@ class TableroController extends Controller
 
         $doctors = Doctor::with('specialty')
             ->where('is_active', true)
+            ->when($ownOnly, fn ($q) => $q->where('id', $doctorId))
             ->orderBy('name')
             ->get()
             ->map(fn (Doctor $d) => [

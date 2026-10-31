@@ -213,3 +213,62 @@ test('admin sees all appointments in Citas', function () {
             ->where('appointments', fn ($appts) => count($appts) === 2)
         );
 });
+
+// ─── Restricted doctors without an active linked doctor ──────────────────────
+
+test('an inactive non-admin doctor still sees only their own turns', function () {
+    $this->doctorA->update(['is_active' => false]);
+    $this->medico->refresh();
+
+    $turnB = Turn::factory()->create([
+        'doctor_id' => $this->doctorB->id,
+        'patient_id' => $this->patientB->id,
+        'status' => 'espera',
+        'arrived_at' => now(),
+    ]);
+
+    expect($this->medico->seesOnlyOwnSchedule())->toBeTrue();
+
+    $this->actingAs($this->medico)
+        ->get('/tablero')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('turns', fn ($turns) => collect($turns)->pluck('id')->doesntContain($turnB->id))
+        );
+});
+
+test('a medico user with no linked doctor sees no turns or appointments', function () {
+    $unlinked = User::factory()->create();
+    $unlinked->givePermissionTo('module.tablero.access');
+    $unlinked->givePermissionTo('module.citas.access');
+    $unlinked->assignRole('medico');
+
+    Turn::factory()->create([
+        'doctor_id' => $this->doctorB->id,
+        'patient_id' => $this->patientB->id,
+        'status' => 'espera',
+        'arrived_at' => now(),
+    ]);
+    Appointment::factory()->create([
+        'doctor_id' => $this->doctorB->id,
+        'patient_id' => $this->patientB->id,
+        'appointment_date' => today()->toDateString(),
+        'status' => 'pendiente',
+    ]);
+
+    expect($unlinked->seesOnlyOwnSchedule())->toBeTrue();
+
+    $this->actingAs($unlinked)
+        ->get('/tablero')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('turns', 0)
+            ->has('appointments', 0)
+            ->has('doctors', 0)
+        );
+
+    $this->actingAs($unlinked)
+        ->get('/citas')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->has('appointments', 0));
+});

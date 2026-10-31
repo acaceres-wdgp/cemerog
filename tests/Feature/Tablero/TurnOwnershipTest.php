@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\Specialty;
@@ -97,4 +98,37 @@ test('medico can reorder their own turn', function () {
     $this->actingAs($this->medico)
         ->patch("/tablero/turnos/{$turnA2->id}/reorder", ['direction' => 'up'])
         ->assertRedirect(route('tablero'));
+});
+
+// ─── store – assigning a turn ────────────────────────────────────────────────
+
+test('medico assigning a turn to another doctor gets it under their own doctor', function () {
+    $this->actingAs($this->medico)
+        ->post('/tablero/turnos', [
+            'patient_id' => $this->patient->id,
+            'doctor_id' => $this->doctorB->id,
+        ])
+        ->assertRedirect(route('tablero'))
+        ->assertSessionHasNoErrors();
+
+    expect(Turn::where('patient_id', $this->patient->id)->sole()->doctor_id)->toBe($this->doctorA->id);
+});
+
+test('medico gets 403 assigning a turn from another doctors appointment', function () {
+    $appointmentB = Appointment::factory()->create([
+        'doctor_id' => $this->doctorB->id,
+        'patient_id' => $this->patientB->id,
+        'appointment_date' => today()->toDateString(),
+        'status' => 'pendiente',
+    ]);
+
+    $this->actingAs($this->medico)
+        ->post('/tablero/turnos', [
+            'patient_id' => $this->patientB->id,
+            'doctor_id' => $this->doctorB->id,
+            'appointment_id' => $appointmentB->id,
+        ])
+        ->assertForbidden();
+
+    expect(Turn::where('patient_id', $this->patientB->id)->exists())->toBeFalse();
 });
