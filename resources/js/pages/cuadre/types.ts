@@ -13,6 +13,13 @@ export type Withdrawal = {
     time: string | null;
 };
 
+import type { ReceiptRow } from '@/pages/caja/types';
+
+export type ShiftReceipt = ReceiptRow & {
+    invoice_number: string;
+    patient: string;
+};
+
 export type OpenShift = {
     id: number;
     opened_by: string;
@@ -21,6 +28,7 @@ export type OpenShift = {
     can_operate: boolean;
     summary: ShiftSummary;
     withdrawals: Withdrawal[];
+    receipts: ShiftReceipt[];
 };
 
 export type ClosedShift = {

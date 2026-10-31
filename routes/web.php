@@ -25,6 +25,7 @@ use App\Http\Controllers\Modules\InternamientoController;
 use App\Http\Controllers\Modules\InvoiceController;
 use App\Http\Controllers\Modules\LabController;
 use App\Http\Controllers\Modules\PacientesController;
+use App\Http\Controllers\Modules\PaymentController;
 use App\Http\Controllers\Modules\PreciosController;
 use App\Http\Controllers\Modules\PrescriptionController;
 use App\Http\Controllers\Modules\RegistroController;
@@ -151,6 +152,9 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/cuentas/{account}/facturar', [InvoiceController::class, 'store'])->name('caja.invoices.store');
         Route::post('/facturas/{invoice}/anular', [InvoiceController::class, 'void'])->name('caja.invoices.void');
         Route::get('/facturas/{invoice}/imprimir', [InvoiceController::class, 'print'])->name('caja.invoices.print');
+        Route::post('/facturas/{invoice}/pagos', [PaymentController::class, 'store'])->name('caja.payments.store');
+        Route::post('/recibos/{receipt}/anular', [PaymentController::class, 'void'])->name('caja.receipts.void');
+        Route::get('/recibos/{receipt}/imprimir', [PaymentController::class, 'print'])->name('caja.receipts.print');
     });
 
     Route::get('/cuentas-por-cobrar', [CxcController::class, 'index'])

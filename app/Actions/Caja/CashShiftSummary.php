@@ -3,6 +3,7 @@
 namespace App\Actions\Caja;
 
 use App\Models\CashShift;
+use App\Models\Payment;
 
 /**
  * Money that went through a shift, in centavos.
@@ -30,13 +31,24 @@ class CashShiftSummary
     }
 
     /**
-     * Income of the shift by payment method. Payments arrive with the billing
-     * module; until then a shift has no income.
+     * Income of the shift by payment method, from its receipts that were not
+     * voided. Cash counts the amount applied to the invoice, not the bills
+     * received: the change went back to the patient.
      *
      * @return array{efectivo: int, tarjeta: int, transferencia: int}
      */
     protected function incomeByMethod(CashShift $shift): array
     {
-        return ['efectivo' => 0, 'tarjeta' => 0, 'transferencia' => 0];
+        $totals = Payment::query()
+            ->whereHas('receipt', fn ($q) => $q->where('cash_shift_id', $shift->id)->whereNull('voided_at'))
+            ->selectRaw('method, SUM(amount) as total')
+            ->groupBy('method')
+            ->pluck('total', 'method');
+
+        return [
+            'efectivo' => (int) ($totals['efectivo'] ?? 0),
+            'tarjeta' => (int) ($totals['tarjeta'] ?? 0),
+            'transferencia' => (int) ($totals['transferencia'] ?? 0),
+        ];
     }
 }
