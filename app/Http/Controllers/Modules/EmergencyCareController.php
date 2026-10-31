@@ -49,7 +49,10 @@ class EmergencyCareController extends Controller
         /** @var array{type: string, destination?: string|null, reason?: string|null, discharge_diagnosis: string} $data */
         $data = $request->validated();
 
-        $action->handle($emergency, $user, (int) $user->doctor?->id, $data);
+        // The doctor who signs it; a nurse or administrator signs for the emergency's doctor
+        $doctorId = $user->canAttendPatients() ? (int) $user->doctor?->id : $emergency->doctor_id;
+
+        $action->handle($emergency, $user, $doctorId, $data);
 
         Toast::success("Alta de {$emergency->patient->full_name}. La cuenta pasa a Facturación.");
 

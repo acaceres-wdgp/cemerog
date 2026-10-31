@@ -2,10 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Emergency;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
-/** Only a doctor gives the discharge, as in Consulta */
+/** An active doctor (as in Consulta), an administrator or a nurse gives the discharge */
 class DischargeEmergencyRequest extends FormRequest
 {
     public function authorize(): bool
@@ -13,7 +14,7 @@ class DischargeEmergencyRequest extends FormRequest
         /** @var User $user */
         $user = $this->user();
 
-        return $user->can('module.emergencia.access') && $user->doctor !== null;
+        return Emergency::canBeDischargedBy($user);
     }
 
     /** @return array<string, mixed> */
