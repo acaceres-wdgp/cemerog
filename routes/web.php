@@ -129,6 +129,8 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::get('/{emergency}', [EmergenciaController::class, 'show'])->whereNumber('emergency')->name('emergencia.show');
         Route::post('/{emergency}/signos-vitales', [EmergencyCareController::class, 'storeVitals'])->name('emergencia.vitals.store');
         Route::post('/{emergency}/aplicaciones', [EmergencyCareController::class, 'storeApplication'])->name('emergencia.applications.store');
+        Route::post('/{emergency}/alta', [EmergencyCareController::class, 'discharge'])->name('emergencia.discharge');
+        Route::patch('/{emergency}/cubiculo', [EmergencyCareController::class, 'moveCubicle'])->name('emergencia.cubicle');
     });
 
     Route::get('/internamiento', [InternamientoController::class, 'index'])

@@ -34,14 +34,21 @@ class EmergenciaController extends Controller
         ]);
     }
 
-    public function show(Emergency $emergency, EmergencyPresenter $presenter): Response
+    public function show(Request $request, Emergency $emergency, EmergencyPresenter $presenter): Response
     {
+        /** @var User $user */
+        $user = $request->user();
+        $occupied = Emergency::whereNotNull('occupied_cubicle_id')->pluck('occupied_cubicle_id');
+
         return Inertia::render('emergencia/show', [
             'emergency' => $presenter->detail($emergency),
             'vitals' => $presenter->vitals($emergency),
             'applications' => $presenter->applications($emergency),
             'catalog' => $emergency->isActive() ? $presenter->catalog() : [],
             'routes' => EmergencyApplicationRequest::ROUTES,
+            'can_discharge' => $emergency->isActive() && $user->doctor !== null,
+            'free_cubicles' => EmergencyCubicle::active()->whereNotIn('id', $occupied)->get()
+                ->map(fn (EmergencyCubicle $c): array => ['id' => $c->id, 'name' => $c->name])->values()->all(),
         ]);
     }
 

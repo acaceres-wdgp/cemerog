@@ -19,7 +19,8 @@ use Illuminate\Support\Carbon;
  * @property int $created_by
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Turn $turn
+ * @property-read Turn|null $turn
+ * @property-read Emergency|null $emergency
  * @property-read Patient $patient
  * @property-read Doctor $doctor
  * @property-read User $creator
@@ -28,6 +29,7 @@ class Discharge extends Model
 {
     protected $fillable = [
         'turn_id',
+        'emergency_id',
         'patient_id',
         'doctor_id',
         'type',
