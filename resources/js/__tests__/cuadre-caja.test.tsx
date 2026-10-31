@@ -2,11 +2,12 @@
  * Cash register shift: closing form, cuadre page and topbar indicator.
  */
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockPost, page } = vi.hoisted(() => ({
+const { mockPost, mockGet, page } = vi.hoisted(() => ({
     mockPost: vi.fn(),
+    mockGet: vi.fn(),
     page: {
         props: {
             errors: {} as Record<string, string>,
@@ -32,113 +33,144 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
             {children}
         </a>
     ),
-    router: { post: mockPost },
+    router: { post: mockPost, get: mockGet },
     usePage: () => page,
 }));
 
 import CuadreIndex from '@/pages/cuadre/index';
 import CashShiftIndicator from '@/components/caja/CashShiftIndicator';
-import type { OpenShift } from '@/pages/cuadre/types';
+import type { CashShiftView, CuadreProps } from '@/pages/cuadre/types';
 
-const openShift: OpenShift = {
-    id: 1,
+const DENOMINATIONS = [2000, 1000, 500, 200, 100, 50, 25, 10, 5, 1];
+
+/** RD$1,000 float, RD$2,000 cash, RD$1,000 card and RD$500 transfer */
+const openShift: CashShiftView = {
+    id: 7,
+    status: 'abierto',
     opened_by: 'Kenia Marte',
     opened_at: '31/10/2026 08:00',
+    closed_by: null,
+    closed_at: null,
     pending_close: false,
     can_operate: true,
     summary: {
-        opening: 500000,
-        income: { efectivo: 0, tarjeta: 0, transferencia: 0 },
+        opening: 100000,
+        income: { efectivo: 200000, tarjeta: 100000, transferencia: 50000 },
+        transactions: { efectivo: 1, tarjeta: 1, transferencia: 1 },
         withdrawals: 0,
-        expected_cash: 500000,
+        expected_cash: 300000,
     },
+    counted: null,
+    difference: null,
+    close_note: null,
+    movements: [
+        {
+            id: 1,
+            receipt_id: 1,
+            time: '09:10',
+            receipt: 'R-0001',
+            patient: 'Ana Torres',
+            concept: 'Pago de F-0000001',
+            method: 'efectivo',
+            amount: 200000,
+            voided: false,
+        },
+        {
+            id: 2,
+            receipt_id: 2,
+            time: '09:40',
+            receipt: 'R-0002',
+            patient: 'Luis Gómez',
+            concept: 'Pago de F-0000002',
+            method: 'tarjeta',
+            amount: 100000,
+            voided: false,
+        },
+        {
+            id: 3,
+            receipt_id: 2,
+            time: '09:40',
+            receipt: 'R-0002',
+            patient: 'Luis Gómez',
+            concept: 'Pago de F-0000002',
+            method: 'transferencia',
+            amount: 50000,
+            voided: false,
+        },
+    ],
     withdrawals: [],
-    receipts: [],
 };
+
+const props = (overrides: Partial<CuadreProps> = {}): CuadreProps => ({
+    shift: openShift,
+    shifts: [
+        { id: 7, label: 'Hoy · Mañana', status: 'abierto' },
+        { id: 6, label: '30/10 · Tarde', status: 'cerrado' },
+    ],
+    denominations: DENOMINATIONS,
+    ...overrides,
+});
+
+const count = (label: string, n: string) =>
+    fireEvent.change(screen.getByLabelText(`Cantidad de ${label}`), {
+        target: { value: n },
+    });
 
 describe('Cuadre de caja', () => {
     beforeEach(() => {
         mockPost.mockClear();
+        mockGet.mockClear();
         page.props.cash_shift = null;
     });
 
     it('without an open shift offers to open one', () => {
-        render(<CuadreIndex shift={null} history={[]} denominations={[]} />);
+        render(<CuadreIndex {...props({ shift: null, shifts: [] })} />);
 
-        expect(
-            screen.getByText('No hay un turno de caja abierto'),
-        ).toBeTruthy();
+        expect(screen.getByText(/Aún no se ha abierto el turno/)).toBeTruthy();
         expect(
             screen.getByRole('button', { name: 'Abrir turno' }),
         ).toBeTruthy();
     });
 
-    it('shows the shortage and asks for a note before closing', () => {
-        render(
-            <CuadreIndex shift={openShift} history={[]} denominations={[]} />,
-        );
+    it('shows the stats, expected per method and the movements of the shift', () => {
+        render(<CuadreIndex {...props()} />);
 
-        fireEvent.change(screen.getByLabelText(/Monto \(RD\$\)/), {
-            target: { value: '4800' },
-        });
-        expect(screen.getByRole('status').textContent).toMatch(/Faltante/);
-
-        fireEvent.click(screen.getByRole('checkbox'));
-        const close = screen.getByRole('button', { name: 'Cerrar turno' });
-        expect(close).toBeDisabled();
-
-        fireEvent.change(screen.getByLabelText(/Explica la diferencia/), {
-            target: { value: 'Se dio mal un cambio' },
-        });
-        expect(close).not.toBeDisabled();
-
-        fireEvent.click(close);
-        expect(mockPost).toHaveBeenCalledWith(
-            '/cuadre-de-caja/cerrar',
-            {
-                counted_cash: 480000,
-                close_note: 'Se dio mal un cambio',
-                confirmed: true,
-            },
-            expect.anything(),
-        );
+        expect(screen.getByText('Fondo de apertura')).toBeTruthy();
+        expect(screen.getByText('Ingresos del turno')).toBeTruthy();
+        expect(screen.getByText('2 recibos')).toBeTruthy();
+        expect(screen.getByText('Esperado vs. contado')).toBeTruthy();
+        expect(screen.getByText('3 movimientos')).toBeTruthy();
+        expect(screen.getAllByText('R-0002')).toHaveLength(2);
+        expect(screen.getByText('Abierto')).toBeTruthy();
+        // Card and transfer start at what is expected; cash is still uncounted
+        expect(screen.getByLabelText('Contado Tarjeta')).toHaveValue('1000.00');
+        expect(screen.getByText('Diferencia · faltante')).toBeTruthy();
     });
 
-    it('closes without a note when the count matches', () => {
-        render(
-            <CuadreIndex shift={openShift} history={[]} denominations={[]} />,
+    it('counting the exact cash squares the register and closes after confirming', () => {
+        render(<CuadreIndex {...props()} />);
+
+        count('RD$2,000', '1');
+        count('RD$1,000', '1');
+        expect(screen.getByText('Diferencia · cuadrado')).toBeTruthy();
+        expect(screen.getByLabelText('Contado Efectivo')).toHaveValue(
+            '3,000.00',
         );
 
-        fireEvent.change(screen.getByLabelText(/Monto \(RD\$\)/), {
-            target: { value: '5000' },
-        });
-        expect(screen.getByRole('status').textContent).toMatch(/Cuadrado/);
-        expect(screen.queryByLabelText(/Explica la diferencia/)).toBeNull();
-
-        fireEvent.click(screen.getByRole('checkbox'));
         fireEvent.click(screen.getByRole('button', { name: 'Cerrar turno' }));
-        expect(mockPost).toHaveBeenCalledTimes(1);
-    });
-
-    it('sends the count by denomination', () => {
-        render(
-            <CuadreIndex shift={openShift} history={[]} denominations={[]} />,
+        const dialog = screen.getByRole('dialog');
+        expect(within(dialog).getByText('¿Caja cuadrada?')).toBeTruthy();
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Cerrar turno' }),
         );
-
-        fireEvent.click(screen.getByText('Por denominación'));
-        fireEvent.change(screen.getByLabelText('Cantidad de RD$2000'), {
-            target: { value: '2' },
-        });
-        fireEvent.change(screen.getByLabelText('Cantidad de RD$1000'), {
-            target: { value: '1' },
-        });
-        fireEvent.click(screen.getByRole('checkbox'));
-        fireEvent.click(screen.getByRole('button', { name: 'Cerrar turno' }));
 
         expect(mockPost).toHaveBeenCalledWith(
             '/cuadre-de-caja/cerrar',
             {
-                denominations: { '2000': 2, '1000': 1 },
+                counted_cash: 300000,
+                denominations: { '1000': 1, '2000': 1 },
+                counted_card: 100000,
+                counted_transfer: 50000,
                 close_note: null,
                 confirmed: true,
             },
@@ -146,12 +178,28 @@ describe('Cuadre de caja', () => {
         );
     });
 
+    it('a difference, also in card, needs an observation before closing', () => {
+        render(<CuadreIndex {...props()} />);
+
+        count('RD$2,000', '1');
+        count('RD$1,000', '1');
+        fireEvent.change(screen.getByLabelText('Contado Tarjeta'), {
+            target: { value: '900' },
+        });
+        expect(screen.getByText('Diferencia · faltante')).toBeTruthy();
+
+        const close = screen.getByRole('button', { name: 'Cerrar turno' });
+        expect(close).toBeDisabled();
+        fireEvent.change(screen.getByLabelText(/Observaciones del cierre/), {
+            target: { value: 'Datáfono con un pago menos' },
+        });
+        expect(close).not.toBeDisabled();
+    });
+
     it('another cashier cannot close the shift', () => {
         render(
             <CuadreIndex
-                shift={{ ...openShift, can_operate: false }}
-                history={[]}
-                denominations={[]}
+                {...props({ shift: { ...openShift, can_operate: false } })}
             />,
         );
 
@@ -161,6 +209,52 @@ describe('Cuadre de caja', () => {
         expect(
             screen.getByText(/Solo Kenia Marte o un administrador/),
         ).toBeTruthy();
+    });
+
+    it('a closed shift shows what was counted, read-only, and its report', () => {
+        const closed: CashShiftView = {
+            ...openShift,
+            id: 6,
+            status: 'cerrado',
+            can_operate: false,
+            closed_by: 'Kenia Marte',
+            closed_at: '30/10/2026 18:00',
+            counted: {
+                cash: 280000,
+                card: 100000,
+                transfer: 50000,
+                denominations: { '2000': 1, '500': 1, '200': 1, '100': 1 },
+            },
+            difference: -20000,
+            close_note: 'Faltante por cambio',
+        };
+        render(<CuadreIndex {...props({ shift: closed })} />);
+
+        expect(screen.getByText('Cerrado')).toBeTruthy();
+        expect(
+            screen.getByText(/Turno cerrado el 30\/10\/2026 18:00/),
+        ).toBeTruthy();
+        expect(screen.getByText('Faltante por cambio')).toBeTruthy();
+        expect(screen.getByLabelText('Cantidad de RD$2,000')).toHaveAttribute(
+            'readonly',
+        );
+        expect(
+            screen.getByRole('link', { name: /Imprimir reporte/ }),
+        ).toHaveAttribute('href', '/cuadre-de-caja/turnos/6/reporte');
+        expect(
+            screen.queryByRole('button', { name: 'Cerrar turno' }),
+        ).toBeNull();
+    });
+
+    it('picking another shift loads it', () => {
+        render(<CuadreIndex {...props()} />);
+
+        fireEvent.click(screen.getByRole('tab', { name: /30\/10 · Tarde/ }));
+        expect(mockGet).toHaveBeenCalledWith(
+            '/cuadre-de-caja?turno=6',
+            {},
+            expect.anything(),
+        );
     });
 });
 
