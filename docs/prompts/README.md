@@ -68,8 +68,15 @@ Los archivos se guardan **tal como se entregaron**: el formateador los ignora (`
 | [PROMPT-16b](PROMPT-16b-acciones-y-alta-ajustes.md) | Ajustes del 16: quitar el alta vieja, tooltips, próximo paciente, errores del modal | 16 | ✅ Mezclado (#29) |
 | [PROMPT-17](PROMPT-17-receta.md) | Receta: guardar, imprimir y ver en el historial | 16 | ✅ Mezclado (#31) |
 | [PROMPT-17b](PROMPT-17b-receta-ajustes.md) | Ajustes del 17: guardar e imprimir con Inertia, regla de alergias, migraciones, detalle en el historial | 17 | ✅ Mezclado (#31) |
-| [PROMPT-18](PROMPT-18-cuenta-cargos-honorarios.md) | Cuenta del día, cargos y honorarios del médico | 17 | 🔄 En revisión (#34) |
-| [PROMPT-18b](PROMPT-18b-cuenta-cargos-ajustes.md) | Ajustes del 18: turno «No asistió», bloqueo real, Doctores sin hex, fechas de migraciones | 18 | 🔄 En revisión (#34) |
+| [PROMPT-18](PROMPT-18-cuenta-cargos-honorarios.md) | Cuenta del día, cargos y honorarios del médico | 17 | ✅ Mezclado (#34) |
+| [PROMPT-18b](PROMPT-18b-cuenta-cargos-ajustes.md) | Ajustes del 18: turno «No asistió», bloqueo real, Doctores sin hex, fechas de migraciones | 18 | ✅ Mezclado (#34) |
+
+### Después de las pruebas en producción
+
+| Prompt | Tema | Depende de | Estado |
+|---|---|---|---|
+| [PROMPT-19](PROMPT-19-visibilidad-alta-historial.md) | Turnos y citas por médico; volver a Consulta tras el alta; historial clínico unificado | 18 | ⏳ Pendiente |
+| [PROMPT-20](PROMPT-20-perfil-paciente.md) | Perfil del paciente (adaptado del prompt 07 de Claude Design) | 19 | ⏳ Pendiente |
 
 ### Sin prompt (hechos directamente en la revisión)
 
@@ -77,6 +84,7 @@ Los archivos se guardan **tal como se entregaron**: el formateador los ignora (`
 |---|---|
 | Deshabilitar GitHub Actions (el despliegue es por Forge) | #6 |
 | Botón de cerrar duplicado en el panel del paciente | #16 |
+| Menú lateral vacío en Usuarios y roles | #36 |
 
 ### Descartados
 
