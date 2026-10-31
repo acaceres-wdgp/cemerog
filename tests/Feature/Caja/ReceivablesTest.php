@@ -50,13 +50,14 @@ function payOnCredit(User $by, Invoice $invoice, int $amount, string $due): void
         ->assertSessionHasNoErrors();
 }
 
-test('cuentas por cobrar lists invoices with a balance, totals and overdue ones', function () {
-    $current = issuedInvoice($this->cajero, 200000);
-    payOnCredit($this->cajero, $current, 50000, today()->addWeek()->toDateString());
+test('cuentas por cobrar lists every invoice with a balance, oldest first, with days and the patient contact', function () {
+    $recent = issuedInvoice($this->cajero, 200000);
+    payOnCredit($this->cajero, $recent, 50000, today()->addWeek()->toDateString());
 
-    $overdue = issuedInvoice($this->cajero, 100000);
-    payOnCredit($this->cajero, $overdue, 0, today()->toDateString());
-    $overdue->update(['credit_due_date' => today()->subDays(3)]);
+    $old = issuedInvoice($this->cajero, 100000);
+    payOnCredit($this->cajero, $old, 0, today()->toDateString());
+    $old->update(['issued_at' => now()->subDays(95), 'credit_due_date' => today()->subDays(60)]);
+    $old->patient->update(['phone' => '809-222-3367']);
 
     $paid = issuedInvoice($this->cajero, 80000);
     $this->actingAs($this->cajero)->post("/facturacion/facturas/{$paid->id}/pagos", [
@@ -69,20 +70,36 @@ test('cuentas por cobrar lists invoices with a balance, totals and overdue ones'
         ->assertInertia(fn ($page) => $page
             ->component('cxc/index')
             ->has('invoices', 2)
-            ->where('totals.receivable', 250000)
-            ->where('totals.overdue', 100000)
-            ->where('totals.overdue_count', 1)
-            ->where('invoices.0.number', $overdue->number)
+            ->where('invoices.0.number', $old->number)
+            ->where('invoices.0.days', 95)
+            ->where('invoices.0.total', 100000)
+            ->where('invoices.0.paid_amount', 0)
+            ->where('invoices.0.balance', 100000)
             ->where('invoices.0.overdue', true)
+            ->where('invoices.0.patient.full_name', $old->patient->full_name)
+            ->where('invoices.0.patient.document_number', $old->patient->document_number)
+            ->where('invoices.0.patient.phone', '809-222-3367')
+            ->where('invoices.1.number', $recent->number)
+            ->where('invoices.1.days', 0)
+            ->where('invoices.1.balance', 150000)
+            ->where('invoices.1.overdue', false)
         );
+});
+
+test('a payment flashes its receipt so it can be printed right away', function () {
+    $invoice = issuedInvoice($this->cajero, 200000);
+    payOnCredit($this->cajero, $invoice, 0, today()->addWeek()->toDateString());
 
     $this->actingAs($this->cajero)
-        ->get('/cuentas-por-cobrar?filtro=vencidas')
-        ->assertInertia(fn ($page) => $page->has('invoices', 1)->where('filter', 'vencidas'));
+        ->from('/cuentas-por-cobrar')
+        ->post("/facturacion/facturas/{$invoice->id}/pagos", [
+            'payments' => [['method' => 'efectivo', 'amount' => 50000]],
+        ])
+        ->assertRedirect('/cuentas-por-cobrar')
+        ->assertSessionHas('inertia.flash_data.receipt');
 
-    $this->actingAs($this->cajero)
-        ->get('/cuentas-por-cobrar?filtro=al_dia')
-        ->assertInertia(fn ($page) => $page->has('invoices', 1)->where('invoices.0.number', $current->number));
+    $receipt = $invoice->receipts()->latest('id')->first();
+    expect(session('inertia.flash_data.receipt'))->toBe(['id' => $receipt->id, 'number' => $receipt->number]);
 });
 
 test('a later installment keeps the credit due date and pays off the invoice', function () {
@@ -123,18 +140,6 @@ test('an installment on an overdue invoice keeps its past due date', function ()
 
     expect($invoice->fresh()->balance())->toBe(150000)
         ->and($invoice->fresh()->credit_due_date->toDateString())->toBe(today()->subDays(5)->toDateString());
-});
-
-test('the receivable detail can be opened from cuentas por cobrar', function () {
-    $invoice = issuedInvoice($this->cajero, 200000);
-    payOnCredit($this->cajero, $invoice, 0, today()->addWeek()->toDateString());
-
-    $this->actingAs($this->cajero)
-        ->get("/cuentas-por-cobrar?factura={$invoice->id}")
-        ->assertInertia(fn ($page) => $page
-            ->where('selected_invoice.number', $invoice->number)
-            ->where('selected_invoice.balance', 200000)
-        );
 });
 
 test('doctors cannot see accounts receivable', function () {

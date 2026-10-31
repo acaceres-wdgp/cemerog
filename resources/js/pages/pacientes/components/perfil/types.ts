@@ -90,12 +90,39 @@ export type ProfileAccount = {
     }[];
 };
 
+export type ProfileInvoice = {
+    id: number;
+    number: string;
+    issued_on: string;
+    total: number;
+    paid_amount: number;
+    balance: number;
+    status: 'pendiente' | 'pagada' | 'anulada';
+    credit_due_date: string | null;
+};
+
+/** One receipt of the patient: «Pago total», «Abono parcial», «Liquidación» or «Anulado» */
+export type ProfilePayment = {
+    id: number;
+    number: string;
+    date: string | null;
+    invoice_id: number;
+    invoice_number: string;
+    methods: string;
+    amount: number;
+    kind: string;
+    voided: boolean;
+};
+
 export type Finanzas = {
     cuentas: ProfileAccount[];
     total_cargado: number;
     pendiente_facturar: number;
-    facturas: never[];
-    pagos: never[];
+    facturas: ProfileInvoice[];
+    pagos: ProfilePayment[];
+    total_facturado: number;
+    total_pagado: number;
+    saldo: number;
 };
 
 export type ProfileProps = {

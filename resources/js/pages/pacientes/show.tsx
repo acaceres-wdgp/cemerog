@@ -151,7 +151,10 @@ export default function PacienteShow(props: ProfileProps) {
             )}
 
             {tab === 'finanzas' && finanzas && (
-                <FinanzasTab finanzas={finanzas} />
+                <FinanzasTab
+                    finanzas={finanzas}
+                    patientName={patient.full_name}
+                />
             )}
         </div>
     );

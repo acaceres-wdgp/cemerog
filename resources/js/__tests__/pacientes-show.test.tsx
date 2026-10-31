@@ -74,6 +74,9 @@ const finanzas: Finanzas = {
     pendiente_facturar: 150000,
     facturas: [],
     pagos: [],
+    total_facturado: 0,
+    total_pagado: 0,
+    saldo: 0,
 };
 
 function makeProps(overrides: Partial<ProfileProps> = {}): ProfileProps {

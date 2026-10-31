@@ -28,6 +28,11 @@ class PaymentController extends Controller
             ? "Pago registrado. Recibo {$receipt->number}."
             : 'Balance enviado a cuentas por cobrar.');
 
+        // The page offers to print the receipt right away
+        if ($receipt !== null) {
+            Inertia::flash('receipt', ['id' => $receipt->id, 'number' => $receipt->number]);
+        }
+
         return back();
     }
 
