@@ -16,9 +16,9 @@
 | lab           | /laboratorio             | lab/index           | admin, medico, bioanalista                               | Esqueleto              | 9           |
 | img           | /imagenes                | img/index           | admin, medico, imagenes                                  | Esqueleto              | 10          |
 | impresos      | /impresos                | impresos/index      | admin, medico, enfermeria, secretaria, bioanalista, caja | Esqueleto              | 11          |
-| caja          | /facturacion             | caja/index          | admin, caja                                              | Esqueleto              | 12          |
-| cxc           | /cuentas-por-cobrar      | cxc/index           | admin, caja                                              | Esqueleto              | 13          |
-| cuadre        | /cuadre-de-caja          | cuadre/index        | admin, caja                                              | Esqueleto              | 14          |
+| caja          | /facturacion             | caja/index          | admin, caja, secretaria                                  | En desarrollo          | 12          |
+| cxc           | /cuentas-por-cobrar      | cxc/index           | admin, caja, secretaria                                  | En desarrollo          | 13          |
+| cuadre        | /cuadre-de-caja          | cuadre/index        | admin, caja, secretaria                                  | En desarrollo          | 14          |
 | almacen       | /almacen                 | almacen/index       | admin, almacen                                           | Esqueleto              | 15          |
 | entrada       | /entrada-mercancia       | entrada/index       | admin, almacen                                           | Esqueleto              | 16          |
 | admin         | /admin/usuarios          | admin/index         | admin                                                    | Esqueleto              | 17          |
@@ -58,7 +58,7 @@ El ítem "Pacientes" en el sidebar usa `activeFor: ['/registro']` para manteners
 | administrador | Acceso administrativo     | inicio, tablero, pacientes, registro, citas, emergencia, internamiento, cirugia, lab, img, impresos, caja, cxc, cuadre, almacen, entrada, admin, doctores, analisis, imgcat, precios, habs, tema |
 | medico        | Atención médica completa  | inicio, tablero, pacientes, citas, consulta, emergencia, internamiento, cirugia, lab, img, impresos                                                                                              |
 | enfermeria    | Atención clínica de apoyo | tablero, emergencia, internamiento, cirugia, impresos                                                                                                                                            |
-| secretaria    | Recepción y agendamiento  | inicio, tablero, pacientes, registro, citas, impresos                                                                                                                                            |
+| secretaria    | Recepción y agendamiento  | inicio, tablero, pacientes, registro, citas, impresos, caja, cxc, cuadre                                                                                                                         |
 | bioanalista   | Laboratorio               | lab, impresos                                                                                                                                                                                    |
 | imagenes      | Estudios de imagen        | img                                                                                                                                                                                              |
 | caja          | Facturación y cobros      | inicio, tablero, caja, cxc, cuadre, impresos                                                                                                                                                     |

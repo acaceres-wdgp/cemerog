@@ -7,6 +7,7 @@ use App\Http\Controllers\Modules\AdminController;
 use App\Http\Controllers\Modules\AlmacenController;
 use App\Http\Controllers\Modules\AnalisisController;
 use App\Http\Controllers\Modules\CajaController;
+use App\Http\Controllers\Modules\CashShiftController;
 use App\Http\Controllers\Modules\CirugiaController;
 use App\Http\Controllers\Modules\CitasController;
 use App\Http\Controllers\Modules\ConsultaController;
@@ -153,6 +154,17 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
     Route::get('/cuadre-de-caja', [CuadreController::class, 'index'])
         ->middleware('permission:module.cuadre.access')
         ->name('cuadre');
+
+    // Cash register shift: open and withdraw from Caja, close from Cuadre
+    Route::post('/caja/turno', [CashShiftController::class, 'open'])
+        ->middleware('permission:module.caja.access')
+        ->name('caja.turno.open');
+    Route::post('/caja/turno/retiros', [CashShiftController::class, 'withdraw'])
+        ->middleware('permission:module.caja.access')
+        ->name('caja.turno.withdraw');
+    Route::post('/cuadre-de-caja/cerrar', [CashShiftController::class, 'close'])
+        ->middleware('permission:module.cuadre.access')
+        ->name('cuadre.close');
 
     // Inventario
     Route::get('/almacen', [AlmacenController::class, 'index'])

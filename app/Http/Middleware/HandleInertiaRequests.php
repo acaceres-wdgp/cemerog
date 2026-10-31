@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\CashShift;
 use App\Models\Turn;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -63,9 +64,37 @@ class HandleInertiaRequests extends Middleware
                     'is_active' => $user->doctor->is_active,
                 ]
                 : null,
+            'cash_shift' => fn () => $this->resolveCashShift($user),
             'queue' => $user?->doctor !== null
                 ? Inertia::defer(fn () => $this->resolveQueue($user))
                 : null,
+        ];
+    }
+
+    /**
+     * The open cash register shift for the topbar indicator, shown to users
+     * who bill or run the register. Null when closed or for everyone else.
+     *
+     * @return array{id: int, opened_by: string, opened_at: string, mine: bool, can_operate: bool, pending_close: bool}|null
+     */
+    private function resolveCashShift(?User $user): ?array
+    {
+        if ($user === null || ! ($user->can('module.caja.access') || $user->can('module.cuadre.access'))) {
+            return null;
+        }
+
+        $shift = CashShift::with('opener')->open()->first();
+        if ($shift === null) {
+            return null;
+        }
+
+        return [
+            'id' => $shift->id,
+            'opened_by' => $shift->opener->name,
+            'opened_at' => $shift->opened_at->format('d/m/Y H:i'),
+            'mine' => $shift->opened_by === $user->id,
+            'can_operate' => $shift->opened_by === $user->id || $user->hasRole('administrador'),
+            'pending_close' => $shift->isPendingClose(),
         ];
     }
 
