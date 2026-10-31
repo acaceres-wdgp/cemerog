@@ -251,8 +251,8 @@ test('the invoice detail lists its receipts and the cuadre lists the shift recei
     $this->actingAs($this->cajero)
         ->get('/cuadre-de-caja')
         ->assertInertia(fn ($page) => $page
-            ->has('shift.receipts', 1)
-            ->where('shift.receipts.0.invoice_number', 'F-0000001')
+            ->has('shift.movements', 1)
+            ->where('shift.movements.0.concept', 'Pago de F-0000001')
             ->where('shift.summary.income.efectivo', 200000)
             ->where('shift.summary.expected_cash', 300000)
         );

@@ -18,6 +18,8 @@ class CloseCashShiftRequest extends FormRequest
             'counted_cash' => ['required_without:denominations', 'nullable', 'integer', 'min:0', 'max:100000000'],
             'denominations' => ['nullable', 'array'],
             'denominations.*' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'counted_card' => ['nullable', 'integer', 'min:0', 'max:100000000'],
+            'counted_transfer' => ['nullable', 'integer', 'min:0', 'max:100000000'],
             'close_note' => ['nullable', 'string', 'max:1000'],
             'confirmed' => ['accepted'],
         ];

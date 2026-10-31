@@ -15,16 +15,17 @@ use App\Models\Payment;
 class CashShiftSummary
 {
     /**
-     * @return array{opening: int, income: array{efectivo: int, tarjeta: int, transferencia: int}, withdrawals: int, expected_cash: int}
+     * @return array{opening: int, income: array{efectivo: int, tarjeta: int, transferencia: int}, transactions: array{efectivo: int, tarjeta: int, transferencia: int}, withdrawals: int, expected_cash: int}
      */
     public function handle(CashShift $shift): array
     {
-        $income = $this->incomeByMethod($shift);
+        [$income, $transactions] = $this->incomeByMethod($shift);
         $withdrawals = (int) $shift->withdrawals()->sum('amount');
 
         return [
             'opening' => $shift->opening_amount,
             'income' => $income,
+            'transactions' => $transactions,
             'withdrawals' => $withdrawals,
             'expected_cash' => $shift->opening_amount + $income['efectivo'] - $withdrawals,
         ];
@@ -35,20 +36,25 @@ class CashShiftSummary
      * voided. Cash counts the amount applied to the invoice, not the bills
      * received: the change went back to the patient.
      *
-     * @return array{efectivo: int, tarjeta: int, transferencia: int}
+     * Also returns how many payments each method had.
+     *
+     * @return array{0: array{efectivo: int, tarjeta: int, transferencia: int}, 1: array{efectivo: int, tarjeta: int, transferencia: int}}
      */
     protected function incomeByMethod(CashShift $shift): array
     {
-        $totals = Payment::query()
+        $rows = Payment::query()
             ->whereHas('receipt', fn ($q) => $q->where('cash_shift_id', $shift->id)->whereNull('voided_at'))
-            ->selectRaw('method, SUM(amount) as total')
+            ->selectRaw('method, SUM(amount) as total, COUNT(*) as n')
             ->groupBy('method')
-            ->pluck('total', 'method');
+            ->get()
+            ->keyBy('method');
 
-        return [
-            'efectivo' => (int) ($totals['efectivo'] ?? 0),
-            'tarjeta' => (int) ($totals['tarjeta'] ?? 0),
-            'transferencia' => (int) ($totals['transferencia'] ?? 0),
+        $pick = fn (string $column): array => [
+            'efectivo' => (int) ($rows['efectivo']->{$column} ?? 0),
+            'tarjeta' => (int) ($rows['tarjeta']->{$column} ?? 0),
+            'transferencia' => (int) ($rows['transferencia']->{$column} ?? 0),
         ];
+
+        return [$pick('total'), $pick('n')];
     }
 }
