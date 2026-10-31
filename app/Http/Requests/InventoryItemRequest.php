@@ -14,7 +14,12 @@ class InventoryItemRequest extends FormRequest
         return $this->user()->hasAnyRole(InventoryItem::EDITOR_ROLES);
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * Stock is not edited here: it only changes through goods entries,
+     * applications in Emergencia and adjustments with a reason.
+     *
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         return [
@@ -22,7 +27,6 @@ class InventoryItemRequest extends FormRequest
             'presentation' => ['nullable', 'string', 'max:100'],
             'kind' => ['required', Rule::in(array_keys(InventoryItem::KINDS))],
             'price' => ['required', 'integer', 'min:0', 'max:100000000'],
-            'stock' => ['required', 'integer', 'min:-100000', 'max:1000000'],
             'min_stock' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'is_active' => ['sometimes', 'boolean'],
         ];

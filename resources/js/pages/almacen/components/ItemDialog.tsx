@@ -22,7 +22,6 @@ export default function ItemDialog({
         presentation: item?.presentation ?? '',
         kind: (item?.kind ?? 'medicamento') as ItemKind,
         price: item ? (item.price / 100).toFixed(2) : '',
-        stock: item ? String(item.stock) : '0',
         min_stock: item ? String(item.min_stock) : '0',
         is_active: item?.is_active ?? true,
     });
@@ -38,7 +37,6 @@ export default function ItemDialog({
             presentation: form.presentation.trim() || null,
             kind: form.kind,
             price: parseMoney(form.price),
-            stock: parseInt(form.stock, 10) || 0,
             min_stock: parseInt(form.min_stock, 10) || 0,
             ...(item ? { is_active: form.is_active } : {}),
         };
@@ -106,10 +104,9 @@ export default function ItemDialog({
                     <FormField
                         name="stock"
                         label="Existencia"
-                        inputMode="numeric"
-                        value={form.stock}
-                        onChange={(e) => set({ stock: e.target.value })}
-                        error={errors.stock}
+                        value={item ? String(item.stock) : '0'}
+                        readOnly
+                        className="[&_input]:bg-list-row-bg"
                     />
                     <FormField
                         name="min_stock"
@@ -120,6 +117,11 @@ export default function ItemDialog({
                         error={errors.min_stock}
                     />
                 </div>
+                <p className="m-0 text-[12.5px] text-muted">
+                    {item
+                        ? 'La existencia cambia con las entradas de mercancía, lo que se aplica en Emergencia y «Ajustar existencia».'
+                        : 'El artículo empieza con existencia 0; la mercancía entra con «Entrada de mercancía».'}
+                </p>
                 {item && item.suppliers.length > 0 && (
                     <div className="rounded-[10px] border border-card-border">
                         <div className="border-b border-divider px-3 py-2 text-[13px] font-semibold text-text-heading">
