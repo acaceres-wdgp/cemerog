@@ -73,25 +73,18 @@ class CreateInvoice
         });
     }
 
+    /** The discount is a whole percentage (1–100) of the subtotal */
     private function discountAmount(int $subtotal, ?string $type, ?int $value): int
     {
         if ($type === null || $value === null || $value <= 0) {
             return 0;
         }
 
-        if ($type === 'porcentaje') {
-            if ($value > 100) {
-                throw ValidationException::withMessages(['discount_value' => 'El descuento no puede pasar del 100%.']);
-            }
-
-            return (int) round($subtotal * $value / 100);
+        if ($type !== 'porcentaje' || $value > 100) {
+            throw ValidationException::withMessages(['discount_value' => 'El descuento debe estar entre 1% y 100%.']);
         }
 
-        if ($value > $subtotal) {
-            throw ValidationException::withMessages(['discount_value' => 'El descuento no puede ser mayor que el total.']);
-        }
-
-        return $value;
+        return (int) round($subtotal * $value / 100);
     }
 
     /** The doctor fee reduced in the same proportion as the invoice total */

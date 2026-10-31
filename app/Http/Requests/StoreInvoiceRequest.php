@@ -19,8 +19,9 @@ class StoreInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'discount_type' => ['nullable', Rule::in(['porcentaje', 'monto'])],
-            'discount_value' => ['nullable', 'required_with:discount_type', 'integer', 'min:1'],
+            // The discount is always a percentage of the subtotal
+            'discount_type' => ['nullable', Rule::in(['porcentaje'])],
+            'discount_value' => ['nullable', 'required_with:discount_type', 'integer', 'between:1,100'],
             'discount_reason' => ['nullable', 'required_with:discount_type', 'string', 'max:255'],
             ...$this->paymentRules(),
         ];
@@ -29,7 +30,9 @@ class StoreInvoiceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'discount_value.required_with' => 'Indica el descuento.',
+            'discount_type.in' => 'El descuento solo puede ser en porcentaje.',
+            'discount_value.required_with' => 'Indica el porcentaje de descuento.',
+            'discount_value.between' => 'El descuento debe estar entre 1% y 100%.',
             'discount_reason.required_with' => 'Indica el motivo del descuento.',
         ];
     }

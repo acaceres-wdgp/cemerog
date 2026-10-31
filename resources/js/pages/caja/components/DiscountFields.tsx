@@ -1,61 +1,44 @@
 import React from 'react';
 import FormField from '@/components/cemerog/FormField';
-import SegmentedControl from '@/components/cemerog/SegmentedControl';
-import { parseMoney } from '@/lib/money';
+import { cn } from '@/lib/utils';
 
-export type DiscountType = 'porcentaje' | 'monto';
-
+/** The discount is always a whole percentage (1–100) of the subtotal */
 export type DiscountState = {
-    enabled: boolean;
-    type: DiscountType;
-    value: string;
+    percent: string;
     reason: string;
 };
 
 export const initialDiscount = (): DiscountState => ({
-    enabled: false,
-    type: 'porcentaje',
-    value: '',
+    percent: '',
     reason: '',
 });
 
-/** Discount in centavos; null when the typed value is invalid */
+const QUICK = [5, 10, 15, 20, 50, 100];
+
+/** Discount in centavos; 0 when empty, null when the percentage is invalid */
 export function computeDiscount(
     subtotal: number,
-    type: DiscountType,
-    value: string,
+    percent: string,
 ): number | null {
-    if (value.trim() === '') return 0;
-    if (type === 'porcentaje') {
-        const pct = Number(value);
-        if (!Number.isInteger(pct) || pct < 1 || pct > 100) return null;
-        return Math.round((subtotal * pct) / 100);
-    }
-    const amount = parseMoney(value);
-    if (amount < 1 || amount > subtotal) return null;
-    return amount;
+    if (percent.trim() === '') return 0;
+    const pct = Number(percent);
+    if (!Number.isInteger(pct) || pct < 0 || pct > 100) return null;
+    return Math.round((subtotal * pct) / 100);
 }
 
-export function discountAmount(
-    d: DiscountState,
-    subtotal: number,
-): number | null {
-    return d.enabled ? computeDiscount(subtotal, d.type, d.value) : 0;
-}
+const hasDiscount = (d: DiscountState) => Number(d.percent) > 0;
 
-/** A discount needs a valid value and a reason */
+/** A discount needs a valid percentage and a reason */
 export function discountIsValid(d: DiscountState, subtotal: number): boolean {
-    if (!d.enabled) return true;
-    const amount = discountAmount(d, subtotal);
-    return amount !== null && amount > 0 && d.reason.trim() !== '';
+    if (computeDiscount(subtotal, d.percent) === null) return false;
+    return !hasDiscount(d) || d.reason.trim() !== '';
 }
 
 export function discountPayload(d: DiscountState) {
-    if (!d.enabled) return {};
+    if (!hasDiscount(d)) return {};
     return {
-        discount_type: d.type,
-        discount_value:
-            d.type === 'porcentaje' ? Number(d.value) : parseMoney(d.value),
+        discount_type: 'porcentaje',
+        discount_value: Number(d.percent),
         discount_reason: d.reason.trim(),
     };
 }
@@ -71,59 +54,63 @@ export default function DiscountFields({
     errors: Record<string, string>;
     onChange: (patch: Partial<DiscountState>) => void;
 }) {
-    const amount = discountAmount(state, subtotal);
+    const amount = computeDiscount(subtotal, state.percent);
 
     return (
         <div className="flex flex-col gap-3">
-            <label className="flex cursor-pointer items-center gap-2 text-[14px] font-medium text-text-heading">
-                <input
-                    type="checkbox"
-                    checked={state.enabled}
-                    onChange={(e) => onChange({ enabled: e.target.checked })}
+            <div className="flex flex-wrap items-end gap-3">
+                <FormField
+                    name="discount_value"
+                    label="Descuento (%)"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={state.percent}
+                    onChange={(e) =>
+                        onChange({ percent: e.target.value.replace(/\D/g, '') })
+                    }
+                    className="w-[140px]"
+                    error={
+                        errors.discount_value ??
+                        (amount === null ? 'Entre 0% y 100%.' : undefined)
+                    }
                 />
-                Aplicar descuento
-            </label>
-            {state.enabled && (
-                <div className="flex flex-col gap-3 rounded-[12px] border border-card-border bg-app-bg px-4 py-3">
-                    <SegmentedControl<DiscountType>
-                        segments={[
-                            { value: 'porcentaje', label: 'Porcentaje' },
-                            { value: 'monto', label: 'Monto' },
-                        ]}
-                        value={state.type}
-                        onChange={(type) => onChange({ type, value: '' })}
-                        className="self-start"
-                    />
-                    <FormField
-                        name="discount_value"
-                        label={
-                            state.type === 'porcentaje'
-                                ? 'Porcentaje (1 a 100)'
-                                : 'Monto (RD$)'
-                        }
-                        inputMode="decimal"
-                        value={state.value}
-                        onChange={(e) => onChange({ value: e.target.value })}
-                        error={
-                            errors.discount_value ??
-                            (amount === null
-                                ? state.type === 'porcentaje'
-                                    ? 'Escribe un porcentaje entero entre 1 y 100.'
-                                    : 'El monto no puede ser mayor que el total.'
-                                : undefined)
-                        }
-                    />
-                    <FormField
-                        as="textarea"
-                        name="discount_reason"
-                        label="Motivo del descuento"
-                        rows={2}
-                        value={state.reason}
-                        onChange={(e) => onChange({ reason: e.target.value })}
-                        error={errors.discount_reason}
-                        required
-                    />
+                <div className="flex flex-wrap gap-[6px] pb-[2px]">
+                    {QUICK.map((pct) => {
+                        const active = state.percent === String(pct);
+                        return (
+                            <button
+                                key={pct}
+                                type="button"
+                                aria-pressed={active}
+                                onClick={() =>
+                                    onChange({
+                                        percent: active ? '' : String(pct),
+                                    })
+                                }
+                                className={cn(
+                                    'h-8 cursor-pointer rounded-[8px] border px-[10px] text-[13px] font-semibold',
+                                    active
+                                        ? 'border-primary bg-accent-bg text-primary'
+                                        : 'border-input-border bg-card text-text-secondary',
+                                )}
+                            >
+                                {pct}%
+                            </button>
+                        );
+                    })}
                 </div>
+            </div>
+            {hasDiscount(state) && amount !== null && (
+                <FormField
+                    as="textarea"
+                    name="discount_reason"
+                    label="Motivo del descuento"
+                    rows={2}
+                    value={state.reason}
+                    onChange={(e) => onChange({ reason: e.target.value })}
+                    error={errors.discount_reason}
+                    required
+                />
             )}
         </div>
     );

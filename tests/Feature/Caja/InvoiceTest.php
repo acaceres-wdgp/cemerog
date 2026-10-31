@@ -102,19 +102,22 @@ test('a percentage discount lowers the total and the doctor fee in proportion', 
         ->and($invoice->lines->firstWhere('type', 'consulta')->doctor_fee)->toBe(90000);
 });
 
-test('a fixed-amount discount is applied and cannot exceed the total', function () {
+test('the discount is only a percentage between 1 and 100', function () {
     $account = billableAccount($this->patient, $this->doctor, $this->admin);
 
     $this->actingAs($this->secretaria)
         ->post("/facturacion/cuentas/{$account->id}/facturar", [
-            'discount_type' => 'monto', 'discount_value' => 250000, 'discount_reason' => 'Error',
+            'discount_type' => 'monto', 'discount_value' => 50000, 'discount_reason' => 'Cortesía',
+        ])
+        ->assertSessionHasErrors(['discount_type']);
+
+    $this->actingAs($this->secretaria)
+        ->post("/facturacion/cuentas/{$account->id}/facturar", [
+            'discount_type' => 'porcentaje', 'discount_value' => 101, 'discount_reason' => 'Error',
         ])
         ->assertSessionHasErrors(['discount_value']);
 
-    $invoice = invoiceAccount($this->secretaria, $account, [
-        'discount_type' => 'monto', 'discount_value' => 50000, 'discount_reason' => 'Cortesía',
-    ]);
-    expect($invoice->total)->toBe(150000);
+    expect($account->fresh()->status)->not->toBe('facturada');
 });
 
 test('a 100% discount leaves nothing to collect and the doctor fee at zero', function () {
