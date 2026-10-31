@@ -5,7 +5,7 @@ import { formatMoney } from '@/lib/money';
 import caja from '@/routes/caja';
 import type { BillableAccount } from '../types';
 import DiscountFields, {
-    discountAmount,
+    computeDiscount,
     discountIsValid,
     discountPayload,
     initialDiscount,
@@ -17,6 +17,9 @@ import PaymentFields, {
     paymentPayload,
 } from './PaymentFields';
 import type { PaymentState } from './PaymentFields';
+
+const discountOf = (d: DiscountState, subtotal: number) =>
+    computeDiscount(subtotal, d.percent) ?? 0;
 
 /**
  * Emit the invoice of an account and, in the same step, collect it or
@@ -38,8 +41,8 @@ export default function EmitInvoiceDialog({
     );
     const [isLoading, setIsLoading] = useState(false);
 
-    const total =
-        account.total - (discountAmount(discount, account.total) ?? 0);
+    const discountValue = discountOf(discount, account.total);
+    const total = account.total - discountValue;
     const free = total === 0;
     const canSubmit =
         discountIsValid(discount, account.total) &&
@@ -50,8 +53,7 @@ export default function EmitInvoiceDialog({
         setDiscount(next);
         // Keep the amount to collect in step with the discounted total
         if (payment.method !== 'credito') {
-            const nextTotal =
-                account.total - (discountAmount(next, account.total) ?? 0);
+            const nextTotal = account.total - discountOf(next, account.total);
             setPayment((p) => ({ ...p, amount: (nextTotal / 100).toFixed(2) }));
         }
     };
@@ -104,6 +106,31 @@ export default function EmitInvoiceDialog({
                     errors={errors}
                     onChange={changeDiscount}
                 />
+                <div className="flex flex-col gap-1 rounded-[10px] bg-app-bg px-3 py-[10px] text-[13.5px] tabular-nums">
+                    <div className="flex justify-between">
+                        <span className="text-muted">Subtotal</span>
+                        <span>{formatMoney(account.total)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-muted">
+                            Descuento
+                            {discountValue > 0 ? ` (${discount.percent}%)` : ''}
+                        </span>
+                        <span
+                            className={
+                                discountValue > 0 ? 'text-error' : undefined
+                            }
+                        >
+                            {discountValue > 0
+                                ? `−${formatMoney(discountValue)}`
+                                : formatMoney(0)}
+                        </span>
+                    </div>
+                    <div className="flex justify-between border-t border-divider pt-1 text-[15px] font-semibold text-text-heading">
+                        <span>Total a facturar</span>
+                        <span>{formatMoney(total)}</span>
+                    </div>
+                </div>
                 {free ? (
                     <p className="rounded-[10px] bg-accent-bg px-3 py-2 text-[13px] text-accent-fg">
                         Con el descuento completo no hay nada que cobrar.

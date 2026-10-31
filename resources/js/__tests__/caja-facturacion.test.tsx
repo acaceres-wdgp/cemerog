@@ -110,12 +110,11 @@ const props = (overrides: Partial<CajaProps> = {}): CajaProps => ({
 });
 
 describe('computeDiscount', () => {
-    it('computes percentage and amount discounts and rejects invalid ones', () => {
-        expect(computeDiscount(200000, 'porcentaje', '10')).toBe(20000);
-        expect(computeDiscount(200000, 'porcentaje', '100')).toBe(200000);
-        expect(computeDiscount(200000, 'porcentaje', '101')).toBeNull();
-        expect(computeDiscount(200000, 'monto', '500')).toBe(50000);
-        expect(computeDiscount(200000, 'monto', '2500')).toBeNull();
+    it('computes a percentage of the subtotal and rejects invalid ones', () => {
+        expect(computeDiscount(200000, '')).toBe(0);
+        expect(computeDiscount(200000, '10')).toBe(20000);
+        expect(computeDiscount(200000, '100')).toBe(200000);
+        expect(computeDiscount(200000, '101')).toBeNull();
     });
 });
 
@@ -199,11 +198,12 @@ describe('Facturación', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Emitir factura' }));
         const dialog = screen.getByRole('dialog');
-        fireEvent.click(within(dialog).getByLabelText('Aplicar descuento'));
-        fireEvent.change(
-            within(dialog).getByLabelText(/Porcentaje \(1 a 100\)/),
-            { target: { value: '10' } },
-        );
+        // The discount field is always there and only takes a percentage
+        fireEvent.change(within(dialog).getByLabelText(/Descuento \(%\)/), {
+            target: { value: '10' },
+        });
+        expect(within(dialog).getByText('Descuento (10%)')).toBeTruthy();
+        expect(within(dialog).getByText('RD$1,800.00')).toBeTruthy();
         expect(within(dialog).getByLabelText(/Monto \(RD\$\)/)).toHaveValue(
             '1800.00',
         );
@@ -225,6 +225,34 @@ describe('Facturación', () => {
                 discount_value: 10,
                 discount_reason: 'Referido',
                 payments: [{ method: 'efectivo', amount: 180000 }],
+            },
+            expect.anything(),
+        );
+    });
+
+    it('the quick percentage buttons apply the discount; 100% leaves nothing to collect', () => {
+        render(<CajaIndex {...props()} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Emitir factura' }));
+        const dialog = screen.getByRole('dialog');
+        fireEvent.click(within(dialog).getByRole('button', { name: '100%' }));
+        expect(within(dialog).getByText(/no hay nada que cobrar/)).toBeTruthy();
+
+        fireEvent.change(
+            within(dialog).getByLabelText(/Motivo del descuento/),
+            {
+                target: { value: 'Cortesía' },
+            },
+        );
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Emitir factura' }),
+        );
+        expect(mockPost).toHaveBeenCalledWith(
+            '/facturacion/cuentas/5/facturar',
+            {
+                discount_type: 'porcentaje',
+                discount_value: 100,
+                discount_reason: 'Cortesía',
             },
             expect.anything(),
         );
