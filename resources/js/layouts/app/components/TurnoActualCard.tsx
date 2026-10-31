@@ -1,11 +1,11 @@
 /**
  * TurnoActualCard – sidebar card showing the doctor's current turn and queue.
  * Only rendered when the authenticated user has a linked doctor.
- * Queue data is loaded via Inertia::defer() on the backend; the frontend
- * triggers a partial reload on mount to fetch it.
+ * The queue comes with every page (shared prop); after «Llamar siguiente»
+ * only the queue is reloaded.
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { Stethoscope } from 'lucide-react';
@@ -23,14 +23,6 @@ export function TurnoActualCard({
     collapsed,
 }: TurnoActualCardProps) {
     const [loading, setLoading] = useState(false);
-
-    // Trigger a partial reload on mount to fetch the deferred queue prop
-    useEffect(() => {
-        if (queue === undefined) {
-            router.reload({ only: ['queue'] });
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     const handleCallNext = () => {
         setLoading(true);

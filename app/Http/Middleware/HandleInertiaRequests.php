@@ -7,7 +7,6 @@ use App\Models\Turn;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Inertia\Inertia;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -65,9 +64,10 @@ class HandleInertiaRequests extends Middleware
                 ]
                 : null,
             'cash_shift' => fn () => $this->resolveCashShift($user),
-            'queue' => $user?->doctor !== null
-                ? Inertia::defer(fn () => $this->resolveQueue($user))
-                : null,
+            // Two cheap counts: sent with the page. Deferring them made every
+            // navigation of a doctor fire a second request that ran the whole
+            // page again.
+            'queue' => fn () => $this->resolveQueue($user),
         ];
     }
 

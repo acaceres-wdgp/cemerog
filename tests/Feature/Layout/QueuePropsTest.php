@@ -328,9 +328,11 @@ test('callNext no llama un turno con arrived_at de ayer', function () {
     expect($yesterdayTurn->fresh()->status)->toBe('espera');
 });
 
-// ─── Adjustment 1: queue debe ser deferred (no optional) ─────────────────────
+// ─── queue comes in the same response ────────────────────────────────────────
+// Deferring it made every navigation of a doctor fire a second request that
+// ran the whole page again, just for two counts.
 
-test('la prop queue es deferred en la respuesta Inertia inicial', function () {
+test('la prop queue llega en la misma respuesta, sin una segunda petición', function () {
     $user = User::factory()->create();
     $user->assignRole('medico');
 
@@ -340,17 +342,12 @@ test('la prop queue es deferred en la respuesta Inertia inicial', function () {
         'user_id' => $user->id,
     ]);
 
-    // Initial Inertia page load: queue should appear in deferredProps, not in props
     $response = $this->actingAs($user)->get('/inicio');
 
-    // The page data is passed to the view; decode it
     $page = json_decode(json_encode($response->viewData('page')), true);
 
-    expect($page['deferredProps'] ?? [])->not->toBeEmpty();
-    $allDeferred = collect($page['deferredProps'])->flatten()->values()->all();
-    expect($allDeferred)->toContain('queue');
-    // queue must NOT be eagerly resolved in the initial props
-    expect(array_key_exists('queue', $page['props']))->toBeFalse();
+    expect(collect($page['deferredProps'] ?? [])->flatten()->all())->not->toContain('queue')
+        ->and($page['props']['queue'])->toBe(['current_turn' => null, 'waiting_count' => 0]);
 });
 
 test('usuario sin doctor vinculado recibe queue null en la respuesta inicial', function () {
