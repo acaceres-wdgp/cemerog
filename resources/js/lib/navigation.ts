@@ -210,6 +210,13 @@ export const NAV_GROUPS: NavGroup[] = [
                 permission: 'module.habs.access',
             },
             {
+                key: 'admin-emergencia',
+                label: 'Emergencia',
+                icon: 'Siren',
+                href: '/admin/emergencia',
+                permission: 'module.admin.access',
+            },
+            {
                 key: 'tema',
                 label: 'Tema y estados',
                 icon: 'Palette',
