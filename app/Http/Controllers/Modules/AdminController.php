@@ -102,7 +102,8 @@ class AdminController extends Controller
         return Inertia::render('admin/index', [
             'users' => $users,
             'roles' => $roles,
-            'permissions' => $permissions,
+            // Not `permissions`: that is the shared prop with the user's own permissions
+            'available_permissions' => $permissions,
         ]);
     }
 
