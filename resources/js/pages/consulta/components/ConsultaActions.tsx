@@ -14,6 +14,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import consulta from '@/routes/consulta';
 import AltaMedicaModal from './AltaMedicaModal';
 import { TurnItem } from '../types';
 
@@ -173,7 +174,9 @@ export default function ConsultaActions({
             <AltaMedicaModal
                 open={altaOpen}
                 onOpenChange={setAltaOpen}
-                turn={turn}
+                patientName={turn.patient.full_name}
+                subtitle={`Turno T-${String(turn.turn_number).padStart(2, '0')}`}
+                url={consulta.discharge.url(turn.id)}
                 onDischargeSuccess={onDischargeSuccess}
             />
         </TooltipProvider>
