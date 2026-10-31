@@ -411,3 +411,19 @@ Al llegar un paciente se necesita registrar qué consumió ese día (consultas, 
 - **Caja factura lo que hay.** Un cargo que llega después de facturar va a una cuenta nueva y sale en otra factura; una factura emitida no se modifica.
 - **Mismo día, sin facturar:** si el paciente vuelve, se reabre su cuenta del día (`GetOrOpenDailyAccount`) y todo sale en una sola factura. Si ya se facturó, o la cuenta se anuló por vacía, se abre una cuenta nueva.
 - **Otro día:** siempre factura nueva. Análisis e imágenes se registran desde su propio módulo, sin turno de consulta; ese módulo abre o usa la cuenta del día del paciente.
+
+---
+
+## ADR-019: Emergencia — ingreso rápido, cubículos y cargos
+
+**Fecha**: 2026-10  
+**Estado**: Aceptado
+
+**Decisión:**
+
+- **Ingreso rápido** con lo mínimo: nombre (o **N.N. · Sin identificar**), documento (o tipo «No tiene»), sexo, cubículo, médico de turno y motivo. Primero se busca al paciente por identificación; si existe, no se tocan sus datos. Sin edad ni prioridad inicial.
+- `patients.birth_date` pasa a ser opcional y `patients.profile_incomplete` marca al paciente hasta que Recepción guarde su ficha completa.
+- **Cubículos** configurables por el administrador (`emergency_cubicles`), sin release. Un cubículo tiene un solo paciente a la vez: `emergencies.occupied_cubicle_id` es único y se libera al dar el alta.
+- **Cargo de emergencia** al ingresar, con el precio de `settings.emergency_fee`. La emergencia guarda su `account_id`: todo lo que se aplique durante la estancia va a esa cuenta, aunque pase la medianoche, y la cuenta sigue abierta mientras la emergencia esté activa.
+- `account_charges.type` pasa de enum a texto validado en la aplicación, para sumar `emergencia` e `insumo`.
+- Medicamentos e insumos salen del catálogo (`inventory_items`, solo el administrador lo edita). Aplicarlos descuenta existencia sin bloquear al llegar a 0. Un medicamento traído por el paciente se registra sin cargo y sin tocar el inventario.

@@ -120,9 +120,12 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::get('/recetas/{prescription}/imprimir', [PrescriptionController::class, 'print'])->name('consulta.receta.print');
     });
 
-    Route::get('/emergencia', [EmergenciaController::class, 'index'])
-        ->middleware('permission:module.emergencia.access')
-        ->name('emergencia');
+    Route::prefix('/emergencia')->middleware('permission:module.emergencia.access')->group(function () {
+        Route::get('/', [EmergenciaController::class, 'index'])->name('emergencia');
+        Route::get('/ingreso', [EmergenciaController::class, 'create'])->name('emergencia.ingreso');
+        Route::post('/ingreso', [EmergenciaController::class, 'store'])->name('emergencia.ingreso.store');
+        Route::get('/pacientes/buscar', [EmergenciaController::class, 'searchPatients'])->name('emergencia.pacientes.buscar');
+    });
 
     Route::get('/internamiento', [InternamientoController::class, 'index'])
         ->middleware('permission:module.internamiento.access')

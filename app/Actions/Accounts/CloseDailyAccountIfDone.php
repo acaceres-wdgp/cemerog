@@ -3,6 +3,7 @@
 namespace App\Actions\Accounts;
 
 use App\Models\Account;
+use App\Models\Emergency;
 use App\Models\Patient;
 use App\Models\Turn;
 use Carbon\CarbonInterface;
@@ -24,7 +25,10 @@ class CloseDailyAccountIfDone
             ->whereIn('status', ['espera', 'en_consulta'])
             ->exists();
 
-        if ($hasOpenTurns) {
+        // A patient in emergency keeps the account open until discharged
+        $inEmergency = Emergency::active()->where('patient_id', $patient->id)->exists();
+
+        if ($hasOpenTurns || $inEmergency) {
             return;
         }
 

@@ -22,7 +22,8 @@ use Illuminate\Support\Facades\Storage;
  * @property string|null $email Decrypted on read; encrypted on write.
  * @property string $first_names
  * @property string $last_names
- * @property Carbon $birth_date
+ * @property Carbon|null $birth_date
+ * @property bool $profile_incomplete
  * @property string $sex
  * @property string|null $phone Decrypted on read; encrypted on write.
  * @property string|null $phone_hash HMAC-SHA256 of digits-only phone number.
@@ -48,6 +49,7 @@ use Illuminate\Support\Facades\Storage;
     'address',
     'blood_type',
     'allergies',
+    'profile_incomplete',
     'emergency_contact_name',
     'emergency_contact_phone',
     'photo_path',
@@ -77,6 +79,7 @@ class Patient extends Model
     {
         return [
             'birth_date' => 'date',
+            'profile_incomplete' => 'boolean',
             'email' => 'encrypted', // uses Crypt::encryptString via the cast — no Attribute conflict
         ];
     }
@@ -134,9 +137,10 @@ class Patient extends Model
         return "{$first}{$last}";
     }
 
-    public function getAgeAttribute(): int
+    /** Null when the birth date is not known yet (emergency quick admission) */
+    public function getAgeAttribute(): ?int
     {
-        return $this->birth_date->age;
+        return $this->birth_date?->age;
     }
 
     public function getPhotoUrlAttribute(): ?string

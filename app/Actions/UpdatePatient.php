@@ -25,7 +25,8 @@ class UpdatePatient
             $data['photo_path'] = $file->store('patients/photos', 'public');
         }
 
-        $patient->update($data);
+        // Recepción saved the full profile: no longer incomplete
+        $patient->update([...$data, 'profile_incomplete' => false]);
 
         return $patient->fresh();
     }
