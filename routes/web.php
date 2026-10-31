@@ -22,6 +22,7 @@ use App\Http\Controllers\Modules\ImgController;
 use App\Http\Controllers\Modules\ImpresosController;
 use App\Http\Controllers\Modules\InicioController;
 use App\Http\Controllers\Modules\InternamientoController;
+use App\Http\Controllers\Modules\InvoiceController;
 use App\Http\Controllers\Modules\LabController;
 use App\Http\Controllers\Modules\PacientesController;
 use App\Http\Controllers\Modules\PreciosController;
@@ -146,6 +147,11 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
     Route::get('/facturacion', [CajaController::class, 'index'])
         ->middleware('permission:module.caja.access')
         ->name('caja');
+    Route::prefix('/facturacion')->middleware('permission:module.caja.access')->group(function () {
+        Route::post('/cuentas/{account}/facturar', [InvoiceController::class, 'store'])->name('caja.invoices.store');
+        Route::post('/facturas/{invoice}/anular', [InvoiceController::class, 'void'])->name('caja.invoices.void');
+        Route::get('/facturas/{invoice}/imprimir', [InvoiceController::class, 'print'])->name('caja.invoices.print');
+    });
 
     Route::get('/cuentas-por-cobrar', [CxcController::class, 'index'])
         ->middleware('permission:module.cxc.access')

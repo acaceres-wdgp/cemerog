@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon|null $closed_at
  * @property-read Patient $patient
  * @property-read Collection<int, AccountCharge> $charges
+ * @property-read Collection<int, Invoice> $invoices
  */
 class Account extends Model
 {
@@ -44,5 +45,11 @@ class Account extends Model
     public function charges(): HasMany
     {
         return $this->hasMany(AccountCharge::class);
+    }
+
+    /** @return HasMany<Invoice, $this> */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
     }
 }
