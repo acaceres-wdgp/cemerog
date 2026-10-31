@@ -72,7 +72,10 @@ function VoidReceiptDialog({
     );
 }
 
-/** Receipts of an invoice, with print and (administrators) void */
+const methodsOf = (r: ReceiptRow) =>
+    r.payments.map((p) => METHOD_LABELS[p.method]).join(' + ');
+
+/** «Pagos» of an invoice as in the design, with print and (administrators) void */
 export default function ReceiptsList({
     receipts,
     canVoid,
@@ -82,37 +85,45 @@ export default function ReceiptsList({
 }) {
     const [voiding, setVoiding] = useState<ReceiptRow | null>(null);
 
-    if (receipts.length === 0) return null;
-
     return (
         <div>
-            <p className="mb-1 text-[11.5px] font-semibold tracking-[.05em] text-table-header-text uppercase">
-                Recibos
-            </p>
-            <ul className="m-0 list-none divide-y divide-divider rounded-xl border border-card-border p-0 text-[13px]">
-                {receipts.map((r) => (
-                    <li
+            <div className="mb-2 font-semibold text-text-heading">Pagos</div>
+            {receipts.length === 0 ? (
+                <div className="rounded-[10px] border border-dashed border-input-border px-3 py-[10px] text-[13px] text-muted">
+                    Aún no hay pagos registrados.
+                </div>
+            ) : (
+                receipts.map((r) => (
+                    <div
                         key={r.id}
                         className={cn(
-                            'flex flex-wrap items-center justify-between gap-2 px-4 py-2',
+                            'flex items-start justify-between gap-3 border-b border-muted-bg py-2 text-[13px]',
                             r.voided && 'text-muted',
                         )}
                     >
-                        <span>
-                            <span className="font-semibold text-text-heading">
-                                {r.number}
-                            </span>{' '}
-                            · {r.created_at} · {r.created_by}
-                            <span className="block text-[12px] text-muted">
-                                {r.voided
-                                    ? `Anulado: ${r.void_reason}`
-                                    : r.payments.map(paymentLabel).join(' + ')}
-                            </span>
+                        <span className="min-w-0 flex-1">
+                            {r.created_at.slice(0, 10)} · {methodsOf(r)} ·
+                            Recibo {r.number}
+                            {r.voided && (
+                                <span className="block text-[12px]">
+                                    Anulado: {r.void_reason}
+                                </span>
+                            )}
+                            {!r.voided &&
+                                r.payments.some(
+                                    (p) => p.reference || p.change_given,
+                                ) && (
+                                    <span className="block text-[12px] text-muted">
+                                        {r.payments
+                                            .map(paymentLabel)
+                                            .join(' + ')}
+                                    </span>
+                                )}
                         </span>
-                        <span className="flex items-center gap-3">
+                        <span className="flex shrink-0 items-center gap-3">
                             <span
                                 className={cn(
-                                    'font-semibold tabular-nums',
+                                    'font-medium tabular-nums',
                                     r.voided && 'line-through',
                                 )}
                             >
@@ -125,7 +136,7 @@ export default function ReceiptsList({
                                     rel="noreferrer"
                                     className="text-[12.5px] font-semibold text-primary"
                                 >
-                                    Imprimir
+                                    Recibo
                                 </a>
                             )}
                             {canVoid && !r.voided && (
@@ -138,9 +149,9 @@ export default function ReceiptsList({
                                 </button>
                             )}
                         </span>
-                    </li>
-                ))}
-            </ul>
+                    </div>
+                ))
+            )}
             {voiding && (
                 <VoidReceiptDialog
                     receipt={voiding}

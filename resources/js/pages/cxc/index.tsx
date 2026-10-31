@@ -5,7 +5,7 @@ import EmptyState from '@/components/cemerog/EmptyState';
 import SegmentedControl from '@/components/cemerog/SegmentedControl';
 import { formatMoney } from '@/lib/money';
 import { cn } from '@/lib/utils';
-import InvoiceDetailPanel from '@/pages/caja/components/InvoiceDetailPanel';
+import AccountPanel from '@/pages/caja/components/AccountPanel';
 import type { InvoiceDetail, InvoiceSummary } from '@/pages/caja/types';
 import { cxc } from '@/routes';
 
@@ -180,7 +180,7 @@ export default function CxcIndex({
                 </div>
                 <div className="min-w-[320px] flex-[2_1_520px]">
                     {selected_invoice ? (
-                        <InvoiceDetailPanel
+                        <AccountPanel
                             invoice={selected_invoice}
                             canVoid={can_void}
                         />

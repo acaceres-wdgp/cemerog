@@ -1,7 +1,7 @@
 import React from 'react';
 import PrintablePage from '@/components/cemerog/PrintablePage';
-import { formatMoney } from '@/lib/money';
 import ChargesTable from './components/ChargesTable';
+import TotalsBox from './components/TotalsBox';
 import type { InvoiceDetail } from './types';
 
 type ClinicInfo = {
@@ -75,23 +75,23 @@ export default function FacturaImprimir({
                         </span>
                     </div>
 
-                    <ChargesTable
-                        rows={invoice.lines}
-                        discount={invoice.discount_amount}
-                        discountLabel={
-                            invoice.discount_type === 'porcentaje'
-                                ? `Descuento (${invoice.discount_value}%)`
-                                : 'Descuento'
-                        }
-                    />
+                    <ChargesTable rows={invoice.lines} />
 
-                    <div className="mt-4 flex justify-end gap-6 text-[13px]">
-                        <span className="text-muted">
-                            Pagado {formatMoney(invoice.paid_amount)}
-                        </span>
-                        <span className="font-semibold text-text-heading">
-                            Balance {formatMoney(invoice.balance)}
-                        </span>
+                    <div className="mt-4 ml-auto w-[320px]">
+                        <TotalsBox
+                            subtotal={invoice.subtotal}
+                            discount={invoice.discount_amount}
+                            discountLabel={
+                                invoice.discount_type === 'porcentaje'
+                                    ? `Descuento (${invoice.discount_value}%)`
+                                    : 'Descuento'
+                            }
+                            paid={
+                                invoice.status === 'anulada'
+                                    ? 0
+                                    : invoice.paid_amount
+                            }
+                        />
                     </div>
 
                     <p className="mt-10 text-center text-[12px] text-muted">

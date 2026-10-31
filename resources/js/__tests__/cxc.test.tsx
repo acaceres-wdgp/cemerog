@@ -2,7 +2,7 @@
  * Cuentas por cobrar: totals, overdue filter and installments.
  */
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockGet, mockPost, page } = vi.hoisted(() => ({
@@ -69,6 +69,8 @@ const detail: InvoiceDetail = {
     lines: [
         {
             id: 1,
+            date: '20/10/2026',
+            area: 'Consulta',
             description: 'Consulta',
             quantity: 1,
             unit_price: 200000,
@@ -133,7 +135,7 @@ describe('Cuentas por cobrar', () => {
         );
     });
 
-    it('an installment keeps the existing due date', () => {
+    it('an installment on a credit keeps the existing due date', () => {
         render(
             <CxcIndex
                 invoices={[row]}
@@ -145,15 +147,19 @@ describe('Cuentas por cobrar', () => {
         );
 
         fireEvent.click(screen.getByRole('button', { name: 'Registrar pago' }));
-        fireEvent.change(screen.getByLabelText('Monto (RD$)'), {
+        const dialog = screen.getByRole('dialog');
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Crédito' }),
+        );
+        fireEvent.change(within(dialog).getByLabelText(/Abono inicial/), {
             target: { value: '500' },
         });
-        expect(screen.getByLabelText(/Fecha compromiso de pago/)).toHaveValue(
-            '2026-10-25',
-        );
+        expect(
+            within(dialog).getByLabelText(/Fecha compromiso de pago/),
+        ).toHaveValue('2026-10-25');
 
         fireEvent.click(
-            screen.getAllByRole('button', { name: 'Registrar pago' }).at(-1)!,
+            within(dialog).getByRole('button', { name: 'Registrar crédito' }),
         );
         expect(mockPost).toHaveBeenCalledWith(
             '/facturacion/facturas/3/pagos',
