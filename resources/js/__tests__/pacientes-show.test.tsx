@@ -199,6 +199,35 @@ describe('PacienteShow', () => {
         ).toBeNull();
     });
 
+    it('shows the history without its own filters, since the page has tabs', () => {
+        render(
+            <PacienteShow
+                {...makeProps({
+                    tab: 'historial',
+                    historial: [
+                        {
+                            type: 'consulta',
+                            date: '2026-10-30T10:00:00-04:00',
+                            mine: true,
+                            doctor: {
+                                id: 1,
+                                full_name: 'Dr. Pérez',
+                                specialty: 'Medicina General',
+                            },
+                            motivo_consulta: 'Dolor de cabeza',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(screen.getByText('Historial en la clínica')).toBeTruthy();
+        expect(
+            screen.queryByRole('button', { name: /Notas clínicas/ }),
+        ).toBeNull();
+        expect(screen.queryByRole('button', { name: /Míos/ })).toBeNull();
+    });
+
     it('hides Editar datos and Nueva atención without Registro access', () => {
         page.props.permissions = [];
         render(<PacienteShow {...makeProps()} />);
