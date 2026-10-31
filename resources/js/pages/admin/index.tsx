@@ -19,7 +19,8 @@ type UserRow = {
 type Props = {
     users: UserRow[];
     roles: Role[];
-    permissions: Permission[];
+    // Not `permissions`: that name is the shared prop the sidebar reads
+    available_permissions: Permission[];
 };
 
 // ─── Design tokens / constants ────────────────────────────────────────────────
@@ -982,7 +983,11 @@ function PasswordModal({
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function AdminIndex() {
-    const { users, roles, permissions } = usePage<Props>().props;
+    const {
+        users,
+        roles,
+        available_permissions: permissions,
+    } = usePage<Props>().props;
 
     const [query, setQuery] = useState('');
     const [showUserModal, setShowUserModal] = useState(false);

@@ -49,7 +49,16 @@ test('admin can list users and gets correct Inertia props', function () {
             ->component('admin/index')
             ->has('users')
             ->has('roles')
-            ->has('permissions')
+            ->has('available_permissions')
+        );
+});
+
+test('the admin page keeps the shared permissions the sidebar needs', function () {
+    $this->actingAs($this->admin)
+        ->get('/admin/usuarios')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('permissions', fn ($perms) => collect($perms)->contains('module.admin.access'))
         );
 });
 
@@ -112,7 +121,7 @@ test('index returns all available permissions', function () {
 
     $response->assertOk()
         ->assertInertia(fn ($page) => $page
-            ->has('permissions', fn ($perms) => $perms
+            ->has('available_permissions', fn ($perms) => $perms
                 ->has(0, fn ($perm) => $perm
                     ->has('name')
                     ->has('label')
