@@ -15,8 +15,8 @@ class RecordPayment
 {
     /**
      * Collect money for an invoice in the open shift. Several methods can be
-     * combined in one receipt. Whatever is left unpaid needs a credit with a
-     * due date, and then the invoice goes to accounts receivable.
+     * combined in one receipt. A balance left unpaid stays on the invoice and
+     * shows in accounts receivable; choosing credit records its due date.
      *
      * @param  list<array{method: string, amount: int, cash_received?: int|null, reference?: string|null}>  $lines
      * @param  array{due_date: string, note?: string|null}|null  $credit
@@ -44,11 +44,12 @@ class RecordPayment
                 ]);
             }
 
-            $leftover = $balance - $paying;
-            if ($leftover > 0) {
+            // A partial payment just leaves a balance (it can be paid in several
+            // steps). Choosing credit records the due date of that balance.
+            if ($credit !== null && $paying < $balance) {
                 $this->applyCredit($invoice, $credit);
             } elseif ($paying === 0) {
-                throw ValidationException::withMessages(['payments' => 'Indica al menos un pago.']);
+                throw ValidationException::withMessages(['payments' => 'Indica el monto a pagar.']);
             }
 
             // Money needs an open shift; leaving it all on credit does not

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Modules;
 
-use App\Actions\Caja\CreateInvoice;
+use App\Actions\Caja\IssueInvoice;
 use App\Actions\Caja\VoidInvoice;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreInvoiceRequest;
@@ -18,21 +18,29 @@ use Inertia\Response;
 
 class InvoiceController extends Controller
 {
-    public function store(StoreInvoiceRequest $request, Account $account, CreateInvoice $action): RedirectResponse
+    public function store(StoreInvoiceRequest $request, Account $account, IssueInvoice $action): RedirectResponse
     {
         /** @var User $user */
         $user = $request->user();
         $data = $request->validated();
 
-        $invoice = $action->handle(
+        ['invoice' => $invoice, 'receipt' => $receipt] = $action->handle(
             $account,
             $user,
-            $data['discount_type'] ?? null,
-            isset($data['discount_value']) ? (int) $data['discount_value'] : null,
-            $data['discount_reason'] ?? null,
+            [
+                'type' => $data['discount_type'] ?? null,
+                'value' => isset($data['discount_value']) ? (int) $data['discount_value'] : null,
+                'reason' => $data['discount_reason'] ?? null,
+            ],
+            $request->paymentLines(),
+            $request->creditTerms(),
         );
 
-        Toast::success("Factura {$invoice->number} emitida.");
+        Toast::success(match (true) {
+            $invoice->status === 'pagada' => "Factura {$invoice->number} emitida y saldada.",
+            $receipt !== null => "Factura {$invoice->number} emitida. Recibo {$receipt->number}.",
+            default => "Factura {$invoice->number} emitida.",
+        });
 
         return redirect()->route('caja', ['factura' => $invoice->id]);
     }

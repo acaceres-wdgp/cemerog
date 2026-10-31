@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $doctor_fee
  * @property-read Invoice $invoice
  * @property-read Doctor|null $doctor
+ * @property-read AccountCharge|null $accountCharge
  */
 class InvoiceLine extends Model
 {
@@ -53,5 +54,11 @@ class InvoiceLine extends Model
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(Doctor::class);
+    }
+
+    /** @return BelongsTo<AccountCharge, $this> */
+    public function accountCharge(): BelongsTo
+    {
+        return $this->belongsTo(AccountCharge::class);
     }
 }

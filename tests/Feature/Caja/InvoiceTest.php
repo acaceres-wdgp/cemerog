@@ -256,3 +256,51 @@ test('the invoices migration can be rolled back', function () {
     Artisan::call('migrate', ['--path' => "database/migrations/{$migration}.php"]);
     expect(Schema::hasTable('invoices'))->toBeTrue();
 });
+
+// ─── Emitting and collecting in one step ─────────────────────────────────────
+
+test('emitting with a cash payment issues the invoice and pays it at once', function () {
+    $account = billableAccount($this->patient, $this->doctor, $this->admin);
+    $this->actingAs($this->secretaria)->post('/caja/turno', ['opening_amount' => 100000]);
+
+    $this->actingAs($this->secretaria)
+        ->post("/facturacion/cuentas/{$account->id}/facturar", [
+            'payments' => [['method' => 'efectivo', 'amount' => 200000, 'cash_received' => 200000]],
+        ])
+        ->assertSessionHasNoErrors();
+
+    $invoice = Invoice::first();
+    expect($invoice->status)->toBe('pagada')
+        ->and($invoice->receipts)->toHaveCount(1)
+        ->and(session('inertia.flash_data.toast.message'))->toBe('Factura F-0000001 emitida y saldada.');
+});
+
+test('emitting on credit with no down payment needs no open shift', function () {
+    $account = billableAccount($this->patient, $this->doctor, $this->admin);
+
+    $this->actingAs($this->secretaria)
+        ->post("/facturacion/cuentas/{$account->id}/facturar", [
+            'payments' => [],
+            'credit' => ['due_date' => today()->addWeek()->toDateString(), 'note' => 'Pagará el viernes'],
+        ])
+        ->assertSessionHasNoErrors();
+
+    $invoice = Invoice::first();
+    expect($invoice->status)->toBe('pendiente')
+        ->and($invoice->balance())->toBe(200000)
+        ->and($invoice->credit_note)->toBe('Pagará el viernes');
+});
+
+test('if the payment is rejected nothing is issued', function () {
+    $account = billableAccount($this->patient, $this->doctor, $this->admin);
+
+    // Collecting cash without an open shift
+    $this->actingAs($this->secretaria)
+        ->post("/facturacion/cuentas/{$account->id}/facturar", [
+            'payments' => [['method' => 'efectivo', 'amount' => 200000]],
+        ])
+        ->assertSessionHasErrors(['shift']);
+
+    expect(Invoice::count())->toBe(0)
+        ->and($account->fresh()->status)->toBe('pendiente_facturar');
+});

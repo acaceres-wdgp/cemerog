@@ -22,20 +22,7 @@ class PaymentController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-        $data = $request->validated();
-
-        $lines = array_map(fn (array $p): array => [
-            'method' => (string) $p['method'],
-            'amount' => (int) $p['amount'],
-            'cash_received' => isset($p['cash_received']) ? (int) $p['cash_received'] : null,
-            'reference' => $p['reference'] ?? null,
-        ], $data['payments']);
-
-        $credit = isset($data['credit']['due_date']) && $data['credit']['due_date'] !== ''
-            ? ['due_date' => (string) $data['credit']['due_date'], 'note' => $data['credit']['note'] ?? null]
-            : null;
-
-        $receipt = $action->handle($invoice, $user, array_values($lines), $credit);
+        $receipt = $action->handle($invoice, $user, $request->paymentLines(), $request->creditTerms());
 
         Toast::success($receipt !== null
             ? "Pago registrado. Recibo {$receipt->number}."

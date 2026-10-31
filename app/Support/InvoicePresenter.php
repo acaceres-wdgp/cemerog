@@ -12,6 +12,16 @@ use App\Models\Receipt;
 /** Shapes accounts and invoices for the billing pages */
 class InvoicePresenter
 {
+    /** Area shown for each charge type */
+    private const AREAS = [
+        'consulta' => 'Consulta',
+        'laboratorio' => 'Laboratorio',
+        'imagen' => 'Imágenes',
+        'medicamento' => 'Farmacia',
+        'procedimiento' => 'Procedimiento',
+        'otro' => 'Otro',
+    ];
+
     /** @return array<string, mixed> */
     public function account(Account $account): array
     {
@@ -26,6 +36,8 @@ class InvoicePresenter
             ],
             'charges' => $account->charges->map(fn (AccountCharge $c): array => [
                 'id' => $c->id,
+                'date' => $c->created_at?->format('d/m/Y'),
+                'area' => self::AREAS[$c->type] ?? $c->type,
                 'description' => $c->description,
                 'quantity' => $c->quantity,
                 'unit_price' => $c->unit_price,
@@ -93,7 +105,7 @@ class InvoicePresenter
     /** @return array<string, mixed> */
     public function detail(Invoice $invoice): array
     {
-        $invoice->loadMissing(['patient', 'issuer', 'voider', 'lines.doctor', 'account', 'receipts.payments', 'receipts.creator']);
+        $invoice->loadMissing(['patient', 'issuer', 'voider', 'lines.doctor', 'lines.accountCharge', 'account', 'receipts.payments', 'receipts.creator']);
 
         return [
             ...$this->summary($invoice),
@@ -118,6 +130,8 @@ class InvoicePresenter
             'voided_at' => $invoice->voided_at?->format('d/m/Y H:i'),
             'lines' => $invoice->lines->map(fn (InvoiceLine $l): array => [
                 'id' => $l->id,
+                'date' => ($l->accountCharge->created_at ?? $invoice->issued_at)->format('d/m/Y'),
+                'area' => self::AREAS[$l->type] ?? $l->type,
                 'description' => $l->description,
                 'quantity' => $l->quantity,
                 'unit_price' => $l->unit_price,

@@ -136,12 +136,16 @@ test('paying more than the balance is rejected', function () {
         ->assertSessionHasErrors(['payments']);
 });
 
-test('a partial payment needs a credit with a due date and leaves the balance receivable', function () {
+test('a partial payment leaves a balance; choosing credit records its due date', function () {
     openRegister($this->cajero);
 
+    // Partial payment without credit: the balance stays, with no due date
     pay($this->cajero, $this->invoice, [['method' => 'efectivo', 'amount' => 50000]])
-        ->assertSessionHasErrors(['credit.due_date']);
+        ->assertSessionHasNoErrors();
+    expect($this->invoice->fresh()->balance())->toBe(150000)
+        ->and($this->invoice->fresh()->credit_due_date)->toBeNull();
 
+    // Credit with a past due date is rejected
     pay($this->cajero, $this->invoice, [['method' => 'efectivo', 'amount' => 50000]], [
         'due_date' => today()->subDay()->toDateString(),
     ])->assertSessionHasErrors(['credit.due_date']);
@@ -153,10 +157,17 @@ test('a partial payment needs a credit with a due date and leaves the balance re
 
     $invoice = $this->invoice->fresh();
     expect($invoice->status)->toBe('pendiente')
-        ->and($invoice->paid_amount)->toBe(50000)
-        ->and($invoice->balance())->toBe(150000)
+        ->and($invoice->paid_amount)->toBe(100000)
+        ->and($invoice->balance())->toBe(100000)
         ->and($invoice->credit_due_date->toDateString())->toBe(today()->addDays(15)->toDateString())
         ->and($invoice->credit_note)->toBe('Paga la quincena');
+});
+
+test('a payment needs an amount or a credit', function () {
+    openRegister($this->cajero);
+
+    pay($this->cajero, $this->invoice, [['method' => 'efectivo', 'amount' => 0]])
+        ->assertSessionHasErrors(['payments']);
 });
 
 test('all on credit creates no receipt and needs no open shift', function () {
