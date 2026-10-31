@@ -427,3 +427,18 @@ Al llegar un paciente se necesita registrar qué consumió ese día (consultas, 
 - **Cargo de emergencia** al ingresar, con el precio de `settings.emergency_fee`. La emergencia guarda su `account_id`: todo lo que se aplique durante la estancia va a esa cuenta, aunque pase la medianoche, y la cuenta sigue abierta mientras la emergencia esté activa.
 - `account_charges.type` pasa de enum a texto validado en la aplicación, para sumar `emergencia` e `insumo`.
 - Medicamentos e insumos salen del catálogo (`inventory_items`, solo el administrador lo edita). Aplicarlos descuenta existencia sin bloquear al llegar a 0. Un medicamento traído por el paciente se registra sin cargo y sin tocar el inventario.
+
+---
+
+## ADR-020: Inventario sencillo — artículo único, costo por proveedor, entradas
+
+**Fecha**: 2026-10  
+**Estado**: Aceptado
+
+**Decisión** (lo más simple posible mientras llega el feedback del cliente):
+
+- **Un artículo por medicamento o insumo**, con una **existencia global**. No se lleva existencia por lote. El artículo guarda el lote y el vencimiento de la última entrada y su último costo.
+- **Proveedores como entidad** (`suppliers`). Todavía no hay cuentas por pagar, pero la estructura queda lista. Cada entrada dice de qué proveedor vino y a qué costo, y se guarda el **último costo de cada proveedor** por artículo (`inventory_item_supplier`). Los insumos siguen el mismo mecanismo.
+- **Entradas** numeradas `ENT-0001` (el prefijo `E-` ya lo usan las emergencias). Una línea puede crear un producto que no estaba en el catálogo.
+- **Ajuste de existencia** con motivo (conteo físico, merma, vencido), con registro de la existencia anterior y la diferencia. La existencia puede quedar negativa porque aplicar en Emergencia nunca se bloquea; el ajuste la corrige.
+- El **rol almacén** y el administrador editan el catálogo, los proveedores y registran entradas.

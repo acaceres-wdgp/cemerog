@@ -19,8 +19,8 @@
 | caja          | /facturacion             | caja/index          | admin, caja, secretaria                                  | Terminado              | 12          |
 | cxc           | /cuentas-por-cobrar      | cxc/index           | admin, caja, secretaria                                  | Terminado              | 13          |
 | cuadre        | /cuadre-de-caja          | cuadre/index        | admin, caja, secretaria                                  | Terminado              | 14          |
-| almacen       | /almacen                 | almacen/index       | admin, almacen (solo admin edita)                        | Catálogo listo         | 15          |
-| entrada       | /entrada-mercancia       | entrada/index       | admin, almacen                                           | Esqueleto              | 16          |
+| almacen       | /almacen                 | almacen/index       | admin, almacen                                           | Terminado (fase 1)     | 15          |
+| entrada       | /entrada-mercancia       | entrada/index       | admin, almacen                                           | Terminado (fase 1)     | 16          |
 | admin         | /admin/usuarios          | admin/index         | admin                                                    | Esqueleto              | 17          |
 | doctores      | /admin/doctores          | doctores/index      | admin                                                    | Esqueleto              | 18          |
 | analisis      | /admin/analisis          | analisis/index      | admin                                                    | Esqueleto              | 19          |
@@ -28,6 +28,10 @@
 | precios       | /admin/precios           | precios/index       | admin                                                    | Esqueleto              | 21          |
 | habs          | /admin/habitaciones      | habs/index          | admin                                                    | Esqueleto              | 22          |
 | tema          | /admin/tema              | tema/index          | admin                                                    | Esqueleto              | 23          |
+
+### Inventario › Proveedores
+
+`/almacen/proveedores` (`almacen/proveedores`) con el permiso `module.almacen.access`; crean y editan el administrador y el rol almacén. Datos de prueba: `php artisan db:seed --class=InventorySeeder`.
 
 ### Administración › Emergencia
 
