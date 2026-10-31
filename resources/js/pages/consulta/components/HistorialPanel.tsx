@@ -71,9 +71,12 @@ function FilterBtn({
 export default function HistorialPanel({
     historial,
     canPrint = true,
+    showFilters = true,
 }: {
     historial: ClinicalEntry[];
     canPrint?: boolean;
+    /** The patient profile has its own tabs, so it hides these filters */
+    showFilters?: boolean;
 }) {
     const [selIdx, setSelIdx] = useState<number | null>(
         historial.length > 0 ? 0 : null,
@@ -142,50 +145,54 @@ export default function HistorialPanel({
                         </div>
                     </div>
                 </div>
-                {/* Type filters */}
-                <div className="mb-2 flex flex-wrap gap-2">
-                    <FilterBtn
-                        label="Todo"
-                        active={typeFilter === 'all'}
-                        onClick={() => setTypeFilter('all')}
-                    />
-                    <FilterBtn
-                        label="Notas clínicas"
-                        count={countConsulta}
-                        active={typeFilter === 'consulta'}
-                        onClick={() => handleTypeFilter('consulta')}
-                    />
-                    <FilterBtn
-                        label="Recetas"
-                        count={countReceta}
-                        active={typeFilter === 'receta'}
-                        onClick={() => handleTypeFilter('receta')}
-                    />
-                    <FilterBtn
-                        label="Análisis e imágenes"
-                        count={countAnalisis}
-                        active={typeFilter === 'analisis'}
-                        onClick={() => handleTypeFilter('analisis')}
-                    />
-                </div>
-                {/* Owner filters */}
-                <div className="flex flex-wrap gap-2">
-                    <FilterBtn
-                        label="Todos"
-                        active={ownerFilter === 'all'}
-                        onClick={() => setOwnerFilter('all')}
-                    />
-                    <FilterBtn
-                        label="Míos"
-                        active={ownerFilter === 'mine'}
-                        onClick={() => handleOwnerFilter('mine')}
-                    />
-                    <FilterBtn
-                        label="Otros"
-                        active={ownerFilter === 'other'}
-                        onClick={() => handleOwnerFilter('other')}
-                    />
-                </div>
+                {showFilters && (
+                    <>
+                        {/* Type filters */}
+                        <div className="mb-2 flex flex-wrap gap-2">
+                            <FilterBtn
+                                label="Todo"
+                                active={typeFilter === 'all'}
+                                onClick={() => setTypeFilter('all')}
+                            />
+                            <FilterBtn
+                                label="Notas clínicas"
+                                count={countConsulta}
+                                active={typeFilter === 'consulta'}
+                                onClick={() => handleTypeFilter('consulta')}
+                            />
+                            <FilterBtn
+                                label="Recetas"
+                                count={countReceta}
+                                active={typeFilter === 'receta'}
+                                onClick={() => handleTypeFilter('receta')}
+                            />
+                            <FilterBtn
+                                label="Análisis e imágenes"
+                                count={countAnalisis}
+                                active={typeFilter === 'analisis'}
+                                onClick={() => handleTypeFilter('analisis')}
+                            />
+                        </div>
+                        {/* Owner filters */}
+                        <div className="flex flex-wrap gap-2">
+                            <FilterBtn
+                                label="Todos"
+                                active={ownerFilter === 'all'}
+                                onClick={() => setOwnerFilter('all')}
+                            />
+                            <FilterBtn
+                                label="Míos"
+                                active={ownerFilter === 'mine'}
+                                onClick={() => handleOwnerFilter('mine')}
+                            />
+                            <FilterBtn
+                                label="Otros"
+                                active={ownerFilter === 'other'}
+                                onClick={() => handleOwnerFilter('other')}
+                            />
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* List + detail */}

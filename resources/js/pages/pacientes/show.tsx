@@ -123,6 +123,7 @@ export default function PacienteShow(props: ProfileProps) {
                     <HistorialPanel
                         historial={historial}
                         canPrint={can_print}
+                        showFilters={false}
                     />
                     <section className="rounded-2xl border border-card-border bg-white">
                         <h2 className="m-0 border-b border-divider px-5 py-3 font-serif text-[16px] font-semibold text-text-heading">
