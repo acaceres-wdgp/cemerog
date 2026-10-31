@@ -231,7 +231,7 @@ test('a shift opened on a previous day shows as pending close', function () {
         );
 });
 
-test('the Cuadre page shows the open shift summary and the closed history', function () {
+test('the Cuadre page shows the open shift summary and lists the closed shifts', function () {
     openShift($this->cajero, 500000);
     $this->actingAs($this->cajero)->post('/caja/turno/retiros', ['amount' => 100000, 'reason' => 'Depósito']);
     $this->actingAs($this->cajero)->post('/cuadre-de-caja/cerrar', [
@@ -248,9 +248,9 @@ test('the Cuadre page shows the open shift summary and the closed history', func
             ->where('shift.summary.opening', 200000)
             ->where('shift.summary.expected_cash', 200000)
             ->where('shift.can_operate', true)
-            ->has('history', 1)
-            ->where('history.0.expected_cash', 400000)
-            ->where('history.0.difference', 0)
+            ->has('shifts', 2)
+            ->where('shifts.0.status', 'abierto')
+            ->where('shifts.1.status', 'cerrado')
             ->has('denominations', 10)
         );
 });

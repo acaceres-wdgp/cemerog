@@ -56,6 +56,8 @@ class CashShiftController extends Controller
             (int) ($data['counted_cash'] ?? 0),
             $data['denominations'] ?? null,
             $data['close_note'] ?? null,
+            isset($data['counted_card']) ? (int) $data['counted_card'] : null,
+            isset($data['counted_transfer']) ? (int) $data['counted_transfer'] : null,
         );
 
         Toast::success('Caja cuadrada. Turno cerrado.');

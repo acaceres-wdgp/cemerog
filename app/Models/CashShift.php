@@ -25,6 +25,8 @@ use Illuminate\Support\Carbon;
  * @property int|null $expected_cash
  * @property int|null $counted_cash
  * @property array<string, int>|null $counted_denominations
+ * @property int|null $counted_card
+ * @property int|null $counted_transfer
  * @property int|null $difference
  * @property string|null $close_note
  * @property-read User $opener
@@ -46,6 +48,8 @@ class CashShift extends Model
         'expected_cash',
         'counted_cash',
         'counted_denominations',
+        'counted_card',
+        'counted_transfer',
         'difference',
         'close_note',
     ];
@@ -61,6 +65,8 @@ class CashShift extends Model
             'expected_cash' => 'integer',
             'counted_cash' => 'integer',
             'counted_denominations' => 'array',
+            'counted_card' => 'integer',
+            'counted_transfer' => 'integer',
             'difference' => 'integer',
         ];
     }
