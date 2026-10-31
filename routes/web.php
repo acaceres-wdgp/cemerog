@@ -15,6 +15,7 @@ use App\Http\Controllers\Modules\CuadreController;
 use App\Http\Controllers\Modules\CxcController;
 use App\Http\Controllers\Modules\DoctoresController;
 use App\Http\Controllers\Modules\EmergenciaController;
+use App\Http\Controllers\Modules\EmergencyCareController;
 use App\Http\Controllers\Modules\EmergencyConfigController;
 use App\Http\Controllers\Modules\EntradaController;
 use App\Http\Controllers\Modules\HabsController;
@@ -126,6 +127,8 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/ingreso', [EmergenciaController::class, 'store'])->name('emergencia.ingreso.store');
         Route::get('/pacientes/buscar', [EmergenciaController::class, 'searchPatients'])->name('emergencia.pacientes.buscar');
         Route::get('/{emergency}', [EmergenciaController::class, 'show'])->whereNumber('emergency')->name('emergencia.show');
+        Route::post('/{emergency}/signos-vitales', [EmergencyCareController::class, 'storeVitals'])->name('emergencia.vitals.store');
+        Route::post('/{emergency}/aplicaciones', [EmergencyCareController::class, 'storeApplication'])->name('emergencia.applications.store');
     });
 
     Route::get('/internamiento', [InternamientoController::class, 'index'])
