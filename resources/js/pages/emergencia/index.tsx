@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Link } from '@inertiajs/react';
+import { ingreso } from '@/routes/emergencia';
 
 type TriageLevel = 'I' | 'II' | 'III' | 'IV' | 'V';
 
@@ -201,7 +203,8 @@ export default function EmergenciaIndex() {
                         {MOCK_EM_ROWS.length} pacientes activos · 1 crítico
                     </p>
                 </div>
-                <button
+                <Link
+                    href={ingreso.url()}
                     style={{
                         whiteSpace: 'nowrap',
                         display: 'inline-flex',
@@ -220,7 +223,7 @@ export default function EmergenciaIndex() {
                     }}
                 >
                     + Ingreso rápido
-                </button>
+                </Link>
             </div>
 
             <div

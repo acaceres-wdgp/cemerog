@@ -16,10 +16,10 @@ export type ProfilePatient = {
     full_name: string;
     initials: string;
     sex: string;
-    age: number;
+    age: number | null;
     document_type: string;
     document_number: string;
-    birth_date: string;
+    birth_date: string | null;
     phone: string | null;
     address: string | null;
     emergency_contact_name: string | null;

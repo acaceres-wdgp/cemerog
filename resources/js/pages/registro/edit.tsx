@@ -32,7 +32,7 @@ export default function RegistroEdit({ patient }: Props) {
         email: patient.email ?? '',
         first_names: patient.first_names,
         last_names: patient.last_names,
-        birth_date: patient.birth_date,
+        birth_date: patient.birth_date ?? '',
         sex: patient.sex,
         phone: patient.phone ?? '',
         address: patient.address ?? '',

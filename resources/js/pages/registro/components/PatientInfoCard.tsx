@@ -1,4 +1,5 @@
 import type { PatientSearchResult } from '@/types/patient';
+import { ageLabel } from '@/lib/patient';
 
 interface PatientInfoCardProps {
     patient: PatientSearchResult;
@@ -20,7 +21,7 @@ export function PatientInfoCard({ patient }: PatientInfoCardProps) {
                             {patient.full_name}
                         </div>
                         <div className="text-xs text-muted">
-                            {patient.age} años ·{' '}
+                            {ageLabel(patient.age)} ·{' '}
                             {patient.sex === 'F' ? 'Femenino' : 'Masculino'}
                         </div>
                     </div>

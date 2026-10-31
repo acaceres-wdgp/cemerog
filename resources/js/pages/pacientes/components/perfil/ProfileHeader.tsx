@@ -5,6 +5,7 @@ import { formatMoney } from '@/lib/money';
 import { cn } from '@/lib/utils';
 import type { Antecedentes, Finanzas, ProfilePatient } from './types';
 import { SEX_LABELS } from './types';
+import { ageLabel } from '@/lib/patient';
 
 function Stat({
     label,
@@ -77,7 +78,7 @@ export default function ProfileHeader({
                         {patient.full_name}
                     </h1>
                     <p className="mt-0.5 text-[13px] text-muted">
-                        {sex} · {patient.age} años · Expediente{' '}
+                        {sex} · {ageLabel(patient.age)} · Expediente{' '}
                         {patient.expediente_number}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-[6px]">
