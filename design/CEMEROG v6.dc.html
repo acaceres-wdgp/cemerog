@@ -371,6 +371,139 @@ textarea{resize:vertical}
       </div>
     </sc-if>
 
+    <!-- PERFIL DEL PACIENTE -->
+    <sc-if value="{{ s.pfPerfil }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <button onClick="{{ pf.back }}" style="white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;border:1px solid #dfe7df;background:#F6F9F5;font-weight:500;cursor:pointer" style-hover="background:#ECF2EB"><span style="display:inline-flex;font-size:15px">{{ pf.icBack }}</span>Pacientes</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onClick="{{ pf.editar }}" style="white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;border:1px solid #dfe7df;background:#F6F9F5;font-weight:500;cursor:pointer" style-hover="background:#ECF2EB"><span style="display:inline-flex;font-size:15px">{{ i.pencil }}</span>Editar datos</button>
+          <button onClick="{{ pf.atencion }}" style="white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;border:none;background:#2E8B3E;color:#fff;font-weight:500;box-shadow:0 1px 2px rgba(46,139,62,.3),inset 0 1px 0 rgba(255,255,255,.15);cursor:pointer" style-hover="background:#277a35"><span style="display:inline-flex;font-size:16px">{{ i.plus }}</span>Nueva atención</button>
+        </div>
+      </div>
+      <sc-if value="{{ pf.none }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #e3e9e3;border-radius:14px;padding:40px;text-align:center;color:#71717a">Selecciona un paciente desde la lista de Pacientes para ver su perfil.</div></sc-if>
+      <sc-if value="{{ pf.has }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#fff;border:1px solid #e3e9e3;border-radius:14px;box-shadow:0 1px 2px rgba(16,40,24,.03);padding:20px 24px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+          <span style="width:56px;height:56px;flex:none;border-radius:50%;background:#EEF6E2;color:#2E8B3E;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;font-family:Bitter,Georgia,serif">{{ pf.ini }}</span>
+          <div style="flex:1 1 260px;min-width:0;display:flex;flex-direction:column;gap:6px">
+            <div><div style="font-family:Bitter,Georgia,serif;font-weight:600;font-size:22px;color:#1f2d22">{{ pf.nombre }}</div><div style="font-size:13.5px;color:#71717a">{{ pf.sub }}</div></div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;background:#F3F5F1;color:#3f3f46;font-size:12.5px;font-weight:600">{{ pf.sangre }}</span>
+              <sc-if value="{{ pf.hasAlergia }}"><span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;background:#FEF2F2;color:#B91C1C;font-size:12.5px;font-weight:500"><span style="display:inline-flex;font-size:13px">{{ i.alert }}</span>Alergia: {{ pf.alergia }}</span></sc-if>
+              <sc-if value="{{ pf.noAlergia }}"><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;background:#F6FAF1;color:#56693f;font-size:12.5px;font-weight:500">Sin alergias conocidas</span></sc-if>
+              <sc-for list="{{ pf.cron }}" as="c" hint-placeholder-count="1"><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;background:#FFFBEB;color:#92400E;font-size:12.5px;font-weight:500">{{ c.c }}</span></sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+          <sc-for list="{{ pf.kpis }}" as="k" hint-placeholder-count="5"><div style="background:{{ k.bg }};border:1px solid {{ k.b }};border-radius:14px;padding:14px 16px"><div style="font-size:13px;color:#5f6b64">{{ k.l }}</div><div style="font-family:Bitter,Georgia,serif;font-size:20px;font-weight:700;color:{{ k.fg }};font-variant-numeric:tabular-nums;margin-top:4px;overflow-wrap:anywhere">{{ k.v }}</div><div style="font-size:12.5px;color:#8a948e">{{ k.s }}</div></div></sc-for>
+        </div>
+        <div style="display:flex"><div style="display:inline-flex;flex-wrap:wrap;background:#F3F7F2;border:1px solid #e3e9e3;border-radius:11px;padding:3px;gap:2px"><sc-for list="{{ pf.tabs }}" as="t" hint-placeholder-count="5"><button onClick="{{ t.go }}" style="white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 12px;border:none;border-radius:10px;cursor:pointer;font-weight:500;background:{{ t.bg }};color:{{ t.fg }};box-shadow:{{ t.sh }}">{{ t.label }}<span style="font-size:12px;color:#8a948e;font-variant-numeric:tabular-nums">{{ t.n }}</span></button></sc-for></div></div>
+
+        <sc-if value="{{ pf.tR }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+            <div style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:16px">
+              <div style="background:#fff;border:1px solid #e3e9e3;border-radius:14px;box-shadow:0 1px 2px rgba(16,40,24,.03)">
+                <div style="padding:14px 20px;border-bottom:1px solid #eef0ec;font-family:Bitter,Georgia,serif;font-weight:600;font-size:16px;color:#1f2d22">Datos personales</div>
+                <div style="padding:6px 20px 10px;display:flex;flex-direction:column"><sc-for list="{{ pf.datos }}" as="d" hint-placeholder-count="6"><div style="display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid #f1f3ef;font-size:13.5px"><span style="color:#71717a;flex:none">{{ d.l }}</span><span style="text-align:right;min-width:0;overflow-wrap:anywhere">{{ d.v }}</span></div></sc-for></div>
+              </div>
+              <div style="background:#fff;border:1px solid #e3e9e3;border-radius:14px;box-shadow:0 1px 2px rgba(16,40,24,.03)">
+                <div style="padding:14px 20px;border-bottom:1px solid #eef0ec;font-family:Bitter,Georgia,serif;font-weight:600;font-size:16px;color:#1f2d22">Antecedentes</div>
+                <div style="padding:6px 20px 10px;display:flex;flex-direction:column"><sc-for list="{{ pf.antec }}" as="d" hint-placeholder-count="5"><div style="display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid #f1f3ef;font-size:13.5px"><span style="color:#71717a;flex:none">{{ d.l }}</span><span style="text-align:right;min-width:0;overflow-wrap:anywhere">{{ d.v }}</span></div></sc-for></div>
+              </div>
+            </div>
+            <div style="flex:2 1 440px;min-width:0;display:flex;flex-direction:column;gap:16px">
+              <div style="background:#fff;border:1px solid #e3e9e3;border-radius:14px;box-shadow:0 1px 2px rgba(16,40,24,.03);overflow:hidden">
+                <div style="padding:14px 20px;border-bottom:1px solid #eef0ec;display:flex;justify-content:space-between;align-items:center;gap:12px"><span style="font-family:Bitter,Georgia,serif;font-weight:600;font-size:16px;color:#1f2d22">Últimas atenciones</span><button onClick="{{ pf.goH }}" style="border:none;background:transparent;color:#2E8B3E;font-weight:500;cursor:pointer;padding:4px 8px;border-radius:6px" style-hover="background:#F3F9EC">Ver historial completo</button></div>
+                <sc-if value="{{ pf.noAt }}" hint-placeholder-val="{{ false }}"><div style="padding:24px 20px;color:#71717a">Todavía no tiene atenciones.</div></sc-if>
+                <sc-for list="{{ pf.recent }}" as="a" hint-placeholder-count="4"><div style="display:flex;gap:12px;align-items:center;padding:12px 20px;border-bottom:1px solid #f1f3ef"><span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:7px;background:{{ a.tbg }};color:{{ a.tfg }};font-size:12px;font-weight:600;white-space:nowrap;flex:none">{{ a.t }}</span><div style="flex:1;min-width:0"><div style="font-weight:500;color:#1f2d22">{{ a.motivo }}</div><div style="font-size:12.5px;color:#71717a">{{ a.doc }} · <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace">{{ a.no }}</span></div></div><span style="font-size:12.5px;color:#52605a;white-space:nowrap;font-variant-numeric:tabular-nums">{{ a.f }}</span></div></sc-for>
+              </div>
+              <div style="background:#fff;border:1px solid #e3e9e3;border-radius:14px;box-shadow:0 1px 2px rgba(16,40,24,.03);overflow:hidden">
+                <div style="padding:14px 20px;border-bottom:1px solid #eef0ec;display:flex;justify-content:space-between;align-items:center;gap:12px"><span style="font-family:Bitter,Georgia,serif;font-weight:600;font-size:16px;color:#1f2d22">Estado de cuenta</span><button onClick="{{ pf.goF }}" style="border:none;background:transparent;color:#2E8B3E;font-weight:500;cursor:pointer;padding:4px 8px;border-radius:6px" style-hover="background:#F3F9EC">Ver finanzas</button></div>
+                <sc-if value="{{ pf.noPend }}" hint-placeholder-val="{{ false }}"><div style="padding:18px 20px;display:flex;align-items:center;gap:10px;color:#2f4a17"><span style="width:22px;height:22px;border-radius:50%;background:#2E8B3E;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px">{{ i.check }}</span>Sin balances pendientes.</div></sc-if>
+                <sc-for list="{{ pf.pend }}" as="q" hint-placeholder-count="1"><div style="display:flex;gap:12px;align-items:center;padding:12px 20px;border-bottom:1px solid #f1f3ef;flex-wrap:wrap"><div style="flex:1 1 200px;min-width:0"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;font-weight:600;color:#1f2d22">{{ q.fac }}</div><div style="font-size:12.5px;color:#71717a">{{ q.f }} · {{ q.t }} · Total {{ q.totF }}</div></div><span style="font-weight:600;color:#B91C1C;font-variant-numeric:tabular-nums">{{ q.balF }}</span><button onClick="{{ q.cobrar }}" style="white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:10px;border:1px solid #dfe7df;background:#F6F9F5;font-weight:500;cursor:pointer" style-hover="background:#ECF2EB"><span style="display:inline-flex;font-size:15px">{{ i.card }}</span>Registrar pago</button></div></sc-for>
+                <sc-if value="{{ pf.hasPend }}" hint-placeholder-val="{{ false }}"><div style="display:flex;justify-content:flex-end;gap:24px;padding:12px 20px;background:#FEF2F2;font-variant-numeric:tabular-nums"><span style="color:#991B1B">Total adeudado</span><span style="font-weight:700;font-size:16px;color:#B91C1C">{{ pf.saldoF }}</span></div></sc-if>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ pf.tH }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #e3e9e3;border-radius:14px;box-shadow:0 1px 2px rgba(16,40,24,.03);overflow:hidden">
+            <sc-if value="{{ pf.noAt }}"><div style="padding:32px;text-align:center;color:#71717a">Todavía no tiene atenciones.</div></sc-if>
+            <sc-for list="{{ pf.at }}" as="a" hint-placeholder-count="4"><div style="display:flex;gap:16px;padding:16px 20px;border-bottom:1px solid #eef0ec;flex-wrap:wrap">
+              <div style="width:110px;flex:none"><div style="font-weight:600;font-variant-numeric:tabular-nums;color:#1f2d22">{{ a.f }}</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#71717a">{{ a.no }}</div></div>
+              <div style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:7px;background:{{ a.tbg }};color:{{ a.tfg }};font-size:12px;font-weight:600">{{ a.t }}</span><span style="font-size:13px;color:#52605a">{{ a.doc }}</span></div>
+                <div style="font-weight:600;color:#1f2d22">{{ a.motivo }}</div>
+                <sc-if value="{{ a.clin }}"><div style="font-size:13.5px"><span style="color:#71717a">Diagnóstico:</span> {{ a.dx }}</div><div style="font-size:13.5px;color:#52605a;text-wrap:pretty">{{ a.nota }}</div></sc-if>
+                <sc-if value="{{ a.solo }}"><div style="font-size:13.5px;color:#52605a">{{ a.det }}</div></sc-if>
+              </div>
+              <div style="flex:none;text-align:right;font-size:13px"><div style="color:#71717a">Factura</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:600;color:#1f2d22">{{ a.fac }}</div></div>
+            </div></sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ pf.tRx }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ pf.noRx }}"><div style="background:#fff;border:1px solid #e3e9e3;border-radius:14px;padding:32px;text-align:center;color:#71717a">No tiene recetas registradas.</div></sc-if>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;align-items:start">
+            <sc-for list="{{ pf.rx }}" as="r" hint-placeholder-count="3"><div style="background:#fff;border:1px solid #e3e9e3;border-radius:14px;box-shadow:0 1px 2px rgba(16,40,24,.03);overflow:hidden">
+              <div style="padding:14px 18px;border-bottom:1px solid #eef0ec;display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div style="min-width:0"><div style="font-weight:600;color:#1f2d22">{{ r.f }} · <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:#52605a">{{ r.no }}</span></div><div style="font-size:12.5px;color:#71717a">{{ r.doc }} · {{ r.dx }}</div></div><button onClick="{{ r.print }}" title="Reimprimir receta" style="width:32px;height:32px;flex:none;border-radius:10px;border:1px solid #dfe7df;background:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#52605a;font-size:15px" style-hover="background:#F6F9F5">{{ pf.icPrint }}</button></div>
+              <div style="padding:8px 18px 12px;display:flex;flex-direction:column"><sc-for list="{{ r.items }}" as="m" hint-placeholder-count="2"><div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f1f3ef"><span style="display:inline-flex;font-size:15px;color:#2E8B3E;margin-top:2px">{{ pf.icPill }}</span><div style="min-width:0"><div style="font-weight:500">{{ m.m }}</div><div style="font-size:12.5px;color:#71717a">{{ m.d }}</div></div></div></sc-for>
+                <sc-if value="{{ r.hasAlt }}"><div style="margin-top:8px;display:flex;gap:8px;align-items:center;font-size:12.5px;color:#92400E"><span style="display:inline-flex;font-size:13px">{{ i.alert }}</span>{{ r.altTxt }}</div></sc-if>
+              </div>
+            </div></sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ pf.tE }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #e3e9e3;border-radius:14px;box-shadow:0 1px 2px rgba(16,40,24,.03);overflow:hidden">
+            <div style="overflow-x:auto"><table><thead><tr><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap;padding-left:20px">Estudio</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Fecha</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Atención</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Resultado</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Estado</th><th style="background:#F6FAF1;border-bottom:1px solid #DCEBC9"></th></tr></thead>
+            <tbody><sc-for list="{{ pf.es }}" as="e" hint-placeholder-count="4"><tr style-hover="background:#fafbf8">
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;padding-left:20px;min-width:240px"><div style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;flex:none;border-radius:9px;background:{{ e.ibg }};color:{{ e.ifg }};display:inline-flex;align-items:center;justify-content:center;font-size:16px">{{ e.icon }}</span><div style="min-width:0"><div style="font-weight:500;color:#1f2d22">{{ e.n }}</div><div style="font-size:12px;color:#71717a">{{ e.area }}</div></div></div></td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;white-space:nowrap;font-variant-numeric:tabular-nums">{{ e.f }}</td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:#52605a">{{ e.at }}</td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;min-width:200px;color:#3f3f46">{{ e.res }}</td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle"><span style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:500;white-space:nowrap;background:{{ e.cbg }};color:{{ e.cfg }}">{{ e.estado }}</span></td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;text-align:right;padding-right:16px"><button onClick="{{ e.ver }}" style="white-space:nowrap;display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:10px;border:1px solid #dfe7df;background:#F6F9F5;font-weight:500;cursor:pointer" style-hover="background:#ECF2EB">Ver</button></td>
+            </tr></sc-for></tbody></table></div>
+            <sc-if value="{{ pf.noEs }}"><div style="padding:32px;text-align:center;color:#71717a">No tiene análisis ni estudios de imagen.</div></sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ pf.tF }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ pf.hasPend }}"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-radius:12px;border:1px solid #FECACA;background:#FEF2F2;color:#991B1B"><span style="display:inline-flex;font-size:16px">{{ i.alert }}</span><span style="flex:1 1 240px">El paciente adeuda <strong style="font-weight:700">{{ pf.saldoF }}</strong>. Cobra los balances desde la tabla de facturas.</span></div></sc-if>
+          <div style="background:#fff;border:1px solid #e3e9e3;border-radius:14px;box-shadow:0 1px 2px rgba(16,40,24,.03);overflow:hidden">
+            <div style="padding:14px 20px;border-bottom:1px solid #eef0ec;font-family:Bitter,Georgia,serif;font-weight:600;font-size:16px;color:#1f2d22">Facturas</div>
+            <div style="overflow-x:auto"><table><thead><tr><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap;padding-left:20px">Factura</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Concepto</th><th style="text-align:right;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Total</th><th style="text-align:right;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Pagado</th><th style="text-align:right;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Balance</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Estado</th><th style="background:#F6FAF1;border-bottom:1px solid #DCEBC9"></th></tr></thead>
+            <tbody><sc-for list="{{ pf.facs }}" as="q" hint-placeholder-count="4"><tr style-hover="background:#fafbf8">
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;padding-left:20px"><div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;font-weight:600;color:#1f2d22;white-space:nowrap">{{ q.fac }}</div><div style="font-size:12px;color:#71717a">{{ q.f }}</div></td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;min-width:160px"><div>{{ q.t }}</div><div style="font-size:12px;color:#71717a;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">{{ q.at }}</div></td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap">{{ q.totF }}</td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;color:#52605a">{{ q.pagF }}</td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:{{ q.bw }};color:#1f2d22">{{ q.balF }}</td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle"><span style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:500;white-space:nowrap;background:{{ q.cbg }};color:{{ q.cfg }}">{{ q.estado }}</span></td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;text-align:right;padding-right:16px"><sc-if value="{{ q.hasBal }}"><button onClick="{{ q.cobrar }}" style="white-space:nowrap;display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:10px;border:1px solid #dfe7df;background:#F6F9F5;font-weight:500;cursor:pointer" style-hover="background:#ECF2EB"><span style="display:inline-flex;font-size:15px">{{ i.card }}</span>Registrar pago</button></sc-if></td>
+            </tr></sc-for></tbody></table></div>
+            <sc-if value="{{ pf.noAt }}"><div style="padding:32px;text-align:center;color:#71717a">No tiene facturas.</div></sc-if>
+            <div style="display:flex;justify-content:flex-end;gap:24px;flex-wrap:wrap;padding:14px 20px;background:#fafbf8;border-top:1px solid #eef0ec;font-variant-numeric:tabular-nums"><span style="color:#5f6b64">Facturado <strong style="color:#1f2d22;font-weight:600">{{ pf.factF }}</strong></span><span style="color:#5f6b64">Pagado <strong style="color:#1f2d22;font-weight:600">{{ pf.pagF }}</strong></span><span style="color:#5f6b64">Saldo <strong style="color:#1f2d22;font-weight:700;font-size:16px">{{ pf.saldoF }}</strong></span></div>
+          </div>
+          <div style="background:#fff;border:1px solid #e3e9e3;border-radius:14px;box-shadow:0 1px 2px rgba(16,40,24,.03);overflow:hidden">
+            <div style="padding:14px 20px;border-bottom:1px solid #eef0ec;font-family:Bitter,Georgia,serif;font-weight:600;font-size:16px;color:#1f2d22">Pagos recibidos</div>
+            <div style="overflow-x:auto"><table><thead><tr><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap;padding-left:20px">Recibo</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Fecha</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Factura</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Método</th><th style="text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap">Tipo</th><th style="text-align:right;font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#56693f;padding:0 12px;height:40px;background:#F6FAF1;border-bottom:1px solid #DCEBC9;white-space:nowrap;padding-right:20px">Monto</th></tr></thead>
+            <tbody><sc-for list="{{ pf.pagos }}" as="g" hint-placeholder-count="4"><tr style-hover="background:#fafbf8">
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;padding-left:20px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;font-weight:600;color:#1f2d22;white-space:nowrap">{{ g.rc }}</td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;white-space:nowrap;font-variant-numeric:tabular-nums">{{ g.f }}</td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:#52605a">{{ g.fac }}</td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;white-space:nowrap">{{ g.met }}</td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;white-space:nowrap;color:#52605a">{{ g.nota }}</td>
+              <td style="padding:12px;border-bottom:1px solid #eef0ec;vertical-align:middle;text-align:right;padding-right:20px;font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600">{{ g.montoF }}</td>
+            </tr></sc-for></tbody></table></div>
+            <sc-if value="{{ pf.noPag }}"><div style="padding:32px;text-align:center;color:#71717a">No hay pagos registrados.</div></sc-if>
+          </div>
+        </sc-if>
+      </sc-if>
+    </sc-if>
+
     <!-- REGISTRO -->
     <sc-if value="{{ s.registro }}" hint-placeholder-val="{{ false }}">
       <div>
@@ -2035,6 +2168,7 @@ textarea{resize:vertical}
       </div>
       <div style="padding:14px 24px;border-top:1px solid #eef0ec;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end">
         <button onClick="{{ pd.editar }}" style="white-space:nowrap;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;border:1px solid #dfe7df;background:#F6F9F5;font-weight:500;cursor:pointer" style-hover="background:#ECF2EB"><span style="display:inline-flex;font-size:15px">{{ i.pencil }}</span>Editar</button>
+        <button onClick="{{ pd.perfil }}" style="white-space:nowrap;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;border:1px solid #dfe7df;background:#F6F9F5;font-weight:500;cursor:pointer" style-hover="background:#ECF2EB">Ver perfil<span style="display:inline-flex;font-size:15px">{{ i.chevR }}</span></button>
         <button onClick="{{ pd.atencion }}" style="white-space:nowrap;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;border:none;background:#2E8B3E;color:#fff;font-weight:500;box-shadow:0 1px 2px rgba(46,139,62,.3),inset 0 1px 0 rgba(255,255,255,.15);cursor:pointer" style-hover="background:#277a35"><span style="display:inline-flex;font-size:16px">{{ i.plus }}</span>Nueva atención</button>
       </div>
     </div>
@@ -2478,7 +2612,7 @@ const ROW = [
 ];
 const NAV = [
   {title:'General', items:[['inicio','Inicio','House']]},
-  {title:'Recepción', items:[['tablero','Tablero de atenciones','LayoutDashboard'],['pacientes','Pacientes','Contact'],['registro','Registro de pacientes','UserPlus'],['citas','Citas','CalendarDays']]},
+  {title:'Recepción', items:[['tablero','Tablero de atenciones','LayoutDashboard'],['pacientes','Pacientes','Contact'],['citas','Citas','CalendarDays']]},
   {title:'Atención clínica', items:[['consulta','Consulta','Stethoscope'],['emergencia','Emergencia','Siren'],['internamiento','Internamiento','BedDouble'],['cirugia','Cirugía','Scissors']]},
   {title:'Servicios', items:[['lab','Laboratorio','FlaskConical'],['img','Imágenes','ScanLine'],['impresos','Documentos imprimibles','Printer']]},
   {title:'Caja', items:[['caja','Facturación','Wallet'],['cxc','Cuentas por cobrar','Receipt'],['cuadre','Cuadre de caja','Coins']]},
@@ -2560,7 +2694,7 @@ const NOW_M = 9*60+14;
 const hm = m => String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(Math.round(m%60)).padStart(2,'0');
 const toM = s => { const p=s.split(':').map(Number); return p[0]*60+p[1]; };
 const durTxt = m => m<60 ? m+' min' : Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')+' min';
-const SUB = {emIngreso:['emergencia','Ingreso rápido'], emFicha:['emergencia','Ficha del paciente'], inFicha:['internamiento','Ficha del paciente'], labRes:['lab','Ingreso de resultados']};
+const SUB = {pfPerfil:['pacientes','Perfil del paciente'], emIngreso:['emergencia','Ingreso rápido'], emFicha:['emergencia','Ficha del paciente'], inFicha:['internamiento','Ficha del paciente'], labRes:['lab','Ingreso de resultados']};
 const CUBS = ['Cub. 1','Cub. 2','Cub. 3','Cub. 4','Cub. 5','Cub. 6','Observación'];
 const EMERG = [
   ['Cub. 3','N.N. masculino','~30 años · M · sin documento',0,'09:02','Dr. F. Rodríguez','FC 128 · PA 92/58','09:08',true,'Accidente de tránsito (motocicleta)',true],
@@ -3691,7 +3825,56 @@ class Component extends DCLogic {
             hasAlergia:!!sel.alergia,alergia:sel.alergia,doc:DOC_T[sel.docT]+(sel.doc!=='—'?' · '+sel.doc:''),nac:'—'.length&&String(1+(sel.id*7)%27).padStart(2,'0')+'/'+String(1+(sel.id*5)%12).padStart(2,'0')+'/'+(2026-sel.ed)+' ('+sel.ed+' años)',sangre:sel.sangre||'No registrado',tel:sel.tel||'—',dir:sel.dir,emerg:sel.emerg,reg:sel.reg,
             nAt:sel.nAt?sel.nAt+(sel.nAt>1?' en total':' en total'):'',noAt:!sel.nAt,at:AT,
             editar:()=>this.toast('Abriendo edición de '+sel.nom+' '+sel.ape+'…'),
+            perfil:()=>{ this.setState({pdId:null,pfId:sel.id,pfTab:'resumen'}); this.go('pfPerfil'); },
             atencion:()=>{ this.setState({pdId:null}); this.go('registro'); this.toast('Paciente seleccionado: '+sel.nom+' '+sel.ape+'. Elige el tipo de atención.'); }}:{})}}; })(),
+      ...(()=>{ const p=PAC_DB.find(x=>x.id===S.pfId), back=()=>this.go('pacientes'), icBack=this.ic('ArrowLeft');
+        if(!p) return {pf:{has:false,none:true,back,icBack,editar:back,atencion:()=>this.go('registro')}};
+        const id=p.id, N=Math.min(p.nAt||0,9), tab=S.pfTab||'resumen', nombre=p.nom+' '+p.ape, al=(p.alergia||'').toLowerCase();
+        const dt=x=>{ const d=new Date(2026,9,12-p.dias-x*23-(x?(id+x)%5:0)); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear(); };
+        const PRE={'Consulta':1500,'Solo análisis':1850,'Solo imágenes':2400,'Emergencia':4200,'Internamiento':28600};
+        const TC={'Consulta':['#EAF2FF','#1D4ED8'],'Emergencia':['#FEE2E2','#B91C1C'],'Internamiento':['#EDE9FE','#5B21B6'],'Solo análisis':['#EEF6E2','#2f4a17'],'Solo imágenes':['#F3F5F1','#3f3f46']};
+        const TIPOS=['Consulta','Consulta','Solo análisis','Emergencia','Consulta','Solo imágenes','Consulta','Internamiento'];
+        const MOT=[['Control de hipertensión','Hipertensión arterial esencial (I10)','TA 150/95 mmHg. Se ajusta dosis de antihipertensivo. Dieta hiposódica.'],['Cefalea tensional','Cefalea tensional (G44.2)','Sin signos de alarma neurológica. Analgesia y control en 2 semanas.'],['Infección respiratoria','Faringoamigdalitis aguda (J03.9)','Fiebre 38.4 °C, exudado amigdalino. Antibiótico por 10 días.'],['Dolor abdominal','Gastritis aguda (K29.1)','Epigastralgia posprandial. Inhibidor de bomba y dieta blanda.'],['Chequeo general','Examen médico general (Z00.0)','Examen físico normal. Se indican laboratorios de rutina.'],['Dolor lumbar','Lumbago no especificado (M54.5)','Contractura paravertebral. AINE y fisioterapia.']];
+        const MI=['Neumonía adquirida en la comunidad','Neumonía no especificada (J18.9)','Estancia de 3 días en Hab. 204. Alta por mejoría clínica.'];
+        const RXM=[[['Losartán 50 mg','1 tableta cada 12 h · 30 días'],['Hidroclorotiazida 25 mg','1 tableta en la mañana · 30 días']],[['Acetaminofén 500 mg','1 tableta cada 8 h si dolor · 5 días']],[['Amoxicilina 500 mg','1 cápsula cada 8 h · 10 días'],['Acetaminofén 500 mg','1 tableta cada 6 h si fiebre']],[['Omeprazol 20 mg','1 cápsula en ayunas · 14 días'],['Hidróxido de aluminio','10 ml después de cada comida']],[],[['Diclofenac 50 mg','1 tableta cada 12 h · 7 días'],['Ciclobenzaprina 10 mg','1 tableta al acostarse · 7 días']]];
+        const RXI=[['Amoxicilina/ácido clavulánico 875 mg','1 tableta cada 12 h · 7 días'],['Acetaminofén 500 mg','1 tableta cada 6 h si fiebre']];
+        const LABS=['Hemograma completo','Glucosa en ayunas · Perfil lipídico','Examen general de orina'], IMGS=['Radiografía de tórax PA','Sonografía abdominal','Radiografía de columna lumbar'];
+        const RES={'Hemograma completo':'Leucocitos 11.2 ×10³/µL (alto)','Glucosa en ayunas · Perfil lipídico':'Glucosa 104 mg/dL · Colesterol 212 mg/dL','Examen general de orina':'Sin hallazgos patológicos','Radiografía de tórax PA':'Infiltrado basal derecho','Sonografía abdominal':'Hígado y vesícula normales','Radiografía de columna lumbar':'Rectificación de lordosis lumbar'};
+        const MET=['Efectivo','Tarjeta','Transferencia'], DOCS2=['Dr. F. Rodríguez','Dra. M. Guzmán'];
+        const swap=it=>{ if(al.includes('penicilina')&&/amoxi/i.test(it[0])) return ['Azitromicina 500 mg','1 tableta al día · 3 días',1]; if(al.includes('sulfa')&&/hidroclorotiazida/i.test(it[0])) return ['Amlodipino 5 mg','1 tableta en la mañana · 30 días',1]; return it; };
+        const chip=(bg,fg)=>({cbg:bg,cfg:fg});
+        const at=Array.from({length:N},(_,x)=>{ let t=x===0?p.tipo:TIPOS[(id*3+x)%TIPOS.length]; if(!PRE[t]) t='Consulta';
+          const mi=(id+x)%MOT.length, inter=t==='Internamiento', m=inter?MI:MOT[mi], solo=t.startsWith('Solo'), est=solo?(t==='Solo análisis'?LABS[(id+x)%3]:IMGS[(id+x)%3]):null;
+          const tot=PRE[t]+((id*13+x*7)%6)*350, paid=(x===0&&id%3===0)?Math.round(tot*.4/50)*50:(x===1&&id%4===1)?Math.round(tot*.5/50)*50:tot;
+          return {x,t,mi,solo,inter,clin:!solo,est,no:'A-2026-00'+(1488-id*7-x*31),fac:'F-000'+(1245-id*3-x*17),f:dt(x),doc:solo?'Servicio ambulatorio':DOCS2[(id+x)%2],motivo:solo?est:m[0],dx:m[1],nota:m[2],det:'Sin consulta médica · resultado entregado en recepción',tot,paid,bal:tot-paid,tbg:TC[t][0],tfg:TC[t][1]}; });
+        const rx=at.filter(a=>a.clin&&(a.inter||RXM[a.mi].length)).map((a,k)=>{ const its=(a.inter?RXI:RXM[a.mi]).map(swap); return {f:a.f,doc:a.doc,at:a.no,no:'R-'+String(5320-id*4-a.x*11),dx:a.dx,items:its.map(([m,d,s])=>({m,d,sw:!!s})),hasAlt:its.some(i2=>i2[2]),altTxt:'Ajustada por alergia a '+p.alergia,print:()=>this.toast('Reimprimiendo receta de '+nombre+' del '+a.f+'…')}; });
+        const es=[]; at.forEach(a=>{ const add=(n,lab)=>{ const pend=a.x===0&&id%2===1; es.push({f:a.f,n,area:lab?'Laboratorio':'Imágenes',icon:lab?i.flask:i.scan,ibg:lab?'#EEF6E2':'#EDE9FE',ifg:lab?'#2E8B3E':'#6D28D9',at:a.no,res:pend?'—':RES[n],...(pend?chip('#FEF3C7','#92400E'):chip('#EEF6E2','#2f4a17')),estado:pend?'Pendiente':'Entregado',ver:()=>this.toast(pend?'El estudio '+n+' aún no tiene resultado.':'Abriendo '+n+' del '+a.f+'…')}); };
+          if(a.solo) add(a.est,a.t==='Solo análisis'); else if(a.t==='Emergencia'||a.inter){ add(LABS[0],true); add(IMGS[0],false); } else if(a.mi===4){ add(LABS[0],true); add(LABS[1],true); add(LABS[2],true); } else if(a.mi===5) add(IMGS[2],false); else if(a.mi===0) add(LABS[1],true); });
+        const cobrar=a=>()=>{ this.toast('Cobro de '+a.fac+' · balance '+fmt(a.bal)+'. Abriendo Facturación…'); this.go('caja'); };
+        const facs=at.map(a=>({fac:a.fac,f:a.f,at:a.no,t:a.t,totF:fmt(a.tot),pagF:fmt(a.paid),balF:a.bal?fmt(a.bal):'—',hasBal:a.bal>0,estado:a.bal?'Con balance':'Saldada',...(a.bal?chip('#FEF3C7','#92400E'):chip('#EEF6E2','#2f4a17')),cobrar:cobrar(a),bw:a.bal?600:400}));
+        const pagos=[]; at.forEach(a=>{ const rc=k=>'RC-00'+(8840-id*5-a.x*13-k), met=MET[(id+a.x)%3];
+          if(a.paid<a.tot&&a.paid>0) pagos.push({f:a.f,rc:rc(0),fac:a.fac,met,montoF:fmt(a.paid),nota:'Abono parcial'});
+          else if(a.tot>5000){ const h=Math.round(a.tot/2/50)*50; pagos.push({f:a.f,rc:rc(1),fac:a.fac,met:'Efectivo',montoF:fmt(h),nota:'Anticipo'}); pagos.push({f:a.f,rc:rc(0),fac:a.fac,met,montoF:fmt(a.tot-h),nota:'Liquidación'}); }
+          else pagos.push({f:a.f,rc:rc(0),fac:a.fac,met,montoF:fmt(a.paid),nota:'Pago total'}); });
+        const fact=at.reduce((s2,a)=>s2+a.tot,0), pag=at.reduce((s2,a)=>s2+a.paid,0), saldo=fact-pag, pend=at.filter(a=>a.bal>0);
+        const cron=[]; if(p.ed>40&&id%2) cron.push('Hipertensión arterial'); if(id%5===0&&p.ed>30) cron.push('Diabetes mellitus tipo 2');
+        const nac=String(1+(id*7)%27).padStart(2,'0')+'/'+String(1+(id*5)%12).padStart(2,'0')+'/'+(2026-p.ed);
+        const lastRx=rx[0];
+        return {pf:{has:true,none:false,back,icBack,ini:(p.nom[0]+p.ape[0]).toUpperCase(),nombre,
+          sub:(p.sexo==='F'?'Femenino':'Masculino')+' · '+p.ed+' años · Expediente P-'+String(id).padStart(5,'0'),
+          sangre:p.sangre?'Sangre '+p.sangre:'Sangre no registrada',hasAlergia:!!p.alergia,noAlergia:!p.alergia,alergia:p.alergia,cron:cron.map(c=>({c})),
+          editar:()=>this.toast('Abriendo edición de '+nombre+'…'),
+          atencion:()=>{ this.go('registro'); this.toast('Paciente seleccionado: '+nombre+'. Elige el tipo de atención.'); },
+          kpis:[{l:'Atenciones',v:String(p.nAt||0),s:'Paciente desde '+p.reg,fg:'#1f2d22',bg:'#fff',b:'#e3e9e3'},{l:'Última atención',v:N?p.ult:'—',s:N?at[0].t:'Sin atenciones',fg:'#1f2d22',bg:'#fff',b:'#e3e9e3'},{l:'Total facturado',v:fmt(fact),s:N+(N===1?' factura':' facturas'),fg:'#1f2d22',bg:'#fff',b:'#e3e9e3'},{l:'Total pagado',v:fmt(pag),s:pagos.length+(pagos.length===1?' pago registrado':' pagos registrados'),fg:'#1f2d22',bg:'#fff',b:'#e3e9e3'},{l:'Saldo pendiente',v:fmt(saldo),s:saldo?pend.length+(pend.length===1?' factura con balance':' facturas con balance'):'Al día',fg:saldo?'#B91C1C':'#2E8B3E',bg:saldo?'#FEF2F2':'#F6FAF1',b:saldo?'#FECACA':'#DCEBC9'}],
+          tabs:this.seg([['resumen','Resumen',''],['historial','Historial clínico',at.length],['recetas','Recetas',rx.length],['estudios','Análisis e imágenes',es.length],['finanzas','Finanzas',facs.length]],tab,'pfTab'),
+          tR:tab==='resumen',tH:tab==='historial',tRx:tab==='recetas',tE:tab==='estudios',tF:tab==='finanzas',
+          datos:[['Documento',DOC_T[p.docT]+(p.doc!=='—'?' · '+p.doc:'')],['Nacimiento',nac+' ('+p.ed+' años)'],['Teléfono',p.tel||'—'],['Dirección',p.dir],['Contacto de emergencia',p.emerg],['Registrado',p.reg]].map(([l,v])=>({l,v})),
+          antec:[['Alergias',p.alergia||'Ninguna conocida'],['Enfermedades crónicas',cron.join(', ')||'Ninguna conocida'],['Quirúrgicos',id%4===0?'Apendicectomía (2015)':'Ninguno'],['Familiares',id%3?'Madre con hipertensión arterial':'Sin datos relevantes'],['Medicación actual',lastRx&&cron.length?lastRx.items.map(x=>x.m).join(', '):'Ninguna']].map(([l,v])=>({l,v})),
+          at, recent:at.slice(0,4), noAt:!N, hasAt:!!N, rx, noRx:!rx.length, es, noEs:!es.length, facs, pagos, noPag:!pagos.length,
+          pend:facs.filter(f=>f.hasBal), hasPend:saldo>0, noPend:!saldo, saldoF:fmt(saldo), factF:fmt(fact), pagF:fmt(pag),
+          goH:()=>this.setState({pfTab:'historial'}), goF:()=>this.setState({pfTab:'finanzas'}),
+          icPill:this.ic('Pill'), icPrint:this.ic('Printer')}};
+      })(),
       espNueva:()=>this.setState({dialog:'espForm',efS:{orig:null,nom:'',pc:true,precio:'1000'}}),
       ...(()=>{ const f=S.efS||{}, up=o=>this.setState(st=>({efS:{...st.efS,...o}})), nom=(f.nom||'').trim(), pcNom='Consulta de '+(nom||'…').toLowerCase();
         const dup=!!nom&&S.esps.some(e=>e.toLowerCase()===nom.toLowerCase()&&e!==f.orig), nd=f.orig?S.docs.filter(x=>x.esp.includes(f.orig)).length:0;
@@ -3743,7 +3926,7 @@ class Component extends DCLogic {
     if (allowed && !allowed.includes(SUB[screen]?SUB[screen][0]:screen)) screen = allowed[0];
     const navKey = SUB[screen]?SUB[screen][0]:screen;
     const nav = NAV.map(g=>({title:g.title, items:g.items.filter(([k])=>!allowed||allowed.includes(k)).map(([k,label,ico])=>({label, icon:this.ic(ico), go:()=>this.go(k), bg:k===navKey?'rgba(255,255,255,.13)':'transparent', fg:k===navKey?'#fff':'rgba(255,255,255,.78)', fw:k===navKey?600:450, sh:k===navKey?'inset 3px 0 0 #8CC63F':'none'}))})).filter(g=>g.items.length);
-    const crumbs = {}; NAV.forEach(g=>g.items.forEach(([k,l])=>crumbs[k]=[g.title,l]));
+    const crumbs = {}; NAV.forEach(g=>g.items.forEach(([k,l])=>crumbs[k]=[g.title,l])); crumbs.registro=['Recepción › Pacientes','Nuevo paciente / Nueva atención'];
     const s = {}; NAV.forEach(g=>g.items.forEach(([k])=>s[k]=k===screen));
     Object.keys(SUB).forEach(k=>{ s[k]=k===screen; crumbs[k]=[crumbs[SUB[k][0]][1], SUB[k][1]]; });
 
