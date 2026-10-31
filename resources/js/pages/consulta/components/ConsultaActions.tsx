@@ -66,12 +66,14 @@ export default function ConsultaActions({
     turn,
     turnsEnEspera,
     onSelectTurn,
+    onDischargeSuccess,
 }: {
     activeTab: 'nota' | 'receta' | 'cuenta';
     setActiveTab: (tab: 'nota' | 'receta' | 'cuenta') => void;
     turn: TurnItem;
     turnsEnEspera: TurnItem[];
     onSelectTurn: (t: TurnItem) => void;
+    onDischargeSuccess?: () => void;
 }) {
     const [altaOpen, setAltaOpen] = useState(false);
 
@@ -172,6 +174,7 @@ export default function ConsultaActions({
                 open={altaOpen}
                 onOpenChange={setAltaOpen}
                 turn={turn}
+                onDischargeSuccess={onDischargeSuccess}
             />
         </TooltipProvider>
     );
