@@ -6,7 +6,7 @@ use App\Models\Emergency;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
-/** An active doctor (as in Consulta) or an administrator gives the discharge */
+/** An active doctor (as in Consulta), an administrator or a nurse gives the discharge */
 class DischargeEmergencyRequest extends FormRequest
 {
     public function authorize(): bool

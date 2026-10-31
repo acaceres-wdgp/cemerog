@@ -257,7 +257,7 @@ describe('Detalle de Emergencia', () => {
         expect(screen.getByRole('button', { name: /Ordenar/ })).toBeDisabled();
     });
 
-    it('only internar and cirugía are disabled; a nurse cannot discharge', () => {
+    it('only internar and cirugía are disabled; without permission the discharge is too', () => {
         renderShow();
 
         expect(screen.getByRole('button', { name: /Internar/ })).toBeDisabled();
@@ -266,9 +266,7 @@ describe('Detalle de Emergencia', () => {
         ).toBeDisabled();
         expect(screen.getByRole('button', { name: /Dar alta/ })).toBeDisabled();
         expect(
-            screen.getByText(
-                'Solo un médico o un administrador puede dar el alta',
-            ),
+            screen.getByText('Tu usuario no puede dar el alta'),
         ).toBeTruthy();
     });
 

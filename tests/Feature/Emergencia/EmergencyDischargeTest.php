@@ -70,17 +70,26 @@ test('a transfer needs the destination and the discharge happens once', function
     expect(Discharge::count())->toBe(1);
 });
 
-test('a nurse cannot give the discharge', function () {
+test('a nurse gives the discharge for the emergency doctor (on the phone); other roles cannot', function () {
     $this->actingAs($this->enfermera)
-        ->post("/emergencia/{$this->emergency->id}/alta", ['type' => 'recuperado', 'discharge_diagnosis' => 'x'])
-        ->assertForbidden();
+        ->get("/emergencia/{$this->emergency->id}")
+        ->assertInertia(fn ($page) => $page->where('can_discharge', true));
 
     $this->actingAs($this->enfermera)
-        ->get("/emergencia/{$this->emergency->id}")
-        ->assertInertia(fn ($page) => $page->where('can_discharge', false));
-    $this->actingAs($this->medico)
-        ->get("/emergencia/{$this->emergency->id}")
-        ->assertInertia(fn ($page) => $page->where('can_discharge', true)->has('free_cubicles', 6));
+        ->post("/emergencia/{$this->emergency->id}/alta", ['type' => 'recuperado', 'discharge_diagnosis' => 'Estable, indicado por teléfono.'])
+        ->assertSessionHasNoErrors();
+
+    expect(Discharge::first()->doctor_id)->toBe($this->doctor->id)
+        ->and(Discharge::first()->created_by)->toBe($this->enfermera->id);
+});
+
+test('a role without emergency access cannot discharge', function () {
+    $secretaria = User::factory()->create();
+    $secretaria->assignRole('secretaria');
+
+    $this->actingAs($secretaria)
+        ->post("/emergencia/{$this->emergency->id}/alta", ['type' => 'recuperado', 'discharge_diagnosis' => 'x'])
+        ->assertForbidden();
 });
 
 test('an administrator without a doctor can discharge; it is signed by the emergency doctor', function () {
