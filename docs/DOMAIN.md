@@ -37,6 +37,8 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 - Vista kanban/lista de pacientes por estado (espera, consulta, internado, etc.).
 - Estados de atención: espera, consulta, emergencia, internado, cirugia, pendiente, balance, saldada, cancelada.
 - **Pendiente de implementar**: actualización en tiempo real con broadcasting.
+- Desde el Tablero solo se llama a un paciente en espera, se devuelve a la cola o se marca «No asistió» (solo si está en espera). Un turno solo pasa a «Atendido» con el alta médica en Consulta.
+- **Turnos de días anteriores:** cada día a las 00:05 el comando `cemerog:close-stale-turns` marca como «No asistió» los turnos de días pasados que siguen en espera. Igual que al marcarlo a mano, se quita el cargo de la consulta y se cierra la cuenta de ese día si no queda nada abierto. Los turnos que quedaron «En consulta» no se tocan: los cierra el médico con el alta. Requiere el scheduler de Laravel activo en el servidor (`php artisan schedule:run` cada minuto).
 
 ### Pacientes
 
