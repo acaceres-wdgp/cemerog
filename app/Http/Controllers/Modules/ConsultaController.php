@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Modules;
 
 use App\Actions\Accounts\CloseDailyAccountIfDone;
+use App\Actions\BuildClinicalHistory;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreConsultationRequest;
 use App\Http\Requests\StoreDischargeRequest;
@@ -77,7 +78,7 @@ class ConsultaController extends Controller
         if ($patientId) {
             $patient = Patient::find($patientId);
             if ($patient) {
-                $historial = $this->loadHistorial($patient);
+                $historial = app(BuildClinicalHistory::class)->handle($patient, $user->doctor);
                 $historialPatient = $this->formatHistorialPatient($patient);
 
                 [$charges, $chargesTotal] = $this->loadCharges($patient, $user);
