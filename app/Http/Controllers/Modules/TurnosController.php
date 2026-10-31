@@ -53,6 +53,12 @@ class TurnosController extends Controller
 
     public function updateStatus(UpdateTurnStatusRequest $request, Turn $turn): RedirectResponse
     {
+        /** @var User $user */
+        $user = $request->user();
+        if ($user->seesOnlyOwnSchedule() && $turn->doctor_id !== $user->doctor->id) {
+            abort(403);
+        }
+
         $newStatus = $request->validated()['status'];
 
         if ($newStatus === 'no_asistio') {
@@ -79,7 +85,13 @@ class TurnosController extends Controller
 
     public function reorder(Request $request, Turn $turn, ReorderTurn $action): RedirectResponse
     {
-        abort_unless(auth()->user()?->can('module.tablero.access'), 403);
+        /** @var User $authUser */
+        $authUser = $request->user();
+        abort_unless($authUser->can('module.tablero.access'), 403);
+
+        if ($authUser->seesOnlyOwnSchedule() && $turn->doctor_id !== $authUser->doctor->id) {
+            abort(403);
+        }
 
         $request->validate(['direction' => 'required|in:up,down']);
 
