@@ -14,6 +14,7 @@ interface AltaMedicaModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     turn: TurnItem;
+    onDischargeSuccess?: () => void;
 }
 
 // ─── Option Card ──────────────────────────────────────────────────────────────
@@ -52,6 +53,7 @@ export default function AltaMedicaModal({
     open,
     onOpenChange,
     turn,
+    onDischargeSuccess,
 }: AltaMedicaModalProps) {
     const pageErrors = usePage().props.errors as
         | Partial<{
@@ -96,6 +98,10 @@ export default function AltaMedicaModal({
             },
             {
                 onFinish: () => setIsLoading(false),
+                onSuccess: () => {
+                    onOpenChange(false);
+                    onDischargeSuccess?.();
+                },
             },
         );
     };

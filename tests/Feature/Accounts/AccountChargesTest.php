@@ -1,6 +1,5 @@
 <?php
 
-use App\Actions\Accounts\GetOrOpenDailyAccount;
 use App\Models\Account;
 use App\Models\AccountCharge;
 use App\Models\Doctor;
@@ -8,7 +7,6 @@ use App\Models\Patient;
 use App\Models\Specialty;
 use App\Models\Turn;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);

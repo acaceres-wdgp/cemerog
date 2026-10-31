@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { UserX } from 'lucide-react';
 import { Props, TurnItem } from './types';
@@ -31,6 +31,20 @@ export default function ConsultaIndex({
     const [activeTab, setActiveTab] = useState<'nota' | 'receta' | 'cuenta'>(
         'nota',
     );
+
+    // Auto-advance or clear activeTurn when the lists change (e.g. after discharge).
+    // This is the only place that advances: an onSuccess callback would still
+    // hold the pre-discharge lists and pick the discharged turn again.
+    useEffect(() => {
+        if (activeTurn === null) return;
+        const allIds = new Set([
+            ...turns_en_consulta.map((t) => t.id),
+            ...turns_en_espera.map((t) => t.id),
+        ]);
+        if (!allIds.has(activeTurn.id)) {
+            setActiveTurn(turns_en_consulta[0] ?? null);
+        }
+    }, [turns_en_consulta, turns_en_espera]);
 
     const antecedents = historial_patient?.antecedents ?? null;
     const displayedHistorial = historial ?? [];

@@ -63,25 +63,35 @@ export type PrescriptionData = {
     items: PrescriptionItemData[];
 };
 
-export type HistorialPrescription = {
-    id: number;
-    general_instructions: string | null;
-    items: PrescriptionItemData[];
+/** Unified clinical history entry returned by BuildClinicalHistory */
+export type ClinicalEntryType =
+    | 'consulta'
+    | 'receta'
+    | 'alta'
+    | 'laboratorio'
+    | 'imagen';
+
+export type DischargeDetail = {
+    type: 'recuperado' | 'traslado' | 'defuncion';
+    destination: string | null;
+    discharge_diagnosis: string;
+    discharged_at: string;
 };
 
-export type HistorialEntry = {
-    id: number;
-    consulted_at: string;
-    doctor: { id: number; full_name: string; specialty: string | null };
-    motivo_consulta: string | null;
-    historia_enfermedad: string | null;
-    examen_fisico: string | null;
-    diagnosticos: Diagnostico[] | null;
-    plan_tratamiento: string | null;
-    vitals: Vitals;
-    discharge: DischargeInfo;
-    prescription_id?: number | null;
-    prescription?: HistorialPrescription | null;
+export type ClinicalEntry = {
+    type: ClinicalEntryType;
+    date: string;
+    mine: boolean;
+    doctor: DoctorInfo;
+    // consulta-specific
+    motivo_consulta?: string | null;
+    historia_enfermedad?: string | null;
+    examen_fisico?: string | null;
+    diagnosticos?: Diagnostico[] | null;
+    plan_tratamiento?: string | null;
+    vitals?: Vitals;
+    discharge?: DischargeDetail | null;
+    prescription?: PrescriptionData | null;
 };
 
 export type AntecedentData = {
@@ -128,7 +138,7 @@ export type Props = {
     can_attend: boolean;
     turns_en_consulta: TurnItem[];
     turns_en_espera: TurnItem[];
-    historial?: HistorialEntry[];
+    historial?: ClinicalEntry[];
     historial_patient?: PatientInfo & { antecedents: AntecedentData };
     prescriptions?: Record<number, PrescriptionData>;
     charges?: AccountCharge[];

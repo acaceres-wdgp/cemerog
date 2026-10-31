@@ -52,8 +52,9 @@ const makeTurn = (overrides: Record<string, unknown> = {}) => ({
 });
 
 const makeHistorial = (overrides: Record<string, unknown> = {}) => ({
-    id: 1,
-    consulted_at: '2026-09-15T10:00:00',
+    type: 'consulta' as const,
+    date: '2026-09-15T10:00:00',
+    mine: true,
     doctor: {
         id: 1,
         full_name: 'Dr. Rodríguez',
@@ -75,6 +76,7 @@ const makeHistorial = (overrides: Record<string, unknown> = {}) => ({
         glucemia: null,
     },
     discharge: null,
+    prescription: null,
     ...overrides,
 });
 

@@ -1,5 +1,7 @@
 /**
- * Tests for prescription detail and filter in HistorialPanel.
+ * Tests for prescription detail in HistorialPanel (unified historial format).
+ * Prescriptions are shown directly in the detail panel for both
+ * standalone receta entries and consulta entries that include a prescription.
  */
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
@@ -16,20 +18,60 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
 }));
 
 import HistorialPanel from '@/pages/consulta/components/HistorialPanel';
+import type { ClinicalEntry } from '@/pages/consulta/types';
 
-const makeHistorial = (overrides: Record<string, unknown> = {}) => ({
+const doctor = {
     id: 1,
-    consulted_at: '2026-09-15T10:00:00',
-    doctor: {
-        id: 1,
-        full_name: 'Dr. Rodríguez',
-        specialty: 'Medicina General',
+    full_name: 'Dr. Rodríguez',
+    specialty: 'Medicina General',
+};
+
+const recetaWithMeds: ClinicalEntry = {
+    type: 'receta',
+    date: '2026-09-15T10:00:00',
+    mine: true,
+    doctor,
+    prescription: {
+        id: 5,
+        general_instructions: 'Tomar con agua',
+        prescribed_at: '2026-09-15T10:00:00',
+        items: [
+            {
+                id: 1,
+                position: 1,
+                medication: 'Amoxicilina 500mg',
+                route: 'oral',
+                dose: '1 cápsula',
+                frequency: 'Cada 8 horas',
+                duration_days: 7,
+                is_continuous: false,
+                quantity: 21,
+            },
+        ],
     },
-    motivo_consulta: 'Dolor de cabeza',
-    historia_enfermedad: null,
-    examen_fisico: null,
+};
+
+const recetaEmpty: ClinicalEntry = {
+    type: 'receta',
+    date: '2026-09-15T10:00:00',
+    mine: true,
+    doctor,
+    prescription: {
+        id: 5,
+        general_instructions: null,
+        prescribed_at: '2026-09-15T10:00:00',
+        items: [],
+    },
+};
+
+const consultaNoRx: ClinicalEntry = {
+    type: 'consulta',
+    date: '2026-08-10T10:00:00',
+    mine: true,
+    doctor,
+    motivo_consulta: 'Sin receta',
     diagnosticos: null,
-    plan_tratamiento: 'Analgésicos',
+    plan_tratamiento: null,
     vitals: {
         peso: null,
         talla: null,
@@ -41,62 +83,20 @@ const makeHistorial = (overrides: Record<string, unknown> = {}) => ({
         glucemia: null,
     },
     discharge: null,
-    prescription_id: null,
     prescription: null,
-    ...overrides,
-});
+};
 
-describe('HistorialPanel – Ver receta shows detail panel', () => {
-    it('shows "Ver receta" button when prescription_id is present', () => {
-        const entry = makeHistorial({
-            prescription_id: 5,
-            prescription: {
-                id: 5,
-                general_instructions: 'Reposo',
-                items: [],
-            },
-        });
-        render(<HistorialPanel historial={[entry]} />);
-        expect(screen.getByText('Ver receta')).toBeTruthy();
+describe('HistorialPanel – receta detail panel', () => {
+    it('receta entry shows its medication in the detail panel directly', () => {
+        render(<HistorialPanel historial={[recetaWithMeds]} />);
+        // Auto-selected first entry; medication appears in detail
+        expect(
+            screen.getAllByText('Amoxicilina 500mg').length,
+        ).toBeGreaterThanOrEqual(1);
     });
 
-    it('"Ver receta" shows medication list in detail panel', () => {
-        const entry = makeHistorial({
-            prescription_id: 5,
-            prescription: {
-                id: 5,
-                general_instructions: 'Tomar con agua',
-                items: [
-                    {
-                        id: 1,
-                        position: 1,
-                        medication: 'Amoxicilina 500mg',
-                        route: 'oral',
-                        dose: '1 cápsula',
-                        frequency: 'Cada 8 horas',
-                        duration_days: 7,
-                        is_continuous: false,
-                        quantity: 21,
-                    },
-                ],
-            },
-        });
-        render(<HistorialPanel historial={[entry]} />);
-        fireEvent.click(screen.getByText('Ver receta'));
-        expect(screen.getByText('Amoxicilina 500mg')).toBeTruthy();
-    });
-
-    it('"Ver receta" shows Imprimir link with correct href', () => {
-        const entry = makeHistorial({
-            prescription_id: 5,
-            prescription: {
-                id: 5,
-                general_instructions: null,
-                items: [],
-            },
-        });
-        render(<HistorialPanel historial={[entry]} />);
-        fireEvent.click(screen.getByText('Ver receta'));
+    it('receta entry shows Imprimir link with correct href', () => {
+        render(<HistorialPanel historial={[recetaEmpty]} />);
         const link = screen.getByText('Imprimir').closest('a');
         expect(link?.getAttribute('href')).toContain(
             '/consulta/recetas/5/imprimir',
@@ -104,61 +104,29 @@ describe('HistorialPanel – Ver receta shows detail panel', () => {
         expect(link?.getAttribute('target')).toBe('_blank');
     });
 
-    it('does not show "Ver receta" when prescription_id is null', () => {
-        const entry = makeHistorial({
-            prescription_id: null,
-            prescription: null,
-        });
-        render(<HistorialPanel historial={[entry]} />);
-        expect(screen.queryByText('Ver receta')).toBeNull();
+    it('consulta without prescription shows no Imprimir link', () => {
+        render(<HistorialPanel historial={[consultaNoRx]} />);
+        expect(screen.queryByText('Imprimir')).toBeNull();
     });
 });
 
 describe('HistorialPanel – Recetas filter', () => {
-    it('Recetas filter shows only visits with a prescription', () => {
-        const withRx = makeHistorial({
-            id: 1,
-            prescription_id: 5,
-            prescription: { id: 5, general_instructions: null, items: [] },
-        });
-        const withoutRx = makeHistorial({
-            id: 2,
-            consulted_at: '2026-08-10T10:00:00',
-            motivo_consulta: 'Sin receta',
-            prescription_id: null,
-            prescription: null,
-        });
-        render(<HistorialPanel historial={[withRx, withoutRx]} />);
+    it('Recetas filter hides consulta entries without prescription', () => {
+        render(<HistorialPanel historial={[recetaWithMeds, consultaNoRx]} />);
 
-        // Both visible initially
-        expect(screen.getAllByRole('button').length).toBeGreaterThan(1);
-
-        // Click Recetas filter
         fireEvent.click(screen.getByRole('button', { name: /recetas/i }));
 
-        // withoutRx should be hidden (its motivo_consulta not present in list)
+        // consultaNoRx motivo not visible
         expect(screen.queryByText('Sin receta')).toBeNull();
     });
 
-    it('Recetas filter shows all visits when toggled off', () => {
-        const withRx = makeHistorial({
-            id: 1,
-            prescription_id: 5,
-            prescription: { id: 5, general_instructions: null, items: [] },
-        });
-        const withoutRx = makeHistorial({
-            id: 2,
-            consulted_at: '2026-08-10T10:00:00',
-            motivo_consulta: 'Visita sin receta',
-            prescription_id: null,
-            prescription: null,
-        });
-        render(<HistorialPanel historial={[withRx, withoutRx]} />);
+    it('Recetas filter shows all entries when toggled off', () => {
+        render(<HistorialPanel historial={[recetaWithMeds, consultaNoRx]} />);
 
-        // Enable filter then disable
         fireEvent.click(screen.getByRole('button', { name: /recetas/i }));
         fireEvent.click(screen.getByRole('button', { name: /recetas/i }));
 
-        expect(screen.getByText('Visita sin receta')).toBeTruthy();
+        // consultaNoRx title should be back
+        expect(screen.getByText('Sin receta')).toBeTruthy();
     });
 });

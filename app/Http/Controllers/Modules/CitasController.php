@@ -8,6 +8,7 @@ use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Requests\UpdateAppointmentRequest;
 use App\Models\Appointment;
 use App\Models\Doctor;
+use App\Models\User;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,6 +20,11 @@ class CitasController extends Controller
 {
     public function index(Request $request): Response
     {
+        /** @var User $user */
+        $user = $request->user();
+        $ownOnly = $user->seesOnlyOwnSchedule();
+        $forceDoctorId = $ownOnly ? $user->ownScheduleDoctorId() : null;
+
         $date = $request->filled('date')
             ? Carbon::parse($request->string('date'))->toDateString()
             : today()->toDateString();
@@ -29,8 +35,12 @@ class CitasController extends Controller
             ->whereHas('patient')
             ->whereDate('appointment_date', $date)
             ->when(
-                $request->filled('doctor_id'),
-                fn ($q) => $q->where('doctor_id', $request->integer('doctor_id'))
+                $forceDoctorId !== null,
+                fn ($q) => $q->where('doctor_id', $forceDoctorId),
+                fn ($q) => $q->when(
+                    $request->filled('doctor_id'),
+                    fn ($q2) => $q2->where('doctor_id', $request->integer('doctor_id'))
+                )
             )
             ->orderBy('appointment_time')
             ->get()
@@ -52,6 +62,7 @@ class CitasController extends Controller
 
         $doctors = Doctor::with('specialty')
             ->where('is_active', true)
+            ->when($forceDoctorId !== null, fn ($q) => $q->where('id', $forceDoctorId))
             ->orderBy('name')
             ->get()
             ->map(fn (Doctor $d) => [
@@ -74,7 +85,16 @@ class CitasController extends Controller
 
     public function store(StoreAppointmentRequest $request, CreateAppointment $action): RedirectResponse
     {
-        $action->handle($request->validated());
+        /** @var User $user */
+        $user = $request->user();
+        $data = $request->validated();
+
+        // Non-admin doctor can only create appointments for themselves
+        if ($user->seesOnlyOwnSchedule()) {
+            $data['doctor_id'] = $user->ownScheduleDoctorId();
+        }
+
+        $action->handle($data);
 
         Toast::success('Cita registrada correctamente.');
 
@@ -83,6 +103,12 @@ class CitasController extends Controller
 
     public function update(UpdateAppointmentRequest $request, Appointment $appointment): RedirectResponse
     {
+        /** @var User $user */
+        $user = $request->user();
+        if ($user->seesOnlyOwnSchedule() && $appointment->doctor_id !== $user->ownScheduleDoctorId()) {
+            abort(403);
+        }
+
         $appointment->update($request->validated());
 
         Toast::success('Cita actualizada.');
@@ -92,7 +118,13 @@ class CitasController extends Controller
 
     public function cancel(Appointment $appointment): RedirectResponse
     {
-        abort_unless(auth()->user()?->can('module.citas.access'), 403);
+        /** @var User $user */
+        $user = auth()->user();
+        abort_unless($user->can('module.citas.access'), 403);
+
+        if ($user->seesOnlyOwnSchedule() && $appointment->doctor_id !== $user->ownScheduleDoctorId()) {
+            abort(403);
+        }
 
         $appointment->update(['status' => 'cancelada']);
 
