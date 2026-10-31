@@ -34,6 +34,8 @@ export default function SegmentedControl<T extends string = string>({
                 return (
                     <button
                         key={seg.value}
+                        // Inside a form a plain button would submit it
+                        type="button"
                         role="tab"
                         aria-selected={active}
                         onClick={() => onChange(seg.value)}

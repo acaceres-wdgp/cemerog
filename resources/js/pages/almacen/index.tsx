@@ -1,459 +1,210 @@
+import React, { useMemo, useState } from 'react';
 import { Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { PackagePlus, Pencil, Plus, Search } from 'lucide-react';
+import SegmentedControl from '@/components/cemerog/SegmentedControl';
+import { formatMoney } from '@/lib/money';
+import { cn } from '@/lib/utils';
 import { entrada } from '@/routes';
+import ItemDialog from './components/ItemDialog';
+import { KIND_LABELS } from './types';
+import type { InventoryItemRow, ItemKind } from './types';
 
-const PRODUCTOS = [
-    {
-        code: 'MED-001',
-        nombre: 'Amoxicilina 500mg cap.',
-        cat: 'Antibióticos',
-        stock: 45,
-        min: 20,
-        precio: 'RD$28.00',
-        vence: '31/03/2027',
-        bajo: false,
-        proxVence: false,
-    },
-    {
-        code: 'MED-002',
-        nombre: 'Metformina 850mg tab.',
-        cat: 'Antidiabéticos',
-        stock: 8,
-        min: 30,
-        precio: 'RD$12.00',
-        vence: '28/02/2027',
-        bajo: true,
-        proxVence: false,
-    },
-    {
-        code: 'MED-003',
-        nombre: 'Ibuprofeno 400mg tab.',
-        cat: 'Analgésicos',
-        stock: 120,
-        min: 50,
-        precio: 'RD$8.00',
-        vence: '30/11/2026',
-        bajo: false,
-        proxVence: true,
-    },
-    {
-        code: 'SUP-001',
-        nombre: 'Guantes nitrilo M (caja)',
-        cat: 'Suministros',
-        stock: 3,
-        min: 10,
-        precio: 'RD$480.00',
-        vence: '—',
-        bajo: true,
-        proxVence: false,
-    },
-    {
-        code: 'MED-004',
-        nombre: 'Omeprazol 20mg cap.',
-        cat: 'Gastro',
-        stock: 200,
-        min: 40,
-        precio: 'RD$9.50',
-        vence: '30/06/2027',
-        bajo: false,
-        proxVence: false,
-    },
-    {
-        code: 'MED-005',
-        nombre: 'Losartán 50mg tab.',
-        cat: 'Antihipertensivos',
-        stock: 55,
-        min: 30,
-        precio: 'RD$22.00',
-        vence: '31/01/2027',
-        bajo: false,
-        proxVence: false,
-    },
-    {
-        code: 'SUP-002',
-        nombre: 'Jeringas 5ml (caja x50)',
-        cat: 'Suministros',
-        stock: 2,
-        min: 5,
-        precio: 'RD$320.00',
-        vence: '—',
-        bajo: true,
-        proxVence: false,
-    },
-];
+type Tab = 'todos' | ItemKind;
 
-const thStyle: React.CSSProperties = {
-    textAlign: 'left',
-    fontWeight: 600,
-    fontSize: 11.5,
-    letterSpacing: '.05em',
-    textTransform: 'uppercase',
-    color: '#56693f',
-    padding: '0 12px',
-    height: 40,
-    background: '#F6FAF1',
-    borderBottom: '1px solid #DCEBC9',
-    whiteSpace: 'nowrap',
-};
+const th =
+    'h-10 border-b border-accent-tip-border bg-table-header-bg px-3 text-[11.5px] font-semibold tracking-[.05em] whitespace-nowrap text-table-header-text uppercase';
+const td = 'border-b border-divider p-3 align-middle';
+const pill =
+    'inline-flex rounded-full px-[10px] py-[3px] text-[12px] font-medium whitespace-nowrap';
 
-export default function AlmacenIndex() {
+export default function AlmacenIndex({
+    items = [],
+    can_edit = false,
+}: {
+    items?: InventoryItemRow[];
+    can_edit?: boolean;
+}) {
+    const [tab, setTab] = useState<Tab>('todos');
     const [query, setQuery] = useState('');
-    const lowStock = PRODUCTOS.filter((p) => p.bajo);
-    const proxVence = PRODUCTOS.filter((p) => p.proxVence);
-
-    const filtered = PRODUCTOS.filter(
-        (p) =>
-            !query ||
-            p.nombre.toLowerCase().includes(query.toLowerCase()) ||
-            p.code.toLowerCase().includes(query.toLowerCase()) ||
-            p.cat.toLowerCase().includes(query.toLowerCase()),
+    const [editing, setEditing] = useState<InventoryItemRow | 'new' | null>(
+        null,
     );
 
+    const rows = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        return items
+            .filter((i) => tab === 'todos' || i.kind === tab)
+            .filter(
+                (i) =>
+                    q === '' ||
+                    `${i.code} ${i.name} ${i.presentation ?? ''}`
+                        .toLowerCase()
+                        .includes(q),
+            );
+    }, [items, tab, query]);
+    const count = (k: ItemKind) => items.filter((i) => i.kind === k).length;
+
     return (
-        <div className="flex flex-col gap-5">
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 16,
-                    flexWrap: 'wrap',
-                }}
-            >
-                <div>
-                    <h1
-                        style={{
-                            fontFamily: 'Bitter,Georgia,serif',
-                            fontWeight: 600,
-                            fontSize: 26,
-                            color: '#1f2d22',
-                            margin: 0,
-                        }}
-                    >
-                        Almacén
-                    </h1>
-                    <p style={{ margin: '4px 0 0', color: '#5f6b64' }}>
-                        {PRODUCTOS.length} productos · {lowStock.length} con
-                        stock bajo
-                    </p>
-                </div>
-                <div style={{ display: 'flex', gap: 8 }}>
+        <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="m-0 text-text-secondary">
+                    Medicamentos e insumos. Cada aplicación a un paciente
+                    descuenta existencia y genera un cargo.
+                </p>
+                <div className="flex gap-2">
                     <Link
-                        href={entrada()}
-                        style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            height: 36,
-                            padding: '0 14px',
-                            borderRadius: 10,
-                            border: '1px solid #dfe7df',
-                            background: '#F6F9F5',
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                            fontFamily: 'inherit',
-                            fontSize: 14,
-                            color: '#333',
-                            textDecoration: 'none',
-                        }}
+                        href={entrada.url()}
+                        className="inline-flex h-9 items-center gap-2 rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-medium text-text-body hover:bg-accent-bg"
                     >
-                        📦 Nueva entrada
+                        <PackagePlus className="h-4 w-4" />
+                        Registrar entrada
                     </Link>
-                    <button
-                        style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            height: 36,
-                            padding: '0 14px',
-                            borderRadius: 10,
-                            border: 'none',
-                            background: '#2E8B3E',
-                            color: '#fff',
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                            fontFamily: 'inherit',
-                            fontSize: 14,
-                        }}
-                    >
-                        + Nuevo producto
-                    </button>
+                    {can_edit && (
+                        <button
+                            type="button"
+                            onClick={() => setEditing('new')}
+                            className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] bg-primary px-[14px] font-medium text-white hover:bg-primary-hover"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Nuevo artículo
+                        </button>
+                    )}
                 </div>
             </div>
-
-            {/* Alerts */}
-            {lowStock.length > 0 && (
-                <div
-                    style={{
-                        display: 'flex',
-                        gap: 12,
-                        alignItems: 'flex-start',
-                        padding: '12px 16px',
-                        borderRadius: 12,
-                        border: '1px solid #fecaca',
-                        background: '#fef2f2',
-                        color: '#b91c1c',
-                    }}
-                >
-                    <span style={{ fontSize: 18 }}>⚠</span>
-                    <div>
-                        <div style={{ fontWeight: 600 }}>
-                            Stock bajo en {lowStock.length} productos
-                        </div>
-                        <div style={{ fontSize: 13 }}>
-                            {lowStock.map((p) => p.nombre).join(', ')}
-                        </div>
-                    </div>
-                </div>
-            )}
-            {proxVence.length > 0 && (
-                <div
-                    style={{
-                        display: 'flex',
-                        gap: 12,
-                        alignItems: 'flex-start',
-                        padding: '12px 16px',
-                        borderRadius: 12,
-                        border: '1px solid #fcd34d',
-                        background: '#FFFBEB',
-                        color: '#92400E',
-                    }}
-                >
-                    <span style={{ fontSize: 18 }}>⏰</span>
-                    <div>
-                        <div style={{ fontWeight: 600 }}>
-                            Vencimiento próximo en {proxVence.length} productos
-                        </div>
-                        <div style={{ fontSize: 13 }}>
-                            {proxVence
-                                .map((p) => `${p.nombre} (${p.vence})`)
-                                .join(', ')}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <div
-                style={{
-                    background: '#fff',
-                    border: '1px solid #e3e9e3',
-                    borderRadius: 14,
-                    overflow: 'hidden',
-                }}
-            >
-                <div
-                    style={{
-                        padding: '12px 16px',
-                        borderBottom: '1px solid #eef0ec',
-                        display: 'flex',
-                        gap: 12,
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                    }}
-                >
-                    <div
-                        style={{
-                            position: 'relative',
-                            flex: '0 1 300px',
-                            minWidth: 200,
-                        }}
-                    >
-                        <span
-                            style={{
-                                position: 'absolute',
-                                left: 10,
-                                top: 10,
-                                color: '#71717a',
-                                pointerEvents: 'none',
-                            }}
-                        >
-                            🔍
-                        </span>
+            <section className="overflow-x-auto rounded-[14px] border border-card-border bg-white shadow-[0_1px_2px_rgba(16,40,24,.03)]">
+                <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+                    <SegmentedControl<Tab>
+                        segments={[
+                            {
+                                value: 'todos',
+                                label: 'Todos',
+                                count: items.length,
+                            },
+                            {
+                                value: 'medicamento',
+                                label: 'Medicamentos',
+                                count: count('medicamento'),
+                            },
+                            {
+                                value: 'insumo',
+                                label: 'Insumos',
+                                count: count('insumo'),
+                            },
+                        ]}
+                        value={tab}
+                        onChange={setTab}
+                    />
+                    <label className="flex h-10 w-full max-w-[340px] items-center gap-2 rounded-[10px] border border-input-border bg-white px-3 focus-within:border-primary">
+                        <Search className="h-4 w-4 text-muted" />
                         <input
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Buscar por nombre, código o categoría…"
-                            style={{
-                                height: 36,
-                                width: '100%',
-                                padding: '0 12px 0 32px',
-                                border: '1px solid #e4e4e7',
-                                borderRadius: 10,
-                                outline: 'none',
-                                fontFamily: 'inherit',
-                                fontSize: 14,
-                            }}
+                            placeholder="Buscar por nombre o código"
+                            aria-label="Buscar por nombre o código"
+                            className="w-full border-0 bg-transparent outline-none"
                         />
-                    </div>
+                    </label>
                 </div>
-                <div style={{ overflowX: 'auto' }}>
-                    <table
-                        style={{
-                            width: '100%',
-                            borderCollapse: 'collapse',
-                            minWidth: 720,
-                        }}
-                    >
-                        <thead>
-                            <tr>
-                                <th style={thStyle}>Código</th>
-                                <th style={thStyle}>Nombre</th>
-                                <th style={thStyle}>Categoría</th>
-                                <th style={{ ...thStyle, textAlign: 'right' }}>
-                                    Stock
-                                </th>
-                                <th style={{ ...thStyle, textAlign: 'right' }}>
-                                    Mínimo
-                                </th>
-                                <th style={{ ...thStyle, textAlign: 'right' }}>
-                                    Precio
-                                </th>
-                                <th style={thStyle}>Vencimiento</th>
-                                <th style={{ ...thStyle, width: 44 }}></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtered.map((p) => (
-                                <tr
-                                    key={p.code}
-                                    style={{
-                                        background: p.bajo ? '#FEF5F5' : '#fff',
-                                    }}
+                <table className="w-full min-w-[820px] border-collapse text-[14px]">
+                    <thead>
+                        <tr>
+                            <th className={`${th} pl-5 text-left`}>Código</th>
+                            <th className={`${th} text-left`}>Artículo</th>
+                            <th className={`${th} text-left`}>Tipo</th>
+                            <th className={`${th} text-right`}>Existencia</th>
+                            <th className={`${th} text-right`}>Mínimo</th>
+                            <th className={`${th} text-right`}>Precio</th>
+                            <th className={`${th} text-left`}>Alertas</th>
+                            <th className={`${th} pr-5`}>
+                                <span className="sr-only">Acciones</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows.map((i) => (
+                            <tr
+                                key={i.id}
+                                className={cn(!i.is_active && 'text-muted')}
+                            >
+                                <td
+                                    className={`${td} pl-5 font-mono text-[12.5px]`}
                                 >
-                                    <td
-                                        style={{
-                                            padding: '12px',
-                                            borderBottom: '1px solid #eef0ec',
-                                            fontFamily:
-                                                'ui-monospace,monospace',
-                                            fontSize: 12,
-                                            fontWeight: 600,
-                                        }}
-                                    >
-                                        {p.code}
-                                    </td>
-                                    <td
-                                        style={{
-                                            padding: '12px',
-                                            borderBottom: '1px solid #eef0ec',
-                                            fontWeight: 500,
-                                        }}
-                                    >
-                                        {p.nombre}
-                                        {p.bajo && (
+                                    {i.code}
+                                </td>
+                                <td className={td}>
+                                    <div className="font-medium text-text-heading">
+                                        {i.name}
+                                    </div>
+                                    {i.presentation && (
+                                        <div className="text-[12.5px] text-text-tertiary">
+                                            {i.presentation}
+                                        </div>
+                                    )}
+                                </td>
+                                <td className={td}>{KIND_LABELS[i.kind]}</td>
+                                <td
+                                    className={cn(
+                                        td,
+                                        'text-right font-semibold tabular-nums',
+                                        i.low_stock && 'text-error',
+                                    )}
+                                >
+                                    {i.stock}
+                                </td>
+                                <td className={`${td} text-right tabular-nums`}>
+                                    {i.min_stock}
+                                </td>
+                                <td className={`${td} text-right tabular-nums`}>
+                                    {formatMoney(i.price)}
+                                </td>
+                                <td className={td}>
+                                    <div className="flex flex-wrap gap-1">
+                                        {i.low_stock && (
                                             <span
-                                                style={{
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    marginLeft: 6,
-                                                    padding: '1px 7px',
-                                                    borderRadius: 999,
-                                                    background: '#fef2f2',
-                                                    color: '#b91c1c',
-                                                    fontSize: 11,
-                                                    fontWeight: 600,
-                                                }}
+                                                className={`${pill} state-emergencia bg-[var(--state-bg)] text-[var(--state-text)]`}
                                             >
-                                                Stock bajo
+                                                Existencia baja
                                             </span>
                                         )}
-                                    </td>
-                                    <td
-                                        style={{
-                                            padding: '12px',
-                                            borderBottom: '1px solid #eef0ec',
-                                            fontSize: 13,
-                                            color: '#52525b',
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                padding: '2px 8px',
-                                                borderRadius: 999,
-                                                background: '#F3F7F2',
-                                                fontSize: 12,
-                                            }}
-                                        >
-                                            {p.cat}
-                                        </span>
-                                    </td>
-                                    <td
-                                        style={{
-                                            padding: '12px',
-                                            borderBottom: '1px solid #eef0ec',
-                                            textAlign: 'right',
-                                            fontWeight: 700,
-                                            fontVariantNumeric: 'tabular-nums',
-                                            color: p.bajo
-                                                ? '#b91c1c'
-                                                : '#1f2d22',
-                                        }}
-                                    >
-                                        {p.stock}
-                                    </td>
-                                    <td
-                                        style={{
-                                            padding: '12px',
-                                            borderBottom: '1px solid #eef0ec',
-                                            textAlign: 'right',
-                                            fontVariantNumeric: 'tabular-nums',
-                                            color: '#71717a',
-                                        }}
-                                    >
-                                        {p.min}
-                                    </td>
-                                    <td
-                                        style={{
-                                            padding: '12px',
-                                            borderBottom: '1px solid #eef0ec',
-                                            textAlign: 'right',
-                                            fontVariantNumeric: 'tabular-nums',
-                                        }}
-                                    >
-                                        {p.precio}
-                                    </td>
-                                    <td
-                                        style={{
-                                            padding: '12px',
-                                            borderBottom: '1px solid #eef0ec',
-                                            fontVariantNumeric: 'tabular-nums',
-                                            color: p.proxVence
-                                                ? '#92400E'
-                                                : '#1f2d22',
-                                            fontWeight: p.proxVence ? 600 : 400,
-                                        }}
-                                    >
-                                        {p.vence}
-                                    </td>
-                                    <td
-                                        style={{
-                                            padding: '12px',
-                                            borderBottom: '1px solid #eef0ec',
-                                            color: '#a1a1aa',
-                                            textAlign: 'center',
-                                        }}
-                                    >
+                                        {!i.is_active && (
+                                            <span
+                                                className={`${pill} bg-muted-bg text-text-secondary`}
+                                            >
+                                                Inactivo
+                                            </span>
+                                        )}
+                                    </div>
+                                </td>
+                                <td className={`${td} pr-5 text-right`}>
+                                    {can_edit && (
                                         <button
-                                            style={{
-                                                height: 28,
-                                                padding: '0 8px',
-                                                borderRadius: 6,
-                                                border: '1px solid #dfe7df',
-                                                background: '#F6F9F5',
-                                                cursor: 'pointer',
-                                                fontSize: 12,
-                                                fontFamily: 'inherit',
-                                            }}
+                                            type="button"
+                                            aria-label={`Editar ${i.name}`}
+                                            onClick={() => setEditing(i)}
+                                            className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-card-border bg-white text-text-secondary hover:bg-app-bg"
                                         >
-                                            ✏
+                                            <Pencil className="h-4 w-4" />
                                         </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                {rows.length === 0 && (
+                    <div className="p-8 text-center text-muted">
+                        {items.length === 0
+                            ? 'El catálogo está vacío. Agrega el primer artículo.'
+                            : 'Ningún artículo coincide con el filtro.'}
+                    </div>
+                )}
+            </section>
+            {editing && (
+                <ItemDialog
+                    item={editing === 'new' ? null : editing}
+                    onClose={() => setEditing(null)}
+                />
+            )}
         </div>
     );
 }

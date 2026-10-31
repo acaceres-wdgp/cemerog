@@ -19,7 +19,7 @@
 | caja          | /facturacion             | caja/index          | admin, caja, secretaria                                  | Terminado              | 12          |
 | cxc           | /cuentas-por-cobrar      | cxc/index           | admin, caja, secretaria                                  | Terminado              | 13          |
 | cuadre        | /cuadre-de-caja          | cuadre/index        | admin, caja, secretaria                                  | Terminado              | 14          |
-| almacen       | /almacen                 | almacen/index       | admin, almacen                                           | Esqueleto              | 15          |
+| almacen       | /almacen                 | almacen/index       | admin, almacen (solo admin edita)                        | Catálogo listo         | 15          |
 | entrada       | /entrada-mercancia       | entrada/index       | admin, almacen                                           | Esqueleto              | 16          |
 | admin         | /admin/usuarios          | admin/index         | admin                                                    | Esqueleto              | 17          |
 | doctores      | /admin/doctores          | doctores/index      | admin                                                    | Esqueleto              | 18          |
@@ -28,6 +28,10 @@
 | precios       | /admin/precios           | precios/index       | admin                                                    | Esqueleto              | 21          |
 | habs          | /admin/habitaciones      | habs/index          | admin                                                    | Esqueleto              | 22          |
 | tema          | /admin/tema              | tema/index          | admin                                                    | Esqueleto              | 23          |
+
+### Administración › Emergencia
+
+`/admin/emergencia` (`admin-emergencia/index`) usa el permiso `module.admin.access`: cubículos de Emergencia (agregar, renombrar, desactivar) y el cargo por emergencia (`settings.emergency_fee`, en centavos). Solo el administrador.
 
 ### Nota sobre `registro`
 

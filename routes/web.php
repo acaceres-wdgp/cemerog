@@ -15,6 +15,7 @@ use App\Http\Controllers\Modules\CuadreController;
 use App\Http\Controllers\Modules\CxcController;
 use App\Http\Controllers\Modules\DoctoresController;
 use App\Http\Controllers\Modules\EmergenciaController;
+use App\Http\Controllers\Modules\EmergencyConfigController;
 use App\Http\Controllers\Modules\EntradaController;
 use App\Http\Controllers\Modules\HabsController;
 use App\Http\Controllers\Modules\ImgcatController;
@@ -180,15 +181,24 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         ->name('cuadre.report');
 
     // Inventario
-    Route::get('/almacen', [AlmacenController::class, 'index'])
-        ->middleware('permission:module.almacen.access')
-        ->name('almacen');
+    Route::prefix('/almacen')->middleware('permission:module.almacen.access')->group(function () {
+        Route::get('/', [AlmacenController::class, 'index'])->name('almacen');
+        Route::post('/articulos', [AlmacenController::class, 'store'])->name('almacen.items.store');
+        Route::put('/articulos/{item}', [AlmacenController::class, 'update'])->name('almacen.items.update');
+    });
 
     Route::get('/entrada-mercancia', [EntradaController::class, 'index'])
         ->middleware('permission:module.entrada.access')
         ->name('entrada');
 
     // Administracion
+    Route::prefix('/admin/emergencia')->middleware('permission:module.admin.access')->group(function () {
+        Route::get('/', [EmergencyConfigController::class, 'index'])->name('admin.emergencia');
+        Route::put('/cargo', [EmergencyConfigController::class, 'updateFee'])->name('admin.emergencia.fee');
+        Route::post('/cubiculos', [EmergencyConfigController::class, 'storeCubicle'])->name('admin.emergencia.cubicles.store');
+        Route::put('/cubiculos/{cubicle}', [EmergencyConfigController::class, 'updateCubicle'])->name('admin.emergencia.cubicles.update');
+    });
+
     Route::prefix('/admin/usuarios')->middleware('permission:module.admin.access')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('admin');
         Route::post('/', [AdminController::class, 'store'])->name('admin.users.store');
