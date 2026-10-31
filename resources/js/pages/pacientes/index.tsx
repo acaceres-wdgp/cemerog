@@ -11,6 +11,7 @@ import DataTable, {
 } from '@/components/cemerog/DataTable';
 import SegmentedControl from '@/components/cemerog/SegmentedControl';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { ageLabel } from '@/lib/patient';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -39,7 +40,7 @@ interface PatientRow {
     document_type: string;
     document_number: string;
     sex: string;
-    age: number;
+    age: number | null;
     birth_date: string;
     phone: string | null;
     blood_type: string | null;
@@ -150,7 +151,7 @@ const columns: DataTableColumn<PatientRow>[] = [
                     </p>
                     <p className="text-[12.5px] text-muted">
                         {row.original.sex === 'F' ? 'Femenino' : 'Masculino'} ·{' '}
-                        {row.original.age} años
+                        {ageLabel(row.original.age)}
                     </p>
                 </div>
             </div>
@@ -259,7 +260,7 @@ function DetailPanel({ patient }: { patient: SelectedPatient }) {
                         {patient.full_name}
                     </p>
                     <p className="mt-0.5 text-[13px] text-muted">
-                        {sexLabel} · {patient.age} años · Expediente{' '}
+                        {sexLabel} · {ageLabel(patient.age)} · Expediente{' '}
                         {patient.expediente_number}
                     </p>
                 </div>
@@ -295,7 +296,9 @@ function DetailPanel({ patient }: { patient: SelectedPatient }) {
                         </dd>
                         <dt className="text-muted">Nacimiento</dt>
                         <dd className="text-text-body">
-                            {patient.birth_date} ({patient.age} años)
+                            {patient.birth_date
+                                ? `${patient.birth_date} (${ageLabel(patient.age)})`
+                                : 'Sin registrar'}
                         </dd>
                         <dt className="text-muted">Sangre</dt>
                         <dd className="text-text-body">

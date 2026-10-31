@@ -15,6 +15,8 @@ class InvoicePresenter
     /** Area shown for each charge type */
     private const AREAS = [
         'consulta' => 'Consulta',
+        'emergencia' => 'Emergencia',
+        'insumo' => 'Insumos',
         'laboratorio' => 'Laboratorio',
         'imagen' => 'Imágenes',
         'medicamento' => 'Farmacia',

@@ -67,7 +67,7 @@ class BuildPatientProfile
             'age' => $patient->age,
             'document_type' => $patient->document_type,
             'document_number' => $patient->document_number,
-            'birth_date' => $patient->birth_date->format('d/m/Y'),
+            'birth_date' => $patient->birth_date?->format('d/m/Y'),
             'phone' => $patient->phone,
             'address' => $patient->address,
             'emergency_contact_name' => $patient->emergency_contact_name,

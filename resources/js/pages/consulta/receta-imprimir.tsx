@@ -2,6 +2,7 @@ import React from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import PrintablePage from '@/components/cemerog/PrintablePage';
+import { ageLabel } from '@/lib/patient';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -24,7 +25,7 @@ type PrescriptionData = {
     turn_number: number;
     patient: {
         full_name: string;
-        age: number;
+        age: number | null;
         sex: string;
         allergies: string | null;
     };
@@ -122,7 +123,7 @@ export default function RecetaImprimir({ prescription, clinic }: Props) {
                             <span>
                                 <span className="text-muted">Edad: </span>
                                 <span className="text-text-heading">
-                                    {prescription.patient.age} años ·{' '}
+                                    {ageLabel(prescription.patient.age)} ·{' '}
                                     {prescription.patient.sex === 'M'
                                         ? 'Masculino'
                                         : 'Femenino'}

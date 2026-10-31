@@ -4,6 +4,7 @@ import { es } from 'date-fns/locale';
 import StatusBadge from '@/components/cemerog/StatusBadge';
 import { initials } from '../lib/helpers';
 import { TurnItem } from '../types';
+import { ageLabel } from '@/lib/patient';
 
 // ─── Patient Header ───────────────────────────────────────────────────────────
 
@@ -27,7 +28,7 @@ export default function PatientHeader({ turn }: { turn: TurnItem }) {
                     </div>
                     <div className="mt-[6px] flex flex-wrap gap-[6px]">
                         {[
-                            `${p.age} años`,
+                            ageLabel(p.age),
                             p.sex === 'M' ? 'Masculino' : 'Femenino',
                         ].map((v) => (
                             <span

@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import AlertBanner from '@/components/cemerog/AlertBanner';
 import MaskedInput from '@/components/cemerog/masked-input';
 import Panel from '@/components/cemerog/Panel';
+import { ageLabel } from '@/lib/patient';
 
 // ── Turn status label map (mirrors Turn::statusLabel on the backend) ──────────
 const TURN_STATUS_LABELS: Record<string, string> = {
@@ -54,7 +55,7 @@ interface ExistingPatient {
 interface DuplicateMatch {
     id: number;
     full_name: string;
-    age: number;
+    age: number | null;
 }
 
 interface Props {
@@ -388,7 +389,11 @@ export default function RegistroIndex({
                                                             duplicateMatch.full_name
                                                         }
                                                     </strong>{' '}
-                                                    ({duplicateMatch.age} años).{' '}
+                                                    (
+                                                    {ageLabel(
+                                                        duplicateMatch.age,
+                                                    )}
+                                                    ).{' '}
                                                     <Link
                                                         href={`/pacientes?paciente=${duplicateMatch.id}`}
                                                         className="font-medium underline hover:no-underline"

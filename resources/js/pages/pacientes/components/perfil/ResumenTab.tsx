@@ -8,6 +8,7 @@ import type {
     ProfilePatient,
 } from './types';
 import { ACCOUNT_STATUS_LABELS } from './types';
+import { ageLabel } from '@/lib/patient';
 
 const DOC_LABELS: Record<string, string> = {
     cedula: 'Cédula',
@@ -59,7 +60,11 @@ export default function ResumenTab({
                         />
                         <Row
                             label="Nacimiento"
-                            value={`${patient.birth_date} (${patient.age} años)`}
+                            value={
+                                patient.birth_date
+                                    ? `${patient.birth_date} (${ageLabel(patient.age)})`
+                                    : 'Sin registrar'
+                            }
                         />
                         <Row label="Teléfono" value={patient.phone ?? '—'} />
                         <Row label="Dirección" value={patient.address ?? '—'} />

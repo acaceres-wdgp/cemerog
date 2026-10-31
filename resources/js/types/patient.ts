@@ -15,8 +15,8 @@ export type PatientSearchResult = {
     email: string | null;
     first_names: string;
     last_names: string;
-    birth_date: string;
-    age: number;
+    birth_date: string | null;
+    age: number | null;
     sex: Sex;
     phone: string | null;
     address: string | null;

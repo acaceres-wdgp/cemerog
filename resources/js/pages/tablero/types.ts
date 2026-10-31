@@ -7,7 +7,7 @@ export type TurnRow = {
     patient_name: string;
     patient_initials: string;
     patient_document: string;
-    patient_age: number;
+    patient_age: number | null;
     patient_sex: string;
     doctor_id: number;
     doctor_name: string;

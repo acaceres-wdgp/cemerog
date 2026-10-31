@@ -1,4 +1,5 @@
 import type { TurnRow } from '../types';
+import { ageLabel } from '@/lib/patient';
 
 interface TurnosPanelProps {
     turns: TurnRow[];
@@ -131,7 +132,7 @@ export function TurnosPanel({
                                                 </div>
                                                 <div className="text-xs text-muted">
                                                     {r.patient_document} ·{' '}
-                                                    {r.patient_age} años ·{' '}
+                                                    {ageLabel(r.patient_age)} ·{' '}
                                                     {r.patient_sex}
                                                 </div>
                                             </div>

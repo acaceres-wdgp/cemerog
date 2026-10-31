@@ -16,7 +16,7 @@ export type Vitals = {
 export type PatientInfo = {
     id: number;
     full_name: string;
-    age: number;
+    age: number | null;
     sex: string;
     allergies: string | null;
 };
