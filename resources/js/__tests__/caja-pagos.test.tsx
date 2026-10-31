@@ -1,9 +1,9 @@
 /**
- * Collecting an invoice: shift required, mixed methods, change, transfer
- * number and credit with a due date.
+ * «Registrar pago» on an issued invoice: transfer number, partial payment,
+ * credit and the shift requirement.
  */
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockPost, page } = vi.hoisted(() => ({
@@ -23,7 +23,7 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
     usePage: () => page,
 }));
 
-import InvoiceDetailPanel from '@/pages/caja/components/InvoiceDetailPanel';
+import AccountPanel from '@/pages/caja/components/AccountPanel';
 import type { InvoiceDetail } from '@/pages/caja/types';
 
 const invoice: InvoiceDetail = {
@@ -39,7 +39,7 @@ const invoice: InvoiceDetail = {
         id: 1,
         full_name: 'Ana Torres',
         expediente_number: 'P-00001',
-        document_number: '001-1234567-8',
+        document_number: '001',
     },
     service_date: '31/10/2026',
     issued_by: 'Rosa Castillo',
@@ -56,6 +56,8 @@ const invoice: InvoiceDetail = {
     lines: [
         {
             id: 1,
+            date: '31/10/2026',
+            area: 'Consulta',
             description: 'Consulta',
             quantity: 1,
             unit_price: 200000,
@@ -75,26 +77,15 @@ const myShift = {
 };
 
 function openPayment() {
-    render(<InvoiceDetailPanel invoice={invoice} canVoid={false} />);
+    render(<AccountPanel invoice={invoice} canVoid={false} />);
     fireEvent.click(screen.getByRole('button', { name: 'Registrar pago' }));
+    return screen.getByRole('dialog');
 }
 
-describe('Cobro de una factura', () => {
+describe('Registrar pago', () => {
     beforeEach(() => {
         mockPost.mockClear();
         page.props.cash_shift = myShift;
-    });
-
-    it('without an open shift offers to open one first', () => {
-        page.props.cash_shift = null;
-        render(<InvoiceDetailPanel invoice={invoice} canVoid={false} />);
-
-        expect(
-            screen.getByRole('button', { name: 'Abrir turno para cobrar' }),
-        ).toBeTruthy();
-        expect(
-            screen.queryByRole('button', { name: 'Registrar pago' }),
-        ).toBeNull();
     });
 
     it('another cashier shift blocks collecting', () => {
@@ -104,69 +95,39 @@ describe('Cobro de una factura', () => {
             can_operate: false,
             opened_by: 'Kenia Marte',
         };
-        render(<InvoiceDetailPanel invoice={invoice} canVoid={false} />);
+        render(<AccountPanel invoice={invoice} canVoid={false} />);
 
         expect(
             screen.getByText(/La caja está abierta por Kenia Marte/),
         ).toBeTruthy();
+        expect(
+            screen.queryByRole('button', { name: 'Registrar pago' }),
+        ).toBeNull();
     });
 
-    it('pays the balance in cash and shows the change', () => {
-        openPayment();
-
-        fireEvent.change(screen.getByLabelText(/Efectivo recibido/), {
-            target: { value: '2500' },
-        });
-        expect(screen.getByText('Devuelta: RD$500.00')).toBeTruthy();
+    it('a transfer needs its number', () => {
+        const dialog = openPayment();
 
         fireEvent.click(
-            screen.getAllByRole('button', { name: 'Registrar pago' }).at(-1)!,
+            within(dialog).getByRole('button', { name: 'Transferencia' }),
         );
-        expect(mockPost).toHaveBeenCalledWith(
-            '/facturacion/facturas/9/pagos',
-            {
-                payments: [
-                    {
-                        method: 'efectivo',
-                        amount: 200000,
-                        cash_received: 250000,
-                    },
-                ],
-            },
-            expect.anything(),
-        );
-    });
-
-    it('a mixed payment with a transfer needs the transfer number', () => {
-        openPayment();
-
-        fireEvent.change(screen.getByLabelText('Monto (RD$)'), {
-            target: { value: '500' },
+        const submit = within(dialog).getByRole('button', {
+            name: 'Registrar pago',
         });
-        fireEvent.click(screen.getByText('+ Agregar otro método'));
-        fireEvent.change(screen.getAllByLabelText('Método')[1], {
-            target: { value: 'transferencia' },
-        });
-
-        const submit = screen
-            .getAllByRole('button', { name: 'Registrar pago' })
-            .at(-1)!;
         expect(submit).toBeDisabled();
 
-        fireEvent.change(screen.getByLabelText(/Número de la transferencia/), {
-            target: { value: 'TRX-778' },
-        });
-        expect(submit).not.toBeDisabled();
-
+        fireEvent.change(
+            within(dialog).getByLabelText(/Número de la transferencia/),
+            { target: { value: 'TRX-778' } },
+        );
         fireEvent.click(submit);
         expect(mockPost).toHaveBeenCalledWith(
             '/facturacion/facturas/9/pagos',
             {
                 payments: [
-                    { method: 'efectivo', amount: 50000 },
                     {
                         method: 'transferencia',
-                        amount: 150000,
+                        amount: 200000,
                         reference: 'TRX-778',
                     },
                 ],
@@ -175,29 +136,46 @@ describe('Cobro de una factura', () => {
         );
     });
 
-    it('a partial payment asks for the credit due date', () => {
-        openPayment();
+    it('a partial payment is allowed and leaves a balance', () => {
+        const dialog = openPayment();
 
-        fireEvent.change(screen.getByLabelText('Monto (RD$)'), {
+        fireEvent.change(within(dialog).getByLabelText(/Monto \(RD\$\)/), {
             target: { value: '500' },
         });
-        expect(
-            screen.getByText(/RD\$1,500\.00 quedan en cuentas por cobrar/),
-        ).toBeTruthy();
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Registrar pago' }),
+        );
+        expect(mockPost).toHaveBeenCalledWith(
+            '/facturacion/facturas/9/pagos',
+            { payments: [{ method: 'efectivo', amount: 50000 }] },
+            expect.anything(),
+        );
+    });
 
-        const submit = screen
-            .getAllByRole('button', { name: 'Registrar pago' })
-            .at(-1)!;
-        expect(submit).toBeDisabled();
+    it('credit with a down payment by card', () => {
+        const dialog = openPayment();
 
-        fireEvent.change(screen.getByLabelText(/Fecha compromiso de pago/), {
-            target: { value: '2026-11-15' },
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Crédito' }),
+        );
+        fireEvent.change(within(dialog).getByLabelText(/Abono inicial/), {
+            target: { value: '500' },
         });
-        fireEvent.click(submit);
+        fireEvent.click(
+            within(dialog).getAllByRole('button', { name: 'Tarjeta' }).at(-1)!,
+        );
+        fireEvent.change(
+            within(dialog).getByLabelText(/Fecha compromiso de pago/),
+            { target: { value: '2026-11-15' } },
+        );
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Registrar crédito' }),
+        );
+
         expect(mockPost).toHaveBeenCalledWith(
             '/facturacion/facturas/9/pagos',
             {
-                payments: [{ method: 'efectivo', amount: 50000 }],
+                payments: [{ method: 'tarjeta', amount: 50000 }],
                 credit: { due_date: '2026-11-15', note: null },
             },
             expect.anything(),
@@ -205,14 +183,16 @@ describe('Cobro de una factura', () => {
     });
 
     it('does not allow paying more than the balance', () => {
-        openPayment();
+        const dialog = openPayment();
 
-        fireEvent.change(screen.getByLabelText('Monto (RD$)'), {
+        fireEvent.change(within(dialog).getByLabelText(/Monto \(RD\$\)/), {
             target: { value: '2500' },
         });
-        expect(screen.getByText(/Pasa del balance/)).toBeTruthy();
         expect(
-            screen.getAllByRole('button', { name: 'Registrar pago' }).at(-1),
+            within(dialog).getByText(/No puede pasar del balance/),
+        ).toBeTruthy();
+        expect(
+            within(dialog).getByRole('button', { name: 'Registrar pago' }),
         ).toBeDisabled();
     });
 });

@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\PaymentRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class StoreInvoiceRequest extends FormRequest
 {
+    use PaymentRules;
+
     public function authorize(): bool
     {
         return $this->user()->can('module.caja.access');
@@ -19,6 +22,7 @@ class StoreInvoiceRequest extends FormRequest
             'discount_type' => ['nullable', Rule::in(['porcentaje', 'monto'])],
             'discount_value' => ['nullable', 'required_with:discount_type', 'integer', 'min:1'],
             'discount_reason' => ['nullable', 'required_with:discount_type', 'string', 'max:255'],
+            ...$this->paymentRules(),
         ];
     }
 

@@ -1,5 +1,7 @@
 export type ChargeRow = {
     id: number;
+    date: string | null;
+    area: string;
     description: string;
     quantity: number;
     unit_price: number;

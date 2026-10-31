@@ -3,10 +3,9 @@ import { router } from '@inertiajs/react';
 import { Receipt } from 'lucide-react';
 import EmptyState from '@/components/cemerog/EmptyState';
 import { caja } from '@/routes';
-import BillingQueue from './components/BillingQueue';
-import type { Selection } from './components/BillingQueue';
-import InvoiceDetailPanel from './components/InvoiceDetailPanel';
-import InvoiceDraft from './components/InvoiceDraft';
+import AccountPanel from './components/AccountPanel';
+import CajaQueue from './components/CajaQueue';
+import type { Selection } from './components/CajaQueue';
 import type { CajaProps } from './types';
 
 export default function CajaIndex({
@@ -40,58 +39,50 @@ export default function CajaIndex({
         }
     };
 
+    const findAccount = (id: number) =>
+        [...pending_accounts, ...accounts_in_care].find((a) => a.id === id);
+
+    // After emitting, the account leaves the lists and the server sends the
+    // new invoice as the selected one
+    const current: Selection =
+        selection?.kind === 'account' &&
+        !findAccount(selection.id) &&
+        selected_invoice
+            ? { kind: 'invoice', id: selected_invoice.id }
+            : selection;
+
     const account =
-        selection?.kind === 'account'
-            ? [...pending_accounts, ...accounts_in_care].find(
-                  (a) => a.id === selection.id,
-              )
-            : undefined;
+        current?.kind === 'account' ? findAccount(current.id) : undefined;
     const invoice =
-        selection?.kind === 'invoice' && selected_invoice?.id === selection.id
+        current?.kind === 'invoice' && selected_invoice?.id === current.id
             ? selected_invoice
-            : null;
+            : undefined;
 
     return (
-        <div className="flex flex-col gap-5">
-            <div>
-                <h1 className="m-0 font-serif text-[26px] font-semibold text-text-heading">
-                    Facturación
-                </h1>
-                <p className="mt-1 text-muted">
-                    {pending_accounts.length} cuentas pendientes de facturar ·{' '}
-                    {accounts_in_care.length} en atención
-                </p>
-            </div>
-
-            <div className="flex flex-wrap items-start gap-4">
-                <div className="min-w-[280px] flex-[1_1_320px]">
-                    <BillingQueue
-                        pending={pending_accounts}
-                        inCare={accounts_in_care}
-                        invoices={invoices}
-                        selection={selection}
-                        onSelect={select}
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+            <CajaQueue
+                pending={pending_accounts}
+                inCare={accounts_in_care}
+                invoices={invoices}
+                selection={current}
+                onSelect={select}
+            />
+            {account || invoice ? (
+                <AccountPanel
+                    key={account ? `a${account.id}` : `i${invoice?.id}`}
+                    account={account}
+                    invoice={invoice}
+                    canVoid={can_void}
+                />
+            ) : (
+                <div className="rounded-[14px] border border-card-border bg-white py-10 shadow-sm">
+                    <EmptyState
+                        icon={Receipt}
+                        title="Elige una cuenta"
+                        description="Las cuentas se facturan cuando el médico da el alta."
                     />
                 </div>
-                <div className="min-w-[320px] flex-[2_1_560px]">
-                    {account ? (
-                        <InvoiceDraft key={account.id} account={account} />
-                    ) : invoice ? (
-                        <InvoiceDetailPanel
-                            invoice={invoice}
-                            canVoid={can_void}
-                        />
-                    ) : (
-                        <div className="rounded-2xl border border-card-border bg-white py-10">
-                            <EmptyState
-                                icon={Receipt}
-                                title="Elige una cuenta o una factura"
-                                description="Las cuentas se pueden facturar cuando el médico da el alta."
-                            />
-                        </div>
-                    )}
-                </div>
-            </div>
+            )}
         </div>
     );
 }

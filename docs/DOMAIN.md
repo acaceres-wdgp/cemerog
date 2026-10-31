@@ -115,21 +115,28 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 
 ### Facturación
 
-- Factura por servicios prestados.
-- Tipos de pago: efectivo, tarjeta, seguro.
-- ITBIS aplicado según tipo de servicio.
-- **Pendiente de implementar**: generación de facturas y recibos.
+- La cuenta del día (ADR-016) suma los cargos mientras el paciente se atiende. Al alta queda «pendiente de facturar».
+- **Una sola factura por cuenta**, al final de la atención, con todos sus cargos. Número consecutivo `F-0000001`. Una factura emitida no se edita.
+- **Descuento** opcional por porcentaje (1–100) o monto, con motivo obligatorio. Reduce el honorario del médico en la misma proporción. Con 100% la factura queda pagada en cero.
+- **Sin impuestos** por ahora. El campo `ncf` (comprobante fiscal DGII) existe pero no se usa todavía.
+- **Anular factura:** solo el administrador, con motivo, y solo si no tiene pagos. La cuenta vuelve a «pendiente de facturar».
+- **Cobro** (requiere turno de caja abierto por quien cobra, o un administrador): recibo `R-0001`, pago mixto (efectivo con devuelta, tarjeta con aprobación opcional, transferencia con número obligatorio). No se cobra más que el balance.
+- **Crédito:** si el pago no cubre el balance, se exige fecha compromiso (hoy o después) y nota opcional; el resto pasa a cuentas por cobrar. Los abonos siguientes conservan la fecha.
+- **Anular recibo:** solo el administrador, con motivo, y solo recibos del turno abierto.
 
 ### Cuentas por cobrar
 
-- Facturas pendientes de pago total o parcial.
-- **Pendiente de implementar**: módulo de seguimiento de cobros.
+- Facturas con balance pendiente. **Vencidas** son las que pasaron su fecha compromiso.
+- Los abonos se registran desde aquí con el mismo diálogo de cobro (requieren turno abierto).
 
 ### Cuadre de caja
 
-- Cierre diario: efectivo, tarjeta, otros.
-- Un solo cuadre por día por cajero.
-- **Pendiente de implementar**: formulario de cuadre y reporte.
+- **Una sola caja**: un turno abierto a la vez, con fondo de apertura (por monto o por denominación).
+- **Retiros** con motivo, sin pasar del efectivo en caja.
+- **Efectivo esperado** = fondo + cobros en efectivo − retiros. Tarjeta y transferencia se reportan aparte.
+- **Cierre:** el cajero escribe lo contado; si hay diferencia (faltante o sobrante) la nota es obligatoria; debe marcar «Caja cuadrada». Solo quien abrió el turno o un administrador lo cierra.
+- Un turno de un día anterior queda «pendiente de cierre» (alerta en la barra superior).
+- Cada turno cerrado tiene su reporte imprimible.
 
 ### Almacén (Catálogo)
 

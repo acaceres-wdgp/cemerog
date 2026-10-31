@@ -1,589 +1,198 @@
-import { useState } from 'react';
+import React from 'react';
+import { router } from '@inertiajs/react';
+import { HandCoins } from 'lucide-react';
+import EmptyState from '@/components/cemerog/EmptyState';
+import SegmentedControl from '@/components/cemerog/SegmentedControl';
+import { formatMoney } from '@/lib/money';
+import { cn } from '@/lib/utils';
+import AccountPanel from '@/pages/caja/components/AccountPanel';
+import type { InvoiceDetail, InvoiceSummary } from '@/pages/caja/types';
+import { cxc } from '@/routes';
 
-const MOCK_CXC = [
-    {
-        id: 1,
-        paciente: 'Rosa Fernández',
-        ini: 'RF',
-        factura: 'F-0001230',
-        total: 12400,
-        abonado: 0,
-        compromiso: '20/10/2026',
-        nota: '',
-    },
-    {
-        id: 2,
-        paciente: 'Juan Pérez',
-        ini: 'JP',
-        factura: 'F-0001228',
-        total: 3300,
-        abonado: 1000,
-        compromiso: '15/10/2026',
-        nota: 'Pago parcial acordado',
-    },
-    {
-        id: 3,
-        paciente: 'Carmen López',
-        ini: 'CL',
-        factura: 'F-0001225',
-        total: 18500,
-        abonado: 5000,
-        compromiso: '25/10/2026',
-        nota: 'Internamiento activo',
-    },
-    {
-        id: 4,
-        paciente: 'Luis Martínez',
-        ini: 'LM',
-        factura: 'F-0001220',
-        total: 1500,
-        abonado: 0,
-        compromiso: '14/10/2026',
-        nota: '',
-    },
-];
+type Filter = 'todas' | 'vencidas' | 'al_dia';
 
-const thStyle: React.CSSProperties = {
-    textAlign: 'left',
-    fontWeight: 600,
-    fontSize: 11.5,
-    letterSpacing: '.05em',
-    textTransform: 'uppercase',
-    color: '#56693f',
-    padding: '0 12px',
-    height: 40,
-    background: '#F6FAF1',
-    borderBottom: '1px solid #DCEBC9',
-    whiteSpace: 'nowrap',
+type Receivable = InvoiceSummary & { overdue: boolean };
+
+type CxcProps = {
+    invoices: Receivable[];
+    totals: {
+        receivable: number;
+        overdue: number;
+        count: number;
+        overdue_count: number;
+    };
+    filter: Filter;
+    selected_invoice: InvoiceDetail | null;
+    can_void: boolean;
 };
 
-const fmt = (v: number) =>
-    `RD$${v.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+function Total({
+    label,
+    value,
+    sub,
+    danger = false,
+}: {
+    label: string;
+    value: number;
+    sub: string;
+    danger?: boolean;
+}) {
+    return (
+        <div
+            className={cn(
+                'min-w-[180px] flex-1 rounded-[12px] border px-4 py-3',
+                danger
+                    ? 'border-error-border bg-error-bg'
+                    : 'border-card-border bg-white',
+            )}
+        >
+            <p className="text-[11.5px] font-semibold tracking-[.05em] text-table-header-text uppercase">
+                {label}
+            </p>
+            <p
+                className={cn(
+                    'mt-1 font-serif text-[20px] font-semibold tabular-nums',
+                    danger ? 'text-error' : 'text-text-heading',
+                )}
+            >
+                {formatMoney(value)}
+            </p>
+            <p className="text-[12px] text-muted">{sub}</p>
+        </div>
+    );
+}
 
-export default function CxcIndex() {
-    const [selId, setSelId] = useState<number | null>(1);
-    const [abonoAmt, setAbonoAmt] = useState('');
-    const [abonoMetodo, setAbonoMetodo] = useState('efectivo');
-
-    const selCuenta = MOCK_CXC.find((c) => c.id === selId);
-    const totalCxc = MOCK_CXC.reduce((s, c) => s + (c.total - c.abonado), 0);
+export default function CxcIndex({
+    invoices,
+    totals,
+    filter,
+    selected_invoice,
+    can_void,
+}: CxcProps) {
+    const visit = (query: Record<string, string | number>, only?: string[]) =>
+        router.get(
+            cxc.url({ query }),
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+                ...(only ? { only } : {}),
+            },
+        );
 
     return (
         <div className="flex flex-col gap-5">
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 16,
-                    flexWrap: 'wrap',
-                }}
-            >
-                <div>
-                    <h1
-                        style={{
-                            fontFamily: 'Bitter,Georgia,serif',
-                            fontWeight: 600,
-                            fontSize: 26,
-                            color: '#1f2d22',
-                            margin: 0,
-                        }}
-                    >
-                        Cuentas por cobrar
-                    </h1>
-                    <p style={{ margin: '4px 0 0', color: '#5f6b64' }}>
-                        Saldo total pendiente: <strong>{fmt(totalCxc)}</strong>
-                    </p>
-                </div>
+            <div>
+                <h1 className="m-0 font-serif text-[26px] font-semibold text-text-heading">
+                    Cuentas por cobrar
+                </h1>
+                <p className="mt-1 text-muted">
+                    Facturas emitidas con balance pendiente.
+                </p>
             </div>
 
-            <div
-                style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 16,
-                    alignItems: 'flex-start',
-                }}
-            >
-                {/* CxC table */}
-                <div
-                    style={{
-                        background: '#fff',
-                        border: '1px solid #e3e9e3',
-                        borderRadius: 14,
-                        overflow: 'hidden',
-                        flex: '2 1 480px',
-                        minWidth: 0,
-                    }}
-                >
-                    <div style={{ overflowX: 'auto' }}>
-                        <table
-                            style={{
-                                width: '100%',
-                                borderCollapse: 'collapse',
-                                minWidth: 640,
-                            }}
-                        >
-                            <thead>
-                                <tr>
-                                    <th style={thStyle}>Paciente</th>
-                                    <th style={thStyle}>Factura</th>
-                                    <th
-                                        style={{
-                                            ...thStyle,
-                                            textAlign: 'right',
-                                        }}
-                                    >
-                                        Total
-                                    </th>
-                                    <th
-                                        style={{
-                                            ...thStyle,
-                                            textAlign: 'right',
-                                        }}
-                                    >
-                                        Abonado
-                                    </th>
-                                    <th
-                                        style={{
-                                            ...thStyle,
-                                            textAlign: 'right',
-                                        }}
-                                    >
-                                        Saldo
-                                    </th>
-                                    <th style={thStyle}>Compromiso</th>
-                                    <th style={{ ...thStyle, width: 44 }}></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {MOCK_CXC.map((c) => {
-                                    const saldo = c.total - c.abonado;
-                                    const vencida =
-                                        new Date(
-                                            c.compromiso
-                                                .split('/')
-                                                .reverse()
-                                                .join('-'),
-                                        ) < new Date();
-                                    return (
-                                        <tr
-                                            key={c.id}
-                                            onClick={() => setSelId(c.id)}
-                                            style={{
-                                                cursor: 'pointer',
-                                                background:
-                                                    selId === c.id
-                                                        ? '#F8FBF6'
-                                                        : '#fff',
-                                            }}
-                                        >
-                                            <td
-                                                style={{
-                                                    padding: '12px',
-                                                    borderBottom:
-                                                        '1px solid #eef0ec',
-                                                }}
-                                            >
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 8,
-                                                    }}
-                                                >
-                                                    <span
-                                                        style={{
-                                                            width: 30,
-                                                            height: 30,
-                                                            flexShrink: 0,
-                                                            borderRadius: '50%',
-                                                            background:
-                                                                '#EEF6E2',
-                                                            color: '#2E8B3E',
-                                                            display:
-                                                                'inline-flex',
-                                                            alignItems:
-                                                                'center',
-                                                            justifyContent:
-                                                                'center',
-                                                            fontSize: 11,
-                                                            fontWeight: 600,
-                                                        }}
-                                                    >
-                                                        {c.ini}
-                                                    </span>
-                                                    <span
-                                                        style={{
-                                                            fontWeight: 500,
-                                                        }}
-                                                    >
-                                                        {c.paciente}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td
-                                                style={{
-                                                    padding: '12px',
-                                                    borderBottom:
-                                                        '1px solid #eef0ec',
-                                                    fontFamily:
-                                                        'ui-monospace,monospace',
-                                                    fontSize: 13,
-                                                    fontWeight: 600,
-                                                    whiteSpace: 'nowrap',
-                                                }}
-                                            >
-                                                {c.factura}
-                                            </td>
-                                            <td
-                                                style={{
-                                                    padding: '12px',
-                                                    borderBottom:
-                                                        '1px solid #eef0ec',
-                                                    textAlign: 'right',
-                                                    fontVariantNumeric:
-                                                        'tabular-nums',
-                                                }}
-                                            >
-                                                {fmt(c.total)}
-                                            </td>
-                                            <td
-                                                style={{
-                                                    padding: '12px',
-                                                    borderBottom:
-                                                        '1px solid #eef0ec',
-                                                    textAlign: 'right',
-                                                    fontVariantNumeric:
-                                                        'tabular-nums',
-                                                    color: '#2E8B3E',
-                                                    fontWeight: 500,
-                                                }}
-                                            >
-                                                {fmt(c.abonado)}
-                                            </td>
-                                            <td
-                                                style={{
-                                                    padding: '12px',
-                                                    borderBottom:
-                                                        '1px solid #eef0ec',
-                                                    textAlign: 'right',
-                                                    fontVariantNumeric:
-                                                        'tabular-nums',
-                                                    fontWeight: 700,
-                                                    color: '#b91c1c',
-                                                }}
-                                            >
-                                                {fmt(saldo)}
-                                            </td>
-                                            <td
-                                                style={{
-                                                    padding: '12px',
-                                                    borderBottom:
-                                                        '1px solid #eef0ec',
-                                                    whiteSpace: 'nowrap',
-                                                }}
-                                            >
-                                                <span
-                                                    style={{
-                                                        color: vencida
-                                                            ? '#b91c1c'
-                                                            : '#1f2d22',
-                                                        fontWeight: vencida
-                                                            ? 600
-                                                            : 400,
-                                                    }}
-                                                >
-                                                    {c.compromiso}
-                                                </span>
-                                                {vencida && (
-                                                    <span
-                                                        style={{
-                                                            display:
-                                                                'inline-flex',
-                                                            alignItems:
-                                                                'center',
-                                                            gap: 4,
-                                                            fontSize: 11,
-                                                            background:
-                                                                '#fef2f2',
-                                                            color: '#b91c1c',
-                                                            padding: '1px 6px',
-                                                            borderRadius: 999,
-                                                            marginLeft: 6,
-                                                            fontWeight: 600,
-                                                        }}
-                                                    >
-                                                        Vencida
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td
-                                                style={{
-                                                    padding: '12px',
-                                                    borderBottom:
-                                                        '1px solid #eef0ec',
-                                                    color: '#a1a1aa',
-                                                }}
-                                            >
-                                                ›
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div className="flex flex-wrap gap-3">
+                <Total
+                    label="Por cobrar"
+                    value={totals.receivable}
+                    sub={`${totals.count} facturas`}
+                />
+                <Total
+                    label="Vencido"
+                    value={totals.overdue}
+                    sub={`${totals.overdue_count} con la fecha compromiso pasada`}
+                    danger={totals.overdue > 0}
+                />
+            </div>
 
-                {/* Abono panel */}
-                {selCuenta && (
-                    <div
-                        style={{
-                            flex: '1 1 280px',
-                            minWidth: 0,
-                            background: '#fff',
-                            border: '1px solid #e3e9e3',
-                            borderRadius: 14,
-                            overflow: 'hidden',
-                        }}
-                    >
-                        <div
-                            style={{
-                                padding: '14px 16px',
-                                borderBottom: '1px solid #eef0ec',
-                            }}
-                        >
-                            <div
-                                style={{
-                                    fontFamily: 'Bitter,Georgia,serif',
-                                    fontWeight: 600,
-                                    fontSize: 16,
-                                    color: '#1f2d22',
-                                }}
-                            >
-                                Registrar abono
-                            </div>
-                            <div style={{ fontSize: 13, color: '#71717a' }}>
-                                {selCuenta.paciente} · {selCuenta.factura}
-                            </div>
-                        </div>
-                        <div
-                            style={{
-                                padding: '16px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 14,
-                            }}
-                        >
-                            <div
-                                style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: '1fr 1fr',
-                                    gap: 10,
-                                    fontSize: 13,
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        padding: '10px 12px',
-                                        borderRadius: 10,
-                                        background: '#F3F7F2',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: 2,
-                                    }}
-                                >
-                                    <span
-                                        style={{
-                                            fontSize: 11,
-                                            fontWeight: 600,
-                                            color: '#56693f',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '.05em',
-                                        }}
-                                    >
-                                        Total
-                                    </span>
-                                    <span
-                                        style={{
-                                            fontWeight: 700,
-                                            fontVariantNumeric: 'tabular-nums',
-                                        }}
-                                    >
-                                        {fmt(selCuenta.total)}
-                                    </span>
-                                </div>
-                                <div
-                                    style={{
-                                        padding: '10px 12px',
-                                        borderRadius: 10,
-                                        background: '#fef2f2',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: 2,
-                                    }}
-                                >
-                                    <span
-                                        style={{
-                                            fontSize: 11,
-                                            fontWeight: 600,
-                                            color: '#b91c1c',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '.05em',
-                                        }}
-                                    >
-                                        Saldo
-                                    </span>
-                                    <span
-                                        style={{
-                                            fontWeight: 700,
-                                            color: '#b91c1c',
-                                            fontVariantNumeric: 'tabular-nums',
-                                        }}
-                                    >
-                                        {fmt(
-                                            selCuenta.total - selCuenta.abonado,
-                                        )}
-                                    </span>
-                                </div>
-                            </div>
-                            <label
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 6,
-                                    fontWeight: 500,
-                                    fontSize: 14,
-                                }}
-                            >
-                                <span>Monto del abono</span>
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        height: 36,
-                                        border: '1px solid #e4e4e7',
-                                        borderRadius: 10,
-                                    }}
-                                >
-                                    <span
-                                        style={{
-                                            padding: '0 10px',
-                                            color: '#71717a',
-                                            fontSize: 13,
-                                        }}
-                                    >
-                                        RD$
-                                    </span>
-                                    <input
-                                        value={abonoAmt}
-                                        onChange={(e) =>
-                                            setAbonoAmt(e.target.value)
+            <SegmentedControl<Filter>
+                segments={[
+                    { value: 'todas', label: 'Todas' },
+                    {
+                        value: 'vencidas',
+                        label: 'Vencidas',
+                        count: totals.overdue_count,
+                    },
+                    { value: 'al_dia', label: 'Al día' },
+                ]}
+                value={filter}
+                onChange={(f) => visit({ filtro: f })}
+                className="self-start"
+            />
+
+            <div className="flex flex-wrap items-start gap-4">
+                <div className="min-w-[280px] flex-[1_1_360px] overflow-hidden rounded-2xl border border-card-border bg-white">
+                    {invoices.length === 0 ? (
+                        <EmptyState
+                            icon={HandCoins}
+                            title="Nada por cobrar"
+                            description="No hay facturas con balance para este filtro."
+                            className="py-8"
+                        />
+                    ) : (
+                        <ul className="m-0 list-none divide-y divide-divider p-0">
+                            {invoices.map((i) => (
+                                <li key={i.id}>
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            visit(
+                                                {
+                                                    filtro: filter,
+                                                    factura: i.id,
+                                                },
+                                                ['selected_invoice'],
+                                            )
                                         }
-                                        style={{
-                                            flex: 1,
-                                            height: 34,
-                                            border: 'none',
-                                            outline: 'none',
-                                            background: 'transparent',
-                                            fontFamily: 'inherit',
-                                            fontSize: 14,
-                                            fontVariantNumeric: 'tabular-nums',
-                                        }}
-                                        placeholder="0.00"
-                                    />
-                                </div>
-                            </label>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 6,
-                                    fontWeight: 500,
-                                    fontSize: 14,
-                                }}
-                            >
-                                <span>Método</span>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: '1fr 1fr',
-                                        gap: 8,
-                                    }}
-                                >
-                                    {[
-                                        ['efectivo', '💵 Efectivo'],
-                                        ['tarjeta', '💳 Tarjeta'],
-                                        ['transferencia', '🏦 Transfer.'],
-                                        ['credito', '📝 Crédito'],
-                                    ].map(([k, l]) => (
-                                        <button
-                                            key={k}
-                                            onClick={() => setAbonoMetodo(k)}
-                                            style={{
-                                                height: 34,
-                                                borderRadius: 8,
-                                                border: `1.5px solid ${abonoMetodo === k ? '#2E8B3E' : '#e4e4e7'}`,
-                                                background:
-                                                    abonoMetodo === k
-                                                        ? '#EEF6E2'
-                                                        : '#fff',
-                                                fontWeight:
-                                                    abonoMetodo === k
-                                                        ? 600
-                                                        : 400,
-                                                cursor: 'pointer',
-                                                fontFamily: 'inherit',
-                                                fontSize: 13,
-                                            }}
-                                        >
-                                            {l}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            <label
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 6,
-                                    fontWeight: 500,
-                                    fontSize: 13,
-                                }}
-                            >
-                                <span>Nota (opcional)</span>
-                                <input
-                                    style={{
-                                        height: 34,
-                                        padding: '0 10px',
-                                        border: '1px solid #e4e4e7',
-                                        borderRadius: 10,
-                                        outline: 'none',
-                                        fontFamily: 'inherit',
-                                        fontSize: 13,
-                                    }}
-                                    placeholder="Observaciones del abono"
-                                />
-                            </label>
-                            <button
-                                style={{
-                                    height: 36,
-                                    borderRadius: 10,
-                                    border: 'none',
-                                    background: '#2E8B3E',
-                                    color: '#fff',
-                                    fontWeight: 500,
-                                    cursor: 'pointer',
-                                    fontFamily: 'inherit',
-                                    fontSize: 14,
-                                }}
-                            >
-                                ✓ Registrar abono
-                            </button>
+                                        className={cn(
+                                            'flex w-full cursor-pointer items-center justify-between gap-3 border-0 border-l-[3px] px-4 py-3 text-left',
+                                            selected_invoice?.id === i.id
+                                                ? 'border-primary bg-accent-bg'
+                                                : 'border-transparent bg-transparent hover:bg-list-row-bg',
+                                        )}
+                                    >
+                                        <span className="min-w-0">
+                                            <span className="block truncate text-[13.5px] font-semibold text-text-heading">
+                                                {i.patient}
+                                            </span>
+                                            <span className="block text-[12px] text-muted">
+                                                {i.number} ·{' '}
+                                                {i.credit_due_date
+                                                    ? `compromiso ${i.credit_due_date}`
+                                                    : 'sin fecha compromiso'}
+                                            </span>
+                                        </span>
+                                        <span className="shrink-0 text-right">
+                                            <span className="block text-[13px] font-semibold text-error tabular-nums">
+                                                {formatMoney(i.balance)}
+                                            </span>
+                                            {i.overdue && (
+                                                <span className="text-[11.5px] font-semibold text-error">
+                                                    Vencida
+                                                </span>
+                                            )}
+                                        </span>
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+                <div className="min-w-[320px] flex-[2_1_520px]">
+                    {selected_invoice ? (
+                        <AccountPanel
+                            invoice={selected_invoice}
+                            canVoid={can_void}
+                        />
+                    ) : (
+                        <div className="rounded-2xl border border-card-border bg-white py-10">
+                            <EmptyState
+                                title="Elige una factura"
+                                description="Desde aquí se registran los abonos."
+                            />
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );

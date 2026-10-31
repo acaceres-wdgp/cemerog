@@ -2,87 +2,47 @@ import React from 'react';
 import { formatMoney } from '@/lib/money';
 import type { ChargeRow } from '../types';
 
-const thCls =
-    'px-4 py-2 text-left text-[11.5px] font-semibold tracking-[.05em] text-table-header-text uppercase';
+const th =
+    'h-10 border-b border-accent-tip-border bg-list-row-bg px-3 text-[11.5px] font-semibold tracking-[.05em] whitespace-nowrap text-table-header-text uppercase';
+const td = 'border-b border-divider px-3 py-[9px]';
 
-/** Charges of an account or lines of an invoice, with subtotal, discount and total */
-export default function ChargesTable({
-    rows,
-    discount = 0,
-    discountLabel,
-}: {
-    rows: ChargeRow[];
-    discount?: number;
-    discountLabel?: string;
-}) {
-    const subtotal = rows.reduce((sum, r) => sum + r.total, 0);
-
+/** Fecha · Descripción · Área · Cant. · Precio · Importe, as in the design */
+export default function ChargesTable({ rows }: { rows: ChargeRow[] }) {
     return (
         <div className="overflow-x-auto">
-            <table className="w-full min-w-[480px] border-collapse text-[13px]">
-                <thead className="bg-app-bg">
+            <table className="w-full min-w-[640px] border-collapse text-[14px]">
+                <thead>
                     <tr>
-                        <th className={thCls}>Descripción</th>
-                        <th className={`${thCls} text-right`}>Cant.</th>
-                        <th className={`${thCls} text-right`}>Precio</th>
-                        <th className={`${thCls} text-right`}>Importe</th>
+                        <th className={`${th} pl-5 text-left`}>Fecha</th>
+                        <th className={`${th} text-left`}>Descripción</th>
+                        <th className={`${th} text-left`}>Área</th>
+                        <th className={`${th} text-right`}>Cant.</th>
+                        <th className={`${th} text-right`}>Precio</th>
+                        <th className={`${th} pr-5 text-right`}>Importe</th>
                     </tr>
                 </thead>
                 <tbody>
                     {rows.map((r) => (
-                        <tr key={r.id} className="border-t border-divider">
-                            <td className="px-4 py-2 text-text-body">
-                                {r.description}
+                        <tr key={r.id}>
+                            <td
+                                className={`${td} pl-5 text-text-dim tabular-nums`}
+                            >
+                                {r.date}
                             </td>
-                            <td className="px-4 py-2 text-right tabular-nums">
-                                {r.quantity}
-                            </td>
-                            <td className="px-4 py-2 text-right tabular-nums">
+                            <td className={td}>{r.description}</td>
+                            <td className={`${td} text-text-dim`}>{r.area}</td>
+                            <td className={`${td} text-right`}>{r.quantity}</td>
+                            <td className={`${td} text-right tabular-nums`}>
                                 {formatMoney(r.unit_price)}
                             </td>
-                            <td className="px-4 py-2 text-right font-medium tabular-nums">
+                            <td
+                                className={`${td} pr-5 text-right tabular-nums`}
+                            >
                                 {formatMoney(r.total)}
                             </td>
                         </tr>
                     ))}
                 </tbody>
-                <tfoot className="text-[13.5px]">
-                    <tr className="border-t border-divider">
-                        <td
-                            colSpan={3}
-                            className="px-4 py-2 text-right text-muted"
-                        >
-                            Subtotal
-                        </td>
-                        <td className="px-4 py-2 text-right tabular-nums">
-                            {formatMoney(subtotal)}
-                        </td>
-                    </tr>
-                    {discount > 0 && (
-                        <tr>
-                            <td
-                                colSpan={3}
-                                className="px-4 py-1 text-right text-muted"
-                            >
-                                {discountLabel ?? 'Descuento'}
-                            </td>
-                            <td className="px-4 py-1 text-right text-error tabular-nums">
-                                −{formatMoney(discount)}
-                            </td>
-                        </tr>
-                    )}
-                    <tr>
-                        <td
-                            colSpan={3}
-                            className="px-4 py-2 text-right font-semibold text-text-heading"
-                        >
-                            Total
-                        </td>
-                        <td className="px-4 py-2 text-right font-serif text-[17px] font-semibold text-text-heading tabular-nums">
-                            {formatMoney(subtotal - discount)}
-                        </td>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     );

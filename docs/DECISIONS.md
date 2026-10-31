@@ -377,3 +377,19 @@ Al llegar un paciente se necesita registrar qué consumió ese día (consultas, 
 - `RegisterArrival` ahora llama `GetOrOpenDailyAccount` y `AddConsultationCharge` en la misma transacción.
 - El módulo de Facturación deberá leer `accounts` con `status = pendiente_facturar` para generar facturas.
 - La liquidación de honorarios (`doctor_fee` acumulado por médico y período) es responsabilidad de un módulo futuro (`honorarios` o `cuadre`).
+
+---
+
+## ADR-017: Facturación al final, una caja, cobros por turno
+
+**Contexto:** La clínica es pequeña y cobra al final de la atención. Tiene una sola caja, que manejan la secretaria o el cajero.
+
+**Decisión:**
+
+- Una factura por cuenta del día (no por servicio). Facturar no requiere turno; cobrar sí.
+- Las facturas y los recibos son inmutables: los errores se corrigen anulando, solo el administrador y con motivo. Un recibo solo se anula dentro de su turno, para que un cuadre cerrado no cambie.
+- Un único turno de caja abierto (índice único `cash_shifts.open_lock`). El sistema muestra el efectivo esperado; el cajero cuadra y cierra.
+- El descuento reduce el honorario del médico en proporción (`invoice_lines.doctor_fee`), porque los honorarios se pagan por lo facturado.
+- Sin impuestos ni seguros (ARS) por ahora; `invoices.ncf` queda listo para cuando se usen comprobantes fiscales.
+
+**Consecuencias:** la liquidación de honorarios se calculará con `invoice_lines.doctor_fee` de facturas no anuladas.
