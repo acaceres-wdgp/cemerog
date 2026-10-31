@@ -3,16 +3,35 @@ import { Link } from '@inertiajs/react';
 import { ChevronLeft } from 'lucide-react';
 import { emergencia } from '@/routes';
 import { formatMoney } from '@/lib/money';
+import ApplicationsCard from './components/detail/ApplicationsCard';
+import ComingSoonCard from './components/detail/ComingSoonCard';
 import PatientCard from './components/detail/PatientCard';
+import VitalsCard from './components/detail/VitalsCard';
 import useNow from './components/useNow';
-import type { EmergencyDetail } from './types';
+import type {
+    Application,
+    CatalogItem,
+    EmergencyDetail,
+    VitalReading,
+} from './types';
 import { elapsed } from './types';
+
+type Props = {
+    emergency: EmergencyDetail;
+    vitals: VitalReading[];
+    applications: Application[];
+    catalog: CatalogItem[];
+    routes: string[];
+};
 
 export default function EmergenciaShow({
     emergency,
-}: {
-    emergency: EmergencyDetail;
-}) {
+    vitals,
+    applications,
+    catalog,
+    routes,
+}: Props) {
+    const active = emergency.status === 'activa';
     const now = useNow();
     const { account } = emergency;
 
@@ -41,9 +60,36 @@ export default function EmergenciaShow({
                 </Link>
             </div>
             <div className="flex flex-wrap items-start gap-4">
-                <div className="flex min-w-0 flex-[2_1_560px] flex-col gap-4" />
+                <div className="flex min-w-0 flex-[2_1_560px] flex-col gap-4">
+                    <VitalsCard
+                        emergencyId={emergency.id}
+                        vitals={vitals}
+                        active={active}
+                    />
+                    {(['medicamento', 'insumo'] as const).map((kind) => (
+                        <ApplicationsCard
+                            key={kind}
+                            emergencyId={emergency.id}
+                            kind={kind}
+                            applications={applications}
+                            catalog={catalog}
+                            routes={routes}
+                            active={active}
+                        />
+                    ))}
+                    <ComingSoonCard
+                        title="Procedimientos"
+                        action="Agregar procedimiento"
+                        empty="Sin procedimientos registrados."
+                    />
+                </div>
                 <div className="flex min-w-0 flex-[1_1_300px] flex-col gap-4">
                     <PatientCard emergency={emergency} />
+                    <ComingSoonCard
+                        title="Laboratorio e imágenes"
+                        action="Ordenar"
+                        empty="Sin estudios ordenados."
+                    />
                     <section className="rounded-[14px] border border-card-border bg-white px-5 py-4">
                         <div className="flex items-baseline justify-between gap-2">
                             <span className="font-semibold">

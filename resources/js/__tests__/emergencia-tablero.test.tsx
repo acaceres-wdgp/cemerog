@@ -34,6 +34,8 @@ const row = (
     arrived_time: '09:05',
     reason: 'Dolor torácico',
     doctor: 'Dr. Franklin Rodríguez',
+    last_vital: null,
+    last_vital_time: null,
     cubicle: { id: cubicle[0], name: cubicle[1] },
     patient: {
         id,

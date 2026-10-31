@@ -22,7 +22,7 @@ export default function EmergencyTable({
     const open = (id: number) => router.visit(emergenciaRoutes.show.url(id));
 
     return (
-        <table className="w-full min-w-[760px] border-collapse text-[14px]">
+        <table className="w-full min-w-[900px] border-collapse text-[14px]">
             <thead>
                 <tr>
                     <th className={`${th} pl-5 text-left`}>Paciente</th>
@@ -30,6 +30,7 @@ export default function EmergencyTable({
                     <th className={`${th} text-left`}>Llegada</th>
                     <th className={`${th} text-left`}>Tiempo</th>
                     <th className={`${th} text-left`}>Médico</th>
+                    <th className={`${th} text-left`}>Último signo vital</th>
                     <th className={`${th} pr-5`}>
                         <span className="sr-only">Abrir</span>
                     </th>
@@ -85,6 +86,22 @@ export default function EmergencyTable({
                                 {elapsed(e.arrived_at, now)}
                             </td>
                             <td className={td}>{e.doctor}</td>
+                            <td className={td}>
+                                {e.last_vital ? (
+                                    <>
+                                        <div className="text-[13px] font-medium tabular-nums">
+                                            {e.last_vital}
+                                        </div>
+                                        <div className="text-[12px] text-muted">
+                                            {e.last_vital_time}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <span className="text-[13px] text-muted">
+                                        Sin tomas
+                                    </span>
+                                )}
+                            </td>
                             <td className={`${td} pr-5 text-right text-muted`}>
                                 <ChevronRight className="inline h-4 w-4" />
                             </td>

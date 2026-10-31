@@ -17,6 +17,45 @@ export type EmergencyRow = {
     doctor: string;
     cubicle: { id: number; name: string };
     patient: EmergencyPatient;
+    last_vital: string | null;
+    last_vital_time: string | null;
+};
+
+export type VitalReading = {
+    id: number;
+    time: string;
+    presion_arterial: string;
+    frecuencia_cardiaca: number;
+    frecuencia_respiratoria: number;
+    temp: number;
+    saturacion_o2: number;
+    glucemia: number | null;
+    taken_by: string;
+};
+
+export type ApplicationKind = 'medicamento' | 'insumo';
+
+export type Application = {
+    id: number;
+    kind: ApplicationKind;
+    time: string;
+    description: string;
+    quantity: number;
+    route: string | null;
+    total: number;
+    brought_by_patient: boolean;
+    stock_left: number | null;
+    applied_by: string;
+};
+
+export type CatalogItem = {
+    id: number;
+    code: string;
+    name: string;
+    presentation: string | null;
+    kind: ApplicationKind;
+    price: number;
+    stock: number;
 };
 
 export type CubicleCell = {
