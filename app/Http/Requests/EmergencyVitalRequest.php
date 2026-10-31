@@ -29,7 +29,11 @@ class EmergencyVitalRequest extends FormRequest
     {
         return [
             'presion_arterial.regex' => 'Escribe la presión como 120/80.',
+            'frecuencia_cardiaca.between' => 'La frecuencia cardíaca va de 20 a 250 lpm.',
+            'frecuencia_respiratoria.between' => 'La frecuencia respiratoria va de 4 a 80 rpm.',
+            'temp.between' => 'La temperatura va de 30 a 45 °C.',
             'saturacion_o2.between' => 'La SpO₂ va de 40 a 100 %.',
+            'glucemia.between' => 'La glucemia va de 10 a 1500 mg/dL.',
         ];
     }
 }

@@ -66,6 +66,13 @@ test('the required vital signs are validated', function () {
     $this->actingAs($this->enfermera)
         ->post("/emergencia/{$this->emergency->id}/signos-vitales", ['presion_arterial' => 'alta', 'saturacion_o2' => 140])
         ->assertSessionHasErrors(['presion_arterial', 'frecuencia_cardiaca', 'frecuencia_respiratoria', 'temp', 'saturacion_o2']);
+
+    $this->actingAs($this->enfermera)
+        ->post("/emergencia/{$this->emergency->id}/signos-vitales", [
+            'presion_arterial' => '120/80', 'frecuencia_cardiaca' => 80, 'frecuencia_respiratoria' => 96,
+            'temp' => 36.5, 'saturacion_o2' => 98,
+        ])
+        ->assertSessionHasErrors(['frecuencia_respiratoria' => 'La frecuencia respiratoria va de 4 a 80 rpm.']);
 });
 
 test('a medication from the catalog discounts stock and is charged to the account', function () {
