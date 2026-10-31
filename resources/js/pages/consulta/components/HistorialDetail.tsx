@@ -14,8 +14,11 @@ import { ClinicalEntry, DischargeDetail, PrescriptionData } from '../types';
 
 export function PrescriptionBlock({
     prescription,
+    canPrint = true,
 }: {
     prescription: PrescriptionData;
+    /** The print route needs an active doctor; hide the link otherwise */
+    canPrint?: boolean;
 }) {
     return (
         <div className="rounded-[10px] border border-divider bg-surface px-[14px] py-[10px]">
@@ -23,14 +26,16 @@ export function PrescriptionBlock({
                 <div className="text-[11px] font-semibold tracking-[.05em] text-muted uppercase">
                     Receta
                 </div>
-                <a
-                    href={consulta.receta.print.url(prescription.id)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-full bg-list-row-bg px-[10px] py-[2px] text-[12px] font-semibold text-primary"
-                >
-                    Imprimir
-                </a>
+                {canPrint && (
+                    <a
+                        href={consulta.receta.print.url(prescription.id)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-full bg-list-row-bg px-[10px] py-[2px] text-[12px] font-semibold text-primary"
+                    >
+                        Imprimir
+                    </a>
+                )}
             </div>
             {prescription.items.length > 0 ? (
                 <div className="flex flex-col gap-2">
@@ -167,8 +172,10 @@ function VitalsBlock({
 
 export default function HistorialDetail({
     sel,
+    canPrint = true,
 }: {
     sel: ClinicalEntry | null;
+    canPrint?: boolean;
 }) {
     if (!sel) {
         return (
@@ -193,7 +200,10 @@ export default function HistorialDetail({
 
             {/* Receta entry */}
             {sel.type === 'receta' && sel.prescription && (
-                <PrescriptionBlock prescription={sel.prescription} />
+                <PrescriptionBlock
+                    prescription={sel.prescription}
+                    canPrint={canPrint}
+                />
             )}
 
             {/* Alta entry */}
@@ -251,7 +261,10 @@ export default function HistorialDetail({
                     {sel.vitals && <VitalsBlock vitals={sel.vitals} />}
 
                     {sel.prescription && (
-                        <PrescriptionBlock prescription={sel.prescription} />
+                        <PrescriptionBlock
+                            prescription={sel.prescription}
+                            canPrint={canPrint}
+                        />
                     )}
                 </>
             )}

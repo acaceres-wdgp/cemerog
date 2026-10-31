@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useEffect } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Bell } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -102,7 +102,16 @@ export function Topbar({ breadcrumb, todayLabel, userMenuProps }: TopbarProps) {
                         <span aria-hidden="true">›</span>
                         {breadcrumb.subPage ? (
                             <>
-                                <span>{breadcrumb.page}</span>
+                                {breadcrumb.pageHref ? (
+                                    <Link
+                                        href={breadcrumb.pageHref}
+                                        className="hover:text-text-heading"
+                                    >
+                                        {breadcrumb.page}
+                                    </Link>
+                                ) : (
+                                    <span>{breadcrumb.page}</span>
+                                )}
                                 <span aria-hidden="true">›</span>
                                 <span className="font-medium text-text-heading">
                                     {breadcrumb.subPage}

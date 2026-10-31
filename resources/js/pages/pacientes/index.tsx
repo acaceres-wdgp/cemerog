@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { registro } from '@/routes';
+import { show as showPaciente } from '@/routes/pacientes';
 import { edit as editPaciente } from '@/routes/registro/pacientes';
 import { ChevronRight, Plus, Search, TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -380,6 +381,13 @@ function DetailPanel({ patient }: { patient: SelectedPatient }) {
                     className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-card-border bg-white px-3.5 text-sm font-medium text-text-body hover:bg-app-bg"
                 >
                     Editar
+                </Link>
+                <Link
+                    href={showPaciente.url({ patient: patient.id })}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-card-border bg-white px-3.5 text-sm font-medium text-text-body hover:bg-app-bg"
+                >
+                    Ver perfil
+                    <ChevronRight className="h-4 w-4" />
                 </Link>
                 <Link
                     href={registro.url({ query: { paciente: patient.id } })}

@@ -19,6 +19,8 @@ export interface BreadcrumbResult {
     section: string;
     page: string;
     subPage?: string;
+    /** Link for the page level when a subPage is shown */
+    pageHref?: string;
 }
 
 export function resolveBreadcrumb(
@@ -26,7 +28,7 @@ export function resolveBreadcrumb(
     groups: NavGroup[],
     fallback?: { section?: string; page?: string; subPage?: string },
 ): BreadcrumbResult | null {
-    let best: { section: string; page: string } | null = null;
+    let best: { section: string; page: string; href: string } | null = null;
     let bestLen = -1;
 
     for (const group of groups) {
@@ -35,7 +37,7 @@ export function resolveBreadcrumb(
             if (url === href || url.startsWith(`${href}/`)) {
                 if (href.length > bestLen) {
                     bestLen = href.length;
-                    best = { section: group.section, page: item.label };
+                    best = { section: group.section, page: item.label, href };
                 }
             }
         }
@@ -45,7 +47,9 @@ export function resolveBreadcrumb(
         return {
             section: fallback?.section ?? best.section,
             page: fallback?.page ?? best.page,
-            ...(fallback?.subPage ? { subPage: fallback.subPage } : {}),
+            ...(fallback?.subPage
+                ? { subPage: fallback.subPage, pageHref: best.href }
+                : {}),
         };
     }
 

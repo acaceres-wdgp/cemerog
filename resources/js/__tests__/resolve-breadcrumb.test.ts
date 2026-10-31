@@ -63,6 +63,20 @@ describe('resolveBreadcrumb', () => {
             section: 'Recepción',
             page: 'Pacientes',
             subPage: 'Editar',
+            pageHref: '/pacientes',
+        });
+    });
+
+    it('/pacientes/{id} profile → Recepción › Pacientes (link) › Perfil del paciente', () => {
+        expect(
+            resolveBreadcrumb('/pacientes/12', NAV_GROUPS, {
+                subPage: 'Perfil del paciente',
+            }),
+        ).toEqual({
+            section: 'Recepción',
+            page: 'Pacientes',
+            subPage: 'Perfil del paciente',
+            pageHref: '/pacientes',
         });
     });
 
