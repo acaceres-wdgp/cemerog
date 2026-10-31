@@ -31,8 +31,10 @@ class RolesAndPermissionsSeeder extends Seeder
         'enfermeria' => [
             'tablero', 'emergencia', 'internamiento', 'cirugia', 'impresos',
         ],
+        // The secretary also bills and runs the single cash register
         'secretaria' => [
             'inicio', 'tablero', 'pacientes', 'registro', 'citas', 'impresos',
+            'caja', 'cxc', 'cuadre',
         ],
         'bioanalista' => [
             'lab', 'impresos',
