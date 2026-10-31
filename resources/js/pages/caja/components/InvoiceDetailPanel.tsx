@@ -9,6 +9,8 @@ import caja from '@/routes/caja';
 import { INVOICE_STATUS_LABELS } from '../types';
 import type { InvoiceDetail, InvoiceStatus } from '../types';
 import ChargesTable from './ChargesTable';
+import CollectButton from './CollectButton';
+import ReceiptsList from './ReceiptsList';
 
 type BadgeState = React.ComponentProps<typeof StatusBadge>['state'];
 
@@ -144,8 +146,17 @@ export default function InvoiceDetailPanel({
                 </p>
             )}
 
+            <ReceiptsList receipts={invoice.receipts} canVoid={canVoid} />
+
+            {invoice.credit_due_date && invoice.status === 'pendiente' && (
+                <p className="text-[12.5px] text-muted">
+                    Crédito: fecha compromiso {invoice.credit_due_date}
+                    {invoice.credit_note ? ` · ${invoice.credit_note}` : ''}
+                </p>
+            )}
+
             {invoice.status !== 'anulada' && (
-                <div className="flex flex-wrap justify-end gap-x-6 gap-y-1 text-[13.5px]">
+                <div className="flex flex-wrap items-center justify-end gap-x-6 gap-y-2 text-[13.5px]">
                     <span className="text-muted">
                         Pagado{' '}
                         <span className="font-semibold text-text-heading tabular-nums">
@@ -158,6 +169,9 @@ export default function InvoiceDetailPanel({
                             {formatMoney(invoice.balance)}
                         </span>
                     </span>
+                    {invoice.status === 'pendiente' && (
+                        <CollectButton invoice={invoice} />
+                    )}
                 </div>
             )}
 

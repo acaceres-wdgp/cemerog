@@ -4,6 +4,7 @@ import OpenShiftDialog from '@/components/caja/OpenShiftDialog';
 import EmptyState from '@/components/cemerog/EmptyState';
 import CloseShiftForm from './components/CloseShiftForm';
 import ShiftHistory from './components/ShiftHistory';
+import ShiftReceipts from './components/ShiftReceipts';
 import ShiftSummaryCards from './components/ShiftSummaryCards';
 import WithdrawalsPanel from './components/WithdrawalsPanel';
 import type { CuadreProps } from './types';
@@ -52,6 +53,7 @@ export default function CuadreIndex({ shift, history }: CuadreProps) {
                         </div>
                     )}
                     <ShiftSummaryCards summary={shift.summary} />
+                    <ShiftReceipts receipts={shift.receipts} />
                     <div className="flex flex-wrap items-start gap-4">
                         <div className="min-w-[300px] flex-[1_1_360px]">
                             <WithdrawalsPanel
