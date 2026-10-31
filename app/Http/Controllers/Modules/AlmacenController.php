@@ -56,6 +56,8 @@ class AlmacenController extends Controller
             ...$data,
             'code' => InventoryItem::nextCode($data['kind']),
             'min_stock' => $data['min_stock'] ?? 0,
+            // Starts empty: the goods come in through «Entrada de mercancía»
+            'stock' => 0,
             'is_active' => true,
         ]);
 

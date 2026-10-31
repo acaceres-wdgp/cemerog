@@ -142,7 +142,7 @@ describe('Inventario › Catálogo', () => {
         expect(screen.queryByText('Gasa estéril')).toBeNull();
     });
 
-    it('an administrator adds an item with its price in centavos', () => {
+    it('an administrator adds an item with its price in centavos and no stock', () => {
         render(<AlmacenIndex items={items} can_edit />);
 
         fireEvent.click(screen.getByRole('button', { name: 'Nuevo artículo' }));
@@ -154,9 +154,11 @@ describe('Inventario › Catálogo', () => {
         fireEvent.change(within(dialog).getByLabelText(/Precio/), {
             target: { value: '35' },
         });
-        fireEvent.change(within(dialog).getByLabelText(/Existencia/), {
-            target: { value: '50' },
-        });
+        // Stock is not typed here: it starts at 0
+        expect(within(dialog).getByLabelText(/Existencia/)).toHaveAttribute(
+            'readonly',
+        );
+        expect(within(dialog).getByLabelText(/Existencia/)).toHaveValue('0');
         fireEvent.click(
             within(dialog).getByRole('button', { name: 'Agregar al catálogo' }),
         );
@@ -168,7 +170,6 @@ describe('Inventario › Catálogo', () => {
                 presentation: null,
                 kind: 'insumo',
                 price: 3500,
-                stock: 50,
                 min_stock: 0,
             },
             expect.anything(),

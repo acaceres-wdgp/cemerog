@@ -34,7 +34,8 @@ test('the administrator adds a medication and it gets its code', function () {
     expect($item->code)->toBe('MED-001')
         ->and($item->name)->toBe('Dipirona 1 g/2 ml')
         ->and($item->price)->toBe(15000)
-        ->and($item->stock)->toBe(40)
+        // Stock only enters through goods entries or adjustments
+        ->and($item->stock)->toBe(0)
         ->and($item->is_active)->toBeTrue();
 
     $this->actingAs($this->admin)->post('/almacen/articulos', itemPayload(['name' => 'Gasa estéril', 'kind' => 'insumo', 'price' => 2500]));
@@ -72,6 +73,16 @@ test('only the warehouse role and administrators create or edit items', function
 
     $item = InventoryItem::create([...itemPayload(), 'code' => 'MED-001']);
     $this->actingAs($enfermera)->put("/almacen/articulos/{$item->id}", itemPayload(['price' => 1]))->assertForbidden();
+});
+
+test('editing an item never changes its stock', function () {
+    $item = InventoryItem::create([...itemPayload(), 'code' => 'MED-001']);
+
+    $this->actingAs($this->admin)
+        ->put("/almacen/articulos/{$item->id}", itemPayload(['stock' => 999, 'price' => 16000]))
+        ->assertSessionHasNoErrors();
+
+    expect($item->fresh()->stock)->toBe(40)->and($item->fresh()->price)->toBe(16000);
 });
 
 test('an item can be edited and deactivated; the code does not change', function () {
