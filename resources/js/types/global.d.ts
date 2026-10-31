@@ -26,6 +26,16 @@ export interface DoctorProp {
     is_active: boolean;
 }
 
+// Open cash register shift shared by HandleInertiaRequests (null when closed)
+export interface CashShiftProp {
+    id: number;
+    opened_by: string;
+    opened_at: string;
+    mine: boolean;
+    can_operate: boolean;
+    pending_close: boolean;
+}
+
 // Queue optional prop resolved on partial reloads (only for users with a doctor)
 export interface QueueProp {
     current_turn: {
