@@ -393,3 +393,21 @@ Al llegar un paciente se necesita registrar qué consumió ese día (consultas, 
 - Sin impuestos ni seguros (ARS) por ahora; `invoices.ncf` queda listo para cuando se usen comprobantes fiscales.
 
 **Consecuencias:** la liquidación de honorarios se calculará con `invoice_lines.doctor_fee` de facturas no anuladas.
+
+---
+
+## ADR-018: El alta no cierra la facturación; cargos de otras áreas
+
+**Fecha**: 2026-10  
+**Estado**: Aceptado (5.3 implementado; el resto, con los módulos de Emergencia, Laboratorio e Imágenes)
+
+**Contexto:** Además de la consulta habrá cargos de medicación en Emergencia, análisis e imágenes, que pueden ocurrir después del alta médica.
+
+**Decisión:**
+
+- La cuenta es de la visita del día, no de la consulta. El alta cierra la parte clínica; la cuenta pasa a «Pendiente de facturar» cuando no quedan turnos abiertos.
+- **Un cargo se genera cuando el servicio se realiza**, no cuando se indica: medicación al administrarla, análisis e imágenes al hacerlos en la clínica.
+- **Una indicación no bloquea la facturación.** El paciente puede hacerse los análisis o las imágenes en otro lugar. Caja ve un recordatorio («tiene análisis indicados») para avisarle, nada más.
+- **Caja factura lo que hay.** Un cargo que llega después de facturar va a una cuenta nueva y sale en otra factura; una factura emitida no se modifica.
+- **Mismo día, sin facturar:** si el paciente vuelve, se reabre su cuenta del día (`GetOrOpenDailyAccount`) y todo sale en una sola factura. Si ya se facturó, o la cuenta se anuló por vacía, se abre una cuenta nueva.
+- **Otro día:** siempre factura nueva. Análisis e imágenes se registran desde su propio módulo, sin turno de consulta; ese módulo abre o usa la cuenta del día del paciente.
