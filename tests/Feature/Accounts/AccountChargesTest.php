@@ -136,6 +136,43 @@ test('arriving after a billed account opens a new account same day', function ()
     expect(Account::where('patient_id', $this->patient->id)->where('status', 'abierta')->count())->toBe(1);
 });
 
+// ─── A5b: Same-day return before billing → the same account reopens ─────────
+
+test('returning the same day before billing reopens the account so it is one invoice', function () {
+    $account = Account::create([
+        'patient_id' => $this->patient->id,
+        'service_date' => today()->toDateString(),
+        'status' => 'pendiente_facturar',
+        'opened_at' => now()->subHours(4),
+        'closed_at' => now()->subHour(),
+    ]);
+
+    $this->actingAs($this->secretaria)
+        ->post('/registro', registrationPayload($this->patient, $this->doctor->id))
+        ->assertRedirect('/tablero');
+
+    $account->refresh();
+    expect(Account::where('patient_id', $this->patient->id)->count())->toBe(1)
+        ->and($account->status)->toBe('abierta')
+        ->and($account->closed_at)->toBeNull()
+        ->and($account->charges()->count())->toBe(1);
+});
+
+test('a void (empty) account of the same day is not reopened', function () {
+    Account::create([
+        'patient_id' => $this->patient->id,
+        'service_date' => today()->toDateString(),
+        'status' => 'anulada',
+        'opened_at' => now()->subHours(4),
+        'closed_at' => now()->subHour(),
+    ]);
+
+    $this->actingAs($this->secretaria)
+        ->post('/registro', registrationPayload($this->patient, $this->doctor->id));
+
+    expect(Account::where('patient_id', $this->patient->id)->count())->toBe(2);
+});
+
 // ─── A6: Tablero turn also creates account + charge ──────────────────────────
 
 test('registering via tablero also creates a daily account and charge', function () {
