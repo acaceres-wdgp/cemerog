@@ -12,6 +12,7 @@ import { es } from 'date-fns/locale';
 import type { BreadcrumbResult } from '@/lib/breadcrumb';
 import type { PatientResult } from '@/components/cemerog/PatientSearch';
 import PatientSearch from '@/components/cemerog/PatientSearch';
+import CashShiftIndicator from '@/components/caja/CashShiftIndicator';
 import type { PageProps } from '@/types/global';
 import { UserMenu, type UserMenuProps } from './UserMenu';
 
@@ -136,6 +137,9 @@ export function Topbar({ breadcrumb, todayLabel, userMenuProps }: TopbarProps) {
             <div className="flex items-center gap-3">
                 {/* Patient search – only for users with pacientes access */}
                 {canSearchPatients && <TopbarSearch />}
+
+                {/* Cash register shift – only for users who bill or run the register */}
+                <CashShiftIndicator />
 
                 {/* Clock */}
                 <TopbarClock />
