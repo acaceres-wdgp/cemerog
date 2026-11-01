@@ -136,3 +136,26 @@ test('registro offers the active imaging catalog', function () {
         ->get('/registro?tipo=estudios')
         ->assertInertia(fn (Assert $page) => $page->has('imagingCatalog', 5));
 });
+
+test('«Orden sin consulta» keeps the type for an existing patient and opens on imaging from Imágenes', function () {
+    $patient = Patient::factory()->create();
+
+    $this->actingAs($this->recepcion)
+        ->get("/registro?paciente={$patient->id}&tipo=estudios")
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('patient.id', $patient->id)
+            ->where('initialType', 'analisis')
+            ->where('initialStudiesTab', 'lab')
+        );
+
+    $this->actingAs($this->recepcion)
+        ->get('/registro?tipo=imagenes')
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('initialType', 'analisis')
+            ->where('initialStudiesTab', 'img')
+        );
+
+    $this->actingAs($this->recepcion)
+        ->get("/registro?paciente={$patient->id}&tipo=emergencia")
+        ->assertInertia(fn (Assert $page) => $page->where('initialType', 'emergencia'));
+});

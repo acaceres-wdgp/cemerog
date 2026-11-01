@@ -120,14 +120,19 @@ export default function StudiesPicker({
     imagingCatalog,
     selected,
     onChange,
+    initialTab,
 }: {
     labCatalog: LabCatalogItem[];
     imagingCatalog: ImagingCatalogItem[];
     selected: StudySelection;
     onChange: (selected: StudySelection) => void;
+    initialTab?: Tab;
 }) {
     const [tab, setTab] = useState<Tab>(
-        labCatalog.length === 0 && imagingCatalog.length > 0 ? 'img' : 'lab',
+        initialTab ??
+            (labCatalog.length === 0 && imagingCatalog.length > 0
+                ? 'img'
+                : 'lab'),
     );
     const [query, setQuery] = useState('');
     const q = query.trim().toLowerCase();

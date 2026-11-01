@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { pacientes } from '@/routes';
+import { pacientes, registro } from '@/routes';
 import { differenceInYears } from 'date-fns';
 import { Check, CircleCheck, Loader2, TriangleAlert } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -16,6 +16,7 @@ import {
     StudiesAttention,
     StudiesSummary,
 } from './components/StudiesAttention';
+import ExistingPatientSearch from './components/ExistingPatientSearch';
 import EmergencyFields, {
     type FreeCubicle,
 } from './components/EmergencyFields';
@@ -76,7 +77,8 @@ interface Props {
     prefillDocumentNumber?: string;
     prefillFirstNames?: string;
     /** «analisis» when coming from «Orden sin consulta» in Laboratorio */
-    initialType?: 'consulta' | 'analisis';
+    initialType?: 'consulta' | 'analisis' | 'emergencia';
+    initialStudiesTab?: 'lab' | 'img';
     labCatalog?: LabCatalogItem[];
     imagingCatalog?: ImagingCatalogItem[];
     emergencyCubicles?: FreeCubicle[];
@@ -104,6 +106,7 @@ export default function RegistroIndex({
     prefillDocumentNumber = '',
     prefillFirstNames = '',
     initialType = 'consulta',
+    initialStudiesTab = 'lab',
     labCatalog = [],
     imagingCatalog = [],
     emergencyCubicles = [],
@@ -212,6 +215,16 @@ export default function RegistroIndex({
         post('/registro/pacientes', { preserveScroll: true });
     };
 
+    // Keeps the type when switching to an existing patient
+    const tipo =
+        data.attention_type === 'analisis'
+            ? initialStudiesTab === 'img'
+                ? 'imagenes'
+                : 'estudios'
+            : data.attention_type === 'emergencia'
+              ? 'emergencia'
+              : undefined;
+
     const selectedDoctor = doctors.find((d) => d.id === Number(data.doctor_id));
     const isStudies = data.attention_type === 'analisis';
     const studies = {
@@ -246,6 +259,8 @@ export default function RegistroIndex({
                         ? 'Completa los datos del paciente y crea su primera atención.'
                         : 'Crea una nueva atención para este paciente.'}
                 </p>
+
+                {mode === 'new' && <ExistingPatientSearch tipo={tipo} />}
 
                 {/* Main grid */}
                 <div className="flex flex-wrap items-start gap-4">
@@ -445,7 +460,13 @@ export default function RegistroIndex({
                                                     </Link>{' '}
                                                     ·{' '}
                                                     <Link
-                                                        href={`/registro?paciente=${duplicateMatch.id}`}
+                                                        href={registro.url({
+                                                            query: {
+                                                                paciente:
+                                                                    duplicateMatch.id,
+                                                                tipo,
+                                                            },
+                                                        })}
                                                         className="font-medium underline hover:no-underline"
                                                     >
                                                         Crear atención para este
@@ -905,6 +926,7 @@ export default function RegistroIndex({
                                         selected={studies}
                                         externalDoctor={data.external_doctor}
                                         onChange={setStudies}
+                                        initialTab={initialStudiesTab}
                                         onExternalDoctor={(v) =>
                                             setData('external_doctor', v)
                                         }

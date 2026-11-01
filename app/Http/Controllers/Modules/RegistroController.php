@@ -71,7 +71,14 @@ class RegistroController extends Controller
             'prefillDocumentNumber' => $prefillDocumentNumber,
             'prefillFirstNames' => $prefillFirstNames,
             // «Orden sin consulta» from Laboratorio opens on «Solo análisis»
-            'initialType' => request()->query('tipo') === 'estudios' ? 'analisis' : 'consulta',
+            // ?tipo= from «Orden sin consulta» (Laboratorio, Imágenes) or Emergencia
+            'initialType' => match (request()->query('tipo')) {
+                'estudios', 'imagenes' => 'analisis',
+                'emergencia' => 'emergencia',
+                default => 'consulta',
+            },
+            // Imágenes opens the studies picker on its tab
+            'initialStudiesTab' => request()->query('tipo') === 'imagenes' ? 'img' : 'lab',
             'labCatalog' => app(LabPresenter::class)->catalog(),
             'imagingCatalog' => app(ImagingPresenter::class)->catalog(),
             // «Emergencia»: the cubicles free right now and the fee

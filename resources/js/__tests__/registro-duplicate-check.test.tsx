@@ -25,7 +25,16 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
 
 vi.mock('@/routes', () => ({
     pacientes: { url: () => '/pacientes' },
-    registro: { url: () => '/registro' },
+    registro: {
+        url: (o?: { query?: Record<string, unknown> }) => {
+            const q = Object.entries(o?.query ?? {}).filter(
+                ([, v]) => v !== undefined,
+            );
+            return q.length
+                ? `/registro?${q.map(([k, v]) => `${k}=${String(v)}`).join('&')}`
+                : '/registro';
+        },
+    },
 }));
 
 vi.mock('@/components/cemerog/masked-input', () => ({

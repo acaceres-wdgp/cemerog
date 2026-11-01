@@ -16,7 +16,9 @@ export function StudiesAttention({
     onChange,
     onExternalDoctor,
     errors,
+    initialTab,
 }: {
+    initialTab?: 'lab' | 'img';
     labCatalog: LabCatalogItem[];
     imagingCatalog: ImagingCatalogItem[];
     selected: StudySelection;
@@ -61,6 +63,7 @@ export function StudiesAttention({
                 imagingCatalog={imagingCatalog}
                 selected={selected}
                 onChange={onChange}
+                initialTab={initialTab}
             />
         </div>
     );
