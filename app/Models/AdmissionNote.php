@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -28,7 +29,7 @@ class AdmissionNote extends Model
     }
 
     /** Mañana 07–15, tarde 15–23, noche 23–07 */
-    public static function shiftAt(Carbon $at): string
+    public static function shiftAt(CarbonInterface $at): string
     {
         $h = $at->hour;
 

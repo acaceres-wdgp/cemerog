@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Admission;
 use App\Models\Emergency;
 use App\Models\Turn;
 use App\Models\User;
@@ -20,6 +21,10 @@ class StudyOrderRequest extends FormRequest
 
         if ($turn instanceof Turn) {
             return $user->doctor !== null && $turn->doctor_id === $user->doctor->id;
+        }
+
+        if ($this->route('admission') instanceof Admission) {
+            return $user->can('module.internamiento.access');
         }
 
         return $emergency instanceof Emergency && $user->can('module.emergencia.access');

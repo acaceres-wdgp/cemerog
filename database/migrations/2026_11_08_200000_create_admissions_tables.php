@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('origin', 20); // emergencia | consulta | directo
             $table->foreignId('emergency_id')->nullable()->constrained()->restrictOnDelete();
             $table->foreignId('turn_id')->nullable()->constrained()->restrictOnDelete();
-            $table->string('diagnosis_code', 10);
+            $table->string('diagnosis_code', 10)->nullable();
             $table->string('diagnosis_label');
             $table->text('treatment')->nullable();
             $table->string('status', 20)->default('internado'); // internado | alta

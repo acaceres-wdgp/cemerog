@@ -19,10 +19,17 @@ class InvoicePresenter
         'insumo' => 'Insumos',
         'laboratorio' => 'Laboratorio',
         'imagen' => 'Imágenes',
+        'habitacion' => 'Habitación',
         'medicamento' => 'Farmacia',
         'procedimiento' => 'Procedimiento',
         'otro' => 'Otro',
     ];
+
+    /** «Laboratorio», «Habitación»… for a charge type */
+    public static function area(string $type): string
+    {
+        return self::AREAS[$type] ?? $type;
+    }
 
     /** @return array<string, mixed> */
     public function account(Account $account): array

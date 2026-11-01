@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -22,7 +23,7 @@ use Illuminate\Support\Carbon;
  * @property string $origin emergencia | consulta | directo
  * @property int|null $emergency_id
  * @property int|null $turn_id
- * @property string $diagnosis_code
+ * @property string|null $diagnosis_code
  * @property string $diagnosis_label
  * @property string|null $treatment
  * @property string $status internado | alta
@@ -67,7 +68,7 @@ class Admission extends Model
     }
 
     /** «Día 3»: the admission day is day 1 */
-    public function dayNumber(?Carbon $at = null): int
+    public function dayNumber(?CarbonInterface $at = null): int
     {
         $end = ($this->discharged_at ?? $at ?? now())->copy()->startOfDay();
 
