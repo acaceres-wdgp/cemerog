@@ -157,9 +157,20 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/ordenes/{order}/entregar', [LabController::class, 'deliver'])->name('lab.orders.deliver');
     });
 
-    Route::get('/imagenes', [ImgController::class, 'index'])
-        ->middleware('permission:module.img.access')
-        ->name('img');
+    Route::prefix('/imagenes')->middleware('permission:module.img.access')->group(function () {
+        Route::get('/', [ImgController::class, 'index'])->name('img');
+        Route::get('/ordenes/{order}', [ImgController::class, 'show'])->name('img.orders.show');
+        Route::get('/ordenes/{order}/imprimir', [ImgController::class, 'print'])->name('img.orders.print');
+        Route::post('/ordenes/{order}/realizado', [ImgController::class, 'perform'])->name('img.orders.perform');
+        Route::post('/ordenes/{order}/informe', [ImgController::class, 'saveReport'])->name('img.orders.report');
+        Route::post('/ordenes/{order}/firmar', [ImgController::class, 'sign'])->name('img.orders.sign');
+        Route::post('/ordenes/{order}/entregar', [ImgController::class, 'deliver'])->name('img.orders.deliver');
+        Route::post('/ordenes/{order}/adjuntos', [ImgController::class, 'upload'])->name('img.orders.attachments');
+        Route::delete('/adjuntos/{attachment}', [ImgController::class, 'removeAttachment'])->name('img.attachments.destroy');
+    });
+    // Also from Consulta and Emergencia: cancel an order not performed and see its files
+    Route::post('/imagenes/ordenes/{order}/cancelar', [ImgController::class, 'cancel'])->name('img.orders.cancel');
+    Route::get('/imagenes/adjuntos/{attachment}', [ImgController::class, 'download'])->name('img.attachments.show');
 
     Route::get('/impresos', [ImpresosController::class, 'index'])
         ->middleware('permission:module.impresos.access')

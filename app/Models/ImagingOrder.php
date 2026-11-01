@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -39,6 +41,8 @@ use Illuminate\Support\Carbon;
  * @property-read Patient $patient
  * @property-read Doctor|null $doctor
  * @property-read User|null $signer
+ * @property-read Emergency|null $emergency
+ * @property-read Collection<int, ImagingAttachment> $attachments
  */
 class ImagingOrder extends Model
 {
@@ -79,5 +83,23 @@ class ImagingOrder extends Model
     public function signer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'signed_by');
+    }
+
+    /** @return BelongsTo<Emergency, $this> */
+    public function emergency(): BelongsTo
+    {
+        return $this->belongsTo(Emergency::class);
+    }
+
+    /** @return HasMany<ImagingAttachment, $this> */
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(ImagingAttachment::class)->orderBy('id');
+    }
+
+    /** The report can be written (after the study is performed, before signing) */
+    public function isReportEditable(): bool
+    {
+        return in_array($this->status, ['realizado', 'borrador'], true);
     }
 }

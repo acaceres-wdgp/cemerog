@@ -14,7 +14,7 @@
 | internamiento | /internamiento           | internamiento/index | admin, medico, enfermeria                                | Esqueleto              | 7           |
 | cirugia       | /cirugia                 | cirugia/index       | admin, medico, enfermeria                                | Esqueleto              | 8           |
 | lab           | /laboratorio             | lab/index           | admin, medico, bioanalista (valida: bioanalista, admin)  | Terminado (fase 1)     | 9           |
-| img           | /imagenes                | img/index           | admin, medico, imagenes                                  | Esqueleto              | 10          |
+| img           | /imagenes                | img/index           | admin, medico, imagenes                                  | Terminado (fase 1)     | 10          |
 | impresos      | /impresos                | impresos/index      | admin, medico, enfermeria, secretaria, bioanalista, caja | Esqueleto              | 11          |
 | caja          | /facturacion             | caja/index          | admin, caja, secretaria                                  | Terminado              | 12          |
 | cxc           | /cuentas-por-cobrar      | cxc/index           | admin, caja, secretaria                                  | Terminado              | 13          |
