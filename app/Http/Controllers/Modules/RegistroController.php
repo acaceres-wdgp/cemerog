@@ -6,6 +6,7 @@ use App\Actions\CreatePatient;
 use App\Actions\OrderStudies;
 use App\Actions\RegisterStudiesWalkIn;
 use App\Actions\Registro\RegisterArrival;
+use App\Actions\Registro\RegisterEmergencyArrival;
 use App\Actions\UpdatePatient;
 use App\Exceptions\PatientHasOpenTurnException;
 use App\Http\Controllers\Controller;
@@ -13,7 +14,10 @@ use App\Http\Requests\RegisterArrivalRequest;
 use App\Http\Requests\StorePatientRequest;
 use App\Http\Requests\UpdatePatientRequest;
 use App\Models\Doctor;
+use App\Models\Emergency;
+use App\Models\EmergencyCubicle;
 use App\Models\Patient;
+use App\Models\Setting;
 use App\Models\Turn;
 use App\Models\User;
 use App\Support\ImagingPresenter;
@@ -70,10 +74,18 @@ class RegistroController extends Controller
             'initialType' => request()->query('tipo') === 'estudios' ? 'analisis' : 'consulta',
             'labCatalog' => app(LabPresenter::class)->catalog(),
             'imagingCatalog' => app(ImagingPresenter::class)->catalog(),
+            // «Emergencia»: the cubicles free right now and the fee
+            'emergencyCubicles' => EmergencyCubicle::active()
+                ->whereNotIn('id', Emergency::whereNotNull('occupied_cubicle_id')->pluck('occupied_cubicle_id'))
+                ->get()
+                ->map(fn (EmergencyCubicle $c): array => ['id' => $c->id, 'name' => $c->name])
+                ->values()
+                ->all(),
+            'emergencyFee' => Setting::emergencyFee(),
         ]);
     }
 
-    public function store(RegisterArrivalRequest $request, RegisterArrival $registerArrival, RegisterStudiesWalkIn $registerStudies): RedirectResponse
+    public function store(RegisterArrivalRequest $request, RegisterArrival $registerArrival, RegisterStudiesWalkIn $registerStudies, RegisterEmergencyArrival $registerEmergency): RedirectResponse
     {
         $validated = $request->validated();
         $patientId = $validated['patient_id'] ?? null;
@@ -82,9 +94,28 @@ class RegistroController extends Controller
 
         // Patient data to create or update
         $patientData = collect($validated)
-            ->except(['patient_id', 'attention_type', 'doctor_id', 'notes', 'appointment_id', 'lab_test_ids', 'imaging_study_ids', 'external_doctor'])
+            ->except(['patient_id', 'attention_type', 'doctor_id', 'notes', 'appointment_id', 'lab_test_ids', 'imaging_study_ids', 'external_doctor', 'cubicle_id'])
             ->filter(fn ($v) => $v !== null)
             ->all();
+
+        if ($validated['attention_type'] === 'emergencia') {
+            /** @var User $user */
+            $user = $request->user();
+            $emergency = $registerEmergency->handle(
+                $existingPatient,
+                $patientData,
+                (int) $validated['cubicle_id'],
+                (int) $validated['doctor_id'],
+                (string) $validated['notes'],
+                $user,
+            );
+
+            Toast::success("{$emergency->patient->full_name} registrado en emergencia · {$emergency->cubicle->name}.");
+
+            return $user->can('module.emergencia.access')
+                ? redirect()->route('emergencia.show', $emergency)
+                : redirect()->route('tablero');
+        }
 
         if ($validated['attention_type'] === 'analisis') {
             /** @var User $user */

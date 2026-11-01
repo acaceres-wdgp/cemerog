@@ -16,6 +16,10 @@ import {
     StudiesAttention,
     StudiesSummary,
 } from './components/StudiesAttention';
+import EmergencyFields, {
+    type FreeCubicle,
+} from './components/EmergencyFields';
+import { formatMoney } from '@/lib/money';
 
 // ── Turn status label map (mirrors Turn::statusLabel on the backend) ──────────
 const TURN_STATUS_LABELS: Record<string, string> = {
@@ -75,6 +79,8 @@ interface Props {
     initialType?: 'consulta' | 'analisis';
     labCatalog?: LabCatalogItem[];
     imagingCatalog?: ImagingCatalogItem[];
+    emergencyCubicles?: FreeCubicle[];
+    emergencyFee?: number;
 }
 
 /** Extends the inferred form errors with `open_turn`, which the server returns
@@ -100,6 +106,8 @@ export default function RegistroIndex({
     initialType = 'consulta',
     labCatalog = [],
     imagingCatalog = [],
+    emergencyCubicles = [],
+    emergencyFee = 0,
 }: Props) {
     const mode: 'new' | 'existing' = initialPatient ? 'existing' : 'new';
 
@@ -130,6 +138,7 @@ export default function RegistroIndex({
         lab_test_ids: [] as number[],
         imaging_study_ids: [] as number[],
         external_doctor: '',
+        cubicle_id: '' as number | string,
     });
     const errors = rawErrors as FormErrors;
 
@@ -209,9 +218,12 @@ export default function RegistroIndex({
         lab: data.lab_test_ids,
         imaging: data.imaging_study_ids,
     };
+    const isEmergency = data.attention_type === 'emergencia';
     const isFormValid = isStudies
         ? studies.lab.length + studies.imaging.length > 0
-        : !!data.doctor_id;
+        : isEmergency
+          ? !!data.doctor_id && !!data.cubicle_id && data.notes.trim() !== ''
+          : !!data.doctor_id;
     const setStudies = (next: { lab: number[]; imaging: number[] }) =>
         setData((d) => ({
             ...d,
@@ -736,10 +748,9 @@ export default function RegistroIndex({
                                         {
                                             value: 'emergencia',
                                             label: 'Emergencia',
-                                            desc: 'Atención inmediata, pasa a triaje.',
-                                            disabled: true,
-                                            tooltip:
-                                                'Disponible cuando se implemente Emergencia',
+                                            desc: 'Atención inmediata, pasa a un cubículo.',
+                                            disabled: false,
+                                            tooltip: undefined,
                                         },
                                         {
                                             value: 'analisis',
@@ -790,7 +801,20 @@ export default function RegistroIndex({
                                     ))}
                                 </div>
 
-                                {data.attention_type === 'consulta' && (
+                                {isEmergency && (
+                                    <EmergencyFields
+                                        cubicles={emergencyCubicles}
+                                        fee={emergencyFee}
+                                        cubicleId={data.cubicle_id}
+                                        onCubicle={(id) =>
+                                            setData('cubicle_id', id)
+                                        }
+                                        error={errors.cubicle_id}
+                                    />
+                                )}
+
+                                {(data.attention_type === 'consulta' ||
+                                    isEmergency) && (
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         <div>
                                             <label
@@ -833,7 +857,15 @@ export default function RegistroIndex({
                                         </div>
                                         <div>
                                             <label className="mb-1 block text-[13px] font-medium text-text-body">
-                                                Motivo de la visita
+                                                {isEmergency
+                                                    ? 'Motivo de la emergencia'
+                                                    : 'Motivo de la visita'}
+                                                {isEmergency && (
+                                                    <span className="text-error">
+                                                        {' '}
+                                                        *
+                                                    </span>
+                                                )}
                                             </label>
                                             <textarea
                                                 value={data.notes}
@@ -844,10 +876,26 @@ export default function RegistroIndex({
                                                     )
                                                 }
                                                 rows={2}
+                                                aria-label={
+                                                    isEmergency
+                                                        ? 'Motivo de la emergencia'
+                                                        : 'Motivo de la visita'
+                                                }
                                                 className="w-full rounded-lg border border-card-border bg-white px-3 py-2 text-sm outline-none focus:border-primary"
                                             />
+                                            {errors.notes && (
+                                                <p className="mt-1 text-[12px] text-error">
+                                                    {errors.notes}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
+                                )}
+
+                                {errors.patient_id && (
+                                    <p className="mt-3 text-[12px] text-error">
+                                        {errors.patient_id}
+                                    </p>
                                 )}
 
                                 {isStudies && (
@@ -907,7 +955,9 @@ export default function RegistroIndex({
                                     )}
                                     {isStudies
                                         ? 'Registrar y crear orden'
-                                        : 'Registrar y crear atención'}
+                                        : isEmergency
+                                          ? 'Registrar y pasar a emergencia'
+                                          : 'Registrar y crear atención'}
                                 </button>
                             </div>
                         </Panel>
@@ -920,7 +970,7 @@ export default function RegistroIndex({
                     >
                         <Panel title="Resumen" noPadding>
                             <dl className="divide-y divide-divider text-[13px]">
-                                {!isStudies && (
+                                {data.attention_type === 'consulta' && (
                                     <div className="flex justify-between px-5 py-3">
                                         <dt className="text-muted">
                                             Turno asignado
@@ -965,7 +1015,9 @@ export default function RegistroIndex({
                                     <dd className="font-medium text-text-heading">
                                         {isStudies
                                             ? 'Solo análisis o imágenes'
-                                            : 'Consulta'}
+                                            : isEmergency
+                                              ? 'Emergencia'
+                                              : 'Consulta'}
                                     </dd>
                                 </div>
                                 <div className="flex justify-between px-5 py-3">
@@ -999,8 +1051,16 @@ export default function RegistroIndex({
                                     <dt className="text-muted">
                                         Cargo inicial
                                     </dt>
-                                    <dd className="font-medium text-text-tertiary">
-                                        —
+                                    <dd
+                                        className={
+                                            isEmergency
+                                                ? 'font-medium text-text-heading tabular-nums'
+                                                : 'font-medium text-text-tertiary'
+                                        }
+                                    >
+                                        {isEmergency
+                                            ? formatMoney(emergencyFee)
+                                            : '—'}
                                     </dd>
                                 </div>
                             </dl>

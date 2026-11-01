@@ -178,6 +178,60 @@ describe('Registro · Solo análisis o imágenes', () => {
     });
 });
 
+describe('Registro · Emergencia', () => {
+    it('asks for doctor, free cubicle and reason, and shows the fee', () => {
+        render(
+            <RegistroIndex
+                doctors={[
+                    { id: 4, name: 'Dr. García', specialty: 'Med. General' },
+                ]}
+                patient={PATIENT}
+                emergencyCubicles={[{ id: 3, name: 'Cub. 3' }]}
+                emergencyFee={150000}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('radio', { name: /Emergencia/ }));
+        expect(screen.getByText(/No se asigna turno/)).toBeTruthy();
+        expect(screen.queryByText('Turno asignado')).toBeNull();
+        expect(screen.getAllByText(/RD\$1,500.00/).length).toBeGreaterThan(0);
+
+        const submit = screen.getByRole('button', {
+            name: /Registrar y pasar a emergencia/,
+        });
+        expect(submit).toBeDisabled();
+        fireEvent.change(screen.getByLabelText(/Médico/), {
+            target: { value: '4' },
+        });
+        fireEvent.change(screen.getByLabelText(/Cubículo/), {
+            target: { value: '3' },
+        });
+        fireEvent.change(screen.getByLabelText('Motivo de la emergencia'), {
+            target: { value: 'Dolor torácico.' },
+        });
+        fireEvent.click(submit);
+
+        expect(mockPost).toHaveBeenCalledWith(
+            '/registro',
+            expect.objectContaining({
+                attention_type: 'emergencia',
+                doctor_id: '4',
+                cubicle_id: '3',
+                notes: 'Dolor torácico.',
+            }),
+        );
+    });
+
+    it('warns when no cubicle is free', () => {
+        render(<RegistroIndex doctors={[]} patient={PATIENT} />);
+        fireEvent.click(screen.getByRole('radio', { name: /Emergencia/ }));
+
+        expect(
+            screen.getByText(/No hay cubículos libres en Emergencia/),
+        ).toBeTruthy();
+    });
+});
+
 describe('Selector de estudios', () => {
     it('searches within the tab', () => {
         render(
