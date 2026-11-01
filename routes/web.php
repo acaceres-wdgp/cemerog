@@ -11,6 +11,7 @@ use App\Http\Controllers\Modules\CashShiftController;
 use App\Http\Controllers\Modules\CirugiaController;
 use App\Http\Controllers\Modules\CitasController;
 use App\Http\Controllers\Modules\ConsultaController;
+use App\Http\Controllers\Modules\ConsultaTransferController;
 use App\Http\Controllers\Modules\CuadreController;
 use App\Http\Controllers\Modules\CxcController;
 use App\Http\Controllers\Modules\DoctoresController;
@@ -117,6 +118,7 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/', [ConsultaController::class, 'store'])->name('consulta.store');
         Route::post('/turnos/{turn}/alta', [ConsultaController::class, 'discharge'])->name('consulta.discharge');
         Route::post('/turnos/{turn}/laboratorio', [LabOrderController::class, 'storeFromTurn'])->name('consulta.lab.store');
+        Route::post('/turnos/{turn}/emergencia', [ConsultaTransferController::class, 'toEmergency'])->name('consulta.emergencia');
         Route::patch('/antecedentes/{patient}', [ConsultaController::class, 'updateAntecedents'])->name('consulta.antecedentes');
         // Prescriptions
         Route::post('/turnos/{turn}/receta', [PrescriptionController::class, 'store'])->name('consulta.receta.store');

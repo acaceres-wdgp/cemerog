@@ -18,6 +18,7 @@ import OrderStudiesDialog from '@/components/lab/OrderStudiesDialog';
 import type { LabCatalogItem } from '@/components/lab/types';
 import consulta from '@/routes/consulta';
 import AltaMedicaModal from './AltaMedicaModal';
+import ToEmergencyDialog, { type FreeCubicle } from './ToEmergencyDialog';
 import { TurnItem } from '../types';
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
@@ -79,9 +80,12 @@ export default function ConsultaActions({
     onDischargeSuccess?: () => void;
 }) {
     const [ordering, setOrdering] = useState(false);
-    const labCatalog =
-        (usePage().props as unknown as { lab_catalog?: LabCatalogItem[] })
-            .lab_catalog ?? [];
+    const [toEmergency, setToEmergency] = useState(false);
+    const pageProps = usePage().props as unknown as {
+        lab_catalog?: LabCatalogItem[];
+        emergency_cubicles?: FreeCubicle[];
+    };
+    const labCatalog = pageProps.lab_catalog ?? [];
     const [altaOpen, setAltaOpen] = useState(false);
 
     const nextTurn = turnsEnEspera[0] ?? null;
@@ -139,11 +143,15 @@ export default function ConsultaActions({
                         <FlaskConical className="h-4 w-4" />
                         Ordenar estudios
                     </button>
-                    <DisabledActionButton
-                        icon={Ambulance}
-                        label="Pasar a emergencia"
-                        tooltip="Disponible cuando se implemente Emergencia"
-                    />
+                    <button
+                        type="button"
+                        onClick={() => setToEmergency(true)}
+                        aria-label="Pasar a emergencia"
+                        className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-sans text-sm font-medium whitespace-nowrap text-secondary-fg hover:bg-accent-bg"
+                    >
+                        <Ambulance className="h-4 w-4" />
+                        Pasar a emergencia
+                    </button>
                     <DisabledActionButton
                         icon={BedDouble}
                         label="Ingresar"
@@ -186,6 +194,14 @@ export default function ConsultaActions({
                 subtitle={`${turn.patient.full_name} · Turno T-${String(turn.turn_number).padStart(2, '0')}`}
                 catalog={labCatalog}
                 url={consulta.lab.store.url(turn.id)}
+            />
+
+            <ToEmergencyDialog
+                open={toEmergency}
+                onOpenChange={setToEmergency}
+                subtitle={`${turn.patient.full_name} · Turno T-${String(turn.turn_number).padStart(2, '0')}`}
+                cubicles={pageProps.emergency_cubicles ?? []}
+                url={consulta.emergencia.url(turn.id)}
             />
 
             {/* Alta médica modal */}

@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string|null $number E-000001
  * @property int $patient_id
+ * @property int|null $turn_id consulta it came from («Pasar a emergencia»)
  * @property int $doctor_id
  * @property int $account_id
  * @property int $cubicle_id
@@ -32,7 +33,7 @@ use Illuminate\Support\Carbon;
 class Emergency extends Model
 {
     protected $fillable = [
-        'number', 'patient_id', 'doctor_id', 'account_id', 'cubicle_id', 'occupied_cubicle_id',
+        'number', 'patient_id', 'turn_id', 'doctor_id', 'account_id', 'cubicle_id', 'occupied_cubicle_id',
         'reason', 'status', 'arrived_at', 'discharged_at', 'created_by',
     ];
 
