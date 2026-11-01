@@ -146,9 +146,15 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         ->name('cirugia');
 
     // Servicios
-    Route::get('/laboratorio', [LabController::class, 'index'])
-        ->middleware('permission:module.lab.access')
-        ->name('lab');
+    Route::prefix('/laboratorio')->middleware('permission:module.lab.access')->group(function () {
+        Route::get('/', [LabController::class, 'index'])->name('lab');
+        Route::get('/ordenes/{order}', [LabController::class, 'show'])->name('lab.orders.show');
+        Route::get('/ordenes/{order}/imprimir', [LabController::class, 'print'])->name('lab.orders.print');
+        Route::post('/ordenes/{order}/muestra', [LabController::class, 'sample'])->name('lab.orders.sample');
+        Route::post('/ordenes/{order}/resultados', [LabController::class, 'saveResults'])->name('lab.orders.results');
+        Route::post('/ordenes/{order}/validar', [LabController::class, 'validateResults'])->name('lab.orders.validate');
+        Route::post('/ordenes/{order}/entregar', [LabController::class, 'deliver'])->name('lab.orders.deliver');
+    });
 
     Route::get('/imagenes', [ImgController::class, 'index'])
         ->middleware('permission:module.img.access')
