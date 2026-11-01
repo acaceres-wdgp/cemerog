@@ -12,7 +12,7 @@
 | consulta      | /consulta                | consulta/index      | medico (ver nota)                                        | Terminado              | 5           |
 | emergencia    | /emergencia              | emergencia/index    | admin, medico, enfermeria (alta: solo médicos)           | En uso (fase 1)        | 6           |
 | internamiento | /internamiento           | internamiento/index | admin, medico, enfermeria                                | Terminado (fase 1)     | 7           |
-| cirugia       | /cirugia                 | cirugia/index       | admin, medico, enfermeria                                | Esqueleto              | 8           |
+| cirugia       | /cirugia                 | cirugia/index       | admin, medico, enfermeria                                | Terminado (fase 1)     | 8           |
 | lab           | /laboratorio             | lab/index           | admin, medico, bioanalista (valida: bioanalista, admin)  | Terminado (fase 1)     | 9           |
 | img           | /imagenes                | img/index           | admin, medico, imagenes                                  | Terminado (fase 1)     | 10          |
 | impresos      | /impresos                | impresos/index      | admin, medico, enfermeria, secretaria, bioanalista, caja | Esqueleto              | 11          |

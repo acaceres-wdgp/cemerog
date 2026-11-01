@@ -6,6 +6,13 @@ import PatientSearch from '@/components/cemerog/PatientSearch';
 import type { PatientResult } from '@/components/cemerog/PatientSearch';
 import SegmentedControl from '@/components/cemerog/SegmentedControl';
 import internamiento from '@/routes/internamiento';
+import SurgeryFields from '@/components/cirugia/SurgeryFields';
+import {
+    draftComplete,
+    draftPayload,
+    emptyDraft,
+} from '@/components/cirugia/types';
+import type { SurgeryDraft } from '@/components/cirugia/types';
 import BedOptions from './BedOptions';
 import type { AdmissionOptions } from './types';
 
@@ -46,6 +53,18 @@ export default function AdmitDialog({
     );
     const [diagnosis, setDiagnosis] = useState(initialDiagnosis);
     const [treatment, setTreatment] = useState('');
+    const surgeryOptions = options.surgery ?? null;
+    const [tab, setTab] = useState<'intern' | 'cir'>('intern');
+    const [surgery, setSurgery] = useState<SurgeryDraft | null>(() =>
+        surgeryOptions
+            ? emptyDraft(
+                  surgeryOptions,
+                  new Date().toISOString().slice(0, 10),
+                  options.default_doctor_id,
+              )
+            : null,
+    );
+    const forSurgery = tab === 'cir' && surgery !== null;
     const [isLoading, setIsLoading] = useState(false);
     const patientId = patient?.id ?? chosen?.id ?? null;
 
@@ -62,6 +81,7 @@ export default function AdmitDialog({
                 doctor_id: Number(doctorId) || null,
                 diagnosis: diagnosis.trim(),
                 treatment: treatment.trim() || null,
+                ...(forSurgery ? { surgery: draftPayload(surgery) } : {}),
             },
             { onFinish: () => setIsLoading(false) },
         );
@@ -71,28 +91,35 @@ export default function AdmitDialog({
         <FormDialog
             open={open}
             onOpenChange={onOpenChange}
-            title="Ingreso a internamiento"
+            title={
+                forSurgery ? 'Ingreso para cirugía' : 'Ingreso a internamiento'
+            }
             description={subtitle ?? (patient ? patient.full_name : undefined)}
-            submitLabel="Confirmar ingreso"
+            submitLabel={
+                forSurgery ? 'Ingresar y programar' : 'Confirmar ingreso'
+            }
             onSubmit={submit}
             isLoading={isLoading}
             submitDisabled={
-                !patientId || !bedId || !doctorId || diagnosis.trim() === ''
+                !patientId ||
+                !bedId ||
+                !doctorId ||
+                diagnosis.trim() === '' ||
+                (forSurgery && !draftComplete(surgery))
             }
             maxWidth="sm:max-w-2xl"
         >
             <div className="flex flex-col gap-4">
-                <SegmentedControl
-                    segments={[
-                        { value: 'intern', label: 'Internamiento' },
-                        {
-                            value: 'cir',
-                            label: 'Ingreso para cirugía · próximamente',
-                        },
-                    ]}
-                    value="intern"
-                    onChange={() => undefined}
-                />
+                {surgeryOptions && (
+                    <SegmentedControl<'intern' | 'cir'>
+                        segments={[
+                            { value: 'intern', label: 'Internamiento' },
+                            { value: 'cir', label: 'Ingreso para cirugía' },
+                        ]}
+                        value={tab}
+                        onChange={setTab}
+                    />
+                )}
                 {!patient && (
                     <div className="flex flex-col gap-1.5">
                         <span className="text-[13px] font-medium">
@@ -170,10 +197,26 @@ export default function AdmitDialog({
                     onChange={(e) => setTreatment(e.target.value)}
                     error={errors.treatment}
                 />
+                {forSurgery && surgeryOptions && (
+                    <div className="state-cirugia flex flex-col gap-2 rounded-[12px] border border-[var(--state-bg)] px-3 py-3">
+                        <span className="text-[13px] font-semibold text-[var(--state-text)]">
+                            Datos de la cirugía
+                        </span>
+                        <SurgeryFields
+                            options={surgeryOptions}
+                            value={surgery}
+                            onChange={setSurgery}
+                            errors={errors}
+                            prefix="surgery."
+                        />
+                    </div>
+                )}
                 <p className="m-0 rounded-[10px] bg-list-row-bg px-3 py-2 text-[13px] text-text-secondary">
                     La atención pasa a{' '}
-                    <span className="state-internado rounded-full bg-[var(--state-bg)] px-2 py-0.5 font-medium text-[var(--state-text)]">
-                        Internado
+                    <span
+                        className={`${forSurgery ? 'state-cirugia' : 'state-internado'} rounded-full bg-[var(--state-bg)] px-2 py-0.5 font-medium text-[var(--state-text)]`}
+                    >
+                        {forSurgery ? 'Internado por cirugía' : 'Internado'}
                     </span>
                     . La cuenta continúa durante la estancia y la habitación se
                     carga al dar el alta.

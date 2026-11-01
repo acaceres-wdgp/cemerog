@@ -217,6 +217,13 @@ export const NAV_GROUPS: NavGroup[] = [
                 permission: 'module.habs.access',
             },
             {
+                key: 'admin-cirugias',
+                label: 'Catálogo de cirugías',
+                icon: 'Scissors',
+                href: '/admin/cirugias',
+                permission: 'module.admin.access',
+            },
+            {
                 key: 'admin-emergencia',
                 label: 'Emergencia',
                 icon: 'Siren',

@@ -97,10 +97,18 @@ export default function BedCard({
                 <span
                     className={cn(
                         'rounded-full px-2 py-0.5 text-[11.5px] font-medium',
-                        over ? 'bg-primary text-white' : PILL[bed.status].cls,
+                        over
+                            ? 'bg-primary text-white'
+                            : a?.for_surgery
+                              ? 'state-cirugia bg-[var(--state-bg)] text-[var(--state-text)]'
+                              : PILL[bed.status].cls,
                     )}
                 >
-                    {over ? 'Soltar aquí' : PILL[bed.status].label}
+                    {over
+                        ? 'Soltar aquí'
+                        : a?.for_surgery
+                          ? 'Internado por cirugía'
+                          : PILL[bed.status].label}
                 </span>
             </div>
             {bed.status === 'ocupada' && a && (

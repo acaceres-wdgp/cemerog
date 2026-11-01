@@ -490,4 +490,21 @@ Al llegar un paciente se necesita registrar qué consumió ese día (consultas, 
 - **Traslado**: la cama anterior queda _En limpieza_ hasta que alguien pulsa «Marcar lista».
 - **Alta**: médico, enfermería o administrador, como en Emergencia. La cuenta pasa a _Pendiente de facturar_.
 - **Signos vitales y aplicaciones** reutilizan las tablas de Emergencia (`admission_id`). Las notas de enfermería registran el turno: mañana (07–15), tarde (15–23) o noche.
-- **Pendiente (fase 2):** ingreso para cirugía (depende del módulo Cirugía) y hoja de medicación programada por horas.
+- **Pendiente (fase 2):** hoja de medicación programada por horas. El ingreso para cirugía está en ADR-024.
+
+---
+
+## ADR-024: Cirugía — agenda de quirófano, cobro al realizarse
+
+**Fecha**: 2026-11  
+**Estado**: Aceptado
+
+**Decisión:**
+
+- **Catálogo de cirugías** en _Administración › Catálogo de cirugías_: código (`Q-01`), procedimiento, precio y duración estimada. El precio incluye el uso del quirófano. Los honorarios de cirujano y anestesiólogo quedan fuera por ahora.
+- **Quirófanos** configurables por el administrador. Se empieza con «Quirófano 1».
+- **Programar** (médicos y administrador). Desde la agenda la cirugía queda **ambulatoria**, o en la estancia si el paciente ya está internado. Desde el ingreso, «Ingreso para cirugía» interna al paciente y programa la cirugía en un paso; su cama muestra _Internado por cirugía_.
+- **No se permiten solapes** en un mismo quirófano. Una cirugía cancelada libera su horario.
+- **Estados:** programada → en quirófano → realizada, o cancelada con motivo. Mientras está programada se puede reprogramar o cancelar. Médicos, enfermería y administrador la pasan a quirófano y la marcan como realizada.
+- **Se cobra al realizarse** (ADR-018). Va a la cuenta de la estancia si el paciente está internado (ADR-023). Si no, va a la cuenta del día, que pasa a facturación si no queda nada abierto. Una cirugía cancelada no se cobra.
+- El anestesiólogo es opcional. Las cirugías se numeran `Q-000001`.
