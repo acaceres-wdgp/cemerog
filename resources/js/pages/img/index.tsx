@@ -1,6 +1,6 @@
 import React, { FormEvent, useState } from 'react';
-import { router } from '@inertiajs/react';
-import { ChevronRight, Search } from 'lucide-react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { ChevronRight, Plus, Search } from 'lucide-react';
 import SegmentedControl from '@/components/cemerog/SegmentedControl';
 import ImgStatusPill from '@/components/img/ImgStatusPill';
 import { IMG_STATUS, isImagingPending } from '@/components/img/types';
@@ -11,7 +11,7 @@ import type {
 } from '@/components/img/types';
 import { ageLabel } from '@/lib/patient';
 import { cn } from '@/lib/utils';
-import { img } from '@/routes';
+import { img, registro } from '@/routes';
 import * as orders from '@/routes/img/orders';
 
 const th =
@@ -62,6 +62,10 @@ export default function ImgIndex({
     filters?: Filters;
 }) {
     const [q, setQ] = useState(filters.q);
+    // The walk-in patient is registered in Registro («Solo análisis o imágenes»)
+    const canRegister = (usePage().props.permissions ?? []).includes(
+        'module.registro.access',
+    );
     const visit = (patch: Partial<Filters> & { page?: number }) =>
         router.get(
             img.url({
@@ -83,12 +87,25 @@ export default function ImgIndex({
 
     return (
         <div className="flex flex-col gap-4">
-            <p className="m-0 text-text-secondary">
-                {pending}{' '}
-                {pending === 1 ? 'estudio pendiente' : 'estudios pendientes'} de
-                imagen o informe · haz clic en una fila para ver todos los
-                estudios del paciente.
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="m-0 text-text-secondary">
+                    {pending}{' '}
+                    {pending === 1
+                        ? 'estudio pendiente'
+                        : 'estudios pendientes'}{' '}
+                    de imagen o informe · haz clic en una fila para ver todos
+                    los estudios del paciente.
+                </p>
+                {canRegister && (
+                    <Link
+                        href={registro.url({ query: { tipo: 'imagenes' } })}
+                        className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-primary px-[14px] font-medium whitespace-nowrap text-white hover:bg-primary-hover"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Orden sin consulta
+                    </Link>
+                )}
+            </div>
             <section className="overflow-x-auto rounded-[14px] border border-card-border bg-white">
                 <div className="flex flex-wrap items-center gap-3 px-5 pt-4">
                     <form

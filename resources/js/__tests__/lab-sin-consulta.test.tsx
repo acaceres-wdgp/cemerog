@@ -6,8 +6,9 @@ import React, { useState } from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockPost, page } = vi.hoisted(() => ({
+const { mockPost, mockVisit, page } = vi.hoisted(() => ({
     mockPost: vi.fn(),
+    mockVisit: vi.fn(),
     page: { props: { errors: {}, permissions: [] as string[] } },
 }));
 
@@ -28,7 +29,7 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
         </a>
     ),
     usePage: () => page,
-    router: { get: vi.fn(), visit: vi.fn(), post: vi.fn() },
+    router: { get: vi.fn(), visit: mockVisit, post: vi.fn() },
     useForm: (initial: Record<string, unknown>) => {
         const [data, setState] = useState(initial);
         return {
@@ -50,6 +51,7 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
     },
 }));
 
+import ImgIndex from '@/pages/img/index';
 import LabIndex from '@/pages/lab/index';
 import RegistroIndex from '@/pages/registro/index';
 
@@ -107,6 +109,8 @@ const PATIENT = {
 
 beforeEach(() => {
     mockPost.mockReset();
+    mockVisit.mockReset();
+    vi.restoreAllMocks();
     page.props.permissions = [];
 });
 
@@ -258,6 +262,75 @@ describe('Selector de estudios', () => {
         expect(
             screen.getByText('Ningún estudio coincide con la búsqueda.'),
         ).toBeTruthy();
+    });
+});
+
+describe('Registro · paciente existente', () => {
+    it('finds an existing patient and reloads Registro keeping «Solo análisis o imágenes»', async () => {
+        vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+            ok: true,
+            json: async () => [
+                {
+                    id: 7,
+                    full_name: 'Ana Pérez',
+                    document_number: '00112345678',
+                },
+            ],
+        } as Response);
+        render(
+            <RegistroIndex
+                doctors={[]}
+                patient={null}
+                initialType="analisis"
+                initialStudiesTab="img"
+                labCatalog={CATALOG}
+                imagingCatalog={IMAGING}
+            />,
+        );
+
+        expect(
+            screen.getByText('¿El paciente ya está registrado?'),
+        ).toBeTruthy();
+        // Comes from Imágenes: the picker opens on its tab
+        expect(screen.getByText('Imágenes · Sonografía')).toBeTruthy();
+
+        fireEvent.change(
+            screen.getByPlaceholderText(
+                'Buscar por nombre, cédula o expediente…',
+            ),
+            { target: { value: 'Ana' } },
+        );
+        fireEvent.click(await screen.findByText('Ana Pérez'));
+        expect(mockVisit).toHaveBeenCalledWith(
+            '/registro?paciente=7&tipo=imagenes',
+        );
+    });
+
+    it('is not offered when the patient is already chosen', () => {
+        render(<RegistroIndex doctors={[]} patient={PATIENT} />);
+
+        expect(
+            screen.queryByText('¿El paciente ya está registrado?'),
+        ).toBeNull();
+    });
+});
+
+describe('Imágenes · Orden sin consulta', () => {
+    it('links to Registro on the imaging tab for users who can register', () => {
+        page.props.permissions = ['module.registro.access'];
+        render(<ImgIndex />);
+
+        expect(
+            screen
+                .getByRole('link', { name: /Orden sin consulta/ })
+                .getAttribute('href'),
+        ).toBe('/registro?tipo=imagenes');
+    });
+
+    it('is hidden for users without Registro', () => {
+        render(<ImgIndex />);
+
+        expect(screen.queryByText('Orden sin consulta')).toBeNull();
     });
 });
 
