@@ -301,18 +301,28 @@ describe('Detalle de Emergencia', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Ordenar' }));
         const dialog = screen.getByRole('dialog');
-        expect(within(dialog).getByText('Imágenes · Radiografía')).toBeTruthy();
+        // Laboratorio first; imaging in its own tab
+        expect(within(dialog).queryByText('Imágenes · Radiografía')).toBeNull();
         fireEvent.click(
             within(dialog).getByRole('checkbox', { name: /Hemograma/ }),
         );
         fireEvent.click(
             within(dialog).getByRole('checkbox', { name: /Glucosa/ }),
         );
+        fireEvent.click(within(dialog).getByRole('tab', { name: /Imágenes/ }));
+        expect(within(dialog).getByText('Imágenes · Radiografía')).toBeTruthy();
         fireEvent.click(
             within(dialog).getByRole('checkbox', {
                 name: /Radiografía de tórax/,
             }),
         );
+        expect(
+            within(dialog).getByRole('tab', { name: /Laboratorio/ })
+                .textContent,
+        ).toContain('2');
+        expect(
+            within(dialog).getByRole('tab', { name: /Imágenes/ }).textContent,
+        ).toContain('1');
         expect(within(dialog).getByText('RD$1,350.00')).toBeTruthy();
         expect(within(dialog).getByText(/Ayuno de 8 horas/)).toBeTruthy();
         expect(
