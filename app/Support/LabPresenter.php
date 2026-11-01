@@ -51,6 +51,42 @@ class LabPresenter
         ];
     }
 
+    /**
+     * Summary plus the results once validated (Consulta, Emergencia).
+     *
+     * @return array<string, mixed>
+     */
+    public function withResults(LabOrder $order): array
+    {
+        $order->loadMissing('items.results');
+        $done = in_array($order->status, ['validada', 'entregada'], true);
+
+        return [
+            ...$this->summary($order),
+            'validated_at' => $order->validated_at?->format('d/m/Y H:i'),
+            'results' => $done ? $this->flatResults($order) : [],
+        ];
+    }
+
+    /** @return list<array{test: string, name: string, value: string|null, reference: string, out_of_range: bool}> */
+    public function flatResults(LabOrder $order): array
+    {
+        $rows = [];
+        foreach ($order->items as $item) {
+            foreach ($item->results as $r) {
+                $rows[] = [
+                    'test' => $item->name,
+                    'name' => $r->name,
+                    'value' => $r->value,
+                    'reference' => $r->reference,
+                    'out_of_range' => $r->out_of_range,
+                ];
+            }
+        }
+
+        return $rows;
+    }
+
     public const ORIGINS = [
         'consulta' => 'Consulta',
         'emergencia' => 'Emergencia',

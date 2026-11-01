@@ -5,9 +5,11 @@ namespace App\Actions;
 use App\Models\Consultation;
 use App\Models\Discharge;
 use App\Models\Doctor;
+use App\Models\LabOrder;
 use App\Models\Patient;
 use App\Models\Prescription;
 use App\Models\Turn;
+use App\Support\LabPresenter;
 
 class BuildClinicalHistory
 {
@@ -66,6 +68,30 @@ class BuildClinicalHistory
             if ($turn->discharge !== null) {
                 $entries->push($this->makeAltaEntry($turn, $turn->discharge, $mine));
             }
+        }
+
+        // 3. Validated laboratory results
+        $labOrders = LabOrder::with(['items.results', 'doctor.specialty'])
+            ->where('patient_id', $patient->id)
+            ->whereIn('status', ['validada', 'entregada'])
+            ->get();
+        $lab = app(LabPresenter::class);
+        foreach ($labOrders as $order) {
+            $entries->push([
+                'type' => 'laboratorio',
+                'date' => ($order->validated_at ?? $order->ordered_at)->toIso8601String(),
+                'mine' => $order->doctor_id !== null && $order->doctor_id === $callerDoctor?->id,
+                'doctor' => [
+                    'id' => $order->doctor_id ?? 0,
+                    'full_name' => $order->doctor_id !== null ? $order->doctor->name : ($order->external_doctor ?? 'Laboratorio'),
+                    'specialty' => $order->doctor_id !== null ? $order->doctor->specialty->name : 'Laboratorio',
+                ],
+                'lab' => [
+                    'number' => $order->number,
+                    'tests' => $order->items->pluck('name')->all(),
+                    'results' => $lab->flatResults($order),
+                ],
+            ]);
         }
 
         // Sort by date descending

@@ -23,6 +23,7 @@ export default function ConsultaIndex({
     prescriptions,
     charges,
     charges_total,
+    lab_orders,
 }: Props) {
     const [activeTurn, setActiveTurn] = useState<TurnItem | null>(
         turns_en_consulta[0] ?? null,
@@ -105,7 +106,13 @@ export default function ConsultaIndex({
                                 {
                                     preserveState: true,
                                     preserveScroll: true,
-                                    only: ['historial', 'historial_patient'],
+                                    only: [
+                                        'historial',
+                                        'historial_patient',
+                                        'charges',
+                                        'charges_total',
+                                        'lab_orders',
+                                    ],
                                 },
                             );
                         }}
@@ -158,6 +165,7 @@ export default function ConsultaIndex({
                         <CuentaOrdenesTab
                             charges={charges ?? []}
                             chargesTotal={charges_total ?? 0}
+                            labOrders={lab_orders ?? []}
                         />
                     )}
                 </>

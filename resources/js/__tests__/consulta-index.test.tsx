@@ -182,7 +182,13 @@ describe('ConsultaIndex – queue', () => {
             {
                 preserveState: true,
                 preserveScroll: true,
-                only: ['historial', 'historial_patient'],
+                only: [
+                    'historial',
+                    'historial_patient',
+                    'charges',
+                    'charges_total',
+                    'lab_orders',
+                ],
             },
         );
     });

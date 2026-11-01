@@ -9,6 +9,7 @@ import {
 import consulta from '@/routes/consulta';
 import { buildInstruction } from '../lib/instructionBuilder';
 import { ClinicalEntry, DischargeDetail, PrescriptionData } from '../types';
+import LabResultsList from '@/components/lab/LabResultsList';
 
 // ─── Prescription block ───────────────────────────────────────────────────────
 
@@ -204,6 +205,21 @@ export default function HistorialDetail({
                     prescription={sel.prescription}
                     canPrint={canPrint}
                 />
+            )}
+
+            {/* Laboratorio entry */}
+            {sel.type === 'laboratorio' && sel.lab && (
+                <div className="rounded-[10px] border border-card-border px-[14px] py-[10px]">
+                    <div className="mb-1 text-[11px] font-semibold tracking-[.05em] text-muted uppercase">
+                        Resultados · {sel.lab.number}
+                    </div>
+                    <LabResultsList results={sel.lab.results} />
+                    {sel.lab.results.some((r) => r.out_of_range) && (
+                        <div className="mt-1 text-[11.5px] text-muted">
+                            * Fuera del rango de referencia.
+                        </div>
+                    )}
+                </div>
             )}
 
             {/* Alta entry */}

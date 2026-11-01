@@ -25,6 +25,16 @@ export type LabOrderSummary = {
     total: number;
     indication: string | null;
     cancel_reason: string | null;
+    validated_at?: string | null;
+    results?: LabResultLine[];
+};
+
+export type LabResultLine = {
+    test: string;
+    name: string;
+    value: string | null;
+    reference: string;
+    out_of_range: boolean;
 };
 
 const pill = (tone: string) =>
