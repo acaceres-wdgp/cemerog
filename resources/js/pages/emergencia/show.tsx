@@ -12,7 +12,9 @@ import ApplicationsCard from './components/detail/ApplicationsCard';
 import ComingSoonCard from './components/detail/ComingSoonCard';
 import ExitCard from './components/detail/ExitCard';
 import type { ImagingOrderWithReport } from '@/components/img/types';
+import type { AdmissionOptions } from '@/components/internamiento/types';
 import LabOrdersCard from './components/detail/LabOrdersCard';
+import * as estudios from '@/routes/emergencia/estudios';
 import MoveCubicleDialog from './components/detail/MoveCubicleDialog';
 import PatientCard from './components/detail/PatientCard';
 import VitalsCard from './components/detail/VitalsCard';
@@ -35,6 +37,7 @@ type Props = {
     lab_orders?: LabOrderSummary[];
     imaging_orders?: ImagingOrderWithReport[];
     lab_catalog?: LabCatalogItem[];
+    admission_options?: AdmissionOptions | null;
     imaging_catalog?: ImagingCatalogItem[];
     free_cubicles: { id: number; name: string }[];
 };
@@ -50,6 +53,7 @@ export default function EmergenciaShow({
     lab_orders = [],
     imaging_orders = [],
     lab_catalog = [],
+    admission_options = null,
     imaging_catalog = [],
 }: Props) {
     const active = emergency.status === 'activa';
@@ -126,10 +130,12 @@ export default function EmergenciaShow({
                         <ExitCard
                             emergency={emergency}
                             canDischarge={can_discharge}
+                            admissionOptions={admission_options}
                         />
                     )}
                     <LabOrdersCard
-                        emergency={emergency}
+                        subtitle={`${emergency.patient.full_name} · ${emergency.number}`}
+                        orderUrl={estudios.store.url(emergency.id)}
                         orders={lab_orders}
                         imagingOrders={imaging_orders}
                         catalog={lab_catalog}

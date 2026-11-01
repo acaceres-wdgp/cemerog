@@ -4,6 +4,7 @@ use App\Actions\ResolveHomeRoute;
 use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Modules\AdminController;
+use App\Http\Controllers\Modules\AdmissionController;
 use App\Http\Controllers\Modules\AlmacenController;
 use App\Http\Controllers\Modules\AnalisisController;
 use App\Http\Controllers\Modules\CajaController;
@@ -141,9 +142,19 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::patch('/{emergency}/cubiculo', [EmergencyCareController::class, 'moveCubicle'])->name('emergencia.cubicle');
     });
 
-    Route::get('/internamiento', [InternamientoController::class, 'index'])
-        ->middleware('permission:module.internamiento.access')
-        ->name('internamiento');
+    Route::prefix('/internamiento')->middleware('permission:module.internamiento.access')->group(function () {
+        Route::get('/', [InternamientoController::class, 'index'])->name('internamiento');
+        Route::get('/pacientes/buscar', [PacientesController::class, 'search'])->name('internamiento.pacientes.buscar');
+        Route::post('/ingresos', [InternamientoController::class, 'admit'])->name('internamiento.admit');
+        Route::get('/{admission}', [AdmissionController::class, 'show'])->whereNumber('admission')->name('internamiento.show');
+        Route::post('/{admission}/traslado', [InternamientoController::class, 'move'])->name('internamiento.move');
+        Route::post('/{admission}/aplicaciones', [AdmissionController::class, 'storeApplication'])->name('internamiento.applications.store');
+        Route::post('/{admission}/signos-vitales', [AdmissionController::class, 'storeVitals'])->name('internamiento.vitals.store');
+        Route::post('/{admission}/notas', [AdmissionController::class, 'storeNote'])->name('internamiento.notes.store');
+        Route::post('/{admission}/estudios', [StudyOrderController::class, 'storeFromAdmission'])->name('internamiento.estudios.store');
+        Route::post('/{admission}/alta', [AdmissionController::class, 'discharge'])->name('internamiento.discharge');
+        Route::post('/camas/{bed}/lista', [InternamientoController::class, 'bedReady'])->name('internamiento.beds.ready');
+    });
 
     Route::get('/cirugia', [CirugiaController::class, 'index'])
         ->middleware('permission:module.cirugia.access')
@@ -283,9 +294,16 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         ->middleware('permission:module.precios.access')
         ->name('precios');
 
-    Route::get('/admin/habitaciones', [HabsController::class, 'index'])
-        ->middleware('permission:module.habs.access')
-        ->name('habs');
+    Route::prefix('/admin/habitaciones')->middleware('permission:module.habs.access')->group(function () {
+        Route::get('/', [HabsController::class, 'index'])->name('habs');
+        Route::post('/tipos', [HabsController::class, 'storeType'])->name('habs.types.store');
+        Route::put('/tipos/{type}', [HabsController::class, 'updateType'])->name('habs.types.update');
+        Route::delete('/tipos/{type}', [HabsController::class, 'destroyType'])->name('habs.types.destroy');
+        Route::post('/', [HabsController::class, 'storeRoom'])->name('habs.rooms.store');
+        Route::put('/{room}', [HabsController::class, 'updateRoom'])->name('habs.rooms.update');
+        Route::post('/{room}/camas', [HabsController::class, 'addBed'])->name('habs.beds.store');
+        Route::delete('/camas/{bed}', [HabsController::class, 'removeBed'])->name('habs.beds.destroy');
+    });
 
     Route::get('/admin/tema', [TemaController::class, 'index'])
         ->middleware('permission:module.tema.access')

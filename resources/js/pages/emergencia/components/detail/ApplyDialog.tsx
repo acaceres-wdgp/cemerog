@@ -15,12 +15,15 @@ export default function ApplyDialog({
     catalog,
     routes,
     onClose,
+    url,
 }: {
     emergencyId: number;
     kind: ApplicationKind;
     catalog: CatalogItem[];
     routes: string[];
     onClose: () => void;
+    /** Internamiento posts to its own route */
+    url?: string;
 }) {
     const errors = (usePage().props.errors ?? {}) as Record<string, string>;
     const isMed = kind === 'medicamento';
@@ -49,7 +52,7 @@ export default function ApplyDialog({
         if (!canSubmit) return;
         setIsLoading(true);
         router.post(
-            emergenciaRoutes.applications.store.url(emergencyId),
+            url ?? emergenciaRoutes.applications.store.url(emergencyId),
             {
                 kind,
                 quantity,

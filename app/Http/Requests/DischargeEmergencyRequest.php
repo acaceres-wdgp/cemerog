@@ -14,7 +14,10 @@ class DischargeEmergencyRequest extends FormRequest
         /** @var User $user */
         $user = $this->user();
 
-        return Emergency::canBeDischargedBy($user);
+        // Also used by Internamiento (route {admission}), with the same roles
+        return $this->route('admission') !== null
+            ? $user->can('module.internamiento.access') && ($user->canAttendPatients() || $user->hasAnyRole(['administrador', 'enfermeria']))
+            : Emergency::canBeDischargedBy($user);
     }
 
     /** @return array<string, mixed> */

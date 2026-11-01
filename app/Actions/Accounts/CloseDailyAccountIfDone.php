@@ -3,6 +3,7 @@
 namespace App\Actions\Accounts;
 
 use App\Models\Account;
+use App\Models\Admission;
 use App\Models\Emergency;
 use App\Models\Patient;
 use App\Models\Turn;
@@ -28,7 +29,10 @@ class CloseDailyAccountIfDone
         // A patient in emergency keeps the account open until discharged
         $inEmergency = Emergency::active()->where('patient_id', $patient->id)->exists();
 
-        if ($hasOpenTurns || $inEmergency) {
+        // Nor while admitted: the stay is billed at discharge (ADR-023)
+        $admitted = Admission::active()->where('patient_id', $patient->id)->exists();
+
+        if ($hasOpenTurns || $inEmergency || $admitted) {
             return;
         }
 

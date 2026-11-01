@@ -8,7 +8,8 @@ class EmergencyVitalRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('module.emergencia.access');
+        // Also used by Internamiento (route {admission})
+        return $this->user()->can($this->route('admission') !== null ? 'module.internamiento.access' : 'module.emergencia.access');
     }
 
     /** @return array<string, mixed> */

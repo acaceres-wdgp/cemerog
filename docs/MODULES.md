@@ -11,7 +11,7 @@
 | citas         | /citas                   | citas/index         | admin, medico, secretaria                                | Terminado              | 4           |
 | consulta      | /consulta                | consulta/index      | medico (ver nota)                                        | Terminado              | 5           |
 | emergencia    | /emergencia              | emergencia/index    | admin, medico, enfermeria (alta: solo médicos)           | En uso (fase 1)        | 6           |
-| internamiento | /internamiento           | internamiento/index | admin, medico, enfermeria                                | Esqueleto              | 7           |
+| internamiento | /internamiento           | internamiento/index | admin, medico, enfermeria                                | Terminado (fase 1)     | 7           |
 | cirugia       | /cirugia                 | cirugia/index       | admin, medico, enfermeria                                | Esqueleto              | 8           |
 | lab           | /laboratorio             | lab/index           | admin, medico, bioanalista (valida: bioanalista, admin)  | Terminado (fase 1)     | 9           |
 | img           | /imagenes                | img/index           | admin, medico, imagenes                                  | Terminado (fase 1)     | 10          |
@@ -26,7 +26,7 @@
 | analisis      | /admin/analisis          | analisis/index      | admin                                                    | Terminado (fase 1)     | 19          |
 | imgcat        | /admin/imagenes-catalogo | imgcat/index        | admin                                                    | Terminado              | 20          |
 | precios       | /admin/precios           | precios/index       | admin                                                    | Esqueleto              | 21          |
-| habs          | /admin/habitaciones      | habs/index          | admin                                                    | Esqueleto              | 22          |
+| habs          | /admin/habitaciones      | habs/index          | admin                                                    | Terminado              | 22          |
 | tema          | /admin/tema              | tema/index          | admin                                                    | Esqueleto              | 23          |
 
 ### Inventario › Proveedores

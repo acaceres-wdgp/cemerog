@@ -3,6 +3,7 @@
 namespace App\Actions\Accounts;
 
 use App\Models\Account;
+use App\Models\Admission;
 use App\Models\Patient;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,12 @@ class GetOrOpenDailyAccount
     public function handle(Patient $patient, CarbonInterface $date): Account
     {
         return DB::transaction(function () use ($patient, $date): Account {
+            // An admitted patient has one account for the whole stay (ADR-023)
+            $admission = Admission::active()->where('patient_id', $patient->id)->with('account')->first();
+            if ($admission !== null) {
+                return $admission->account;
+            }
+
             // A same-day account not billed yet (closed at the last discharge)
             // is reopened so the whole day goes in a single invoice.
             $existing = Account::where('patient_id', $patient->id)

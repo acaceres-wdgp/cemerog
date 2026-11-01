@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { BedDouble, ChevronRight, LogOut, Scissors } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import AdmitDialog from '@/components/internamiento/AdmitDialog';
+import type { AdmissionOptions } from '@/components/internamiento/types';
 import AltaMedicaModal from '@/pages/consulta/components/AltaMedicaModal';
 import emergenciaRoutes from '@/routes/emergencia';
 import type { EmergencyDetail } from '../../types';
@@ -19,19 +21,26 @@ type Option = {
 export default function ExitCard({
     emergency,
     canDischarge,
+    admissionOptions = null,
 }: {
     emergency: EmergencyDetail;
     canDischarge: boolean;
+    /** Free beds and doctors when the user can admit */
+    admissionOptions?: AdmissionOptions | null;
 }) {
     const [discharging, setDischarging] = useState(false);
+    const [admitting, setAdmitting] = useState(false);
 
     const options: Option[] = [
         {
             label: 'Internar',
-            desc: 'Disponible cuando esté listo Internamiento',
+            desc: admissionOptions
+                ? 'Pasa a una cama; la cuenta continúa'
+                : 'Tu usuario no puede internar',
             icon: BedDouble,
             tone: 'state-internado',
-            enabled: false,
+            enabled: admissionOptions !== null,
+            onClick: () => setAdmitting(true),
         },
         {
             label: 'Ingreso para cirugía',
@@ -98,6 +107,16 @@ export default function ExitCard({
                     </button>
                 ))}
             </div>
+            {admissionOptions && admitting && (
+                <AdmitDialog
+                    open
+                    onOpenChange={setAdmitting}
+                    options={admissionOptions}
+                    patient={emergency.patient}
+                    emergencyId={emergency.id}
+                    subtitle={`${emergency.patient.full_name} · ${emergency.number} · desde Emergencia, ${emergency.cubicle.name}`}
+                />
+            )}
             {canDischarge && (
                 <AltaMedicaModal
                     open={discharging}

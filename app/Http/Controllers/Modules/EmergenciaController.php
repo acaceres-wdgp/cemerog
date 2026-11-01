@@ -15,6 +15,7 @@ use App\Models\LabOrder;
 use App\Models\Patient;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\AdmissionPresenter;
 use App\Support\EmergencyPresenter;
 use App\Support\ImagingPresenter;
 use App\Support\LabPresenter;
@@ -57,6 +58,9 @@ class EmergenciaController extends Controller
             'lab_catalog' => $emergency->isActive() ? $lab->catalog() : [],
             'imaging_catalog' => $emergency->isActive() ? app(ImagingPresenter::class)->catalog() : [],
             'can_discharge' => $emergency->isActive() && Emergency::canBeDischargedBy($user),
+            // «Internar»: free beds and doctors, for whoever can admit
+            'admission_options' => $emergency->isActive() && $user->can('module.internamiento.access')
+                ? app(AdmissionPresenter::class)->options($user) : null,
             'free_cubicles' => EmergencyCubicle::active()->whereNotIn('id', $occupied)->get()
                 ->map(fn (EmergencyCubicle $c): array => ['id' => $c->id, 'name' => $c->name])->values()->all(),
         ]);

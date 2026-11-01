@@ -24,6 +24,8 @@ export type EmergencyRow = {
 export type VitalReading = {
     id: number;
     time: string;
+    /** Internamiento: the stay spans days */
+    date?: string;
     presion_arterial: string;
     frecuencia_cardiaca: number;
     frecuencia_respiratoria: number;
@@ -39,6 +41,7 @@ export type Application = {
     id: number;
     kind: ApplicationKind;
     time: string;
+    date?: string;
     description: string;
     quantity: number;
     route: string | null;

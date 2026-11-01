@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Admission;
 use App\Models\Emergency;
 use App\Models\EmergencyApplication;
 use App\Models\EmergencyCubicle;
@@ -72,12 +73,13 @@ class EmergencyPresenter
      *
      * @return list<array<string, mixed>>
      */
-    public function vitals(Emergency $e): array
+    public function vitals(Emergency|Admission $e): array
     {
-        return $e->vitals()->with('taker')->orderByDesc('taken_at')->orderByDesc('id')->get()
+        return $e->vitals()->with('taker')->reorder()->orderByDesc('taken_at')->orderByDesc('id')->get()
             ->map(fn (EmergencyVital $v): array => [
                 'id' => $v->id,
                 'time' => $v->taken_at->format('H:i'),
+                'date' => $v->taken_at->format('d/m/Y'),
                 'presion_arterial' => $v->presion_arterial,
                 'frecuencia_cardiaca' => $v->frecuencia_cardiaca,
                 'frecuencia_respiratoria' => $v->frecuencia_respiratoria,
@@ -93,13 +95,14 @@ class EmergencyPresenter
      *
      * @return list<array<string, mixed>>
      */
-    public function applications(Emergency $e): array
+    public function applications(Emergency|Admission $e): array
     {
-        return $e->applications()->with('applier')->orderBy('applied_at')->orderBy('id')->get()
+        return $e->applications()->with('applier')->reorder()->orderBy('applied_at')->orderBy('id')->get()
             ->map(fn (EmergencyApplication $a): array => [
                 'id' => $a->id,
                 'kind' => $a->kind,
                 'time' => $a->applied_at->format('H:i'),
+                'date' => $a->applied_at->format('d/m/Y'),
                 'description' => $a->description,
                 'quantity' => $a->quantity,
                 'route' => $a->route,

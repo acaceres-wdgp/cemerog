@@ -20,6 +20,8 @@ import type {
     LabCatalogItem,
 } from '@/components/lab/types';
 import consulta from '@/routes/consulta';
+import AdmitDialog from '@/components/internamiento/AdmitDialog';
+import type { AdmissionOptions } from '@/components/internamiento/types';
 import AltaMedicaModal from './AltaMedicaModal';
 import ToEmergencyDialog, { type FreeCubicle } from './ToEmergencyDialog';
 import { TurnItem } from '../types';
@@ -84,10 +86,12 @@ export default function ConsultaActions({
 }) {
     const [ordering, setOrdering] = useState(false);
     const [toEmergency, setToEmergency] = useState(false);
+    const [admitting, setAdmitting] = useState(false);
     const pageProps = usePage().props as unknown as {
         lab_catalog?: LabCatalogItem[];
         imaging_catalog?: ImagingCatalogItem[];
         emergency_cubicles?: FreeCubicle[];
+        admission_options?: AdmissionOptions | null;
     };
     const labCatalog = pageProps.lab_catalog ?? [];
     const [altaOpen, setAltaOpen] = useState(false);
@@ -156,11 +160,23 @@ export default function ConsultaActions({
                         <Ambulance className="h-4 w-4" />
                         Pasar a emergencia
                     </button>
-                    <DisabledActionButton
-                        icon={BedDouble}
-                        label="Ingresar"
-                        tooltip="Disponible cuando se implemente Internamiento"
-                    />
+                    {pageProps.admission_options ? (
+                        <button
+                            type="button"
+                            onClick={() => setAdmitting(true)}
+                            aria-label="Ingresar"
+                            className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-sans text-sm font-medium whitespace-nowrap text-secondary-fg hover:bg-accent-bg"
+                        >
+                            <BedDouble className="h-4 w-4" />
+                            Ingresar
+                        </button>
+                    ) : (
+                        <DisabledActionButton
+                            icon={BedDouble}
+                            label="Ingresar"
+                            tooltip="Tu usuario no puede internar pacientes"
+                        />
+                    )}
                     <button
                         type="button"
                         onClick={() => setAltaOpen(true)}
@@ -208,6 +224,17 @@ export default function ConsultaActions({
                 cubicles={pageProps.emergency_cubicles ?? []}
                 url={consulta.emergencia.url(turn.id)}
             />
+
+            {admitting && pageProps.admission_options && (
+                <AdmitDialog
+                    open
+                    onOpenChange={setAdmitting}
+                    options={pageProps.admission_options}
+                    patient={turn.patient}
+                    turnId={turn.id}
+                    subtitle={`${turn.patient.full_name} · Turno T-${String(turn.turn_number).padStart(2, '0')} · desde Consulta`}
+                />
+            )}
 
             {/* Alta médica modal */}
             <AltaMedicaModal

@@ -19,9 +19,12 @@ type Key = (typeof FIELDS)[number][0];
 export default function VitalsForm({
     emergencyId,
     onDone,
+    url,
 }: {
     emergencyId: number;
     onDone: () => void;
+    /** Internamiento posts to its own route */
+    url?: string;
 }) {
     const errors = (usePage().props.errors ?? {}) as Record<string, string>;
     const [values, setValues] = useState<Record<Key, string>>({
@@ -40,7 +43,7 @@ export default function VitalsForm({
         setIsLoading(true);
         const n = (v: string) => (v.trim() === '' ? null : Number(v));
         router.post(
-            emergenciaRoutes.vitals.store.url(emergencyId),
+            url ?? emergenciaRoutes.vitals.store.url(emergencyId),
             {
                 presion_arterial: values.presion_arterial.trim(),
                 frecuencia_cardiaca: n(values.frecuencia_cardiaca),

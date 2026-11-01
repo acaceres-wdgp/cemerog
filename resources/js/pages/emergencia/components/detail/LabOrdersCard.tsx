@@ -11,21 +11,23 @@ import type {
     LabCatalogItem,
     LabOrderSummary,
 } from '@/components/lab/types';
-import * as estudios from '@/routes/emergencia/estudios';
 import * as imgOrders from '@/routes/img/orders';
-import type { EmergencyDetail } from '../../types';
 import { cardCls, headCls, secondaryBtn, titleCls } from './card';
 
 /** Laboratorio e imágenes: orders of this attention and their status */
 export default function LabOrdersCard({
-    emergency,
+    subtitle,
+    orderUrl,
     orders,
     catalog,
     imagingCatalog = [],
     imagingOrders = [],
     active,
 }: {
-    emergency: EmergencyDetail;
+    /** «Paciente · número» shown in «Ordenar estudios» */
+    subtitle: string;
+    /** Where «Ordenar estudios» posts (Emergencia or Internamiento) */
+    orderUrl: string;
     orders: LabOrderSummary[];
     catalog: LabCatalogItem[];
     imagingCatalog?: ImagingCatalogItem[];
@@ -110,10 +112,10 @@ export default function LabOrdersCard({
                 <OrderStudiesDialog
                     open={ordering}
                     onOpenChange={setOrdering}
-                    subtitle={`${emergency.patient.full_name} · ${emergency.number}`}
+                    subtitle={subtitle}
                     catalog={catalog}
                     imagingCatalog={imagingCatalog}
-                    url={estudios.store.url(emergency.id)}
+                    url={orderUrl}
                 />
             )}
             {cancellingImg && (
