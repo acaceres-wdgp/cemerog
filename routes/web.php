@@ -37,6 +37,7 @@ use App\Http\Controllers\Modules\RegistroController;
 use App\Http\Controllers\Modules\StudyCategoryController;
 use App\Http\Controllers\Modules\StudyOrderController;
 use App\Http\Controllers\Modules\SupplierController;
+use App\Http\Controllers\Modules\SurgeryCatalogController;
 use App\Http\Controllers\Modules\TableroController;
 use App\Http\Controllers\Modules\TemaController;
 use App\Http\Controllers\Modules\TurnosController;
@@ -156,9 +157,14 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/camas/{bed}/lista', [InternamientoController::class, 'bedReady'])->name('internamiento.beds.ready');
     });
 
-    Route::get('/cirugia', [CirugiaController::class, 'index'])
-        ->middleware('permission:module.cirugia.access')
-        ->name('cirugia');
+    Route::prefix('/cirugia')->middleware('permission:module.cirugia.access')->group(function () {
+        Route::get('/', [CirugiaController::class, 'index'])->name('cirugia');
+        Route::get('/pacientes/buscar', [PacientesController::class, 'search'])->name('cirugia.pacientes.buscar');
+        Route::post('/', [CirugiaController::class, 'store'])->name('cirugia.store');
+        Route::put('/{surgery}', [CirugiaController::class, 'reschedule'])->name('cirugia.reschedule');
+        Route::post('/{surgery}/cancelar', [CirugiaController::class, 'cancel'])->name('cirugia.cancel');
+        Route::post('/{surgery}/avanzar', [CirugiaController::class, 'advance'])->name('cirugia.advance');
+    });
 
     // Servicios
     Route::prefix('/laboratorio')->middleware('permission:module.lab.access')->group(function () {
@@ -245,6 +251,14 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
     });
 
     // Administracion
+    Route::prefix('/admin/cirugias')->middleware('permission:module.admin.access')->group(function () {
+        Route::get('/', [SurgeryCatalogController::class, 'index'])->name('admin.cirugias');
+        Route::post('/', [SurgeryCatalogController::class, 'storeProcedure'])->name('admin.cirugias.store');
+        Route::put('/{procedure}', [SurgeryCatalogController::class, 'updateProcedure'])->name('admin.cirugias.update');
+        Route::post('/quirofanos', [SurgeryCatalogController::class, 'storeRoom'])->name('admin.cirugias.rooms.store');
+        Route::put('/quirofanos/{room}', [SurgeryCatalogController::class, 'updateRoom'])->name('admin.cirugias.rooms.update');
+    });
+
     Route::prefix('/admin/emergencia')->middleware('permission:module.admin.access')->group(function () {
         Route::get('/', [EmergencyConfigController::class, 'index'])->name('admin.emergencia');
         Route::put('/cargo', [EmergencyConfigController::class, 'updateFee'])->name('admin.emergencia.fee');

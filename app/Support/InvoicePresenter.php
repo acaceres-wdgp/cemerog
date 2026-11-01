@@ -20,6 +20,7 @@ class InvoicePresenter
         'laboratorio' => 'Laboratorio',
         'imagen' => 'Imágenes',
         'habitacion' => 'Habitación',
+        'cirugia' => 'Cirugía',
         'medicamento' => 'Farmacia',
         'procedimiento' => 'Procedimiento',
         'otro' => 'Otro',

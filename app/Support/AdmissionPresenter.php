@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Actions\Internamiento\RoomCharges;
+use App\Http\Requests\SurgeryRequest;
 use App\Models\AccountCharge;
 use App\Models\Admission;
 use App\Models\AdmissionNote;
@@ -10,6 +11,7 @@ use App\Models\AdmissionStay;
 use App\Models\Bed;
 use App\Models\Doctor;
 use App\Models\Room;
+use App\Models\Surgery;
 use App\Models\User;
 
 /** Internamiento data for the pages */
@@ -43,7 +45,7 @@ class AdmissionPresenter
     /**
      * What the admission dialog needs: free beds and doctors.
      *
-     * @return array{beds: list<array<string, mixed>>, doctors: list<array<string, mixed>>, default_doctor_id: int|null}
+     * @return array{beds: list<array<string, mixed>>, doctors: list<array<string, mixed>>, default_doctor_id: int|null, surgery: array<string, mixed>|null}
      */
     public function options(?User $user): array
     {
@@ -59,6 +61,8 @@ class AdmissionPresenter
             'doctors' => Doctor::with('specialty')->where('is_active', true)->orderBy('name')->get()
                 ->map(fn (Doctor $d): array => ['id' => $d->id, 'name' => $d->name, 'specialty' => $d->specialty->name])->values()->all(),
             'default_doctor_id' => $user?->doctor?->is_active ? $user->doctor->id : null,
+            // «Ingreso para cirugía», for whoever can schedule surgeries
+            'surgery' => $user !== null && SurgeryRequest::canSchedule($user) ? app(SurgeryPresenter::class)->options() : null,
         ];
     }
 
@@ -169,6 +173,8 @@ class AdmissionPresenter
             'day' => $a->dayNumber(),
             'doctor' => $a->doctor->name,
             'admitted_at' => $a->admitted_at->format('d/m/Y H:i'),
+            // «Internado por cirugía» while a surgery is pending
+            'for_surgery' => Surgery::pending()->where('admission_id', $a->id)->exists(),
         ];
     }
 }

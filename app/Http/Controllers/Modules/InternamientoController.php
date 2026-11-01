@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Modules;
 
+use App\Actions\Cirugia\ScheduleSurgery;
 use App\Actions\Internamiento\AdmitPatient;
 use App\Actions\Internamiento\MoveAdmission;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AdmitPatientRequest;
+use App\Http\Requests\SurgeryRequest;
 use App\Models\Admission;
 use App\Models\Bed;
 use App\Models\Emergency;
@@ -14,8 +16,10 @@ use App\Models\Turn;
 use App\Models\User;
 use App\Support\AdmissionPresenter;
 use App\Support\Toast;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -36,7 +40,7 @@ class InternamientoController extends Controller
         ]);
     }
 
-    public function admit(AdmitPatientRequest $request, AdmitPatient $action): RedirectResponse
+    public function admit(AdmitPatientRequest $request, AdmitPatient $action, ScheduleSurgery $schedule): RedirectResponse
     {
         /** @var User $user */
         $user = $request->user();
@@ -47,12 +51,34 @@ class InternamientoController extends Controller
             throw ValidationException::withMessages(['patient_id' => 'La atención no corresponde a este paciente.']);
         }
 
-        $admission = $action->handle($patient, [
-            'bed_id' => $request->integer('bed_id'),
-            'doctor_id' => $request->integer('doctor_id'),
-            'diagnosis' => (string) $request->validated('diagnosis'),
-            'treatment' => $request->validated('treatment'),
-        ], $user, $emergency, $turn);
+        /** @var array<string, mixed>|null $surgery */
+        $surgery = $request->validated('surgery');
+        if ($surgery !== null && ! SurgeryRequest::canSchedule($user)) {
+            abort(403);
+        }
+
+        [$admission, $scheduled] = DB::transaction(function () use ($action, $schedule, $patient, $request, $user, $emergency, $turn, $surgery): array {
+            $admission = $action->handle($patient, [
+                'bed_id' => $request->integer('bed_id'),
+                'doctor_id' => $request->integer('doctor_id'),
+                'diagnosis' => (string) $request->validated('diagnosis'),
+                'treatment' => $request->validated('treatment'),
+            ], $user, $emergency, $turn);
+
+            $scheduled = null;
+            if ($surgery !== null) {
+                $startsAt = CarbonImmutable::createFromFormat('Y-m-d H:i', $surgery['date'].' '.$surgery['time']);
+                $scheduled = $schedule->handle($patient, $surgery, $startsAt, $startsAt->addMinutes((int) $surgery['duration_minutes']), $user);
+            }
+
+            return [$admission, $scheduled];
+        });
+
+        if ($scheduled !== null) {
+            Toast::success("{$patient->full_name} ingresado en {$admission->bed?->label()}. {$scheduled->procedure_name} programada para el {$scheduled->starts_at->format('d/m/Y H:i')}.");
+
+            return redirect()->route('cirugia', ['semana' => $scheduled->starts_at->toDateString(), 'cirugia' => $scheduled->id]);
+        }
 
         Toast::success("{$patient->full_name} internado en {$admission->bed?->label()}. Estado: Internado.");
 

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /** Ingreso a internamiento (from Emergencia, Consulta or the bed map) */
 class AdmitPatientRequest extends FormRequest
@@ -23,6 +24,15 @@ class AdmitPatientRequest extends FormRequest
             'doctor_id' => ['required', 'integer', 'exists:doctors,id'],
             'diagnosis' => ['required', 'string', 'max:255'],
             'treatment' => ['nullable', 'string', 'max:5000'],
+            // «Ingreso para cirugía»: admit and schedule in one step
+            'surgery' => ['nullable', 'array'],
+            'surgery.surgery_procedure_id' => ['required_with:surgery', 'integer', Rule::exists('surgery_procedures', 'id')->where('is_active', true)],
+            'surgery.surgeon_id' => ['required_with:surgery', 'integer', 'exists:doctors,id'],
+            'surgery.anesthetist_id' => ['nullable', 'integer', 'exists:doctors,id', 'different:surgery.surgeon_id'],
+            'surgery.operating_room_id' => ['required_with:surgery', 'integer', 'exists:operating_rooms,id'],
+            'surgery.date' => ['required_with:surgery', 'date_format:Y-m-d'],
+            'surgery.time' => ['required_with:surgery', 'date_format:H:i'],
+            'surgery.duration_minutes' => ['required_with:surgery', 'integer', 'min:15', 'max:720'],
         ];
     }
 
@@ -34,6 +44,8 @@ class AdmitPatientRequest extends FormRequest
             'bed_id.required' => 'Elige una cama libre.',
             'doctor_id.required' => 'Elige el médico tratante.',
             'diagnosis.required' => 'Indica el diagnóstico de ingreso.',
+            'surgery.surgery_procedure_id.required_with' => 'Elige el procedimiento.',
+            'surgery.surgeon_id.required_with' => 'Elige el cirujano.',
         ];
     }
 }
