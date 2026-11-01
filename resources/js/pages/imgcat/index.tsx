@@ -1,5 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { Pencil, Plus, Search } from 'lucide-react';
+import { Pencil, Plus, Search, Tags } from 'lucide-react';
+import CategoriesDialog from '@/components/catalog/CategoriesDialog';
+import type { CategoryItem } from '@/components/catalog/CategoriesDialog';
+import * as cats from '@/routes/imgcat/modalidades';
 import SegmentedControl from '@/components/cemerog/SegmentedControl';
 import { formatMoney } from '@/lib/money';
 import { cn } from '@/lib/utils';
@@ -15,11 +18,14 @@ export default function ImgcatIndex({
     studies = [],
     modalities = [],
     next_code = 'I-01',
+    modality_items = [],
 }: {
     studies?: ImagingStudyRow[];
     modalities?: string[];
     next_code?: string;
+    modality_items?: CategoryItem[];
 }) {
+    const [managing, setManaging] = useState(false);
     const [modality, setModality] = useState('todas');
     const [query, setQuery] = useState('');
     const [editing, setEditing] = useState<ImagingStudyRow | 'new' | null>(
@@ -73,14 +79,24 @@ export default function ImgcatIndex({
                         onChange={setModality}
                     />
                 </div>
-                <button
-                    type="button"
-                    onClick={() => setEditing('new')}
-                    className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] bg-primary px-[14px] font-medium text-white hover:bg-primary-hover"
-                >
-                    <Plus className="h-4 w-4" />
-                    Nuevo estudio
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setManaging(true)}
+                        className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-medium text-text-body hover:bg-accent-bg"
+                    >
+                        <Tags className="h-4 w-4" />
+                        Modalidades
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setEditing('new')}
+                        className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] bg-primary px-[14px] font-medium text-white hover:bg-primary-hover"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Nuevo estudio
+                    </button>
+                </div>
             </div>
             <section className="overflow-x-auto rounded-[14px] border border-card-border bg-white">
                 <table className="w-full min-w-[820px] border-collapse text-[14px]">
@@ -157,6 +173,20 @@ export default function ImgcatIndex({
                 estudios. Al desactivar uno, deja de ofrecerse pero se conserva
                 en los informes históricos.
             </p>
+            <CategoriesDialog
+                open={managing}
+                onOpenChange={setManaging}
+                title="Modalidades de imágenes"
+                description="Ordenan el catálogo y el diálogo de «Ordenar estudios». Al renombrar una, sus estudios la siguen."
+                placeholder="Ej.: Resonancia"
+                items={modality_items}
+                routes={{
+                    store: cats.store.url(),
+                    update: (id) => cats.update.url(id),
+                    move: (id) => cats.move.url(id),
+                    destroy: (id) => cats.destroy.url(id),
+                }}
+            />
             {editing && (
                 <ImagingStudyDialog
                     study={editing === 'new' ? null : editing}

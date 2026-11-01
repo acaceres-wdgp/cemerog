@@ -9,7 +9,7 @@ const { mockPost, mockPut } = vi.hoisted(() => ({
 
 vi.mock('@inertiajs/react', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@inertiajs/react')>()),
-    router: { post: mockPost, put: mockPut, get: vi.fn() },
+    router: { post: mockPost, put: mockPut, get: vi.fn(), delete: vi.fn() },
     usePage: () => ({ props: { errors: {} } }),
 }));
 
@@ -126,5 +126,80 @@ describe('Catálogo de imágenes', () => {
             expect.objectContaining({ price: 150000, is_active: false }),
             expect.anything(),
         );
+    });
+});
+
+describe('Modalidades del catálogo', () => {
+    const items = [
+        { id: 1, name: 'Radiografía', count: 1 },
+        { id: 2, name: 'Sonografía', count: 1 },
+        { id: 3, name: 'Tomografía', count: 0 },
+    ];
+    const open = () => {
+        render(
+            <ImgcatIndex
+                studies={studies}
+                modalities={modalities}
+                modality_items={items}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: /Modalidades/ }));
+        return screen.getByRole('dialog');
+    };
+
+    it('adds, renames and reorders modalities', () => {
+        const dialog = open();
+
+        fireEvent.change(within(dialog).getByLabelText('Nueva'), {
+            target: { value: 'Resonancia' },
+        });
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: /Agregar/ }),
+        );
+        expect(mockPost).toHaveBeenCalledWith(
+            '/admin/imagenes-catalogo/modalidades',
+            { name: 'Resonancia' },
+            expect.anything(),
+        );
+
+        fireEvent.change(
+            within(dialog).getByLabelText('Nombre de Sonografía'),
+            {
+                target: { value: 'Ultrasonido' },
+            },
+        );
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Guardar Sonografía' }),
+        );
+        expect(mockPut).toHaveBeenCalledWith(
+            '/admin/imagenes-catalogo/modalidades/2',
+            { name: 'Ultrasonido' },
+            expect.anything(),
+        );
+
+        expect(
+            within(dialog).getByRole('button', { name: 'Subir Radiografía' }),
+        ).toBeDisabled();
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Subir Tomografía' }),
+        );
+        expect(mockPost).toHaveBeenCalledWith(
+            '/admin/imagenes-catalogo/modalidades/3/mover',
+            { direction: 'up' },
+            expect.anything(),
+        );
+    });
+
+    it('only modalities without studies can be deleted', () => {
+        const dialog = open();
+
+        expect(
+            within(dialog).getByRole('button', {
+                name: 'Eliminar Radiografía',
+            }),
+        ).toBeDisabled();
+        expect(
+            within(dialog).getByRole('button', { name: 'Eliminar Tomografía' }),
+        ).not.toBeDisabled();
     });
 });

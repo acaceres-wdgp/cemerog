@@ -1,5 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { Pencil, Plus, Search } from 'lucide-react';
+import { Pencil, Plus, Search, Tags } from 'lucide-react';
+import CategoriesDialog from '@/components/catalog/CategoriesDialog';
+import type { CategoryItem } from '@/components/catalog/CategoriesDialog';
+import * as cats from '@/routes/analisis/categorias';
 import SegmentedControl from '@/components/cemerog/SegmentedControl';
 import { formatMoney } from '@/lib/money';
 import { cn } from '@/lib/utils';
@@ -14,10 +17,13 @@ const td = 'border-b border-divider p-3 align-middle';
 export default function AnalisisIndex({
     tests = [],
     categories = [],
+    category_items = [],
 }: {
     tests?: LabTestRow[];
     categories?: string[];
+    category_items?: CategoryItem[];
 }) {
+    const [managing, setManaging] = useState(false);
     const [category, setCategory] = useState('todas');
     const [query, setQuery] = useState('');
     const [editing, setEditing] = useState<LabTestRow | 'new' | null>(null);
@@ -64,14 +70,24 @@ export default function AnalisisIndex({
                         onChange={setCategory}
                     />
                 </div>
-                <button
-                    type="button"
-                    onClick={() => setEditing('new')}
-                    className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] bg-primary px-[14px] font-medium text-white hover:bg-primary-hover"
-                >
-                    <Plus className="h-4 w-4" />
-                    Nuevo análisis
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setManaging(true)}
+                        className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-medium text-text-body hover:bg-accent-bg"
+                    >
+                        <Tags className="h-4 w-4" />
+                        Categorías
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setEditing('new')}
+                        className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] bg-primary px-[14px] font-medium text-white hover:bg-primary-hover"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Nuevo análisis
+                    </button>
+                </div>
             </div>
             <section className="overflow-x-auto rounded-[14px] border border-card-border bg-white">
                 <table className="w-full min-w-[960px] border-collapse text-[14px]">
@@ -155,6 +171,20 @@ export default function AnalisisIndex({
                 Emergencia. Al desactivar uno, deja de ofrecerse pero se
                 conserva en los resultados históricos.
             </p>
+            <CategoriesDialog
+                open={managing}
+                onOpenChange={setManaging}
+                title="Categorías de laboratorio"
+                description="Ordenan el catálogo y el diálogo de «Ordenar estudios». Al renombrar una, sus análisis la siguen."
+                placeholder="Ej.: Inmunología"
+                items={category_items}
+                routes={{
+                    store: cats.store.url(),
+                    update: (id) => cats.update.url(id),
+                    move: (id) => cats.move.url(id),
+                    destroy: (id) => cats.destroy.url(id),
+                }}
+            />
             {editing && (
                 <LabTestDialog
                     test={editing === 'new' ? null : editing}

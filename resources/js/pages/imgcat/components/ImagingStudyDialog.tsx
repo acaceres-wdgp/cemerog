@@ -22,7 +22,7 @@ export default function ImagingStudyDialog({
     const [form, setForm] = useState({
         code: study?.code ?? nextCode,
         name: study?.name ?? '',
-        modality: study?.modality ?? 'Sonografía',
+        modality: study?.modality ?? modalities[0] ?? '',
         preparation: study?.preparation ?? '',
         price: study ? (study.price / 100).toFixed(2) : '',
         is_active: study?.is_active ?? true,

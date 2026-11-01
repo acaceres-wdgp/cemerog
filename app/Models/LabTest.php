@@ -20,8 +20,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class LabTest extends Model
 {
-    public const CATEGORIES = ['Hematología', 'Química', 'Serología', 'Uroanálisis'];
-
     protected $fillable = ['code', 'name', 'category', 'preparation', 'price', 'is_active'];
 
     protected function casts(): array

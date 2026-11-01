@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LabTestRequest;
 use App\Models\LabTest;
 use App\Models\LabTestParameter;
+use App\Models\StudyCategory;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -37,7 +38,8 @@ class AnalisisController extends Controller
                         'reference' => $p->referenceText(),
                     ])->all(),
                 ])->all(),
-            'categories' => LabTest::CATEGORIES,
+            'categories' => StudyCategory::names('laboratorio'),
+            'category_items' => StudyCategoryController::items('laboratorio'),
         ]);
     }
 
