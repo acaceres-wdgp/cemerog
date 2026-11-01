@@ -26,10 +26,11 @@ class AdmitToEmergency
 
     /**
      * @param  array<string, mixed>|null  $newPatient  minimal data when the patient is not registered
+     * @param  int|null  $turnId  the consulta the patient comes from («Pasar a emergencia»)
      */
-    public function handle(?Patient $patient, ?array $newPatient, int $cubicleId, int $doctorId, string $reason, User $user): Emergency
+    public function handle(?Patient $patient, ?array $newPatient, int $cubicleId, int $doctorId, string $reason, User $user, ?int $turnId = null): Emergency
     {
-        return DB::transaction(function () use ($patient, $newPatient, $cubicleId, $doctorId, $reason, $user): Emergency {
+        return DB::transaction(function () use ($patient, $newPatient, $cubicleId, $doctorId, $reason, $user, $turnId): Emergency {
             $cubicle = EmergencyCubicle::whereKey($cubicleId)->lockForUpdate()->first();
             if ($cubicle === null || ! $cubicle->is_active || Emergency::where('occupied_cubicle_id', $cubicleId)->exists()) {
                 throw ValidationException::withMessages(['cubicle_id' => 'Ese cubículo no está libre. Elige otro.']);
@@ -44,6 +45,7 @@ class AdmitToEmergency
 
             $emergency = Emergency::create([
                 'patient_id' => $patient->id,
+                'turn_id' => $turnId,
                 'doctor_id' => $doctorId,
                 'account_id' => $account->id,
                 'cubicle_id' => $cubicle->id,
