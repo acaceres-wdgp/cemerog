@@ -26,6 +26,7 @@ use App\Http\Controllers\Modules\InicioController;
 use App\Http\Controllers\Modules\InternamientoController;
 use App\Http\Controllers\Modules\InvoiceController;
 use App\Http\Controllers\Modules\LabController;
+use App\Http\Controllers\Modules\LabOrderController;
 use App\Http\Controllers\Modules\PacientesController;
 use App\Http\Controllers\Modules\PaymentController;
 use App\Http\Controllers\Modules\PreciosController;
@@ -115,6 +116,7 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::get('/', [ConsultaController::class, 'index'])->name('consulta');
         Route::post('/', [ConsultaController::class, 'store'])->name('consulta.store');
         Route::post('/turnos/{turn}/alta', [ConsultaController::class, 'discharge'])->name('consulta.discharge');
+        Route::post('/turnos/{turn}/laboratorio', [LabOrderController::class, 'storeFromTurn'])->name('consulta.lab.store');
         Route::patch('/antecedentes/{patient}', [ConsultaController::class, 'updateAntecedents'])->name('consulta.antecedentes');
         // Prescriptions
         Route::post('/turnos/{turn}/receta', [PrescriptionController::class, 'store'])->name('consulta.receta.store');
@@ -131,6 +133,7 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/{emergency}/signos-vitales', [EmergencyCareController::class, 'storeVitals'])->name('emergencia.vitals.store');
         Route::post('/{emergency}/aplicaciones', [EmergencyCareController::class, 'storeApplication'])->name('emergencia.applications.store');
         Route::post('/{emergency}/alta', [EmergencyCareController::class, 'discharge'])->name('emergencia.discharge');
+        Route::post('/{emergency}/laboratorio', [LabOrderController::class, 'storeFromEmergency'])->name('emergencia.lab.store');
         Route::patch('/{emergency}/cubiculo', [EmergencyCareController::class, 'moveCubicle'])->name('emergencia.cubicle');
     });
 
@@ -189,6 +192,9 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
     Route::get('/cuadre-de-caja/turnos/{shift}/reporte', [CuadreController::class, 'report'])
         ->middleware('permission:module.cuadre.access')
         ->name('cuadre.report');
+
+    // Laboratorio: cancel an order (Consulta, Emergencia or Laboratorio)
+    Route::post('/laboratorio/ordenes/{order}/cancelar', [LabOrderController::class, 'cancel'])->name('lab.orders.cancel');
 
     // Inventario
     Route::prefix('/almacen')->middleware('permission:module.almacen.access')->group(function () {

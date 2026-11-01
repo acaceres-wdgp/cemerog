@@ -10,10 +10,12 @@ use App\Http\Requests\EmergencyApplicationRequest;
 use App\Models\Doctor;
 use App\Models\Emergency;
 use App\Models\EmergencyCubicle;
+use App\Models\LabOrder;
 use App\Models\Patient;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\EmergencyPresenter;
+use App\Support\LabPresenter;
 use App\Support\Toast;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -34,7 +36,7 @@ class EmergenciaController extends Controller
         ]);
     }
 
-    public function show(Request $request, Emergency $emergency, EmergencyPresenter $presenter): Response
+    public function show(Request $request, Emergency $emergency, EmergencyPresenter $presenter, LabPresenter $lab): Response
     {
         /** @var User $user */
         $user = $request->user();
@@ -46,6 +48,9 @@ class EmergenciaController extends Controller
             'applications' => $presenter->applications($emergency),
             'catalog' => $emergency->isActive() ? $presenter->catalog() : [],
             'routes' => EmergencyApplicationRequest::ROUTES,
+            'lab_orders' => LabOrder::with('items')->where('emergency_id', $emergency->id)->latest('id')->get()
+                ->map(fn (LabOrder $o): array => $lab->summary($o))->values()->all(),
+            'lab_catalog' => $emergency->isActive() ? $lab->catalog() : [],
             'can_discharge' => $emergency->isActive() && Emergency::canBeDischargedBy($user),
             'free_cubicles' => EmergencyCubicle::active()->whereNotIn('id', $occupied)->get()
                 ->map(fn (EmergencyCubicle $c): array => ['id' => $c->id, 'name' => $c->name])->values()->all(),

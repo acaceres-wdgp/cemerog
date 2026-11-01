@@ -17,6 +17,7 @@ use App\Models\PatientAntecedent;
 use App\Models\Prescription;
 use App\Models\Turn;
 use App\Models\User;
+use App\Support\LabPresenter;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -87,6 +88,7 @@ class ConsultaController extends Controller
 
         return Inertia::render('consulta/index', [
             'can_attend' => true,
+            'lab_catalog' => fn () => app(LabPresenter::class)->catalog(),
             'turns_en_consulta' => $turnsEnConsulta,
             'turns_en_espera' => $turnsEnEspera,
             'historial' => $historial,
