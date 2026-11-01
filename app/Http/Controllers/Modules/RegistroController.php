@@ -195,6 +195,8 @@ class RegistroController extends Controller
     {
         return array_merge($patient->toArray(), [
             'full_name' => $patient->full_name,
+            // The date input needs «Y-m-d», not the ISO (UTC) of toArray()
+            'birth_date' => $patient->birth_date?->format('Y-m-d'),
             'initials' => $patient->initials,
             'age' => $patient->age,
             'expediente_number' => $patient->expediente_number,

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Patient;
 use App\Models\User;
 
 beforeEach(function () {
@@ -96,4 +97,18 @@ test('GET /registro sin params las props prefill son cadenas vacías', function 
             ->where('prefillDocumentNumber', '')
             ->where('prefillFirstNames', ''),
     );
+});
+
+// The date input needs «Y-m-d»; the model serializes dates as ISO in UTC
+test('the existing patient comes with the birth date ready for the date input', function () {
+    $patient = Patient::factory()->create(['birth_date' => '1975-07-20']);
+    $this->secretaria->givePermissionTo('module.pacientes.access');
+
+    $this->actingAs($this->secretaria)
+        ->get("/registro?paciente={$patient->id}")
+        ->assertInertia(fn ($page) => $page->where('patient.birth_date', '1975-07-20'));
+
+    $this->actingAs($this->secretaria)
+        ->get("/registro/pacientes/{$patient->id}/editar")
+        ->assertInertia(fn ($page) => $page->where('patient.birth_date', '1975-07-20'));
 });
