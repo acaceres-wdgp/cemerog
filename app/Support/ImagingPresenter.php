@@ -6,6 +6,7 @@ use App\Models\ImagingAttachment;
 use App\Models\ImagingOrder;
 use App\Models\ImagingStudy;
 use App\Models\Patient;
+use App\Models\StudyCategory;
 
 /** Imaging data for the pages */
 class ImagingPresenter
@@ -19,7 +20,7 @@ class ImagingPresenter
      */
     public function catalog(): array
     {
-        $order = array_flip(ImagingStudy::MODALITIES);
+        $order = array_flip(StudyCategory::names('imagen'));
 
         return ImagingStudy::where('is_active', true)->orderBy('code')->get()
             ->sortBy(fn (ImagingStudy $s): int => $order[$s->modality] ?? 99)

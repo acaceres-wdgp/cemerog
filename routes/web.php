@@ -33,6 +33,7 @@ use App\Http\Controllers\Modules\PaymentController;
 use App\Http\Controllers\Modules\PreciosController;
 use App\Http\Controllers\Modules\PrescriptionController;
 use App\Http\Controllers\Modules\RegistroController;
+use App\Http\Controllers\Modules\StudyCategoryController;
 use App\Http\Controllers\Modules\StudyOrderController;
 use App\Http\Controllers\Modules\SupplierController;
 use App\Http\Controllers\Modules\TableroController;
@@ -262,12 +263,20 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::get('/', [AnalisisController::class, 'index'])->name('analisis');
         Route::post('/', [AnalisisController::class, 'store'])->name('analisis.store');
         Route::put('/{test}', [AnalisisController::class, 'update'])->name('analisis.update');
+        Route::post('/categorias', [StudyCategoryController::class, 'store'])->defaults('kind', 'laboratorio')->name('analisis.categorias.store');
+        Route::put('/categorias/{category}', [StudyCategoryController::class, 'update'])->defaults('kind', 'laboratorio')->name('analisis.categorias.update');
+        Route::post('/categorias/{category}/mover', [StudyCategoryController::class, 'move'])->defaults('kind', 'laboratorio')->name('analisis.categorias.move');
+        Route::delete('/categorias/{category}', [StudyCategoryController::class, 'destroy'])->defaults('kind', 'laboratorio')->name('analisis.categorias.destroy');
     });
 
     Route::prefix('/admin/imagenes-catalogo')->middleware('permission:module.imgcat.access')->group(function () {
         Route::get('/', [ImgcatController::class, 'index'])->name('imgcat');
         Route::post('/', [ImgcatController::class, 'store'])->name('imgcat.store');
         Route::put('/{study}', [ImgcatController::class, 'update'])->name('imgcat.update');
+        Route::post('/modalidades', [StudyCategoryController::class, 'store'])->defaults('kind', 'imagen')->name('imgcat.modalidades.store');
+        Route::put('/modalidades/{category}', [StudyCategoryController::class, 'update'])->defaults('kind', 'imagen')->name('imgcat.modalidades.update');
+        Route::post('/modalidades/{category}/mover', [StudyCategoryController::class, 'move'])->defaults('kind', 'imagen')->name('imgcat.modalidades.move');
+        Route::delete('/modalidades/{category}', [StudyCategoryController::class, 'destroy'])->defaults('kind', 'imagen')->name('imgcat.modalidades.destroy');
     });
 
     Route::get('/admin/precios', [PreciosController::class, 'index'])

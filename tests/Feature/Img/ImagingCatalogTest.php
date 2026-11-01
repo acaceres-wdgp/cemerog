@@ -35,7 +35,7 @@ test('the catalog lists the studies with modalities and suggests the next code',
             ->has('studies', 5)
             ->where('studies.0.code', 'I-01')
             ->where('studies.0.price', 80000)
-            ->where('modalities', ImagingStudy::MODALITIES)
+            ->where('modalities', ['Radiografía', 'Sonografía', 'Tomografía', 'Mamografía', 'Otro'])
             ->where('next_code', 'I-06')
         );
 });

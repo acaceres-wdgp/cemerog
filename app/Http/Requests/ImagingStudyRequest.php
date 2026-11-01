@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\ImagingStudy;
+use App\Models\StudyCategory;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,7 +23,7 @@ class ImagingStudyRequest extends FormRequest
         return [
             'code' => ['required', 'string', 'max:20', Rule::unique('imaging_studies', 'code')->ignore($study?->id)],
             'name' => ['required', 'string', 'max:150'],
-            'modality' => ['required', Rule::in(ImagingStudy::MODALITIES)],
+            'modality' => ['required', Rule::in(StudyCategory::names('imagen'))],
             'preparation' => ['nullable', 'string', 'max:500'],
             'price' => ['required', 'integer', 'min:0', 'max:100000000'],
             'is_active' => ['sometimes', 'boolean'],

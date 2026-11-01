@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\LabTest;
+use App\Models\StudyCategory;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,7 +23,7 @@ class LabTestRequest extends FormRequest
         return [
             'code' => ['required', 'string', 'max:20', Rule::unique('lab_tests', 'code')->ignore($test?->id)],
             'name' => ['required', 'string', 'max:150'],
-            'category' => ['required', Rule::in(LabTest::CATEGORIES)],
+            'category' => ['required', Rule::in(StudyCategory::names('laboratorio'))],
             'preparation' => ['nullable', 'string', 'max:500'],
             'price' => ['required', 'integer', 'min:0', 'max:100000000'],
             'is_active' => ['sometimes', 'boolean'],

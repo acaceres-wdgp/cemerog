@@ -17,8 +17,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ImagingStudy extends Model
 {
-    public const MODALITIES = ['Radiografía', 'Sonografía', 'Tomografía', 'Mamografía', 'Otro'];
-
     protected $fillable = ['code', 'name', 'modality', 'preparation', 'price', 'is_active'];
 
     protected function casts(): array

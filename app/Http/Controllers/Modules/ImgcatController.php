@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Modules;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ImagingStudyRequest;
 use App\Models\ImagingStudy;
+use App\Models\StudyCategory;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -26,7 +27,8 @@ class ImgcatController extends Controller
                     'price' => $s->price,
                     'is_active' => $s->is_active,
                 ])->all(),
-            'modalities' => ImagingStudy::MODALITIES,
+            'modalities' => StudyCategory::names('imagen'),
+            'modality_items' => StudyCategoryController::items('imagen'),
             // Suggested code for a new study: I-06 after I-05
             'next_code' => sprintf('I-%02d', ImagingStudy::pluck('code')
                 ->map(fn (string $c): int => (int) preg_replace('/\D/', '', $c))

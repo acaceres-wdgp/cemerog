@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\LabOrder;
 use App\Models\LabOrderItem;
 use App\Models\LabTest;
+use App\Models\StudyCategory;
 use App\Models\User;
 
 /** Shapes the lab catalog and orders for Consulta, Emergencia and Laboratorio */
@@ -17,7 +18,7 @@ class LabPresenter
      */
     public function catalog(): array
     {
-        $order = array_flip(LabTest::CATEGORIES);
+        $order = array_flip(StudyCategory::names('laboratorio'));
 
         return LabTest::where('is_active', true)->orderBy('name')->get()
             ->sortBy(fn (LabTest $t): int => $order[$t->category] ?? 99)
@@ -144,7 +145,7 @@ class LabPresenter
                 ];
             }
         }
-        $order_ = array_flip(LabTest::CATEGORIES);
+        $order_ = array_flip(StudyCategory::names('laboratorio'));
         uksort($byCategory, fn (string $a, string $b): int => ($order_[$a] ?? 99) <=> ($order_[$b] ?? 99));
 
         return [
