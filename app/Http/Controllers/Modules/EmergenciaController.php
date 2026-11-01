@@ -15,6 +15,7 @@ use App\Models\Patient;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\EmergencyPresenter;
+use App\Support\ImagingPresenter;
 use App\Support\LabPresenter;
 use App\Support\Toast;
 use Illuminate\Http\JsonResponse;
@@ -51,6 +52,7 @@ class EmergenciaController extends Controller
             'lab_orders' => LabOrder::with('items')->where('emergency_id', $emergency->id)->latest('id')->get()
                 ->map(fn (LabOrder $o): array => $lab->withResults($o))->values()->all(),
             'lab_catalog' => $emergency->isActive() ? $lab->catalog() : [],
+            'imaging_catalog' => $emergency->isActive() ? app(ImagingPresenter::class)->catalog() : [],
             'can_discharge' => $emergency->isActive() && Emergency::canBeDischargedBy($user),
             'free_cubicles' => EmergencyCubicle::active()->whereNotIn('id', $occupied)->get()
                 ->map(fn (EmergencyCubicle $c): array => ['id' => $c->id, 'name' => $c->name])->values()->all(),

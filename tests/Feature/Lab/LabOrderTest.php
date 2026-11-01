@@ -45,7 +45,7 @@ test('the doctor orders analyses from consulta; nothing is charged yet', functio
     $turn = consultTurn($this->doctor, $this->patient);
 
     $this->actingAs($this->medico)
-        ->post("/consulta/turnos/{$turn->id}/laboratorio", [
+        ->post("/consulta/turnos/{$turn->id}/estudios", [
             'lab_test_ids' => [$this->hemograma->id, $this->glucosa->id],
             'indication' => 'Fiebre de 3 días.',
         ])
@@ -72,7 +72,7 @@ test('only the doctor of the turn orders from consulta', function () {
     Doctor::factory()->create(['user_id' => $other->id, 'specialty_id' => $this->doctor->specialty_id, 'is_active' => true]);
 
     $this->actingAs($other)
-        ->post("/consulta/turnos/{$turn->id}/laboratorio", ['lab_test_ids' => [$this->glucosa->id]])
+        ->post("/consulta/turnos/{$turn->id}/estudios", ['lab_test_ids' => [$this->glucosa->id]])
         ->assertForbidden();
 });
 
@@ -86,7 +86,7 @@ test('an order is made in emergency for the emergency doctor', function () {
     $emergency = Emergency::first();
 
     $this->actingAs($this->enfermera)
-        ->post("/emergencia/{$emergency->id}/laboratorio", ['lab_test_ids' => [$this->hemograma->id]])
+        ->post("/emergencia/{$emergency->id}/estudios", ['lab_test_ids' => [$this->hemograma->id]])
         ->assertSessionHasNoErrors();
 
     $order = LabOrder::first();
@@ -110,16 +110,16 @@ test('an order needs at least one active analysis', function () {
     $this->glucosa->update(['is_active' => false]);
 
     $this->actingAs($this->medico)
-        ->post("/consulta/turnos/{$turn->id}/laboratorio", ['lab_test_ids' => []])
+        ->post("/consulta/turnos/{$turn->id}/estudios", ['lab_test_ids' => []])
         ->assertSessionHasErrors(['lab_test_ids']);
     $this->actingAs($this->medico)
-        ->post("/consulta/turnos/{$turn->id}/laboratorio", ['lab_test_ids' => [$this->glucosa->id]])
+        ->post("/consulta/turnos/{$turn->id}/estudios", ['lab_test_ids' => [$this->glucosa->id]])
         ->assertSessionHasErrors(['lab_test_ids.0']);
 });
 
 test('an order not started can be cancelled with a reason (e.g. done elsewhere)', function () {
     $turn = consultTurn($this->doctor, $this->patient);
-    $this->actingAs($this->medico)->post("/consulta/turnos/{$turn->id}/laboratorio", ['lab_test_ids' => [$this->glucosa->id]]);
+    $this->actingAs($this->medico)->post("/consulta/turnos/{$turn->id}/estudios", ['lab_test_ids' => [$this->glucosa->id]]);
     $order = LabOrder::first();
 
     $this->actingAs($this->medico)

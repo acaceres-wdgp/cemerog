@@ -1,26 +1,34 @@
 import React from 'react';
-import StudiesPicker from '@/components/lab/StudiesPicker';
-import type { LabCatalogItem } from '@/components/lab/types';
+import StudiesPicker, { chosenStudies } from '@/components/lab/StudiesPicker';
+import type {
+    ImagingCatalogItem,
+    LabCatalogItem,
+    StudySelection,
+} from '@/components/lab/types';
 import { formatMoney } from '@/lib/money';
 
-/** «Solo análisis»: who indicates them and which analyses */
+/** «Solo análisis o imágenes»: who indicates them and which studies */
 export function StudiesAttention({
-    catalog,
+    labCatalog,
+    imagingCatalog,
     selected,
     externalDoctor,
-    onToggle,
+    onChange,
     onExternalDoctor,
     errors,
 }: {
-    catalog: LabCatalogItem[];
-    selected: number[];
+    labCatalog: LabCatalogItem[];
+    imagingCatalog: ImagingCatalogItem[];
+    selected: StudySelection;
     externalDoctor: string;
-    onToggle: (id: number) => void;
+    onChange: (selected: StudySelection) => void;
     onExternalDoctor: (value: string) => void;
     errors: Partial<Record<string, string>>;
 }) {
-    const testError = Object.entries(errors).find(([key]) =>
-        key.startsWith('lab_test_ids'),
+    const studyError = Object.entries(errors).find(
+        ([key]) =>
+            key.startsWith('lab_test_ids') ||
+            key.startsWith('imaging_study_ids'),
     )?.[1];
 
     return (
@@ -45,27 +53,30 @@ export function StudiesAttention({
                     </p>
                 )}
             </div>
-            {testError && (
-                <p className="m-0 text-[12px] text-error">{testError}</p>
+            {studyError && (
+                <p className="m-0 text-[12px] text-error">{studyError}</p>
             )}
             <StudiesPicker
-                catalog={catalog}
+                labCatalog={labCatalog}
+                imagingCatalog={imagingCatalog}
                 selected={selected}
-                onToggle={onToggle}
+                onChange={onChange}
             />
         </div>
     );
 }
 
-/** Resumen lines for the selected analyses */
+/** Resumen lines for the selected studies */
 export function StudiesSummary({
-    catalog,
+    labCatalog,
+    imagingCatalog,
     selected,
 }: {
-    catalog: LabCatalogItem[];
-    selected: number[];
+    labCatalog: LabCatalogItem[];
+    imagingCatalog: ImagingCatalogItem[];
+    selected: StudySelection;
 }) {
-    const chosen = catalog.filter((c) => selected.includes(c.id));
+    const chosen = chosenStudies(labCatalog, imagingCatalog, selected);
     const total = chosen.reduce((sum, c) => sum + c.price, 0);
 
     return (
@@ -76,7 +87,7 @@ export function StudiesSummary({
                 </p>
             ) : (
                 chosen.map((c) => (
-                    <div key={c.id} className="flex justify-between gap-3">
+                    <div key={c.name} className="flex justify-between gap-3">
                         <span className="text-text-body">{c.name}</span>
                         <span className="tabular-nums">
                             {formatMoney(c.price)}
@@ -85,12 +96,12 @@ export function StudiesSummary({
                 ))
             )}
             <div className="mt-1 flex justify-between font-semibold text-text-heading">
-                <span>Cargo al tomar la muestra</span>
+                <span>Cargo al realizar los estudios</span>
                 <span className="tabular-nums">{formatMoney(total)}</span>
             </div>
             <p className="m-0 text-[12px] text-muted">
-                Pasa a toma de muestra y luego paga en caja. Los resultados
-                quedan en su expediente.
+                Pasa a realizarse los estudios y luego paga en caja. Los
+                resultados quedan en su expediente.
             </p>
         </div>
     );

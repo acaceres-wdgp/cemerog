@@ -1,11 +1,14 @@
 <?php
 
 use App\Models\AccountCharge;
+use App\Models\ImagingOrder;
+use App\Models\ImagingStudy;
 use App\Models\LabOrder;
 use App\Models\LabTest;
 use App\Models\Patient;
 use App\Models\Turn;
 use App\Models\User;
+use Database\Seeders\ImagingCatalogSeeder;
 use Database\Seeders\LabCatalogSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -107,4 +110,29 @@ test('a consulta still requires a doctor', function () {
     $this->actingAs($this->recepcion)
         ->post('/registro', walkInPayload([], ['attention_type' => 'consulta']))
         ->assertSessionHasErrors('doctor_id');
+});
+
+test('a walk-in patient can come only for imaging', function () {
+    $this->seed(ImagingCatalogSeeder::class);
+    $this->recepcion->givePermissionTo('module.img.access');
+    $study = ImagingStudy::where('code', 'I-02')->first();
+
+    $this->actingAs($this->recepcion)
+        ->post('/registro', walkInPayload([], ['imaging_study_ids' => [$study->id]]))
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/imagenes');
+
+    $order = ImagingOrder::firstOrFail();
+    expect($order->origin)->toBe('externo')
+        ->and($order->name)->toBe('Sonografía abdominal')
+        ->and(LabOrder::count())->toBe(0)
+        ->and(AccountCharge::count())->toBe(0);
+});
+
+test('registro offers the active imaging catalog', function () {
+    $this->seed(ImagingCatalogSeeder::class);
+
+    $this->actingAs($this->recepcion)
+        ->get('/registro?tipo=estudios')
+        ->assertInertia(fn (Assert $page) => $page->has('imagingCatalog', 5));
 });

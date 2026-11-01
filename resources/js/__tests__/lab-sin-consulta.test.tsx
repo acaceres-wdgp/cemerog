@@ -33,8 +33,15 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
         const [data, setState] = useState(initial);
         return {
             data,
-            setData: (key: string, value: unknown) =>
-                setState((d) => ({ ...d, [key]: value })),
+            setData: (
+                key: string | ((d: Record<string, unknown>) => object),
+                value?: unknown,
+            ) =>
+                setState((d) =>
+                    typeof key === 'function'
+                        ? { ...d, ...key(d) }
+                        : { ...d, [key]: value },
+                ),
             post: (url: string) => mockPost(url, data),
             processing: false,
             errors: {},
@@ -65,6 +72,17 @@ const CATALOG = [
     },
 ];
 
+const IMAGING = [
+    {
+        id: 9,
+        code: 'I-02',
+        name: 'Sonografía abdominal',
+        modality: 'Sonografía',
+        price: 150000,
+        preparation: 'Ayuno de 6 horas.',
+    },
+];
+
 const PATIENT = {
     id: 7,
     expediente_number: 'EXP-0007',
@@ -92,7 +110,7 @@ beforeEach(() => {
     page.props.permissions = [];
 });
 
-describe('Registro · Solo análisis', () => {
+describe('Registro · Solo análisis o imágenes', () => {
     it('opens on «Solo análisis» and sends the selected analyses without a doctor', () => {
         render(
             <RegistroIndex
@@ -100,11 +118,12 @@ describe('Registro · Solo análisis', () => {
                 patient={PATIENT}
                 initialType="analisis"
                 labCatalog={CATALOG}
+                imagingCatalog={IMAGING}
             />,
         );
 
         expect(
-            screen.getByRole('radio', { name: /Solo análisis/ }),
+            screen.getByRole('radio', { name: /Solo análisis o imágenes/ }),
         ).toBeChecked();
         expect(screen.queryByLabelText(/^Médico/)).not.toBeNull();
         expect(
@@ -118,8 +137,12 @@ describe('Registro · Solo análisis', () => {
         fireEvent.click(
             screen.getByRole('checkbox', { name: /Glucosa en ayunas/ }),
         );
+        fireEvent.click(
+            screen.getByRole('checkbox', { name: /Sonografía abdominal/ }),
+        );
         expect(screen.getByText(/Ayuno de 8 horas/)).toBeTruthy();
-        expect(screen.getByText('Cargo al tomar la muestra')).toBeTruthy();
+        expect(screen.getByText('Cargo al realizar los estudios')).toBeTruthy();
+        expect(screen.getByText('RD$1,700.00')).toBeTruthy();
         fireEvent.change(screen.getByLabelText('Médico que indica'), {
             target: { value: 'Dra. Pérez' },
         });
@@ -130,6 +153,7 @@ describe('Registro · Solo análisis', () => {
             expect.objectContaining({
                 attention_type: 'analisis',
                 lab_test_ids: [2],
+                imaging_study_ids: [9],
                 external_doctor: 'Dra. Pérez',
                 patient_id: 7,
             }),

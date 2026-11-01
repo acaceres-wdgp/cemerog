@@ -248,7 +248,7 @@ describe('Detalle de Emergencia', () => {
         );
     });
 
-    it('procedures are not enabled yet; analyses are ordered and listed', () => {
+    it('procedures are not enabled yet; analyses and imaging are ordered and listed', () => {
         renderShow({
             lab_catalog: [
                 {
@@ -266,6 +266,16 @@ describe('Detalle de Emergencia', () => {
                     category: 'Química',
                     price: 25000,
                     preparation: 'Ayuno de 8 horas.',
+                },
+            ],
+            imaging_catalog: [
+                {
+                    id: 5,
+                    code: 'I-01',
+                    name: 'Radiografía de tórax PA',
+                    modality: 'Radiografía',
+                    price: 80000,
+                    preparation: 'Retirar objetos metálicos del tórax.',
                 },
             ],
             lab_orders: [
@@ -291,24 +301,30 @@ describe('Detalle de Emergencia', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Ordenar' }));
         const dialog = screen.getByRole('dialog');
-        expect(
-            within(dialog).getByText(/Imágenes · disponible próximamente/),
-        ).toBeTruthy();
+        expect(within(dialog).getByText('Imágenes · Radiografía')).toBeTruthy();
         fireEvent.click(
             within(dialog).getByRole('checkbox', { name: /Hemograma/ }),
         );
         fireEvent.click(
             within(dialog).getByRole('checkbox', { name: /Glucosa/ }),
         );
-        expect(within(dialog).getByText('RD$550.00')).toBeTruthy();
+        fireEvent.click(
+            within(dialog).getByRole('checkbox', {
+                name: /Radiografía de tórax/,
+            }),
+        );
+        expect(within(dialog).getByText('RD$1,350.00')).toBeTruthy();
         expect(within(dialog).getByText(/Ayuno de 8 horas/)).toBeTruthy();
+        expect(
+            within(dialog).getByText(/Retirar objetos metálicos/),
+        ).toBeTruthy();
         fireEvent.click(
             within(dialog).getByRole('button', { name: 'Enviar órdenes' }),
         );
 
         expect(mockPost).toHaveBeenCalledWith(
-            '/emergencia/4/laboratorio',
-            { lab_test_ids: [1, 2], indication: null },
+            '/emergencia/4/estudios',
+            { lab_test_ids: [1, 2], imaging_study_ids: [5], indication: null },
             expect.anything(),
         );
     });

@@ -4,8 +4,12 @@ import CancelLabOrderDialog from '@/components/lab/CancelLabOrderDialog';
 import LabResultsList from '@/components/lab/LabResultsList';
 import LabStatusPill from '@/components/lab/LabStatusPill';
 import OrderStudiesDialog from '@/components/lab/OrderStudiesDialog';
-import type { LabCatalogItem, LabOrderSummary } from '@/components/lab/types';
-import * as lab from '@/routes/emergencia/lab';
+import type {
+    ImagingCatalogItem,
+    LabCatalogItem,
+    LabOrderSummary,
+} from '@/components/lab/types';
+import * as estudios from '@/routes/emergencia/estudios';
 import type { EmergencyDetail } from '../../types';
 import { cardCls, headCls, secondaryBtn, titleCls } from './card';
 
@@ -14,11 +18,13 @@ export default function LabOrdersCard({
     emergency,
     orders,
     catalog,
+    imagingCatalog = [],
     active,
 }: {
     emergency: EmergencyDetail;
     orders: LabOrderSummary[];
     catalog: LabCatalogItem[];
+    imagingCatalog?: ImagingCatalogItem[];
     active: boolean;
 }) {
     const [ordering, setOrdering] = useState(false);
@@ -89,7 +95,8 @@ export default function LabOrdersCard({
                     onOpenChange={setOrdering}
                     subtitle={`${emergency.patient.full_name} · ${emergency.number}`}
                     catalog={catalog}
-                    url={lab.store.url(emergency.id)}
+                    imagingCatalog={imagingCatalog}
+                    url={estudios.store.url(emergency.id)}
                 />
             )}
             {cancelling && (

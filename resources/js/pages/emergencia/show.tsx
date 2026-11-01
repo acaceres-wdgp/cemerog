@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { ChevronLeft } from 'lucide-react';
-import type { LabCatalogItem, LabOrderSummary } from '@/components/lab/types';
+import type {
+    ImagingCatalogItem,
+    LabCatalogItem,
+    LabOrderSummary,
+} from '@/components/lab/types';
 import { emergencia } from '@/routes';
 import { formatMoney } from '@/lib/money';
 import ApplicationsCard from './components/detail/ApplicationsCard';
@@ -29,6 +33,7 @@ type Props = {
     can_discharge: boolean;
     lab_orders?: LabOrderSummary[];
     lab_catalog?: LabCatalogItem[];
+    imaging_catalog?: ImagingCatalogItem[];
     free_cubicles: { id: number; name: string }[];
 };
 
@@ -42,6 +47,7 @@ export default function EmergenciaShow({
     free_cubicles,
     lab_orders = [],
     lab_catalog = [],
+    imaging_catalog = [],
 }: Props) {
     const active = emergency.status === 'activa';
     const [moving, setMoving] = useState(false);
@@ -123,6 +129,7 @@ export default function EmergenciaShow({
                         emergency={emergency}
                         orders={lab_orders}
                         catalog={lab_catalog}
+                        imagingCatalog={imaging_catalog}
                         active={active}
                     />
                     <section className="rounded-[14px] border border-card-border bg-white px-5 py-4">

@@ -3,44 +3,54 @@ import { router, usePage } from '@inertiajs/react';
 import FormDialog from '@/components/cemerog/FormDialog';
 import FormField from '@/components/cemerog/FormField';
 import { formatMoney } from '@/lib/money';
-import StudiesPicker from './StudiesPicker';
-import type { LabCatalogItem } from './types';
+import StudiesPicker, { chosenStudies } from './StudiesPicker';
+import type {
+    ImagingCatalogItem,
+    LabCatalogItem,
+    StudySelection,
+} from './types';
+
+const NONE: StudySelection = { lab: [], imaging: [] };
 
 /**
- * «Ordenar estudios» (Consulta and Emergencia). Laboratory for now; imaging
- * is shown but not enabled yet. The charge goes to the account when the
- * sample is taken.
+ * «Ordenar estudios» (Consulta and Emergencia): analyses and imaging. Each
+ * study is charged to the account when it is done (sample taken, study
+ * performed).
  */
 export default function OrderStudiesDialog({
     open,
     onOpenChange,
     subtitle,
     catalog,
+    imagingCatalog = [],
     url,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     subtitle: string;
     catalog: LabCatalogItem[];
+    imagingCatalog?: ImagingCatalogItem[];
     url: string;
 }) {
     const errors = (usePage().props.errors ?? {}) as Record<string, string>;
-    const [selected, setSelected] = useState<number[]>([]);
+    const [selected, setSelected] = useState<StudySelection>(NONE);
     const [indication, setIndication] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    const total = catalog
-        .filter((c) => selected.includes(c.id))
-        .reduce((sum, c) => sum + c.price, 0);
-
-    const toggle = (id: number) =>
-        setSelected((s) =>
-            s.includes(id) ? s.filter((x) => x !== id) : [...s, id],
-        );
+    const total = chosenStudies(catalog, imagingCatalog, selected).reduce(
+        (sum, c) => sum + c.price,
+        0,
+    );
+    const count = selected.lab.length + selected.imaging.length;
+    const error = Object.entries(errors).find(
+        ([key]) =>
+            key.startsWith('lab_test_ids') ||
+            key.startsWith('imaging_study_ids'),
+    )?.[1];
 
     const close = (value: boolean) => {
         if (!value) {
-            setSelected([]);
+            setSelected(NONE);
             setIndication('');
         }
         onOpenChange(value);
@@ -51,7 +61,11 @@ export default function OrderStudiesDialog({
         setIsLoading(true);
         router.post(
             url,
-            { lab_test_ids: selected, indication: indication.trim() || null },
+            {
+                lab_test_ids: selected.lab,
+                imaging_study_ids: selected.imaging,
+                indication: indication.trim() || null,
+            },
             {
                 preserveScroll: true,
                 onSuccess: () => close(false),
@@ -69,19 +83,16 @@ export default function OrderStudiesDialog({
             submitLabel="Enviar órdenes"
             onSubmit={submit}
             isLoading={isLoading}
-            submitDisabled={selected.length === 0}
+            submitDisabled={count === 0}
             maxWidth="sm:max-w-2xl"
         >
             <div className="flex flex-col gap-4">
-                {errors.lab_test_ids && (
-                    <p className="m-0 text-xs text-error">
-                        {errors.lab_test_ids}
-                    </p>
-                )}
+                {error && <p className="m-0 text-xs text-error">{error}</p>}
                 <StudiesPicker
-                    catalog={catalog}
+                    labCatalog={catalog}
+                    imagingCatalog={imagingCatalog}
                     selected={selected}
-                    onToggle={toggle}
+                    onChange={setSelected}
                 />
                 <FormField
                     as="textarea"
@@ -95,7 +106,7 @@ export default function OrderStudiesDialog({
                 />
                 <div className="flex items-center justify-between rounded-[10px] bg-list-row-bg px-3 py-2 text-[13.5px]">
                     <span className="text-text-secondary">
-                        Se cargará a la cuenta al tomar la muestra
+                        Se carga a la cuenta al realizar cada estudio
                     </span>
                     <strong className="tabular-nums">
                         {formatMoney(total)}

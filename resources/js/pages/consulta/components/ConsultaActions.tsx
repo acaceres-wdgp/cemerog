@@ -15,7 +15,10 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import OrderStudiesDialog from '@/components/lab/OrderStudiesDialog';
-import type { LabCatalogItem } from '@/components/lab/types';
+import type {
+    ImagingCatalogItem,
+    LabCatalogItem,
+} from '@/components/lab/types';
 import consulta from '@/routes/consulta';
 import AltaMedicaModal from './AltaMedicaModal';
 import { TurnItem } from '../types';
@@ -79,9 +82,11 @@ export default function ConsultaActions({
     onDischargeSuccess?: () => void;
 }) {
     const [ordering, setOrdering] = useState(false);
-    const labCatalog =
-        (usePage().props as unknown as { lab_catalog?: LabCatalogItem[] })
-            .lab_catalog ?? [];
+    const pageProps = usePage().props as unknown as {
+        lab_catalog?: LabCatalogItem[];
+        imaging_catalog?: ImagingCatalogItem[];
+    };
+    const labCatalog = pageProps.lab_catalog ?? [];
     const [altaOpen, setAltaOpen] = useState(false);
 
     const nextTurn = turnsEnEspera[0] ?? null;
@@ -185,7 +190,8 @@ export default function ConsultaActions({
                 onOpenChange={setOrdering}
                 subtitle={`${turn.patient.full_name} · Turno T-${String(turn.turn_number).padStart(2, '0')}`}
                 catalog={labCatalog}
-                url={consulta.lab.store.url(turn.id)}
+                imagingCatalog={pageProps.imaging_catalog ?? []}
+                url={consulta.estudios.store.url(turn.id)}
             />
 
             {/* Alta médica modal */}

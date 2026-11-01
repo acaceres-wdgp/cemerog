@@ -32,6 +32,7 @@ use App\Http\Controllers\Modules\PaymentController;
 use App\Http\Controllers\Modules\PreciosController;
 use App\Http\Controllers\Modules\PrescriptionController;
 use App\Http\Controllers\Modules\RegistroController;
+use App\Http\Controllers\Modules\StudyOrderController;
 use App\Http\Controllers\Modules\SupplierController;
 use App\Http\Controllers\Modules\TableroController;
 use App\Http\Controllers\Modules\TemaController;
@@ -116,7 +117,7 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::get('/', [ConsultaController::class, 'index'])->name('consulta');
         Route::post('/', [ConsultaController::class, 'store'])->name('consulta.store');
         Route::post('/turnos/{turn}/alta', [ConsultaController::class, 'discharge'])->name('consulta.discharge');
-        Route::post('/turnos/{turn}/laboratorio', [LabOrderController::class, 'storeFromTurn'])->name('consulta.lab.store');
+        Route::post('/turnos/{turn}/estudios', [StudyOrderController::class, 'storeFromTurn'])->name('consulta.estudios.store');
         Route::patch('/antecedentes/{patient}', [ConsultaController::class, 'updateAntecedents'])->name('consulta.antecedentes');
         // Prescriptions
         Route::post('/turnos/{turn}/receta', [PrescriptionController::class, 'store'])->name('consulta.receta.store');
@@ -133,7 +134,7 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/{emergency}/signos-vitales', [EmergencyCareController::class, 'storeVitals'])->name('emergencia.vitals.store');
         Route::post('/{emergency}/aplicaciones', [EmergencyCareController::class, 'storeApplication'])->name('emergencia.applications.store');
         Route::post('/{emergency}/alta', [EmergencyCareController::class, 'discharge'])->name('emergencia.discharge');
-        Route::post('/{emergency}/laboratorio', [LabOrderController::class, 'storeFromEmergency'])->name('emergencia.lab.store');
+        Route::post('/{emergency}/estudios', [StudyOrderController::class, 'storeFromEmergency'])->name('emergencia.estudios.store');
         Route::patch('/{emergency}/cubiculo', [EmergencyCareController::class, 'moveCubicle'])->name('emergencia.cubicle');
     });
 
