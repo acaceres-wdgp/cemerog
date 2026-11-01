@@ -30,6 +30,7 @@ class Discharge extends Model
     protected $fillable = [
         'turn_id',
         'emergency_id',
+        'admission_id',
         'patient_id',
         'doctor_id',
         'type',

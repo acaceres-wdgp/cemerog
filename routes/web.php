@@ -283,9 +283,16 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         ->middleware('permission:module.precios.access')
         ->name('precios');
 
-    Route::get('/admin/habitaciones', [HabsController::class, 'index'])
-        ->middleware('permission:module.habs.access')
-        ->name('habs');
+    Route::prefix('/admin/habitaciones')->middleware('permission:module.habs.access')->group(function () {
+        Route::get('/', [HabsController::class, 'index'])->name('habs');
+        Route::post('/tipos', [HabsController::class, 'storeType'])->name('habs.types.store');
+        Route::put('/tipos/{type}', [HabsController::class, 'updateType'])->name('habs.types.update');
+        Route::delete('/tipos/{type}', [HabsController::class, 'destroyType'])->name('habs.types.destroy');
+        Route::post('/', [HabsController::class, 'storeRoom'])->name('habs.rooms.store');
+        Route::put('/{room}', [HabsController::class, 'updateRoom'])->name('habs.rooms.update');
+        Route::post('/{room}/camas', [HabsController::class, 'addBed'])->name('habs.beds.store');
+        Route::delete('/camas/{bed}', [HabsController::class, 'removeBed'])->name('habs.beds.destroy');
+    });
 
     Route::get('/admin/tema', [TemaController::class, 'index'])
         ->middleware('permission:module.tema.access')

@@ -10,7 +10,8 @@ use Illuminate\Support\Carbon;
  * A medication or supply applied to a patient in emergency.
  *
  * @property int $id
- * @property int $emergency_id
+ * @property int|null $emergency_id
+ * @property int|null $admission_id Internamiento reuses these applications
  * @property string $kind medicamento | insumo
  * @property int|null $inventory_item_id
  * @property string $description
@@ -27,7 +28,7 @@ use Illuminate\Support\Carbon;
 class EmergencyApplication extends Model
 {
     protected $fillable = [
-        'emergency_id', 'kind', 'inventory_item_id', 'description', 'quantity', 'route',
+        'emergency_id', 'admission_id', 'kind', 'inventory_item_id', 'description', 'quantity', 'route',
         'unit_price', 'total', 'brought_by_patient', 'stock_left', 'applied_at', 'applied_by',
     ];
 

@@ -8,7 +8,8 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property int $emergency_id
+ * @property int|null $emergency_id
+ * @property int|null $admission_id Internamiento reuses these readings
  * @property string $presion_arterial
  * @property int $frecuencia_cardiaca
  * @property int $frecuencia_respiratoria
@@ -22,7 +23,7 @@ use Illuminate\Support\Carbon;
 class EmergencyVital extends Model
 {
     protected $fillable = [
-        'emergency_id', 'presion_arterial', 'frecuencia_cardiaca', 'frecuencia_respiratoria',
+        'emergency_id', 'admission_id', 'presion_arterial', 'frecuencia_cardiaca', 'frecuencia_respiratoria',
         'temp', 'saturacion_o2', 'glucemia', 'taken_at', 'taken_by',
     ];
 
