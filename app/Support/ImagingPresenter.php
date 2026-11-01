@@ -100,6 +100,43 @@ class ImagingPresenter
         ];
     }
 
+    /**
+     * Summary plus the signed report, for Consulta and Emergencia.
+     *
+     * @return array<string, mixed>
+     */
+    public function withReport(ImagingOrder $order): array
+    {
+        return [...$this->summary($order), 'report' => $this->report($order)];
+    }
+
+    /**
+     * The signed report with its files, or null while it is not signed.
+     *
+     * @return array{number: string|null, name: string, findings: string|null, conclusion: string|null, signed_at: string|null, signed_by: string|null, attachments: list<array{id: int, name: string, is_image: bool}>}|null
+     */
+    public function report(ImagingOrder $order): ?array
+    {
+        if (! in_array($order->status, ['listo', 'entregado'], true)) {
+            return null;
+        }
+        $order->loadMissing(['signer', 'attachments']);
+
+        return [
+            'number' => $order->number,
+            'name' => $order->name,
+            'findings' => $order->findings,
+            'conclusion' => $order->conclusion,
+            'signed_at' => $order->signed_at?->format('d/m/Y H:i'),
+            'signed_by' => $order->signer?->name,
+            'attachments' => $order->attachments->map(fn (ImagingAttachment $a): array => [
+                'id' => $a->id,
+                'name' => $a->original_name,
+                'is_image' => str_starts_with((string) $a->mime, 'image/'),
+            ])->values()->all(),
+        ];
+    }
+
     /** @return array<string, mixed> */
     public function patient(Patient $p): array
     {

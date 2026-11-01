@@ -9,6 +9,7 @@ import {
 import consulta from '@/routes/consulta';
 import { buildInstruction } from '../lib/instructionBuilder';
 import { ClinicalEntry, DischargeDetail, PrescriptionData } from '../types';
+import ImagingReportBlock from '@/components/img/ImagingReportBlock';
 import LabResultsList from '@/components/lab/LabResultsList';
 
 // ─── Prescription block ───────────────────────────────────────────────────────
@@ -219,6 +220,16 @@ export default function HistorialDetail({
                             * Fuera del rango de referencia.
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* Imagen entry */}
+            {sel.type === 'imagen' && sel.imaging && (
+                <div className="rounded-[10px] border border-card-border px-[14px] py-[10px]">
+                    <div className="mb-1 text-[11px] font-semibold tracking-[.05em] text-muted uppercase">
+                        Informe · {sel.imaging.number}
+                    </div>
+                    <ImagingReportBlock report={sel.imaging} />
                 </div>
             )}
 

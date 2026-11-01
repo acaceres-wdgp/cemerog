@@ -188,6 +188,7 @@ describe('ConsultaIndex – queue', () => {
                     'charges',
                     'charges_total',
                     'lab_orders',
+                    'imaging_orders',
                 ],
             },
         );

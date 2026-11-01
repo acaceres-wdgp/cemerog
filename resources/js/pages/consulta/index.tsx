@@ -24,6 +24,7 @@ export default function ConsultaIndex({
     charges,
     charges_total,
     lab_orders,
+    imaging_orders,
 }: Props) {
     const [activeTurn, setActiveTurn] = useState<TurnItem | null>(
         turns_en_consulta[0] ?? null,
@@ -112,6 +113,7 @@ export default function ConsultaIndex({
                                         'charges',
                                         'charges_total',
                                         'lab_orders',
+                                        'imaging_orders',
                                     ],
                                 },
                             );
@@ -166,6 +168,7 @@ export default function ConsultaIndex({
                             charges={charges ?? []}
                             chargesTotal={charges_total ?? 0}
                             labOrders={lab_orders ?? []}
+                            imagingOrders={imaging_orders ?? []}
                         />
                     )}
                 </>

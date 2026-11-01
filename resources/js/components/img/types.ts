@@ -77,3 +77,18 @@ export function fileSize(bytes: number): string {
         return `${Math.max(1, Math.round(bytes / 1024))} KB`;
     return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
+
+export type ImagingReport = {
+    number: string;
+    name: string;
+    findings: string | null;
+    conclusion: string | null;
+    signed_at: string | null;
+    signed_by: string | null;
+    attachments: { id: number; name: string; is_image: boolean }[];
+};
+
+/** As listed in Consulta and Emergencia: with the report once signed */
+export type ImagingOrderWithReport = ImagingOrderSummary & {
+    report: ImagingReport | null;
+};

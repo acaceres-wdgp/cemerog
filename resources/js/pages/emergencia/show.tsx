@@ -11,6 +11,7 @@ import { formatMoney } from '@/lib/money';
 import ApplicationsCard from './components/detail/ApplicationsCard';
 import ComingSoonCard from './components/detail/ComingSoonCard';
 import ExitCard from './components/detail/ExitCard';
+import type { ImagingOrderWithReport } from '@/components/img/types';
 import LabOrdersCard from './components/detail/LabOrdersCard';
 import MoveCubicleDialog from './components/detail/MoveCubicleDialog';
 import PatientCard from './components/detail/PatientCard';
@@ -32,6 +33,7 @@ type Props = {
     routes: string[];
     can_discharge: boolean;
     lab_orders?: LabOrderSummary[];
+    imaging_orders?: ImagingOrderWithReport[];
     lab_catalog?: LabCatalogItem[];
     imaging_catalog?: ImagingCatalogItem[];
     free_cubicles: { id: number; name: string }[];
@@ -46,6 +48,7 @@ export default function EmergenciaShow({
     can_discharge,
     free_cubicles,
     lab_orders = [],
+    imaging_orders = [],
     lab_catalog = [],
     imaging_catalog = [],
 }: Props) {
@@ -128,6 +131,7 @@ export default function EmergenciaShow({
                     <LabOrdersCard
                         emergency={emergency}
                         orders={lab_orders}
+                        imagingOrders={imaging_orders}
                         catalog={lab_catalog}
                         imagingCatalog={imaging_catalog}
                         active={active}

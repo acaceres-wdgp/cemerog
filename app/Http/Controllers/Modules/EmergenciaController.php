@@ -10,6 +10,7 @@ use App\Http\Requests\EmergencyApplicationRequest;
 use App\Models\Doctor;
 use App\Models\Emergency;
 use App\Models\EmergencyCubicle;
+use App\Models\ImagingOrder;
 use App\Models\LabOrder;
 use App\Models\Patient;
 use App\Models\Setting;
@@ -49,6 +50,8 @@ class EmergenciaController extends Controller
             'applications' => $presenter->applications($emergency),
             'catalog' => $emergency->isActive() ? $presenter->catalog() : [],
             'routes' => EmergencyApplicationRequest::ROUTES,
+            'imaging_orders' => ImagingOrder::with(['doctor', 'attachments', 'signer'])->where('emergency_id', $emergency->id)->latest('id')->get()
+                ->map(fn (ImagingOrder $o): array => app(ImagingPresenter::class)->withReport($o))->values()->all(),
             'lab_orders' => LabOrder::with('items')->where('emergency_id', $emergency->id)->latest('id')->get()
                 ->map(fn (LabOrder $o): array => $lab->withResults($o))->values()->all(),
             'lab_catalog' => $emergency->isActive() ? $lab->catalog() : [],

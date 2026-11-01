@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
+import ImagingOrderRow from '@/components/img/ImagingOrderRow';
+import type { ImagingOrderWithReport } from '@/components/img/types';
 import CancelLabOrderDialog from '@/components/lab/CancelLabOrderDialog';
 import LabResultsList from '@/components/lab/LabResultsList';
 import LabStatusPill from '@/components/lab/LabStatusPill';
@@ -10,6 +12,7 @@ import type {
     LabOrderSummary,
 } from '@/components/lab/types';
 import * as estudios from '@/routes/emergencia/estudios';
+import * as imgOrders from '@/routes/img/orders';
 import type { EmergencyDetail } from '../../types';
 import { cardCls, headCls, secondaryBtn, titleCls } from './card';
 
@@ -19,16 +22,20 @@ export default function LabOrdersCard({
     orders,
     catalog,
     imagingCatalog = [],
+    imagingOrders = [],
     active,
 }: {
     emergency: EmergencyDetail;
     orders: LabOrderSummary[];
     catalog: LabCatalogItem[];
     imagingCatalog?: ImagingCatalogItem[];
+    imagingOrders?: ImagingOrderWithReport[];
     active: boolean;
 }) {
     const [ordering, setOrdering] = useState(false);
     const [cancelling, setCancelling] = useState<LabOrderSummary | null>(null);
+    const [cancellingImg, setCancellingImg] =
+        useState<ImagingOrderWithReport | null>(null);
 
     return (
         <section className={cardCls}>
@@ -46,7 +53,7 @@ export default function LabOrdersCard({
                 )}
             </div>
             <div className="flex flex-col">
-                {orders.length === 0 && (
+                {orders.length + imagingOrders.length === 0 && (
                     <p className="m-0 px-5 py-5 text-center text-[13px] text-muted">
                         Sin estudios ordenados.
                     </p>
@@ -88,6 +95,16 @@ export default function LabOrdersCard({
                         )}
                     </div>
                 ))}
+                {imagingOrders.map((o) => (
+                    <ImagingOrderRow
+                        key={`img-${o.id}`}
+                        order={o}
+                        onCancel={
+                            active ? () => setCancellingImg(o) : undefined
+                        }
+                        className="border-b border-divider px-5 py-3 last:border-b-0"
+                    />
+                ))}
             </div>
             {active && (
                 <OrderStudiesDialog
@@ -97,6 +114,14 @@ export default function LabOrdersCard({
                     catalog={catalog}
                     imagingCatalog={imagingCatalog}
                     url={estudios.store.url(emergency.id)}
+                />
+            )}
+            {cancellingImg && (
+                <CancelLabOrderDialog
+                    order={cancellingImg}
+                    description={cancellingImg.name}
+                    url={imgOrders.cancel.url(cancellingImg.id)}
+                    onClose={() => setCancellingImg(null)}
                 />
             )}
             {cancelling && (
