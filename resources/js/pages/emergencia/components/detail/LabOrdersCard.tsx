@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import CancelLabOrderDialog from '@/components/lab/CancelLabOrderDialog';
+import LabResultsList from '@/components/lab/LabResultsList';
 import LabStatusPill from '@/components/lab/LabStatusPill';
 import OrderStudiesDialog from '@/components/lab/OrderStudiesDialog';
 import type { LabCatalogItem, LabOrderSummary } from '@/components/lab/types';
@@ -47,31 +48,38 @@ export default function LabOrdersCard({
                 {orders.map((o) => (
                     <div
                         key={o.id}
-                        className="flex items-start justify-between gap-3 border-b border-divider px-5 py-3 last:border-b-0"
+                        className="border-b border-divider px-5 py-3 last:border-b-0"
                     >
-                        <div className="min-w-0">
-                            <div className="font-medium text-text-heading">
-                                {o.tests.join(' · ')}
+                        <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                                <div className="font-medium text-text-heading">
+                                    {o.tests.join(' · ')}
+                                </div>
+                                <div className="text-[12.5px] text-muted">
+                                    {o.number} · {o.ordered_time}
+                                    {o.status === 'cancelada' && o.cancel_reason
+                                        ? ` · ${o.cancel_reason}`
+                                        : ''}
+                                </div>
                             </div>
-                            <div className="text-[12.5px] text-muted">
-                                {o.number} · {o.ordered_time}
-                                {o.status === 'cancelada' && o.cancel_reason
-                                    ? ` · ${o.cancel_reason}`
-                                    : ''}
+                            <div className="flex flex-none flex-col items-end gap-1">
+                                <LabStatusPill status={o.status} />
+                                {active && o.status === 'ordenada' && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setCancelling(o)}
+                                        className="cursor-pointer text-[12px] font-semibold text-error"
+                                    >
+                                        Cancelar
+                                    </button>
+                                )}
                             </div>
                         </div>
-                        <div className="flex flex-none flex-col items-end gap-1">
-                            <LabStatusPill status={o.status} />
-                            {active && o.status === 'ordenada' && (
-                                <button
-                                    type="button"
-                                    onClick={() => setCancelling(o)}
-                                    className="cursor-pointer text-[12px] font-semibold text-error"
-                                >
-                                    Cancelar
-                                </button>
-                            )}
-                        </div>
+                        {o.results && o.results.length > 0 && (
+                            <div className="mt-2 rounded-[10px] bg-list-row-bg px-3 py-1.5">
+                                <LabResultsList results={o.results} />
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>

@@ -1,4 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
+import CancelLabOrderDialog from '@/components/lab/CancelLabOrderDialog';
+import LabResultsList from '@/components/lab/LabResultsList';
+import LabStatusPill from '@/components/lab/LabStatusPill';
+import type { LabOrderSummary } from '@/components/lab/types';
 import { formatMoney } from '@/lib/money';
 import type { AccountCharge } from '../types';
 
@@ -7,9 +11,16 @@ import type { AccountCharge } from '../types';
 type Props = {
     charges: AccountCharge[];
     chargesTotal: number;
+    labOrders?: LabOrderSummary[];
 };
 
-export default function CuentaOrdenesTab({ charges, chargesTotal }: Props) {
+export default function CuentaOrdenesTab({
+    charges,
+    chargesTotal,
+    labOrders = [],
+}: Props) {
+    const [cancelling, setCancelling] = useState<LabOrderSummary | null>(null);
+
     return (
         <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-4">
             {/* Órdenes panel */}
@@ -17,9 +28,50 @@ export default function CuentaOrdenesTab({ charges, chargesTotal }: Props) {
                 <div className="px-[18px] py-[14px] font-serif text-[16px] font-semibold text-text-heading">
                     Órdenes
                 </div>
-                <div className="p-5 text-center text-[13px] text-muted">
-                    No hay órdenes para esta consulta.
-                </div>
+                {labOrders.length === 0 ? (
+                    <div className="p-5 text-center text-[13px] text-muted">
+                        No hay órdenes para esta consulta.
+                    </div>
+                ) : (
+                    labOrders.map((o) => (
+                        <div
+                            key={o.id}
+                            className="border-t border-divider px-[18px] py-3"
+                        >
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                    <div className="font-medium text-text-heading">
+                                        {o.tests.join(' · ')}
+                                    </div>
+                                    <div className="text-[12.5px] text-muted">
+                                        Laboratorio · {o.number} ·{' '}
+                                        {o.ordered_time}
+                                        {o.validated_at
+                                            ? ` · validado ${o.validated_at}`
+                                            : ''}
+                                    </div>
+                                </div>
+                                <div className="flex flex-none flex-col items-end gap-1">
+                                    <LabStatusPill status={o.status} />
+                                    {o.status === 'ordenada' && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setCancelling(o)}
+                                            className="cursor-pointer text-[12px] font-semibold text-error"
+                                        >
+                                            Cancelar
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                            {o.results && o.results.length > 0 && (
+                                <div className="mt-2 rounded-[10px] bg-list-row-bg px-3 py-1.5">
+                                    <LabResultsList results={o.results} />
+                                </div>
+                            )}
+                        </div>
+                    ))
+                )}
             </div>
 
             {/* Cargos panel */}
@@ -71,6 +123,12 @@ export default function CuentaOrdenesTab({ charges, chargesTotal }: Props) {
                     </>
                 )}
             </div>
+            {cancelling && (
+                <CancelLabOrderDialog
+                    order={cancelling}
+                    onClose={() => setCancelling(null)}
+                />
+            )}
         </div>
     );
 }

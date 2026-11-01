@@ -1,3 +1,4 @@
+import type { LabOrderSummary, LabResultLine } from '@/components/lab/types';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type Diagnostico = { code: string; label: string };
@@ -92,6 +93,8 @@ export type ClinicalEntry = {
     vitals?: Vitals;
     discharge?: DischargeDetail | null;
     prescription?: PrescriptionData | null;
+    // laboratorio-specific
+    lab?: { number: string; tests: string[]; results: LabResultLine[] };
 };
 
 export type AntecedentData = {
@@ -143,4 +146,5 @@ export type Props = {
     prescriptions?: Record<number, PrescriptionData>;
     charges?: AccountCharge[];
     charges_total?: number;
+    lab_orders?: LabOrderSummary[];
 };
