@@ -21,6 +21,7 @@ use App\Models\PatientAntecedent;
 use App\Models\Prescription;
 use App\Models\Turn;
 use App\Models\User;
+use App\Support\AdmissionPresenter;
 use App\Support\ImagingPresenter;
 use App\Support\LabPresenter;
 use App\Support\Toast;
@@ -118,6 +119,8 @@ class ConsultaController extends Controller
             'can_attend' => true,
             'lab_catalog' => fn () => app(LabPresenter::class)->catalog(),
             'imaging_catalog' => fn () => app(ImagingPresenter::class)->catalog(),
+            // «Ingresar»: free beds and doctors
+            'admission_options' => fn () => $user->can('module.internamiento.access') ? app(AdmissionPresenter::class)->options($user) : null,
             // «Pasar a emergencia»: the cubicles free right now
             'emergency_cubicles' => fn () => EmergencyCubicle::active()
                 ->whereNotIn('id', Emergency::whereNotNull('occupied_cubicle_id')->pluck('occupied_cubicle_id'))

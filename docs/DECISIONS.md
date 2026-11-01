@@ -473,3 +473,21 @@ Al llegar un paciente se necesita registrar qué consumió ese día (consultas, 
 - **Se cobra al marcar «Estudio realizado»** (ADR-018). Va a la cuenta de la emergencia si sigue abierta; si no, a la cuenta del día. Una orden que se hará en otro centro se cancela con motivo y no se cobra.
 - **Firman el rol imágenes y el administrador.** Para firmar hacen falta hallazgos y conclusión. Un informe firmado ya no se modifica. Aparece en Consulta, en Emergencia y en el historial clínico.
 - **Adjuntos** (imágenes, PDF, DICOM; hasta 20 MB) en el **disco privado**. Se descargan solo a través de la aplicación, para quien tiene acceso a Imágenes, Consulta o Emergencia, porque son datos clínicos.
+
+---
+
+## ADR-023: Internamiento — una cuenta por estancia y habitación cobrada al alta
+
+**Fecha**: 2026-11  
+**Estado**: Aceptado
+
+**Decisión:**
+
+- **Habitaciones y camas** se administran en _Administración › Habitaciones y camas_. Cada tipo (Privada, Semiprivada, Suite) define el precio por día. Una cama está libre, ocupada o en limpieza.
+- **Ingreso** desde Emergencia («Internar»), Consulta («Ingresar») o directamente desde el mapa, con cama, médico tratante, diagnóstico de ingreso (CIE-10 en texto) y tratamiento inicial. La emergencia se cierra como traslado y la consulta como atendida.
+- **Una cuenta por estancia.** Se continúa la cuenta de la atención de origen y no se cierra mientras el paciente esté internado. Lo que se hace en días siguientes (medicamentos, laboratorio, imágenes) va a esa cuenta. Los cargos siguen generándose al realizarse (ADR-018).
+- **La habitación se carga al dar el alta**: días × precio por día. El día de ingreso es el día 1 y el día del alta también cuenta. Cada día se cobra al precio de la cama en la que estaba el paciente al empezar ese día, así que un cambio de habitación aplica su precio desde el día siguiente. Mientras tanto, «Cargos acumulados» muestra la estimación.
+- **Traslado**: la cama anterior queda _En limpieza_ hasta que alguien pulsa «Marcar lista».
+- **Alta**: médico, enfermería o administrador, como en Emergencia. La cuenta pasa a _Pendiente de facturar_.
+- **Signos vitales y aplicaciones** reutilizan las tablas de Emergencia (`admission_id`). Las notas de enfermería registran el turno: mañana (07–15), tarde (15–23) o noche.
+- **Pendiente (fase 2):** ingreso para cirugía (depende del módulo Cirugía) y hoja de medicación programada por horas.

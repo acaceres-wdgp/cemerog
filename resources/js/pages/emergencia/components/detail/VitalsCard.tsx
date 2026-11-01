@@ -28,10 +28,12 @@ export default function VitalsCard({
     emergencyId,
     vitals,
     active,
+    url,
 }: {
     emergencyId: number;
     vitals: VitalReading[];
     active: boolean;
+    url?: string;
 }) {
     const [adding, setAdding] = useState(false);
     const [latest, previous] = vitals;
@@ -61,6 +63,7 @@ export default function VitalsCard({
             {adding && (
                 <VitalsForm
                     emergencyId={emergencyId}
+                    url={url}
                     onDone={() => setAdding(false)}
                 />
             )}
@@ -128,6 +131,11 @@ export default function VitalsCard({
                                             className={`${td} pl-5 tabular-nums`}
                                         >
                                             {v.time}
+                                            {v.date && (
+                                                <div className="text-[11.5px] text-muted">
+                                                    {v.date}
+                                                </div>
+                                            )}
                                         </td>
                                         {COLUMNS.map(([k]) => (
                                             <td

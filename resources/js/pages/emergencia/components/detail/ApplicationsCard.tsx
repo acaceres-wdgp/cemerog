@@ -28,7 +28,9 @@ export default function ApplicationsCard({
     catalog,
     routes,
     active,
+    url,
 }: {
+    url?: string;
     emergencyId: number;
     kind: ApplicationKind;
     applications: Application[];
@@ -89,6 +91,11 @@ export default function ApplicationsCard({
                                 <tr key={a.id}>
                                     <td className={`${td} pl-5 tabular-nums`}>
                                         {a.time}
+                                        {a.date && (
+                                            <div className="text-[11.5px] text-muted">
+                                                {a.date}
+                                            </div>
+                                        )}
                                     </td>
                                     <td className={`${td} font-medium`}>
                                         {a.description}
@@ -125,6 +132,7 @@ export default function ApplicationsCard({
             {open && (
                 <ApplyDialog
                     emergencyId={emergencyId}
+                    url={url}
                     kind={kind}
                     catalog={catalog}
                     routes={routes}

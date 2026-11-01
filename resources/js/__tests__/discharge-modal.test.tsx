@@ -134,8 +134,65 @@ describe('ConsultaIndex – disabled action buttons', () => {
             .closest('span')!;
         await user.hover(trigger);
         await waitFor(() => {
-            expect(screen.getByText(/Internamiento/i)).toBeTruthy();
+            expect(screen.getByText(/no puede internar/i)).toBeTruthy();
         });
+    });
+
+    it('"Ingresar" opens the admission dialog when the user can admit', () => {
+        mockUsePage.mockReturnValue({
+            props: {
+                errors: {},
+                admission_options: {
+                    beds: [
+                        {
+                            id: 5,
+                            label: 'Hab. 2 · Cama A',
+                            type: 'Semiprivada',
+                            daily_price: 250000,
+                        },
+                    ],
+                    doctors: [
+                        {
+                            id: 1,
+                            name: 'Dr. García',
+                            specialty: 'Medicina General',
+                        },
+                    ],
+                    default_doctor_id: 1,
+                },
+            },
+        } as never);
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        fireEvent.click(screen.getByRole('button', { name: /^Ingresar$/i }));
+
+        const dialog = screen.getByRole('dialog');
+        expect(
+            within(dialog).getByText('Ingreso a internamiento'),
+        ).toBeTruthy();
+        expect(
+            within(dialog).getByRole('radio', { name: /Hab. 2 · Cama A/ }),
+        ).toHaveAttribute('aria-checked', 'true');
+        fireEvent.change(
+            within(dialog).getByLabelText(/Diagnóstico de ingreso/),
+            {
+                target: { value: 'J18.9 Neumonía' },
+            },
+        );
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Confirmar ingreso' }),
+        );
+        expect(mockRouterPost).toHaveBeenCalledWith(
+            '/internamiento/ingresos',
+            expect.objectContaining({
+                patient_id: 10,
+                turn_id: 1,
+                bed_id: 5,
+                doctor_id: 1,
+                diagnosis: 'J18.9 Neumonía',
+            }),
+            expect.anything(),
+        );
+        mockUsePage.mockReturnValue({ props: { errors: {} } });
     });
 });
 
