@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Modules;
 
 use App\Actions\CreatePatient;
+use App\Actions\Lab\RegisterLabWalkIn;
 use App\Actions\Registro\RegisterArrival;
 use App\Actions\UpdatePatient;
 use App\Exceptions\PatientHasOpenTurnException;
@@ -13,6 +14,8 @@ use App\Http\Requests\UpdatePatientRequest;
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\Turn;
+use App\Models\User;
+use App\Support\LabPresenter;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
@@ -61,10 +64,13 @@ class RegistroController extends Controller
             'patient' => $patient ? $this->patientPayload($patient) : null,
             'prefillDocumentNumber' => $prefillDocumentNumber,
             'prefillFirstNames' => $prefillFirstNames,
+            // «Orden sin consulta» from Laboratorio opens on «Solo análisis»
+            'initialType' => request()->query('tipo') === 'estudios' ? 'analisis' : 'consulta',
+            'labCatalog' => app(LabPresenter::class)->catalog(),
         ]);
     }
 
-    public function store(RegisterArrivalRequest $request, RegisterArrival $registerArrival): RedirectResponse
+    public function store(RegisterArrivalRequest $request, RegisterArrival $registerArrival, RegisterLabWalkIn $registerLabWalkIn): RedirectResponse
     {
         $validated = $request->validated();
         $patientId = $validated['patient_id'] ?? null;
@@ -73,9 +79,25 @@ class RegistroController extends Controller
 
         // Patient data to create or update
         $patientData = collect($validated)
-            ->except(['patient_id', 'attention_type', 'doctor_id', 'notes', 'appointment_id'])
+            ->except(['patient_id', 'attention_type', 'doctor_id', 'notes', 'appointment_id', 'lab_test_ids', 'external_doctor'])
             ->filter(fn ($v) => $v !== null)
             ->all();
+
+        if ($validated['attention_type'] === 'analisis') {
+            /** @var User $user */
+            $user = $request->user();
+            $order = $registerLabWalkIn->handle(
+                $existingPatient,
+                $patientData,
+                array_map('intval', $validated['lab_test_ids']),
+                $validated['external_doctor'] ?? null,
+                $user,
+            );
+
+            Toast::success("Orden {$order->number} creada para {$order->patient->full_name}. Pasa a toma de muestra.");
+
+            return redirect()->route($user->can('module.lab.access') ? 'lab' : 'pacientes');
+        }
 
         $attentionData = [
             'doctor_id' => $validated['doctor_id'],

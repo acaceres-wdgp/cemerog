@@ -7,7 +7,12 @@ import { useEffect, useRef, useState } from 'react';
 import AlertBanner from '@/components/cemerog/AlertBanner';
 import MaskedInput from '@/components/cemerog/masked-input';
 import Panel from '@/components/cemerog/Panel';
+import type { LabCatalogItem } from '@/components/lab/types';
 import { ageLabel } from '@/lib/patient';
+import {
+    StudiesAttention,
+    StudiesSummary,
+} from './components/StudiesAttention';
 
 // ── Turn status label map (mirrors Turn::statusLabel on the backend) ──────────
 const TURN_STATUS_LABELS: Record<string, string> = {
@@ -63,6 +68,9 @@ interface Props {
     patient: ExistingPatient | null;
     prefillDocumentNumber?: string;
     prefillFirstNames?: string;
+    /** «analisis» when coming from «Orden sin consulta» in Laboratorio */
+    initialType?: 'consulta' | 'analisis';
+    labCatalog?: LabCatalogItem[];
 }
 
 /** Extends the inferred form errors with `open_turn`, which the server returns
@@ -85,6 +93,8 @@ export default function RegistroIndex({
     patient: initialPatient,
     prefillDocumentNumber = '',
     prefillFirstNames = '',
+    initialType = 'consulta',
+    labCatalog = [],
 }: Props) {
     const mode: 'new' | 'existing' = initialPatient ? 'existing' : 'new';
 
@@ -109,9 +119,11 @@ export default function RegistroIndex({
         allergies: initialPatient?.allergies ?? '',
         emergency_contact_name: initialPatient?.emergency_contact_name ?? '',
         emergency_contact_phone: initialPatient?.emergency_contact_phone ?? '',
-        attention_type: 'consulta',
+        attention_type: initialType as string,
         doctor_id: '' as number | string,
         notes: '',
+        lab_test_ids: [] as number[],
+        external_doctor: '',
     });
     const errors = rawErrors as FormErrors;
 
@@ -186,7 +198,17 @@ export default function RegistroIndex({
     };
 
     const selectedDoctor = doctors.find((d) => d.id === Number(data.doctor_id));
-    const isFormValid = !!data.doctor_id;
+    const isStudies = data.attention_type === 'analisis';
+    const isFormValid = isStudies
+        ? data.lab_test_ids.length > 0
+        : !!data.doctor_id;
+    const toggleTest = (id: number) =>
+        setData(
+            'lab_test_ids',
+            data.lab_test_ids.includes(id)
+                ? data.lab_test_ids.filter((x) => x !== id)
+                : [...data.lab_test_ids, id],
+        );
 
     return (
         <>
@@ -712,11 +734,10 @@ export default function RegistroIndex({
                                         },
                                         {
                                             value: 'analisis',
-                                            label: 'Solo análisis o imágenes',
-                                            desc: 'Sin consulta. Paga en caja.',
-                                            disabled: true,
-                                            tooltip:
-                                                'Disponible cuando se implemente Laboratorio e Imágenes',
+                                            label: 'Solo análisis',
+                                            desc: 'Sin consulta. Pasa a toma de muestra.',
+                                            disabled: false,
+                                            tooltip: undefined,
                                         },
                                     ].map((opt) => (
                                         <label
@@ -820,6 +841,19 @@ export default function RegistroIndex({
                                     </div>
                                 )}
 
+                                {isStudies && (
+                                    <StudiesAttention
+                                        catalog={labCatalog}
+                                        selected={data.lab_test_ids}
+                                        externalDoctor={data.external_doctor}
+                                        onToggle={toggleTest}
+                                        onExternalDoctor={(v) =>
+                                            setData('external_doctor', v)
+                                        }
+                                        errors={errors}
+                                    />
+                                )}
+
                                 {mode === 'existing' && errors.open_turn && (
                                     <div className="mt-4 flex items-start gap-3 rounded-xl border border-error-border bg-error-bg px-4 py-3 text-[13px] text-error-strong">
                                         <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
@@ -861,7 +895,9 @@ export default function RegistroIndex({
                                     ) : (
                                         <Check className="h-4 w-4" />
                                     )}
-                                    Registrar y crear atención
+                                    {isStudies
+                                        ? 'Registrar y crear orden'
+                                        : 'Registrar y crear atención'}
                                 </button>
                             </div>
                         </Panel>
@@ -874,16 +910,18 @@ export default function RegistroIndex({
                     >
                         <Panel title="Resumen" noPadding>
                             <dl className="divide-y divide-divider text-[13px]">
-                                <div className="flex justify-between px-5 py-3">
-                                    <dt className="text-muted">
-                                        Turno asignado
-                                    </dt>
-                                    <dd className="font-medium text-text-tertiary">
-                                        {data.doctor_id
-                                            ? '— al guardar —'
-                                            : '—'}
-                                    </dd>
-                                </div>
+                                {!isStudies && (
+                                    <div className="flex justify-between px-5 py-3">
+                                        <dt className="text-muted">
+                                            Turno asignado
+                                        </dt>
+                                        <dd className="font-medium text-text-tertiary">
+                                            {data.doctor_id
+                                                ? '— al guardar —'
+                                                : '—'}
+                                        </dd>
+                                    </div>
+                                )}
                                 <div className="flex justify-between px-5 py-3">
                                     <dt className="text-muted">Paciente</dt>
                                     <dd className="max-w-[160px] truncate text-right font-medium text-text-heading">
@@ -915,9 +953,9 @@ export default function RegistroIndex({
                                 <div className="flex justify-between px-5 py-3">
                                     <dt className="text-muted">Tipo</dt>
                                     <dd className="font-medium text-text-heading">
-                                        {data.attention_type === 'consulta'
-                                            ? 'Consulta'
-                                            : '—'}
+                                        {isStudies
+                                            ? 'Solo análisis'
+                                            : 'Consulta'}
                                     </dd>
                                 </div>
                                 <div className="flex justify-between px-5 py-3">
@@ -939,6 +977,12 @@ export default function RegistroIndex({
                                             {selectedDoctor.name}
                                         </dd>
                                     </div>
+                                )}
+                                {isStudies && (
+                                    <StudiesSummary
+                                        catalog={labCatalog}
+                                        selected={data.lab_test_ids}
+                                    />
                                 )}
                                 <div className="flex justify-between px-5 py-3">
                                     <dt className="text-muted">
