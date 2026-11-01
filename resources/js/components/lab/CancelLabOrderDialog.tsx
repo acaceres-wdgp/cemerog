@@ -5,13 +5,20 @@ import FormField from '@/components/cemerog/FormField';
 import { cancel } from '@/routes/lab/orders';
 import type { LabOrderSummary } from './types';
 
-/** Cancel an order before the sample (e.g. the patient does it elsewhere) */
+/**
+ * Cancel an order not started (e.g. the patient does it elsewhere). For
+ * imaging pass its `url` and `description`.
+ */
 export default function CancelLabOrderDialog({
     order,
     onClose,
+    url,
+    description,
 }: {
-    order: LabOrderSummary;
+    order: Pick<LabOrderSummary, 'id' | 'number'> & { tests?: string[] };
     onClose: () => void;
+    url?: string;
+    description?: string;
 }) {
     const errors = (usePage().props.errors ?? {}) as Record<string, string>;
     const [reason, setReason] = useState('');
@@ -21,7 +28,7 @@ export default function CancelLabOrderDialog({
         e.preventDefault();
         setIsLoading(true);
         router.post(
-            cancel.url(order.id),
+            url ?? cancel.url(order.id),
             { reason: reason.trim() },
             {
                 preserveScroll: true,
@@ -36,7 +43,7 @@ export default function CancelLabOrderDialog({
             open
             onOpenChange={(open) => !open && onClose()}
             title={`Cancelar orden ${order.number}`}
-            description={`${order.tests.join(' · ')}. No se cobra.`}
+            description={`${description ?? (order.tests ?? []).join(' · ')}. No se cobra.`}
             submitLabel="Cancelar orden"
             cancelLabel="Volver"
             onSubmit={submit}
