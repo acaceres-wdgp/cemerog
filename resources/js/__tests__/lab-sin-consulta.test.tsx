@@ -137,6 +137,7 @@ describe('Registro · Solo análisis o imágenes', () => {
         fireEvent.click(
             screen.getByRole('checkbox', { name: /Glucosa en ayunas/ }),
         );
+        fireEvent.click(screen.getByRole('tab', { name: /Imágenes/ }));
         fireEvent.click(
             screen.getByRole('checkbox', { name: /Sonografía abdominal/ }),
         );
@@ -174,6 +175,35 @@ describe('Registro · Solo análisis o imágenes', () => {
         expect(
             screen.getByRole('button', { name: /Registrar y crear atención/ }),
         ).toBeDisabled();
+    });
+});
+
+describe('Selector de estudios', () => {
+    it('searches within the tab', () => {
+        render(
+            <RegistroIndex
+                doctors={[]}
+                patient={PATIENT}
+                initialType="analisis"
+                labCatalog={CATALOG}
+                imagingCatalog={IMAGING}
+            />,
+        );
+
+        fireEvent.change(screen.getByLabelText('Buscar estudio'), {
+            target: { value: 'gluc' },
+        });
+        expect(screen.getByRole('checkbox', { name: /Glucosa/ })).toBeTruthy();
+        expect(
+            screen.queryByRole('checkbox', { name: /Hemograma/ }),
+        ).toBeNull();
+
+        fireEvent.change(screen.getByLabelText('Buscar estudio'), {
+            target: { value: 'zzz' },
+        });
+        expect(
+            screen.getByText('Ningún estudio coincide con la búsqueda.'),
+        ).toBeTruthy();
     });
 });
 
