@@ -45,9 +45,10 @@ class RegisterArrivalRequest extends FormRequest
             'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:20480'],
 
             // ── Attention fields ───────────────────────────────────────────────
-            'attention_type' => ['required', 'string', Rule::in(['consulta', 'analisis'])],
-            'doctor_id' => ['required_if:attention_type,consulta', 'nullable', 'integer', 'exists:doctors,id'],
-            'notes' => ['nullable', 'string'],
+            'attention_type' => ['required', 'string', Rule::in(['consulta', 'analisis', 'emergencia'])],
+            'doctor_id' => ['required_if:attention_type,consulta,emergencia', 'nullable', 'integer', 'exists:doctors,id'],
+            'notes' => ['required_if:attention_type,emergencia', 'nullable', 'string', 'max:1000'],
+            'cubicle_id' => ['required_if:attention_type,emergencia', 'nullable', 'integer', 'exists:emergency_cubicles,id'],
             'appointment_id' => ['nullable', 'integer', 'exists:appointments,id'],
 
             // ── Only analyses or imaging (walk-in orders, no consulta) ─────────
@@ -69,7 +70,9 @@ class RegisterArrivalRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'doctor_id.required_if' => 'El médico es obligatorio para una consulta.',
+            'doctor_id.required_if' => 'Elige el médico que atiende.',
+            'notes.required_if' => 'Indica el motivo de la emergencia.',
+            'cubicle_id.required_if' => 'Elige un cubículo libre.',
             'lab_test_ids.required' => 'Selecciona al menos un estudio.',
             'lab_test_ids.*.exists' => 'El análisis seleccionado no está disponible.',
             'imaging_study_ids.*.exists' => 'El estudio de imagen seleccionado no está disponible.',
