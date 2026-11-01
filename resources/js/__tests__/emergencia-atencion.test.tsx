@@ -248,13 +248,101 @@ describe('Detalle de Emergencia', () => {
         );
     });
 
-    it('procedures and lab orders are shown but not enabled yet', () => {
-        renderShow();
+    it('procedures are not enabled yet; analyses are ordered and listed', () => {
+        renderShow({
+            lab_catalog: [
+                {
+                    id: 1,
+                    code: '104',
+                    name: 'Hemograma completo',
+                    category: 'Hematología',
+                    price: 30000,
+                    preparation: 'No requiere ayuno.',
+                },
+                {
+                    id: 2,
+                    code: '130',
+                    name: 'Glucosa en ayunas',
+                    category: 'Química',
+                    price: 25000,
+                    preparation: 'Ayuno de 8 horas.',
+                },
+            ],
+            lab_orders: [
+                {
+                    id: 7,
+                    number: 'L-0007',
+                    status: 'ordenada',
+                    ordered_at: '31/10/2026 09:10',
+                    ordered_time: '09:10',
+                    tests: ['PCR'],
+                    total: 20000,
+                    indication: null,
+                    cancel_reason: null,
+                },
+            ],
+        });
 
         expect(
             screen.getByRole('button', { name: /Agregar procedimiento/ }),
         ).toBeDisabled();
-        expect(screen.getByRole('button', { name: /Ordenar/ })).toBeDisabled();
+        expect(screen.getByText('L-0007 · 09:10')).toBeTruthy();
+        expect(screen.getByText('Ordenada')).toBeTruthy();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Ordenar' }));
+        const dialog = screen.getByRole('dialog');
+        expect(
+            within(dialog).getByText(/Imágenes · disponible próximamente/),
+        ).toBeTruthy();
+        fireEvent.click(
+            within(dialog).getByRole('checkbox', { name: /Hemograma/ }),
+        );
+        fireEvent.click(
+            within(dialog).getByRole('checkbox', { name: /Glucosa/ }),
+        );
+        expect(within(dialog).getByText('RD$550.00')).toBeTruthy();
+        expect(within(dialog).getByText(/Ayuno de 8 horas/)).toBeTruthy();
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Enviar órdenes' }),
+        );
+
+        expect(mockPost).toHaveBeenCalledWith(
+            '/emergencia/4/laboratorio',
+            { lab_test_ids: [1, 2], indication: null },
+            expect.anything(),
+        );
+    });
+
+    it('an order not started can be cancelled with a reason', () => {
+        renderShow({
+            lab_orders: [
+                {
+                    id: 7,
+                    number: 'L-0007',
+                    status: 'ordenada',
+                    ordered_at: '31/10/2026 09:10',
+                    ordered_time: '09:10',
+                    tests: ['PCR'],
+                    total: 20000,
+                    indication: null,
+                    cancel_reason: null,
+                },
+            ],
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+        const dialog = screen.getByRole('dialog');
+        fireEvent.change(within(dialog).getByLabelText(/Motivo/), {
+            target: { value: 'Otro laboratorio' },
+        });
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Cancelar orden' }),
+        );
+        expect(mockPost).toHaveBeenCalledWith(
+            '/laboratorio/ordenes/7/cancelar',
+            { reason: 'Otro laboratorio' },
+            expect.anything(),
+        );
     });
 
     it('only internar and cirugía are disabled; without permission the discharge is too', () => {

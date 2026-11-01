@@ -58,11 +58,12 @@ const BASE_PROPS = {
 // ─── Disabled buttons ──────────────────────────────────────────────────────────
 
 describe('ConsultaIndex – disabled action buttons', () => {
-    it('renders "Ordenar estudios" button as disabled', () => {
+    it('«Ordenar estudios» is enabled and opens the order dialog', () => {
         render(<ConsultaIndex {...BASE_PROPS} />);
         const btn = screen.getByRole('button', { name: /Ordenar estudios/i });
-        expect(btn).toBeTruthy();
-        expect(btn.hasAttribute('disabled')).toBe(true);
+        expect(btn.hasAttribute('disabled')).toBe(false);
+        fireEvent.click(btn);
+        expect(screen.getByRole('dialog')).toBeTruthy();
     });
 
     it('renders "Pasar a emergencia" button as disabled', () => {
@@ -77,30 +78,6 @@ describe('ConsultaIndex – disabled action buttons', () => {
         const btn = screen.getByRole('button', { name: /^Ingresar$/i });
         expect(btn).toBeTruthy();
         expect(btn.hasAttribute('disabled')).toBe(true);
-    });
-
-    it('"Ordenar estudios" tooltip appears on hover', async () => {
-        const user = userEvent.setup();
-        render(<ConsultaIndex {...BASE_PROPS} />);
-        const trigger = screen
-            .getByRole('button', { name: /Ordenar estudios/i })
-            .closest('span')!;
-        await user.hover(trigger);
-        await waitFor(() => {
-            expect(screen.getByText(/Laboratorio/i)).toBeTruthy();
-        });
-    });
-
-    it('"Ordenar estudios" tooltip appears on keyboard focus', async () => {
-        render(<ConsultaIndex {...BASE_PROPS} />);
-        const trigger = screen
-            .getByRole('button', { name: /Ordenar estudios/i })
-            .closest('span')!;
-        // Focus the span directly (the disabled button cannot receive focus)
-        trigger.focus();
-        await waitFor(() => {
-            expect(screen.getByText(/Laboratorio/i)).toBeTruthy();
-        });
     });
 
     it('"Pasar a emergencia" tooltip appears on hover', async () => {

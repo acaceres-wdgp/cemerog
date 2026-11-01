@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import {
     FlaskConical,
     Ambulance,
@@ -14,6 +14,8 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import OrderStudiesDialog from '@/components/lab/OrderStudiesDialog';
+import type { LabCatalogItem } from '@/components/lab/types';
 import consulta from '@/routes/consulta';
 import AltaMedicaModal from './AltaMedicaModal';
 import { TurnItem } from '../types';
@@ -76,6 +78,10 @@ export default function ConsultaActions({
     onSelectTurn: (t: TurnItem) => void;
     onDischargeSuccess?: () => void;
 }) {
+    const [ordering, setOrdering] = useState(false);
+    const labCatalog =
+        (usePage().props as unknown as { lab_catalog?: LabCatalogItem[] })
+            .lab_catalog ?? [];
     const [altaOpen, setAltaOpen] = useState(false);
 
     const nextTurn = turnsEnEspera[0] ?? null;
@@ -124,11 +130,15 @@ export default function ConsultaActions({
 
                 {/* Right: disabled + primary */}
                 <div className="flex flex-wrap items-center gap-2">
-                    <DisabledActionButton
-                        icon={FlaskConical}
-                        label="Ordenar estudios"
-                        tooltip="Disponible cuando se implemente Laboratorio (e Imágenes)"
-                    />
+                    <button
+                        type="button"
+                        onClick={() => setOrdering(true)}
+                        aria-label="Ordenar estudios"
+                        className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-sans text-sm font-medium whitespace-nowrap text-secondary-fg hover:bg-accent-bg"
+                    >
+                        <FlaskConical className="h-4 w-4" />
+                        Ordenar estudios
+                    </button>
                     <DisabledActionButton
                         icon={Ambulance}
                         label="Pasar a emergencia"
@@ -169,6 +179,14 @@ export default function ConsultaActions({
                     </button>
                 ))}
             </div>
+
+            <OrderStudiesDialog
+                open={ordering}
+                onOpenChange={setOrdering}
+                subtitle={`${turn.patient.full_name} · Turno T-${String(turn.turn_number).padStart(2, '0')}`}
+                catalog={labCatalog}
+                url={consulta.lab.store.url(turn.id)}
+            />
 
             {/* Alta médica modal */}
             <AltaMedicaModal
