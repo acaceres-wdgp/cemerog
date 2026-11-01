@@ -232,9 +232,11 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/{doctor}/reset-password', [DoctoresController::class, 'resetDoctorPassword'])->name('doctores.reset-password');
     });
 
-    Route::get('/admin/analisis', [AnalisisController::class, 'index'])
-        ->middleware('permission:module.analisis.access')
-        ->name('analisis');
+    Route::prefix('/admin/analisis')->middleware('permission:module.analisis.access')->group(function () {
+        Route::get('/', [AnalisisController::class, 'index'])->name('analisis');
+        Route::post('/', [AnalisisController::class, 'store'])->name('analisis.store');
+        Route::put('/{test}', [AnalisisController::class, 'update'])->name('analisis.update');
+    });
 
     Route::get('/admin/imagenes-catalogo', [ImgcatController::class, 'index'])
         ->middleware('permission:module.imgcat.access')

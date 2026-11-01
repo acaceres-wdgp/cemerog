@@ -23,7 +23,7 @@
 | entrada       | /entrada-mercancia       | entrada/index       | admin, almacen                                           | Terminado (fase 1)     | 16          |
 | admin         | /admin/usuarios          | admin/index         | admin                                                    | Esqueleto              | 17          |
 | doctores      | /admin/doctores          | doctores/index      | admin                                                    | Esqueleto              | 18          |
-| analisis      | /admin/analisis          | analisis/index      | admin                                                    | Esqueleto              | 19          |
+| analisis      | /admin/analisis          | analisis/index      | admin                                                    | Terminado (fase 1)     | 19          |
 | imgcat        | /admin/imagenes-catalogo | imgcat/index        | admin                                                    | Esqueleto              | 20          |
 | precios       | /admin/precios           | precios/index       | admin                                                    | Esqueleto              | 21          |
 | habs          | /admin/habitaciones      | habs/index          | admin                                                    | Esqueleto              | 22          |
