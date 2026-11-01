@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { ChevronLeft } from 'lucide-react';
+import type { LabCatalogItem, LabOrderSummary } from '@/components/lab/types';
 import { emergencia } from '@/routes';
 import { formatMoney } from '@/lib/money';
 import ApplicationsCard from './components/detail/ApplicationsCard';
 import ComingSoonCard from './components/detail/ComingSoonCard';
 import ExitCard from './components/detail/ExitCard';
+import LabOrdersCard from './components/detail/LabOrdersCard';
 import MoveCubicleDialog from './components/detail/MoveCubicleDialog';
 import PatientCard from './components/detail/PatientCard';
 import VitalsCard from './components/detail/VitalsCard';
@@ -25,6 +27,8 @@ type Props = {
     catalog: CatalogItem[];
     routes: string[];
     can_discharge: boolean;
+    lab_orders?: LabOrderSummary[];
+    lab_catalog?: LabCatalogItem[];
     free_cubicles: { id: number; name: string }[];
 };
 
@@ -36,6 +40,8 @@ export default function EmergenciaShow({
     routes,
     can_discharge,
     free_cubicles,
+    lab_orders = [],
+    lab_catalog = [],
 }: Props) {
     const active = emergency.status === 'activa';
     const [moving, setMoving] = useState(false);
@@ -113,10 +119,11 @@ export default function EmergenciaShow({
                             canDischarge={can_discharge}
                         />
                     )}
-                    <ComingSoonCard
-                        title="Laboratorio e imágenes"
-                        action="Ordenar"
-                        empty="Sin estudios ordenados."
+                    <LabOrdersCard
+                        emergency={emergency}
+                        orders={lab_orders}
+                        catalog={lab_catalog}
+                        active={active}
                     />
                     <section className="rounded-[14px] border border-card-border bg-white px-5 py-4">
                         <div className="flex items-baseline justify-between gap-2">
