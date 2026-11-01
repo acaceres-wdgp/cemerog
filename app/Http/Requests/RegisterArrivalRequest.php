@@ -45,10 +45,15 @@ class RegisterArrivalRequest extends FormRequest
             'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:20480'],
 
             // ── Attention fields ───────────────────────────────────────────────
-            'attention_type' => ['required', 'string', Rule::in(['consulta'])],
+            'attention_type' => ['required', 'string', Rule::in(['consulta', 'analisis'])],
             'doctor_id' => ['required_if:attention_type,consulta', 'nullable', 'integer', 'exists:doctors,id'],
             'notes' => ['nullable', 'string'],
             'appointment_id' => ['nullable', 'integer', 'exists:appointments,id'],
+
+            // ── Only analyses (walk-in lab order, no consulta) ─────────────────
+            'lab_test_ids' => ['required_if:attention_type,analisis', 'array'],
+            'lab_test_ids.*' => ['integer', 'distinct', Rule::exists('lab_tests', 'id')->where('is_active', true)],
+            'external_doctor' => ['nullable', 'string', 'max:120'],
         ];
     }
 
@@ -59,6 +64,8 @@ class RegisterArrivalRequest extends FormRequest
     {
         return [
             'doctor_id.required_if' => 'El médico es obligatorio para una consulta.',
+            'lab_test_ids.required_if' => 'Selecciona al menos un análisis.',
+            'lab_test_ids.*.exists' => 'El análisis seleccionado no está disponible.',
         ];
     }
 }
