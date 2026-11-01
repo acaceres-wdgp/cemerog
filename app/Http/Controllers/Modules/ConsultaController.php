@@ -12,6 +12,7 @@ use App\Models\Account;
 use App\Models\AccountCharge;
 use App\Models\Consultation;
 use App\Models\Discharge;
+use App\Models\LabOrder;
 use App\Models\Patient;
 use App\Models\PatientAntecedent;
 use App\Models\Prescription;
@@ -74,6 +75,7 @@ class ConsultaController extends Controller
         $historialPatient = null;
         $charges = [];
         $chargesTotal = 0;
+        $labOrders = [];
 
         $patientId = $request->integer('patient_id');
         if ($patientId) {
@@ -83,6 +85,17 @@ class ConsultaController extends Controller
                 $historialPatient = $this->formatHistorialPatient($patient);
 
                 [$charges, $chargesTotal] = $this->loadCharges($patient, $user);
+
+                // Today's orders and anything still in progress
+                $lab = app(LabPresenter::class);
+                $labOrders = LabOrder::with('items.results')
+                    ->where('patient_id', $patient->id)
+                    ->where(fn ($q) => $q->whereDate('ordered_at', today())->orWhereIn('status', ['ordenada', 'muestra', 'ingresado']))
+                    ->latest('id')
+                    ->get()
+                    ->map(fn (LabOrder $o): array => $lab->withResults($o))
+                    ->values()
+                    ->all();
             }
         }
 
@@ -96,6 +109,7 @@ class ConsultaController extends Controller
             'prescriptions' => $prescriptions,
             'charges' => $charges,
             'charges_total' => $chargesTotal,
+            'lab_orders' => $labOrders,
         ]);
     }
 

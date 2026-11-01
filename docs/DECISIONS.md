@@ -442,3 +442,19 @@ Al llegar un paciente se necesita registrar qué consumió ese día (consultas, 
 - **Entradas** numeradas `ENT-0001` (el prefijo `E-` ya lo usan las emergencias). Una línea puede crear un producto que no estaba en el catálogo.
 - **Ajuste de existencia** con motivo (conteo físico, merma, vencido), con registro de la existencia anterior y la diferencia. La existencia puede quedar negativa porque aplicar en Emergencia nunca se bloquea; el ajuste la corrige.
 - El **rol almacén** y el administrador editan el catálogo, los proveedores y registran entradas.
+
+---
+
+## ADR-021: Laboratorio — catálogo con parámetros, órdenes y cobro al tomar la muestra
+
+**Fecha**: 2026-11  
+**Estado**: Aceptado
+
+**Decisión:**
+
+- **Catálogo de análisis** (`lab_tests`) con **parámetros**: numéricos (mínimo, máximo y unidad) o de texto (valor normal). Así se marca solo lo que está fuera de rango. Lo edita el administrador.
+- **Órdenes** (`lab_orders`, `L-0001`) desde Consulta (médico del turno) y Emergencia. Estados: ordenada → muestra tomada → resultado ingresado → validada → entregada, o cancelada.
+- **Se cobra al tomar la muestra**, no al ordenar (ADR-018). Va a la cuenta de la emergencia si sigue abierta; si no, a la cuenta del día del paciente. Una orden que se hará en otro laboratorio se cancela con motivo y no se cobra.
+- **Los resultados guardan una copia** del nombre y la referencia de cada parámetro, para que un cambio posterior en el catálogo no altere resultados ya emitidos.
+- **Validan el bioanalista y el administrador.** Para validar hacen falta todos los resultados. Lo validado aparece en Consulta («Órdenes y cargos»), en Emergencia y en el historial clínico.
+- **Pendiente:** el paciente que viene solo a análisis (Registro → «Estudios» / «Orden sin consulta») e Imágenes.

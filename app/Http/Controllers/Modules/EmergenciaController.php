@@ -49,7 +49,7 @@ class EmergenciaController extends Controller
             'catalog' => $emergency->isActive() ? $presenter->catalog() : [],
             'routes' => EmergencyApplicationRequest::ROUTES,
             'lab_orders' => LabOrder::with('items')->where('emergency_id', $emergency->id)->latest('id')->get()
-                ->map(fn (LabOrder $o): array => $lab->summary($o))->values()->all(),
+                ->map(fn (LabOrder $o): array => $lab->withResults($o))->values()->all(),
             'lab_catalog' => $emergency->isActive() ? $lab->catalog() : [],
             'can_discharge' => $emergency->isActive() && Emergency::canBeDischargedBy($user),
             'free_cubicles' => EmergencyCubicle::active()->whereNotIn('id', $occupied)->get()
