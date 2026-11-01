@@ -250,9 +250,11 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::put('/{test}', [AnalisisController::class, 'update'])->name('analisis.update');
     });
 
-    Route::get('/admin/imagenes-catalogo', [ImgcatController::class, 'index'])
-        ->middleware('permission:module.imgcat.access')
-        ->name('imgcat');
+    Route::prefix('/admin/imagenes-catalogo')->middleware('permission:module.imgcat.access')->group(function () {
+        Route::get('/', [ImgcatController::class, 'index'])->name('imgcat');
+        Route::post('/', [ImgcatController::class, 'store'])->name('imgcat.store');
+        Route::put('/{study}', [ImgcatController::class, 'update'])->name('imgcat.update');
+    });
 
     Route::get('/admin/precios', [PreciosController::class, 'index'])
         ->middleware('permission:module.precios.access')
