@@ -7,6 +7,18 @@ export type LabCatalogItem = {
     preparation: string | null;
 };
 
+export type ImagingCatalogItem = {
+    id: number;
+    code: string;
+    name: string;
+    modality: string;
+    price: number;
+    preparation: string | null;
+};
+
+/** What «Ordenar estudios» has selected */
+export type StudySelection = { lab: number[]; imaging: number[] };
+
 export type LabOrderStatus =
     | 'ordenada'
     | 'muestra'

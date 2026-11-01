@@ -12,12 +12,16 @@ use App\Models\Account;
 use App\Models\AccountCharge;
 use App\Models\Consultation;
 use App\Models\Discharge;
+use App\Models\Emergency;
+use App\Models\EmergencyCubicle;
+use App\Models\ImagingOrder;
 use App\Models\LabOrder;
 use App\Models\Patient;
 use App\Models\PatientAntecedent;
 use App\Models\Prescription;
 use App\Models\Turn;
 use App\Models\User;
+use App\Support\ImagingPresenter;
 use App\Support\LabPresenter;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
@@ -76,6 +80,7 @@ class ConsultaController extends Controller
         $charges = [];
         $chargesTotal = 0;
         $labOrders = [];
+        $imagingOrders = [];
 
         $patientId = $request->integer('patient_id');
         if ($patientId) {
@@ -96,12 +101,30 @@ class ConsultaController extends Controller
                     ->map(fn (LabOrder $o): array => $lab->withResults($o))
                     ->values()
                     ->all();
+
+                $img = app(ImagingPresenter::class);
+                $imagingOrders = ImagingOrder::with(['doctor', 'attachments', 'signer'])
+                    ->where('patient_id', $patient->id)
+                    ->where(fn ($q) => $q->whereDate('ordered_at', today())->orWhereIn('status', ['ordenada', 'realizado', 'borrador']))
+                    ->latest('id')
+                    ->get()
+                    ->map(fn (ImagingOrder $o): array => $img->withReport($o))
+                    ->values()
+                    ->all();
             }
         }
 
         return Inertia::render('consulta/index', [
             'can_attend' => true,
             'lab_catalog' => fn () => app(LabPresenter::class)->catalog(),
+            'imaging_catalog' => fn () => app(ImagingPresenter::class)->catalog(),
+            // «Pasar a emergencia»: the cubicles free right now
+            'emergency_cubicles' => fn () => EmergencyCubicle::active()
+                ->whereNotIn('id', Emergency::whereNotNull('occupied_cubicle_id')->pluck('occupied_cubicle_id'))
+                ->get()
+                ->map(fn (EmergencyCubicle $c): array => ['id' => $c->id, 'name' => $c->name])
+                ->values()
+                ->all(),
             'turns_en_consulta' => $turnsEnConsulta,
             'turns_en_espera' => $turnsEnEspera,
             'historial' => $historial,
@@ -110,6 +133,7 @@ class ConsultaController extends Controller
             'charges' => $charges,
             'charges_total' => $chargesTotal,
             'lab_orders' => $labOrders,
+            'imaging_orders' => $imagingOrders,
         ]);
     }
 

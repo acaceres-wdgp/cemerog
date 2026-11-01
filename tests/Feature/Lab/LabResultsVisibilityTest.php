@@ -27,7 +27,7 @@ beforeEach(function () {
     ]);
     Account::create(['patient_id' => $this->patient->id, 'service_date' => today()->toDateString(), 'status' => 'abierta', 'opened_at' => now()]);
 
-    $this->actingAs($this->medico)->post("/consulta/turnos/{$this->turn->id}/laboratorio", [
+    $this->actingAs($this->medico)->post("/consulta/turnos/{$this->turn->id}/estudios", [
         'lab_test_ids' => [LabTest::where('code', '130')->value('id')],
     ]);
     $this->order = LabOrder::first();

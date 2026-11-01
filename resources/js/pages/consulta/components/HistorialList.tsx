@@ -64,8 +64,10 @@ export default function HistorialList({ historial, selIdx, onSelect }: Props) {
                             'Receta médica')
                           : e.type === 'laboratorio'
                             ? (e.lab?.tests.join(' · ') ?? 'Laboratorio')
-                            : (e.discharge?.discharge_diagnosis ??
-                              'Alta médica');
+                            : e.type === 'imagen'
+                              ? (e.imaging?.name ?? 'Imágenes')
+                              : (e.discharge?.discharge_diagnosis ??
+                                'Alta médica');
 
                 return (
                     <button

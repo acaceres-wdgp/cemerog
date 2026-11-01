@@ -3,7 +3,13 @@
  * Step 3 – Discharge modal behavior.
  */
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
@@ -66,11 +72,51 @@ describe('ConsultaIndex – disabled action buttons', () => {
         expect(screen.getByRole('dialog')).toBeTruthy();
     });
 
-    it('renders "Pasar a emergencia" button as disabled', () => {
+    it('"Pasar a emergencia" opens the transfer dialog with the free cubicles', () => {
+        mockUsePage.mockReturnValue({
+            props: {
+                errors: {},
+                emergency_cubicles: [
+                    { id: 2, name: 'Cub. 2' },
+                    { id: 3, name: 'Cub. 3' },
+                ],
+            },
+        } as never);
         render(<ConsultaIndex {...BASE_PROPS} />);
-        const btn = screen.getByRole('button', { name: /Pasar a emergencia/i });
-        expect(btn).toBeTruthy();
-        expect(btn.hasAttribute('disabled')).toBe(true);
+        fireEvent.click(
+            screen.getByRole('button', { name: /Pasar a emergencia/i }),
+        );
+
+        const dialog = screen.getByRole('dialog');
+        const submit = within(dialog).getByRole('button', {
+            name: /Trasladar a emergencia/,
+        });
+        expect(submit.hasAttribute('disabled')).toBe(true);
+
+        fireEvent.change(within(dialog).getByLabelText(/Cubículo/), {
+            target: { value: '3' },
+        });
+        fireEvent.change(within(dialog).getByLabelText(/Motivo del traslado/), {
+            target: { value: 'Dolor torácico.' },
+        });
+        fireEvent.click(submit);
+
+        expect(mockRouterPost).toHaveBeenCalledWith(
+            '/consulta/turnos/1/emergencia',
+            { cubicle_id: 3, reason: 'Dolor torácico.' },
+            expect.anything(),
+        );
+        mockUsePage.mockReturnValue({ props: { errors: {} } });
+    });
+
+    it('"Pasar a emergencia" warns when no cubicle is free', () => {
+        render(<ConsultaIndex {...BASE_PROPS} />);
+        fireEvent.click(
+            screen.getByRole('button', { name: /Pasar a emergencia/i }),
+        );
+        expect(
+            screen.getByText(/No hay cubículos libres en Emergencia/),
+        ).toBeTruthy();
     });
 
     it('renders "Ingresar" button as disabled', () => {
@@ -78,18 +124,6 @@ describe('ConsultaIndex – disabled action buttons', () => {
         const btn = screen.getByRole('button', { name: /^Ingresar$/i });
         expect(btn).toBeTruthy();
         expect(btn.hasAttribute('disabled')).toBe(true);
-    });
-
-    it('"Pasar a emergencia" tooltip appears on hover', async () => {
-        const user = userEvent.setup();
-        render(<ConsultaIndex {...BASE_PROPS} />);
-        const trigger = screen
-            .getByRole('button', { name: /Pasar a emergencia/i })
-            .closest('span')!;
-        await user.hover(trigger);
-        await waitFor(() => {
-            expect(screen.getByText(/Emergencia/i)).toBeTruthy();
-        });
     });
 
     it('"Ingresar" tooltip appears on hover', async () => {

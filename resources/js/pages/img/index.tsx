@@ -1,668 +1,225 @@
-import { useState } from 'react';
+import React, { FormEvent, useState } from 'react';
+import { router } from '@inertiajs/react';
+import { ChevronRight, Search } from 'lucide-react';
+import SegmentedControl from '@/components/cemerog/SegmentedControl';
+import ImgStatusPill from '@/components/img/ImgStatusPill';
+import { IMG_STATUS, isImagingPending } from '@/components/img/types';
+import type {
+    ImagingOrderSummary,
+    ImagingPatient,
+    ImagingStatus,
+} from '@/components/img/types';
+import { ageLabel } from '@/lib/patient';
+import { cn } from '@/lib/utils';
+import { img } from '@/routes';
+import * as orders from '@/routes/img/orders';
 
-const MOCK_ESTUDIOS = [
-    {
-        code: 'I-0012',
-        fecha: '12/10/2026',
-        paciente: 'Rosa Fernández',
-        ini: 'RF',
-        modalidad: 'Radiografía',
-        estudio: 'Rx Tórax PA y lateral',
-        estado: 'Pendiente',
-        medico: 'Dra. Ana Rodríguez',
-    },
-    {
-        code: 'I-0011',
-        fecha: '12/10/2026',
-        paciente: 'Carmen López',
-        ini: 'CL',
-        modalidad: 'Eco',
-        estudio: 'Ecografía abdominal',
-        estado: 'En proceso',
-        medico: 'Dr. Pedro Guzmán',
-    },
-    {
-        code: 'I-0010',
-        fecha: '11/10/2026',
-        paciente: 'Luis Martínez',
-        ini: 'LM',
-        modalidad: 'Eco',
-        estudio: 'Ecografía tiroidea',
-        estado: 'Completado',
-        medico: 'Dra. Sofía Castro',
-    },
-    {
-        code: 'I-0009',
-        fecha: '10/10/2026',
-        paciente: 'Juan Pérez',
-        ini: 'JP',
-        modalidad: 'TAC',
-        estudio: 'TAC de cráneo simple',
-        estado: 'Completado',
-        medico: 'Dr. Pedro Guzmán',
-    },
-    {
-        code: 'I-0008',
-        fecha: '09/10/2026',
-        paciente: 'María García',
-        ini: 'MG',
-        modalidad: 'Eco',
-        estudio: 'Eco ginecológico transvaginal',
-        estado: 'Completado',
-        medico: 'Dra. Ana Rodríguez',
-    },
+const th =
+    'h-10 border-b border-accent-tip-border bg-table-header-bg px-3 text-[11.5px] font-semibold tracking-[.05em] whitespace-nowrap text-table-header-text uppercase';
+const td = 'border-b border-divider p-3 align-middle';
+const RANGES = [
+    { value: '7', label: '7 días' },
+    { value: '30', label: '30 días' },
+    { value: 'todo', label: 'Todo' },
+];
+const STATUSES: ImagingStatus[] = [
+    'ordenada',
+    'realizado',
+    'borrador',
+    'listo',
+    'entregado',
+    'cancelada',
 ];
 
-const ESTADO_COLORS: Record<string, { bg: string; fg: string }> = {
-    Pendiente: { bg: '#FEF3C7', fg: '#92400E' },
-    'En proceso': { bg: '#DBEAFE', fg: '#1E40AF' },
-    Completado: { bg: '#DCFCE7', fg: '#166534' },
+type Row = ImagingOrderSummary & { patient: ImagingPatient };
+type Filters = { q: string; rango: string; estado: string };
+type Pagination = {
+    current_page: number;
+    last_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
 };
 
-const thStyle: React.CSSProperties = {
-    textAlign: 'left',
-    fontWeight: 600,
-    fontSize: 11.5,
-    letterSpacing: '.05em',
-    textTransform: 'uppercase',
-    color: '#56693f',
-    padding: '0 12px',
-    height: 40,
-    background: '#F6FAF1',
-    borderBottom: '1px solid #DCEBC9',
-    whiteSpace: 'nowrap',
-};
-
-export default function ImgIndex() {
-    const [query, setQuery] = useState('');
-    const [filterEstado, setFilterEstado] = useState('Todos');
-    const [selCode, setSelCode] = useState<string | null>('I-0012');
-
-    const filtered = MOCK_ESTUDIOS.filter(
-        (e) =>
-            (filterEstado === 'Todos' || e.estado === filterEstado) &&
-            (!query ||
-                e.paciente.toLowerCase().includes(query.toLowerCase()) ||
-                e.code.includes(query)),
-    );
-
-    const selEstudio = MOCK_ESTUDIOS.find((e) => e.code === selCode);
+/** Imágenes: every study, pending first; a row opens the patient view */
+export default function ImgIndex({
+    orders: rows = [],
+    pagination = {
+        current_page: 1,
+        last_page: 1,
+        total: 0,
+        from: null,
+        to: null,
+    },
+    counts = {},
+    pending = 0,
+    filters = { q: '', rango: '30', estado: 'todos' },
+}: {
+    orders?: Row[];
+    pagination?: Pagination;
+    counts?: Partial<Record<ImagingStatus, number>>;
+    pending?: number;
+    filters?: Filters;
+}) {
+    const [q, setQ] = useState(filters.q);
+    const visit = (patch: Partial<Filters> & { page?: number }) =>
+        router.get(
+            img.url({
+                query: {
+                    q: (patch.q ?? q) || undefined,
+                    rango: patch.rango ?? filters.rango,
+                    estado: patch.estado ?? filters.estado,
+                    page: patch.page,
+                },
+            }),
+            {},
+            { preserveState: true, preserveScroll: true },
+        );
+    const search = (e: FormEvent) => {
+        e.preventDefault();
+        visit({ q, page: 1 });
+    };
+    const total = Object.values(counts).reduce((a, n) => a + (n ?? 0), 0);
 
     return (
-        <div className="flex flex-col gap-5">
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 16,
-                    flexWrap: 'wrap',
-                }}
-            >
-                <div>
-                    <h1
-                        style={{
-                            fontFamily: 'Bitter,Georgia,serif',
-                            fontWeight: 600,
-                            fontSize: 26,
-                            color: '#1f2d22',
-                            margin: 0,
-                        }}
+        <div className="flex flex-col gap-4">
+            <p className="m-0 text-text-secondary">
+                {pending}{' '}
+                {pending === 1 ? 'estudio pendiente' : 'estudios pendientes'} de
+                imagen o informe · haz clic en una fila para ver todos los
+                estudios del paciente.
+            </p>
+            <section className="overflow-x-auto rounded-[14px] border border-card-border bg-white">
+                <div className="flex flex-wrap items-center gap-3 px-5 pt-4">
+                    <form
+                        onSubmit={search}
+                        className="flex h-10 min-w-[300px] flex-1 items-center gap-2 rounded-[10px] border border-input-border px-3 focus-within:border-primary"
                     >
-                        Imágenes
-                    </h1>
-                    <p style={{ margin: '4px 0 0', color: '#5f6b64' }}>
-                        Estudios de imágenes diagnósticas
-                    </p>
+                        <Search className="h-4 w-4 text-muted" />
+                        <input
+                            value={q}
+                            onChange={(e) => setQ(e.target.value)}
+                            placeholder="Buscar por paciente, cédula, No. de orden o estudio…"
+                            aria-label="Buscar estudios"
+                            className="w-full border-0 bg-transparent outline-none"
+                        />
+                    </form>
+                    <SegmentedControl
+                        segments={RANGES}
+                        value={filters.rango}
+                        onChange={(rango) => visit({ rango, page: 1 })}
+                    />
                 </div>
-                <button
-                    style={{
-                        whiteSpace: 'nowrap',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        height: 36,
-                        padding: '0 14px',
-                        borderRadius: 10,
-                        border: 'none',
-                        background: '#2E8B3E',
-                        color: '#fff',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        fontFamily: 'inherit',
-                        fontSize: 14,
-                    }}
-                >
-                    + Nueva orden
-                </button>
-            </div>
-
-            <div
-                style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 16,
-                    alignItems: 'flex-start',
-                }}
-            >
-                {/* Table */}
-                <div
-                    style={{
-                        background: '#fff',
-                        border: '1px solid #e3e9e3',
-                        borderRadius: 14,
-                        overflow: 'hidden',
-                        flex: '2 1 500px',
-                        minWidth: 0,
-                    }}
-                >
-                    <div
-                        style={{
-                            padding: '12px 16px',
-                            borderBottom: '1px solid #eef0ec',
-                            display: 'flex',
-                            gap: 12,
-                            alignItems: 'center',
-                            flexWrap: 'wrap',
-                        }}
-                    >
-                        <div
-                            style={{
-                                position: 'relative',
-                                flex: '0 1 260px',
-                                minWidth: 180,
-                            }}
-                        >
-                            <span
-                                style={{
-                                    position: 'absolute',
-                                    left: 10,
-                                    top: 10,
-                                    color: '#71717a',
-                                    pointerEvents: 'none',
-                                }}
+                <div className="px-5 py-3">
+                    <SegmentedControl
+                        segments={[
+                            { value: 'todos', label: 'Todos', count: total },
+                            ...STATUSES.map((s) => ({
+                                value: s,
+                                label: IMG_STATUS[s].label,
+                                count: counts[s] ?? 0,
+                            })),
+                        ]}
+                        value={filters.estado}
+                        onChange={(estado) => visit({ estado, page: 1 })}
+                    />
+                </div>
+                <table className="w-full min-w-[960px] border-collapse text-[14px]">
+                    <thead>
+                        <tr>
+                            <th className={`${th} pl-5 text-left`}>Orden</th>
+                            <th className={`${th} text-left`}>Paciente</th>
+                            <th className={`${th} text-left`}>Estudio</th>
+                            <th className={`${th} text-left`}>Origen</th>
+                            <th className={`${th} text-left`}>Ordenado por</th>
+                            <th className={`${th} text-left`}>Estado</th>
+                            <th className={`${th} pr-5`}>
+                                <span className="sr-only">Abrir</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows.map((o) => (
+                            <tr
+                                key={o.id}
+                                onClick={() =>
+                                    router.visit(orders.show.url(o.id))
+                                }
+                                className={cn(
+                                    'cursor-pointer hover:bg-list-row-bg',
+                                    isImagingPending(o.status) &&
+                                        'bg-list-row-bg',
+                                )}
                             >
-                                🔍
-                            </span>
-                            <input
-                                value={query}
-                                onChange={(e) => setQuery(e.target.value)}
-                                placeholder="Buscar paciente o código…"
-                                style={{
-                                    height: 36,
-                                    width: '100%',
-                                    padding: '0 12px 0 32px',
-                                    border: '1px solid #e4e4e7',
-                                    borderRadius: 10,
-                                    outline: 'none',
-                                    fontFamily: 'inherit',
-                                    fontSize: 14,
-                                }}
-                            />
-                        </div>
-                        <div
-                            style={{
-                                display: 'inline-flex',
-                                background: '#F3F7F2',
-                                border: '1px solid #e3e9e3',
-                                borderRadius: 11,
-                                padding: 3,
-                                gap: 2,
-                            }}
-                        >
-                            {[
-                                'Todos',
-                                'Pendiente',
-                                'En proceso',
-                                'Completado',
-                            ].map((s) => (
-                                <button
-                                    key={s}
-                                    onClick={() => setFilterEstado(s)}
-                                    style={{
-                                        height: 28,
-                                        padding: '0 10px',
-                                        border: 'none',
-                                        borderRadius: 8,
-                                        cursor: 'pointer',
-                                        fontWeight: 500,
-                                        fontSize: 12.5,
-                                        background:
-                                            filterEstado === s
-                                                ? '#fff'
-                                                : 'transparent',
-                                        color:
-                                            filterEstado === s
-                                                ? '#1f2d22'
-                                                : '#52605a',
-                                        boxShadow:
-                                            filterEstado === s
-                                                ? '0 1px 3px rgba(0,0,0,.1)'
-                                                : 'none',
-                                        fontFamily: 'inherit',
-                                    }}
+                                <td className={`${td} pl-5`}>
+                                    <div className="font-mono font-semibold whitespace-nowrap">
+                                        {o.number}
+                                    </div>
+                                    <div className="text-[12.5px] text-muted">
+                                        {o.ordered_date} · {o.ordered_time}
+                                    </div>
+                                </td>
+                                <td className={td}>
+                                    <div className="font-medium text-text-heading">
+                                        {o.patient.full_name}
+                                    </div>
+                                    <div className="text-[12.5px] text-text-tertiary">
+                                        {[
+                                            o.patient.document_number,
+                                            ageLabel(o.patient.age),
+                                        ]
+                                            .filter(Boolean)
+                                            .join(' · ')}
+                                    </div>
+                                </td>
+                                <td className={td}>{o.name}</td>
+                                <td className={td}>{o.origin}</td>
+                                <td className={`${td} text-[13px]`}>
+                                    {o.doctor ?? '—'}
+                                </td>
+                                <td className={td}>
+                                    <ImgStatusPill status={o.status} />
+                                </td>
+                                <td
+                                    className={`${td} pr-5 text-right text-muted`}
                                 >
-                                    {s}
+                                    <ChevronRight className="inline h-4 w-4" />
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                {rows.length === 0 && (
+                    <div className="p-8 text-center text-muted">
+                        Ningún estudio coincide con los filtros.
+                    </div>
+                )}
+                <div className="flex items-center justify-between gap-3 px-5 py-3 text-[13px] text-muted">
+                    <span>
+                        {pagination.total === 0
+                            ? '0 estudios'
+                            : `Mostrando ${pagination.from}–${pagination.to} de ${pagination.total} estudios`}
+                    </span>
+                    {pagination.last_page > 1 && (
+                        <div className="flex gap-1">
+                            {Array.from(
+                                { length: pagination.last_page },
+                                (_, i) => i + 1,
+                            ).map((p) => (
+                                <button
+                                    key={p}
+                                    type="button"
+                                    aria-current={p === pagination.current_page}
+                                    onClick={() => visit({ page: p })}
+                                    className={`h-8 min-w-8 cursor-pointer rounded-lg border px-2 ${p === pagination.current_page ? 'border-primary bg-primary text-white' : 'border-card-border bg-white'}`}
+                                >
+                                    {p}
                                 </button>
                             ))}
                         </div>
-                    </div>
-                    <div style={{ overflowX: 'auto' }}>
-                        <table
-                            style={{
-                                width: '100%',
-                                borderCollapse: 'collapse',
-                                minWidth: 620,
-                            }}
-                        >
-                            <thead>
-                                <tr>
-                                    <th style={thStyle}>Código</th>
-                                    <th style={thStyle}>Fecha</th>
-                                    <th style={thStyle}>Paciente</th>
-                                    <th style={thStyle}>Estudio</th>
-                                    <th style={thStyle}>Modalidad</th>
-                                    <th style={thStyle}>Estado</th>
-                                    <th style={{ ...thStyle, width: 44 }}></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filtered.map((e) => {
-                                    const sc = ESTADO_COLORS[e.estado] ?? {
-                                        bg: '#F4F4F5',
-                                        fg: '#52525B',
-                                    };
-                                    return (
-                                        <tr
-                                            key={e.code}
-                                            onClick={() => setSelCode(e.code)}
-                                            style={{
-                                                cursor: 'pointer',
-                                                background:
-                                                    selCode === e.code
-                                                        ? '#F8FBF6'
-                                                        : '#fff',
-                                            }}
-                                        >
-                                            <td
-                                                style={{
-                                                    padding: '12px',
-                                                    borderBottom:
-                                                        '1px solid #eef0ec',
-                                                    fontFamily:
-                                                        'ui-monospace,monospace',
-                                                    fontSize: 13,
-                                                    fontWeight: 600,
-                                                    whiteSpace: 'nowrap',
-                                                }}
-                                            >
-                                                {e.code}
-                                            </td>
-                                            <td
-                                                style={{
-                                                    padding: '12px',
-                                                    borderBottom:
-                                                        '1px solid #eef0ec',
-                                                    fontVariantNumeric:
-                                                        'tabular-nums',
-                                                    fontSize: 13,
-                                                }}
-                                            >
-                                                {e.fecha}
-                                            </td>
-                                            <td
-                                                style={{
-                                                    padding: '12px',
-                                                    borderBottom:
-                                                        '1px solid #eef0ec',
-                                                    fontWeight: 500,
-                                                }}
-                                            >
-                                                {e.paciente}
-                                            </td>
-                                            <td
-                                                style={{
-                                                    padding: '12px',
-                                                    borderBottom:
-                                                        '1px solid #eef0ec',
-                                                    fontSize: 13,
-                                                }}
-                                            >
-                                                {e.estudio}
-                                            </td>
-                                            <td
-                                                style={{
-                                                    padding: '12px',
-                                                    borderBottom:
-                                                        '1px solid #eef0ec',
-                                                }}
-                                            >
-                                                <span
-                                                    style={{
-                                                        padding: '2px 8px',
-                                                        borderRadius: 999,
-                                                        background: '#F3F7F2',
-                                                        fontSize: 12,
-                                                        fontWeight: 500,
-                                                    }}
-                                                >
-                                                    {e.modalidad}
-                                                </span>
-                                            </td>
-                                            <td
-                                                style={{
-                                                    padding: '12px',
-                                                    borderBottom:
-                                                        '1px solid #eef0ec',
-                                                }}
-                                            >
-                                                <span
-                                                    style={{
-                                                        padding: '3px 10px',
-                                                        borderRadius: 999,
-                                                        fontSize: 12,
-                                                        fontWeight: 600,
-                                                        background: sc.bg,
-                                                        color: sc.fg,
-                                                    }}
-                                                >
-                                                    {e.estado}
-                                                </span>
-                                            </td>
-                                            <td
-                                                style={{
-                                                    padding: '12px',
-                                                    borderBottom:
-                                                        '1px solid #eef0ec',
-                                                    color: '#a1a1aa',
-                                                }}
-                                            >
-                                                ›
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                    )}
                 </div>
-
-                {/* Detail panel */}
-                {selEstudio && (
-                    <div
-                        style={{
-                            flex: '1 1 300px',
-                            minWidth: 0,
-                            background: '#fff',
-                            border: '1px solid #e3e9e3',
-                            borderRadius: 14,
-                            overflow: 'hidden',
-                        }}
-                    >
-                        <div
-                            style={{
-                                padding: '14px 16px',
-                                borderBottom: '1px solid #eef0ec',
-                            }}
-                        >
-                            <div
-                                style={{
-                                    fontFamily: 'ui-monospace,monospace',
-                                    fontWeight: 700,
-                                    fontSize: 14,
-                                    color: '#1f2d22',
-                                }}
-                            >
-                                {selEstudio.code}
-                            </div>
-                            <div
-                                style={{
-                                    fontFamily: 'Bitter,Georgia,serif',
-                                    fontWeight: 600,
-                                    fontSize: 17,
-                                    color: '#1f2d22',
-                                    marginTop: 4,
-                                }}
-                            >
-                                {selEstudio.estudio}
-                            </div>
-                            <div
-                                style={{
-                                    fontSize: 13,
-                                    color: '#71717a',
-                                    marginTop: 2,
-                                }}
-                            >
-                                {selEstudio.paciente} · {selEstudio.fecha}
-                            </div>
-                        </div>
-                        <div
-                            style={{
-                                padding: '14px 16px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 14,
-                            }}
-                        >
-                            {selEstudio.estado === 'Completado' ? (
-                                <>
-                                    <div
-                                        style={{
-                                            padding: '10px 12px',
-                                            borderRadius: 10,
-                                            border: '1px solid #e4e4e7',
-                                            background: '#fafafa',
-                                        }}
-                                    >
-                                        <div
-                                            style={{
-                                                fontSize: 11,
-                                                fontWeight: 600,
-                                                color: '#71717a',
-                                                textTransform: 'uppercase',
-                                                letterSpacing: '.05em',
-                                                marginBottom: 6,
-                                            }}
-                                        >
-                                            Imagen adjunta
-                                        </div>
-                                        <div
-                                            style={{
-                                                height: 140,
-                                                borderRadius: 8,
-                                                background:
-                                                    'linear-gradient(135deg,#e4e4e7 0%,#d4d4d8 100%)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: '#71717a',
-                                                fontSize: 13,
-                                            }}
-                                        >
-                                            🖼 Imagen no disponible en mock
-                                        </div>
-                                    </div>
-                                    <label
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: 6,
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                fontWeight: 500,
-                                                fontSize: 13,
-                                            }}
-                                        >
-                                            Hallazgos
-                                        </span>
-                                        <textarea
-                                            rows={3}
-                                            style={{
-                                                padding: '8px 12px',
-                                                border: '1px solid #e4e4e7',
-                                                borderRadius: 10,
-                                                outline: 'none',
-                                                fontFamily: 'inherit',
-                                                fontSize: 13,
-                                            }}
-                                            defaultValue="Parénquima pulmonar con infiltrado intersticial bilateral en campos medios e inferiores. Sin derrame pleural. Silueta cardíaca normal."
-                                        ></textarea>
-                                    </label>
-                                    <label
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: 6,
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                fontWeight: 500,
-                                                fontSize: 13,
-                                            }}
-                                        >
-                                            Conclusión
-                                        </span>
-                                        <textarea
-                                            rows={2}
-                                            style={{
-                                                padding: '8px 12px',
-                                                border: '1px solid #e4e4e7',
-                                                borderRadius: 10,
-                                                outline: 'none',
-                                                fontFamily: 'inherit',
-                                                fontSize: 13,
-                                            }}
-                                            defaultValue="Hallazgos compatibles con neumonía bilateral. Correlacionar con clínica y laboratorio."
-                                        ></textarea>
-                                    </label>
-                                    <div style={{ display: 'flex', gap: 8 }}>
-                                        <button
-                                            style={{
-                                                flex: 1,
-                                                height: 36,
-                                                borderRadius: 10,
-                                                border: '1px solid #dfe7df',
-                                                background: '#F6F9F5',
-                                                fontWeight: 500,
-                                                cursor: 'pointer',
-                                                fontFamily: 'inherit',
-                                                fontSize: 14,
-                                            }}
-                                        >
-                                            🖨 Imprimir
-                                        </button>
-                                        <button
-                                            style={{
-                                                flex: 1,
-                                                height: 36,
-                                                borderRadius: 10,
-                                                border: 'none',
-                                                background: '#2E8B3E',
-                                                color: '#fff',
-                                                fontWeight: 500,
-                                                cursor: 'pointer',
-                                                fontFamily: 'inherit',
-                                                fontSize: 14,
-                                            }}
-                                        >
-                                            ✓ Guardar
-                                        </button>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div
-                                        style={{
-                                            padding: '12px',
-                                            borderRadius: 10,
-                                            border: '2px dashed #e4e4e7',
-                                            textAlign: 'center',
-                                            color: '#71717a',
-                                            fontSize: 13,
-                                        }}
-                                    >
-                                        📎 Adjuntar imagen
-                                    </div>
-                                    <label
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: 6,
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                fontWeight: 500,
-                                                fontSize: 13,
-                                            }}
-                                        >
-                                            Hallazgos
-                                        </span>
-                                        <textarea
-                                            rows={3}
-                                            style={{
-                                                padding: '8px 12px',
-                                                border: '1px solid #e4e4e7',
-                                                borderRadius: 10,
-                                                outline: 'none',
-                                                fontFamily: 'inherit',
-                                                fontSize: 13,
-                                            }}
-                                            placeholder="Describe los hallazgos del estudio…"
-                                        ></textarea>
-                                    </label>
-                                    <label
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: 6,
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                fontWeight: 500,
-                                                fontSize: 13,
-                                            }}
-                                        >
-                                            Conclusión
-                                        </span>
-                                        <textarea
-                                            rows={2}
-                                            style={{
-                                                padding: '8px 12px',
-                                                border: '1px solid #e4e4e7',
-                                                borderRadius: 10,
-                                                outline: 'none',
-                                                fontFamily: 'inherit',
-                                                fontSize: 13,
-                                            }}
-                                            placeholder="Conclusión diagnóstica…"
-                                        ></textarea>
-                                    </label>
-                                    <button
-                                        style={{
-                                            height: 36,
-                                            borderRadius: 10,
-                                            border: 'none',
-                                            background: '#2E8B3E',
-                                            color: '#fff',
-                                            fontWeight: 500,
-                                            cursor: 'pointer',
-                                            fontFamily: 'inherit',
-                                            fontSize: 14,
-                                        }}
-                                    >
-                                        ✓ Guardar y completar
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </div>
+            </section>
         </div>
     );
 }

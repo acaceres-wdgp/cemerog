@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import ImagingOrderRow from '@/components/img/ImagingOrderRow';
+import type { ImagingOrderWithReport } from '@/components/img/types';
 import CancelLabOrderDialog from '@/components/lab/CancelLabOrderDialog';
 import LabResultsList from '@/components/lab/LabResultsList';
 import LabStatusPill from '@/components/lab/LabStatusPill';
 import type { LabOrderSummary } from '@/components/lab/types';
 import { formatMoney } from '@/lib/money';
+import * as imgOrders from '@/routes/img/orders';
 import type { AccountCharge } from '../types';
 
 // ─── Cuenta / Órdenes Tab ─────────────────────────────────────────────────────
@@ -12,14 +15,18 @@ type Props = {
     charges: AccountCharge[];
     chargesTotal: number;
     labOrders?: LabOrderSummary[];
+    imagingOrders?: ImagingOrderWithReport[];
 };
 
 export default function CuentaOrdenesTab({
     charges,
     chargesTotal,
     labOrders = [],
+    imagingOrders = [],
 }: Props) {
     const [cancelling, setCancelling] = useState<LabOrderSummary | null>(null);
+    const [cancellingImg, setCancellingImg] =
+        useState<ImagingOrderWithReport | null>(null);
 
     return (
         <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-4">
@@ -28,7 +35,7 @@ export default function CuentaOrdenesTab({
                 <div className="px-[18px] py-[14px] font-serif text-[16px] font-semibold text-text-heading">
                     Órdenes
                 </div>
-                {labOrders.length === 0 ? (
+                {labOrders.length + imagingOrders.length === 0 ? (
                     <div className="p-5 text-center text-[13px] text-muted">
                         No hay órdenes para esta consulta.
                     </div>
@@ -72,6 +79,13 @@ export default function CuentaOrdenesTab({
                         </div>
                     ))
                 )}
+                {imagingOrders.map((o) => (
+                    <ImagingOrderRow
+                        key={`img-${o.id}`}
+                        order={o}
+                        onCancel={() => setCancellingImg(o)}
+                    />
+                ))}
             </div>
 
             {/* Cargos panel */}
@@ -127,6 +141,14 @@ export default function CuentaOrdenesTab({
                 <CancelLabOrderDialog
                     order={cancelling}
                     onClose={() => setCancelling(null)}
+                />
+            )}
+            {cancellingImg && (
+                <CancelLabOrderDialog
+                    order={cancellingImg}
+                    description={cancellingImg.name}
+                    url={imgOrders.cancel.url(cancellingImg.id)}
+                    onClose={() => setCancellingImg(null)}
                 />
             )}
         </div>

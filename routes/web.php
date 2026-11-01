@@ -11,6 +11,7 @@ use App\Http\Controllers\Modules\CashShiftController;
 use App\Http\Controllers\Modules\CirugiaController;
 use App\Http\Controllers\Modules\CitasController;
 use App\Http\Controllers\Modules\ConsultaController;
+use App\Http\Controllers\Modules\ConsultaTransferController;
 use App\Http\Controllers\Modules\CuadreController;
 use App\Http\Controllers\Modules\CxcController;
 use App\Http\Controllers\Modules\DoctoresController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\Modules\PaymentController;
 use App\Http\Controllers\Modules\PreciosController;
 use App\Http\Controllers\Modules\PrescriptionController;
 use App\Http\Controllers\Modules\RegistroController;
+use App\Http\Controllers\Modules\StudyOrderController;
 use App\Http\Controllers\Modules\SupplierController;
 use App\Http\Controllers\Modules\TableroController;
 use App\Http\Controllers\Modules\TemaController;
@@ -116,7 +118,8 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::get('/', [ConsultaController::class, 'index'])->name('consulta');
         Route::post('/', [ConsultaController::class, 'store'])->name('consulta.store');
         Route::post('/turnos/{turn}/alta', [ConsultaController::class, 'discharge'])->name('consulta.discharge');
-        Route::post('/turnos/{turn}/laboratorio', [LabOrderController::class, 'storeFromTurn'])->name('consulta.lab.store');
+        Route::post('/turnos/{turn}/estudios', [StudyOrderController::class, 'storeFromTurn'])->name('consulta.estudios.store');
+        Route::post('/turnos/{turn}/emergencia', [ConsultaTransferController::class, 'toEmergency'])->name('consulta.emergencia');
         Route::patch('/antecedentes/{patient}', [ConsultaController::class, 'updateAntecedents'])->name('consulta.antecedentes');
         // Prescriptions
         Route::post('/turnos/{turn}/receta', [PrescriptionController::class, 'store'])->name('consulta.receta.store');
@@ -133,7 +136,7 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/{emergency}/signos-vitales', [EmergencyCareController::class, 'storeVitals'])->name('emergencia.vitals.store');
         Route::post('/{emergency}/aplicaciones', [EmergencyCareController::class, 'storeApplication'])->name('emergencia.applications.store');
         Route::post('/{emergency}/alta', [EmergencyCareController::class, 'discharge'])->name('emergencia.discharge');
-        Route::post('/{emergency}/laboratorio', [LabOrderController::class, 'storeFromEmergency'])->name('emergencia.lab.store');
+        Route::post('/{emergency}/estudios', [StudyOrderController::class, 'storeFromEmergency'])->name('emergencia.estudios.store');
         Route::patch('/{emergency}/cubiculo', [EmergencyCareController::class, 'moveCubicle'])->name('emergencia.cubicle');
     });
 
@@ -156,9 +159,20 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/ordenes/{order}/entregar', [LabController::class, 'deliver'])->name('lab.orders.deliver');
     });
 
-    Route::get('/imagenes', [ImgController::class, 'index'])
-        ->middleware('permission:module.img.access')
-        ->name('img');
+    Route::prefix('/imagenes')->middleware('permission:module.img.access')->group(function () {
+        Route::get('/', [ImgController::class, 'index'])->name('img');
+        Route::get('/ordenes/{order}', [ImgController::class, 'show'])->name('img.orders.show');
+        Route::get('/ordenes/{order}/imprimir', [ImgController::class, 'print'])->name('img.orders.print');
+        Route::post('/ordenes/{order}/realizado', [ImgController::class, 'perform'])->name('img.orders.perform');
+        Route::post('/ordenes/{order}/informe', [ImgController::class, 'saveReport'])->name('img.orders.report');
+        Route::post('/ordenes/{order}/firmar', [ImgController::class, 'sign'])->name('img.orders.sign');
+        Route::post('/ordenes/{order}/entregar', [ImgController::class, 'deliver'])->name('img.orders.deliver');
+        Route::post('/ordenes/{order}/adjuntos', [ImgController::class, 'upload'])->name('img.orders.attachments');
+        Route::delete('/adjuntos/{attachment}', [ImgController::class, 'removeAttachment'])->name('img.attachments.destroy');
+    });
+    // Also from Consulta and Emergencia: cancel an order not performed and see its files
+    Route::post('/imagenes/ordenes/{order}/cancelar', [ImgController::class, 'cancel'])->name('img.orders.cancel');
+    Route::get('/imagenes/adjuntos/{attachment}', [ImgController::class, 'download'])->name('img.attachments.show');
 
     Route::get('/impresos', [ImpresosController::class, 'index'])
         ->middleware('permission:module.impresos.access')
@@ -250,9 +264,11 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::put('/{test}', [AnalisisController::class, 'update'])->name('analisis.update');
     });
 
-    Route::get('/admin/imagenes-catalogo', [ImgcatController::class, 'index'])
-        ->middleware('permission:module.imgcat.access')
-        ->name('imgcat');
+    Route::prefix('/admin/imagenes-catalogo')->middleware('permission:module.imgcat.access')->group(function () {
+        Route::get('/', [ImgcatController::class, 'index'])->name('imgcat');
+        Route::post('/', [ImgcatController::class, 'store'])->name('imgcat.store');
+        Route::put('/{study}', [ImgcatController::class, 'update'])->name('imgcat.update');
+    });
 
     Route::get('/admin/precios', [PreciosController::class, 'index'])
         ->middleware('permission:module.precios.access')

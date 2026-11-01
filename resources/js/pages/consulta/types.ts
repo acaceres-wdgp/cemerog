@@ -1,3 +1,7 @@
+import type {
+    ImagingOrderWithReport,
+    ImagingReport,
+} from '@/components/img/types';
 import type { LabOrderSummary, LabResultLine } from '@/components/lab/types';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -95,6 +99,8 @@ export type ClinicalEntry = {
     prescription?: PrescriptionData | null;
     // laboratorio-specific
     lab?: { number: string; tests: string[]; results: LabResultLine[] };
+    // imagen-specific
+    imaging?: ImagingReport | null;
 };
 
 export type AntecedentData = {
@@ -147,4 +153,5 @@ export type Props = {
     charges?: AccountCharge[];
     charges_total?: number;
     lab_orders?: LabOrderSummary[];
+    imaging_orders?: ImagingOrderWithReport[];
 };

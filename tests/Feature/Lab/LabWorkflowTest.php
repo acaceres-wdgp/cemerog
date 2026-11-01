@@ -42,7 +42,7 @@ function orderFromConsult($test, array $tests): LabOrder
     Account::create(['patient_id' => $test->patient->id, 'service_date' => today()->toDateString(), 'status' => 'abierta', 'opened_at' => now()]);
 
     $test->actingAs($test->medico)
-        ->post("/consulta/turnos/{$turn->id}/laboratorio", ['lab_test_ids' => array_map(fn ($t) => $t->id, $tests)])
+        ->post("/consulta/turnos/{$turn->id}/estudios", ['lab_test_ids' => array_map(fn ($t) => $t->id, $tests)])
         ->assertSessionHasNoErrors();
 
     return LabOrder::latest('id')->first();
@@ -101,7 +101,7 @@ test('an emergency order is charged to the emergency account', function () {
         'reason' => 'Fiebre.',
     ]);
     $emergency = Emergency::first();
-    $this->actingAs($enfermera)->post("/emergencia/{$emergency->id}/laboratorio", ['lab_test_ids' => [$this->glucosa->id]]);
+    $this->actingAs($enfermera)->post("/emergencia/{$emergency->id}/estudios", ['lab_test_ids' => [$this->glucosa->id]]);
 
     $this->actingAs($this->bio)->post('/laboratorio/ordenes/'.LabOrder::value('id').'/muestra')->assertSessionHasNoErrors();
 

@@ -7,7 +7,10 @@ import { useEffect, useRef, useState } from 'react';
 import AlertBanner from '@/components/cemerog/AlertBanner';
 import MaskedInput from '@/components/cemerog/masked-input';
 import Panel from '@/components/cemerog/Panel';
-import type { LabCatalogItem } from '@/components/lab/types';
+import type {
+    ImagingCatalogItem,
+    LabCatalogItem,
+} from '@/components/lab/types';
 import { ageLabel } from '@/lib/patient';
 import {
     StudiesAttention,
@@ -71,6 +74,7 @@ interface Props {
     /** «analisis» when coming from «Orden sin consulta» in Laboratorio */
     initialType?: 'consulta' | 'analisis';
     labCatalog?: LabCatalogItem[];
+    imagingCatalog?: ImagingCatalogItem[];
 }
 
 /** Extends the inferred form errors with `open_turn`, which the server returns
@@ -95,6 +99,7 @@ export default function RegistroIndex({
     prefillFirstNames = '',
     initialType = 'consulta',
     labCatalog = [],
+    imagingCatalog = [],
 }: Props) {
     const mode: 'new' | 'existing' = initialPatient ? 'existing' : 'new';
 
@@ -123,6 +128,7 @@ export default function RegistroIndex({
         doctor_id: '' as number | string,
         notes: '',
         lab_test_ids: [] as number[],
+        imaging_study_ids: [] as number[],
         external_doctor: '',
     });
     const errors = rawErrors as FormErrors;
@@ -199,16 +205,19 @@ export default function RegistroIndex({
 
     const selectedDoctor = doctors.find((d) => d.id === Number(data.doctor_id));
     const isStudies = data.attention_type === 'analisis';
+    const studies = {
+        lab: data.lab_test_ids,
+        imaging: data.imaging_study_ids,
+    };
     const isFormValid = isStudies
-        ? data.lab_test_ids.length > 0
+        ? studies.lab.length + studies.imaging.length > 0
         : !!data.doctor_id;
-    const toggleTest = (id: number) =>
-        setData(
-            'lab_test_ids',
-            data.lab_test_ids.includes(id)
-                ? data.lab_test_ids.filter((x) => x !== id)
-                : [...data.lab_test_ids, id],
-        );
+    const setStudies = (next: { lab: number[]; imaging: number[] }) =>
+        setData((d) => ({
+            ...d,
+            lab_test_ids: next.lab,
+            imaging_study_ids: next.imaging,
+        }));
 
     return (
         <>
@@ -734,8 +743,8 @@ export default function RegistroIndex({
                                         },
                                         {
                                             value: 'analisis',
-                                            label: 'Solo análisis',
-                                            desc: 'Sin consulta. Pasa a toma de muestra.',
+                                            label: 'Solo análisis o imágenes',
+                                            desc: 'Sin consulta. Pasa a realizarse los estudios.',
                                             disabled: false,
                                             tooltip: undefined,
                                         },
@@ -843,10 +852,11 @@ export default function RegistroIndex({
 
                                 {isStudies && (
                                     <StudiesAttention
-                                        catalog={labCatalog}
-                                        selected={data.lab_test_ids}
+                                        labCatalog={labCatalog}
+                                        imagingCatalog={imagingCatalog}
+                                        selected={studies}
                                         externalDoctor={data.external_doctor}
-                                        onToggle={toggleTest}
+                                        onChange={setStudies}
                                         onExternalDoctor={(v) =>
                                             setData('external_doctor', v)
                                         }
@@ -954,7 +964,7 @@ export default function RegistroIndex({
                                     <dt className="text-muted">Tipo</dt>
                                     <dd className="font-medium text-text-heading">
                                         {isStudies
-                                            ? 'Solo análisis'
+                                            ? 'Solo análisis o imágenes'
                                             : 'Consulta'}
                                     </dd>
                                 </div>
@@ -980,8 +990,9 @@ export default function RegistroIndex({
                                 )}
                                 {isStudies && (
                                     <StudiesSummary
-                                        catalog={labCatalog}
-                                        selected={data.lab_test_ids}
+                                        labCatalog={labCatalog}
+                                        imagingCatalog={imagingCatalog}
+                                        selected={studies}
                                     />
                                 )}
                                 <div className="flex justify-between px-5 py-3">
