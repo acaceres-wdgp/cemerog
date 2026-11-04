@@ -203,13 +203,6 @@ export const NAV_GROUPS: NavGroup[] = [
                 permission: 'module.imgcat.access',
             },
             {
-                key: 'precios',
-                label: 'Catálogos de precios',
-                icon: 'Tag',
-                href: '/admin/precios',
-                permission: 'module.precios.access',
-            },
-            {
                 key: 'habs',
                 label: 'Habitaciones y camas',
                 icon: 'BedDouble',

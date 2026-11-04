@@ -51,7 +51,6 @@ class AdminController extends Controller
         'doctores' => 'Doctores',
         'analisis' => 'Tipos de análisis',
         'imgcat' => 'Catálogo de imágenes',
-        'precios' => 'Precios',
         'habs' => 'Habitaciones',
         'tema' => 'Tema',
     ];

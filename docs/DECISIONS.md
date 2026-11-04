@@ -508,3 +508,26 @@ Al llegar un paciente se necesita registrar qué consumió ese día (consultas, 
 - **Estados:** programada → en quirófano → realizada, o cancelada con motivo. Mientras está programada se puede reprogramar o cancelar. Médicos, enfermería y administrador la pasan a quirófano y la marcan como realizada.
 - **Se cobra al realizarse** (ADR-018). Va a la cuenta de la estancia si el paciente está internado (ADR-023). Si no, va a la cuenta del día, que pasa a facturación si no queda nada abierto. Una cirugía cancelada no se cobra.
 - El anestesiólogo es opcional. Las cirugías se numeran `Q-000001`.
+
+---
+
+## ADR-025: Sin página central de precios; cada precio vive en su catálogo
+
+**Fecha**: 2026-11  
+**Estado**: Aceptado
+
+**Contexto:** _Administración › Catálogos de precios_ (`/admin/precios`) era una maqueta estática: datos escritos en el frontend, sin backend y con botones «Editar» que no hacían nada. Mostraba precios que contradecían los reales (p. ej. cesárea RD$85,000 frente a RD$45,000 en el catálogo de cirugías, que es el que se cobra) y una pestaña «Servicios» sin tabla detrás.
+
+**Decisión:** se elimina la página, su ruta, su entrada en el menú y el permiso `module.precios.access` (migración `remove_precios_permission`). Cada precio se administra únicamente donde vive:
+
+| Precio                         | Dónde se administra         |
+| ------------------------------ | --------------------------- |
+| Consulta (por médico, ADR-016) | Doctores y especialidades   |
+| Cirugías (ADR-024)             | Catálogo de cirugías        |
+| Habitación por día (ADR-023)   | Habitaciones y camas        |
+| Análisis de laboratorio        | Catálogo de análisis        |
+| Estudios de imágenes (ADR-022) | Catálogo de imágenes        |
+| Cargo de emergencia            | Administración › Emergencia |
+| Artículos de inventario        | Inventario › Catálogo       |
+
+**Consecuencias:** una sola fuente de verdad por precio. Si en el futuro se quiere una vista resumen, debe leer estas tablas, no duplicarlas.

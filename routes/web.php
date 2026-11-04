@@ -31,7 +31,6 @@ use App\Http\Controllers\Modules\LabController;
 use App\Http\Controllers\Modules\LabOrderController;
 use App\Http\Controllers\Modules\PacientesController;
 use App\Http\Controllers\Modules\PaymentController;
-use App\Http\Controllers\Modules\PreciosController;
 use App\Http\Controllers\Modules\PrescriptionController;
 use App\Http\Controllers\Modules\RegistroController;
 use App\Http\Controllers\Modules\StudyCategoryController;
@@ -303,10 +302,6 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/modalidades/{category}/mover', [StudyCategoryController::class, 'move'])->defaults('kind', 'imagen')->name('imgcat.modalidades.move');
         Route::delete('/modalidades/{category}', [StudyCategoryController::class, 'destroy'])->defaults('kind', 'imagen')->name('imgcat.modalidades.destroy');
     });
-
-    Route::get('/admin/precios', [PreciosController::class, 'index'])
-        ->middleware('permission:module.precios.access')
-        ->name('precios');
 
     Route::prefix('/admin/habitaciones')->middleware('permission:module.habs.access')->group(function () {
         Route::get('/', [HabsController::class, 'index'])->name('habs');
