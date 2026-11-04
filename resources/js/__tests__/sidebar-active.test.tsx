@@ -53,6 +53,16 @@ describe('sidebar active item', () => {
         expect(activeItems('/citas/123', 'citas/show')).toEqual(['Citas']);
     });
 
+    it('marks only proveedores on its page, not the parent catalogo', () => {
+        expect(
+            activeItems('/almacen/proveedores', 'almacen/proveedores'),
+        ).toEqual(['Proveedores']);
+    });
+
+    it('marks only catalogo on the almacen page', () => {
+        expect(activeItems('/almacen', 'almacen/index')).toEqual(['Catálogo']);
+    });
+
     it('marks nothing on settings pages', () => {
         expect(activeItems('/settings/profile', 'settings/profile')).toEqual(
             [],

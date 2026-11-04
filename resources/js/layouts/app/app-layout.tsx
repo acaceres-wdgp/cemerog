@@ -91,13 +91,20 @@ export default function AppLayout({ children }: AppLayoutProps) {
     );
     const todayLabel = formatTopbarDate(new Date());
 
+    // Longest matching path wins, so /almacen/proveedores doesn't also mark /almacen
+    const matchLength = (item: NavItem) =>
+        [item.href, ...(item.activeFor ?? [])]
+            .filter(
+                (path) =>
+                    isCurrentUrl(path) || currentUrl.startsWith(`${path}/`),
+            )
+            .reduce((longest, path) => Math.max(longest, path.length), -1);
+    const bestMatchLength = Math.max(
+        -1,
+        ...NAV_GROUPS.flatMap((group) => group.items).map(matchLength),
+    );
     const isActiveItem = (item: NavItem) =>
-        isCurrentUrl(item.href) ||
-        currentUrl.startsWith(`${item.href}/`) ||
-        (item.activeFor?.some(
-            (path) => currentUrl === path || currentUrl.startsWith(`${path}/`),
-        ) ??
-            false);
+        bestMatchLength >= 0 && matchLength(item) === bestMatchLength;
 
     const handleLogout = () => {
         router.post(logout.url());
