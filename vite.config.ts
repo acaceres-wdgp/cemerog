@@ -24,16 +24,21 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
-            fonts: [
-                bunny('Instrument Sans', {
-                    weights: [400, 500, 600, 700],
-                }),
-                // Self-hosted with the build: no render-blocking request to
-                // Google Fonts on the first load
-                bunny('Bitter', {
-                    weights: [400, 500, 600, 700],
-                }),
-            ],
+            // Skipped under Vitest: the fonts plugin deletes the dev server's
+            // public/fonts-manifest.dev.json when the test process exits,
+            // leaving `npm run dev` without fonts until it is restarted
+            fonts: process.env.VITEST
+                ? undefined
+                : [
+                      bunny('Instrument Sans', {
+                          weights: [400, 500, 600, 700],
+                      }),
+                      // Self-hosted with the build: no render-blocking request
+                      // to Google Fonts on the first load
+                      bunny('Bitter', {
+                          weights: [400, 500, 600, 700],
+                      }),
+                  ],
         }),
         inertia(),
         react(),
