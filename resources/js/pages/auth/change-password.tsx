@@ -64,6 +64,7 @@ export default function ChangePassword() {
                                     id="password"
                                     name="password"
                                     autoComplete="new-password"
+                                    placeholder="Ingresa tu nueva contraseña"
                                     value={data.password}
                                     onChange={(e) =>
                                         setData('password', e.target.value)
@@ -96,6 +97,7 @@ export default function ChangePassword() {
                                     id="password_confirmation"
                                     name="password_confirmation"
                                     autoComplete="new-password"
+                                    placeholder="Repite tu nueva contraseña"
                                     value={data.password_confirmation}
                                     onChange={(e) =>
                                         setData(

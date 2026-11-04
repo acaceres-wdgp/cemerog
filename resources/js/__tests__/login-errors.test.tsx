@@ -37,4 +37,18 @@ describe('login page', () => {
 
         expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
+
+    it('shows consistent placeholders on both fields', () => {
+        page.props.errors = {};
+        render(<Login />);
+
+        expect(screen.getByLabelText('Usuario')).toHaveAttribute(
+            'placeholder',
+            'Ingresa tu usuario',
+        );
+        expect(screen.getByLabelText('Contraseña')).toHaveAttribute(
+            'placeholder',
+            'Ingresa tu contraseña',
+        );
+    });
 });

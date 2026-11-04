@@ -91,7 +91,7 @@ export default function Login({ status }: Props) {
                                     onChange={(e) =>
                                         setData('username', e.target.value)
                                     }
-                                    placeholder="nombre.usuario"
+                                    placeholder="Ingresa tu usuario"
                                     className="h-9"
                                 />
                                 {errors.username && (
@@ -115,6 +115,7 @@ export default function Login({ status }: Props) {
                                     id="password"
                                     name="password"
                                     autoComplete="current-password"
+                                    placeholder="Ingresa tu contraseña"
                                     value={data.password}
                                     onChange={(e) =>
                                         setData('password', e.target.value)
