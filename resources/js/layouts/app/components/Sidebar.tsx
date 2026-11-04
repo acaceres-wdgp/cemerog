@@ -151,6 +151,8 @@ export function Sidebar({
                                         key={item.key}
                                         href={item.href}
                                         className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
+                                            collapsed ? 'justify-center' : ''
+                                        } ${
                                             isActive
                                                 ? 'bg-white/12 text-white'
                                                 : 'text-white/60 hover:text-white/90'

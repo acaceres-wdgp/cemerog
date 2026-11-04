@@ -5,7 +5,13 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import {
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    within,
+} from '@testing-library/react';
 import AppLayout from '@/layouts/app/app-layout';
 import { NAV_GROUPS } from '@/lib/navigation';
 
@@ -321,6 +327,22 @@ describe('sidebar collapse / expand', () => {
         expect(
             screen.queryByText('General', { exact: true, selector: 'p' }),
         ).not.toBeInTheDocument();
+    });
+
+    it('centers the nav icons only when collapsed', () => {
+        render(<AppLayout>x</AppLayout>);
+        const navLinks = () =>
+            within(screen.getByRole('navigation')).getAllByRole('link');
+
+        navLinks().forEach((link) =>
+            expect(link).not.toHaveClass('justify-center'),
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: /Colapsar menú/i }));
+
+        navLinks().forEach((link) =>
+            expect(link).toHaveClass('justify-center'),
+        );
     });
 });
 
