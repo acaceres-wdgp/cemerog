@@ -3,6 +3,7 @@
 use App\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function () {
     // Seed all permissions and roles needed
@@ -50,6 +51,35 @@ test('admin can list users and gets correct Inertia props', function () {
             ->has('users')
             ->has('roles')
             ->has('available_permissions')
+        );
+});
+
+test('every permission has a human label', function () {
+    $this->actingAs($this->admin)
+        ->get('/admin/usuarios')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('available_permissions', fn ($perms) => collect($perms)
+                ->every(fn (array $p) => $p['label'] !== $p['module']))
+        );
+});
+
+test('permissions follow the sidebar order, even when created later', function () {
+    // pacientes was added after the other modules, so it has the highest id in existing DBs
+    Permission::where('name', 'module.pacientes.access')->delete();
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+    Permission::create(['name' => 'module.pacientes.access', 'guard_name' => 'web']);
+
+    $this->actingAs($this->admin)
+        ->get('/admin/usuarios')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('available_permissions', fn ($perms) => collect($perms)->pluck('label')->take(4)->all() === [
+                'Inicio',
+                'Tablero',
+                'Ver pacientes',
+                'Registrar pacientes',
+            ])
         );
 });
 

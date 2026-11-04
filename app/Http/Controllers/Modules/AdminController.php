@@ -30,10 +30,12 @@ class AdminController extends Controller
         'almacen' => 'Almacén',
     ];
 
+    /** In sidebar order: available permissions are listed in this order */
     private const PERMISSION_LABELS = [
         'inicio' => 'Inicio',
         'tablero' => 'Tablero',
-        'registro' => 'Registro de pacientes',
+        'pacientes' => 'Ver pacientes',
+        'registro' => 'Registrar pacientes',
         'citas' => 'Citas',
         'consulta' => 'Consultas',
         'emergencia' => 'Emergencia',
@@ -96,7 +98,12 @@ class AdminController extends Controller
                 'label' => self::PERMISSION_LABELS[$moduleKey] ?? $moduleKey,
                 'module' => $moduleKey,
             ];
-        });
+        })->sortBy(function (array $permission): int {
+            // Modules without a label go last instead of interleaving by creation order
+            $position = array_search($permission['module'], array_keys(self::PERMISSION_LABELS), true);
+
+            return $position === false ? PHP_INT_MAX : $position;
+        })->values();
 
         return Inertia::render('admin/index', [
             'users' => $users,
