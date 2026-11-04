@@ -22,7 +22,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'inicio', 'tablero', 'pacientes', 'registro', 'citas', 'emergencia',
             'internamiento', 'cirugia', 'lab', 'img', 'impresos',
             'caja', 'cxc', 'cuadre', 'almacen', 'entrada',
-            'admin', 'doctores', 'analisis', 'imgcat', 'precios', 'habs', 'tema',
+            'admin', 'doctores', 'analisis', 'imgcat', 'habs', 'tema',
         ],
         'medico' => [
             'inicio', 'tablero', 'pacientes', 'citas', 'consulta', 'emergencia',

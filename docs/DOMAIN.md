@@ -165,11 +165,6 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 - Restablecer contraseña genera nueva contraseña temporal y activa `must_change_password`.
 - `doctors.consultation_price` y `doctors.consultation_fee` (centavos enteros) definen el precio de consulta y el honorario por consulta por médico. Se inicializan con el precio de la especialidad al crear el doctor. Validación: `consultation_fee ≤ consultation_price`. Ver ADR-016.
 
-### Catálogos de precios
-
-- Precios por servicio, análisis, estudio.
-- **Pendiente de implementar**: editor de precios.
-
 ### Habitaciones y camas
 
 - Catálogo de habitaciones, tipo de cama, tarifa.
@@ -188,7 +183,7 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 2. La factura se genera cuando el paciente está en estado "balance".
 3. Una cuenta pasa a "saldada" cuando el saldo es 0.
 4. El cuadre solo lo puede cerrar un usuario con rol "caja".
-5. Los precios de servicios son configurables desde el catálogo de precios.
+5. Cada precio se configura en el catálogo de su módulo: consulta en Doctores y especialidades, cirugías, habitaciones, análisis, imágenes, cargo de emergencia e inventario (ver ADR-025).
 6. ITBIS: los servicios médicos están exentos; medicamentos al 18 %.
 7. **Permanencia de pacientes**: los expedientes clínicos nunca se borran ni desactivan. Solo el administrador puede editar datos personales.
 8. **Turno único por médico por día**: un paciente puede tener turnos con varios médicos el mismo día (por ejemplo, Medicina General y Pediatría). Lo que no está permitido es abrir un segundo turno con el _mismo_ médico mientras el primero sigue en estado `espera` o `en_consulta`. El intento genera un error de validación que nombra al médico con el turno abierto.

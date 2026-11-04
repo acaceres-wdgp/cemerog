@@ -10,7 +10,7 @@ beforeEach(function () {
         'inicio', 'tablero', 'registro', 'citas', 'consulta', 'emergencia',
         'internamiento', 'cirugia', 'lab', 'img', 'impresos',
         'caja', 'cxc', 'cuadre', 'almacen', 'entrada',
-        'admin', 'doctores', 'analisis', 'imgcat', 'precios', 'habs', 'tema',
+        'admin', 'doctores', 'analisis', 'imgcat', 'habs', 'tema',
     ];
 
     foreach ($modules as $module) {
@@ -22,7 +22,7 @@ beforeEach(function () {
             'inicio', 'tablero', 'registro', 'citas', 'consulta', 'emergencia',
             'internamiento', 'cirugia', 'lab', 'img', 'impresos',
             'caja', 'cxc', 'cuadre', 'almacen', 'entrada',
-            'admin', 'doctores', 'analisis', 'imgcat', 'precios', 'habs', 'tema',
+            'admin', 'doctores', 'analisis', 'imgcat', 'habs', 'tema',
         ],
         'medico' => ['inicio', 'tablero', 'citas', 'consulta', 'emergencia', 'internamiento', 'cirugia', 'lab', 'img', 'impresos'],
         'secretaria' => ['inicio', 'tablero', 'registro', 'citas', 'impresos'],

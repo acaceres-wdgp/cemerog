@@ -19,7 +19,7 @@ class ResolveHomeRoute
         'lab', 'img', 'impresos',
         'caja', 'cxc', 'cuadre',
         'almacen', 'entrada',
-        'admin', 'doctores', 'analisis', 'imgcat', 'precios', 'habs', 'tema',
+        'admin', 'doctores', 'analisis', 'imgcat', 'habs', 'tema',
     ];
 
     /**

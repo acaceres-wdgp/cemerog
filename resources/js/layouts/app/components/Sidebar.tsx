@@ -25,7 +25,6 @@ import {
     Package,
     PackagePlus,
     Users,
-    Tag,
     Palette,
     Contact,
     ChevronLeft,
@@ -54,7 +53,6 @@ const ICONS: Record<string, React.ElementType> = {
     Package,
     PackagePlus,
     Users,
-    Tag,
     Palette,
     Contact,
 };

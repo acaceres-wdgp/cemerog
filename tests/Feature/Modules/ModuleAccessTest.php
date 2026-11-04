@@ -33,7 +33,6 @@ dataset('modules', [
     'doctores' => ['/admin/doctores', 'doctores'],
     'analisis' => ['/admin/analisis', 'analisis'],
     'imgcat' => ['/admin/imagenes-catalogo', 'imgcat'],
-    'precios' => ['/admin/precios', 'precios'],
     'habs' => ['/admin/habitaciones', 'habs'],
     'tema' => ['/admin/tema', 'tema'],
 ]);
@@ -102,7 +101,7 @@ test('administrator can access all modules (excluding consulta which requires ac
         '/cuentas-por-cobrar', '/cuadre-de-caja',
         '/almacen', '/entrada-mercancia',
         '/admin/usuarios', '/admin/doctores', '/admin/analisis',
-        '/admin/imagenes-catalogo', '/admin/precios', '/admin/habitaciones', '/admin/tema',
+        '/admin/imagenes-catalogo', '/admin/habitaciones', '/admin/tema',
     ])->each(function (string $url) use ($admin) {
         $this->actingAs($admin)->get($url)->assertOk();
     });
@@ -120,4 +119,11 @@ test('owner (administrador + medico + active doctor) can access /consulta', func
     ]);
 
     $this->actingAs($owner)->get('/consulta')->assertOk();
+});
+
+test('the removed precios page no longer exists', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('administrador');
+
+    $this->actingAs($admin)->get('/admin/precios')->assertNotFound();
 });
