@@ -295,4 +295,20 @@ describe('CashShiftIndicator', () => {
 
         expect(screen.getByText('Caja pendiente de cierre')).toBeTruthy();
     });
+
+    it('keeps the pill text on a single line', () => {
+        page.props.cash_shift = {
+            id: 1,
+            opened_by: 'Kenia Marte',
+            opened_at: '30/10/2026 08:00',
+            mine: true,
+            can_operate: true,
+            pending_close: true,
+        };
+        render(<CashShiftIndicator />);
+
+        expect(
+            screen.getByRole('link', { name: /Caja pendiente de cierre/ }),
+        ).toHaveClass('whitespace-nowrap', 'shrink-0');
+    });
 });

@@ -42,9 +42,9 @@ describe('PatientSearch', () => {
         ).toBeInTheDocument();
     });
 
-    it('does NOT fetch with only 1 character', async () => {
+    it('does NOT fetch with fewer than 3 characters', async () => {
         const fetchSpy = vi.spyOn(global, 'fetch');
-        renderSearch({ query: 'a' });
+        renderSearch({ query: 'ab' });
 
         // Wait more than the debounce time
         await new Promise((r) => setTimeout(r, 400));
@@ -53,16 +53,16 @@ describe('PatientSearch', () => {
         fetchSpy.mockRestore();
     });
 
-    it('fetches with 2+ characters using the given endpoint', async () => {
+    it('fetches with 3+ characters using the given endpoint', async () => {
         const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue({
             ok: true,
             json: async () => [],
         } as Response);
 
-        renderSearch({ query: 'ab' });
+        renderSearch({ query: 'abc' });
 
         await waitFor(
-            () => expect(fetchSpy).toHaveBeenCalledWith(`${ENDPOINT}?q=ab`),
+            () => expect(fetchSpy).toHaveBeenCalledWith(`${ENDPOINT}?q=abc`),
             { timeout: 1000 },
         );
 
@@ -75,7 +75,7 @@ describe('PatientSearch', () => {
             json: async () => [],
         } as Response);
 
-        renderSearch({ query: 'zz' });
+        renderSearch({ query: 'zzz' });
 
         expect(
             await screen.findByText(
@@ -105,7 +105,7 @@ describe('PatientSearch', () => {
             json: async () => patients,
         } as Response);
 
-        renderSearch({ query: 'ju' });
+        renderSearch({ query: 'jua' });
 
         expect(
             await screen.findByText('Juan Pérez', {}, { timeout: 1000 }),
@@ -127,7 +127,7 @@ describe('PatientSearch', () => {
             json: async () => patients,
         } as Response);
 
-        const { onSelect } = renderSearch({ query: 'ju' });
+        const { onSelect } = renderSearch({ query: 'jua' });
 
         const btn = await screen.findByText(
             'Juan Pérez',
@@ -184,7 +184,7 @@ describe('PatientSearch', () => {
         render(
             <PatientSearch
                 selected={null}
-                query="ab"
+                query="abc"
                 onQueryChange={vi.fn()}
                 onSelect={vi.fn()}
                 onClear={vi.fn()}
@@ -194,7 +194,9 @@ describe('PatientSearch', () => {
 
         await waitFor(
             () =>
-                expect(fetchSpy).toHaveBeenCalledWith(`${customEndpoint}?q=ab`),
+                expect(fetchSpy).toHaveBeenCalledWith(
+                    `${customEndpoint}?q=abc`,
+                ),
             { timeout: 1000 },
         );
 

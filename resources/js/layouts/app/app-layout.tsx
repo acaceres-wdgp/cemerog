@@ -9,7 +9,7 @@ import { router, usePage } from '@inertiajs/react';
 import { logout } from '@/routes';
 import type { PageProps } from '@/types/global';
 import { NAV_GROUPS, type NavItem } from '@/lib/navigation';
-import { resolveBreadcrumb, formatTopbarDate } from '@/lib/breadcrumb';
+import { resolveBreadcrumb } from '@/lib/breadcrumb';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { Sidebar, type SidebarTheme } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
@@ -89,7 +89,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
         NAV_GROUPS,
         registroBreadcrumbFallback ?? profileBreadcrumbFallback,
     );
-    const todayLabel = formatTopbarDate(new Date());
 
     // Longest matching path wins, so /almacen/proveedores doesn't also mark /almacen
     const matchLength = (item: NavItem) =>
@@ -129,7 +128,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 {/* Topbar */}
                 <Topbar
                     breadcrumb={breadcrumb}
-                    todayLabel={todayLabel}
                     userMenuProps={{
                         name: user?.name ?? '',
                         username: user?.username ?? '',

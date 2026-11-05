@@ -196,20 +196,20 @@ describe('CitasIndex – PatientSearch fetch', () => {
         vi.restoreAllMocks();
     });
 
-    it('no dispara fetch con 1 carácter', async () => {
+    it('no dispara fetch con menos de 3 caracteres', async () => {
         render(<CitasIndex {...BASE_PROPS} />);
         fireEvent.click(screen.getByText('+ Nueva cita'));
 
         const input = screen.getByPlaceholderText(
             'Buscar por nombre o cédula…',
         );
-        fireEvent.change(input, { target: { value: 'A' } });
+        fireEvent.change(input, { target: { value: 'An' } });
 
         await new Promise((r) => setTimeout(r, 400));
         expect(global.fetch).not.toHaveBeenCalled();
     });
 
-    it('dispara fetch con 2 o más caracteres', async () => {
+    it('dispara fetch con 3 o más caracteres', async () => {
         (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: true,
             json: async () => [
@@ -227,11 +227,11 @@ describe('CitasIndex – PatientSearch fetch', () => {
         const input = screen.getByPlaceholderText(
             'Buscar por nombre o cédula…',
         );
-        fireEvent.change(input, { target: { value: 'An' } });
+        fireEvent.change(input, { target: { value: 'Ana' } });
 
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining('buscar?q=An'),
+                expect.stringContaining('buscar?q=Ana'),
             );
         });
     });
