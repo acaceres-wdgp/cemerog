@@ -20,6 +20,7 @@ export default function PatientSearch({
     endpoint,
     compact = false,
     placeholder = 'Buscar por nombre o cédula…',
+    ariaLabel,
 }: {
     selected: PatientResult | null;
     query: string;
@@ -30,6 +31,7 @@ export default function PatientSearch({
     endpoint: string;
     compact?: boolean;
     placeholder?: string;
+    ariaLabel?: string;
 }) {
     const [results, setResults] = useState<PatientResult[]>([]);
     const [open, setOpen] = useState(false);
@@ -40,7 +42,8 @@ export default function PatientSearch({
             setOpen(false);
             return;
         }
-        if (query.length < 2) {
+        // The backend ignores queries shorter than 3 characters
+        if (query.length < 3) {
             setResults([]);
             setOpen(false);
             return;
@@ -112,6 +115,7 @@ export default function PatientSearch({
                     if (!e.target.value) setOpen(false);
                 }}
                 placeholder={placeholder}
+                aria-label={ariaLabel}
                 autoComplete="off"
                 autoFocus
             />

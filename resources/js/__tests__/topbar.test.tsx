@@ -3,7 +3,13 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, act } from '@testing-library/react';
+import {
+    act,
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+} from '@testing-library/react';
 import AppLayout from '@/layouts/app/app-layout';
 
 // ---------------------------------------------------------------------------
@@ -84,54 +90,84 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('topbar search', () => {
-    it('no muestra el campo de búsqueda a usuarios sin module.pacientes.access', () => {
-        // Default beforeEach sets permissions to ['module.inicio.access'] only
-        render(<AppLayout>x</AppLayout>);
-        expect(
-            screen.queryByPlaceholderText(
-                /Buscar paciente o No\. de atención/i,
-            ),
-        ).not.toBeInTheDocument();
-    });
-
-    it('muestra el campo de búsqueda a usuarios con module.pacientes.access', () => {
+    const LABEL = 'Buscar paciente por nombre, cédula o teléfono';
+    const withSearch = () => {
         page.props.permissions = [
             'module.inicio.access',
             'module.pacientes.access',
         ];
-        render(<AppLayout>x</AppLayout>);
-        const input = screen.getByPlaceholderText(
-            /Buscar paciente o No\. de atención/i,
-        );
-        expect(input).toBeInTheDocument();
-        expect(input).toBeVisible();
-    });
-
-    it('navega a /pacientes?paciente={id} al seleccionar un resultado', async () => {
-        page.props.permissions = [
-            'module.inicio.access',
-            'module.pacientes.access',
-        ];
-        // Mock fetch to return a patient result
+    };
+    const searchButton = () => screen.getByRole('button', { name: LABEL });
+    const mockResults = () => {
         global.fetch = vi.fn().mockResolvedValueOnce({
             ok: true,
             json: async () => [
                 { id: 42, full_name: 'Ana Díaz', document_number: '001' },
             ],
         });
+    };
 
-        const { fireEvent: fe } = await import('@testing-library/react');
+    it('no muestra la búsqueda a usuarios sin module.pacientes.access', () => {
+        render(<AppLayout>x</AppLayout>);
+        expect(
+            screen.queryByRole('button', { name: LABEL }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('muestra solo un botón con lupa, sin campo de texto', () => {
+        withSearch();
+        render(<AppLayout>x</AppLayout>);
+        expect(searchButton()).toBeVisible();
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    });
+
+    it('muestra un tooltip con el texto de ayuda', async () => {
+        withSearch();
+        render(<AppLayout>x</AppLayout>);
+        fireEvent.focus(searchButton());
+        expect(await screen.findByRole('tooltip')).toHaveTextContent(LABEL);
+    });
+
+    it('abre el campo de búsqueda con foco al hacer clic', () => {
+        withSearch();
+        render(<AppLayout>x</AppLayout>);
+        fireEvent.click(searchButton());
+        expect(screen.getByRole('textbox', { name: LABEL })).toHaveFocus();
+        expect(searchButton()).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('cierra el campo con Escape', () => {
+        withSearch();
+        render(<AppLayout>x</AppLayout>);
+        fireEvent.click(searchButton());
+        fireEvent.keyDown(screen.getByRole('textbox', { name: LABEL }), {
+            key: 'Escape',
+        });
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    });
+
+    it('navega al paciente y cierra la búsqueda sin dejarlo seleccionado', async () => {
+        withSearch();
+        mockResults();
         render(<AppLayout>x</AppLayout>);
 
-        const input = screen.getByPlaceholderText(
-            /Buscar paciente o No\. de atención/i,
-        );
-        fe.change(input, { target: { value: 'Ana' } });
-
-        // Wait for debounce and fetch
-        await vi.waitFor(() => {
-            expect(global.fetch).toHaveBeenCalled();
+        fireEvent.click(searchButton());
+        fireEvent.change(screen.getByRole('textbox', { name: LABEL }), {
+            target: { value: 'Ana' },
         });
+        fireEvent.click(
+            await screen.findByRole('button', { name: /Ana Díaz/ }),
+        );
+
+        expect(mocks.routerVisit).toHaveBeenCalledWith(
+            '/pacientes?paciente=42',
+        );
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+        expect(screen.queryByText('Ana Díaz')).not.toBeInTheDocument();
+
+        // Reopening starts empty
+        fireEvent.click(searchButton());
+        expect(screen.getByRole('textbox', { name: LABEL })).toHaveValue('');
     });
 });
 
@@ -162,9 +198,29 @@ describe('topbar clock', () => {
         vi.setSystemTime(new Date('2026-10-25T09:14:00'));
         render(<AppLayout>x</AppLayout>);
         const dateEl = screen.getByTestId('topbar-date');
-        expect(dateEl).toBeInTheDocument();
-        // Should contain something date-like (oct or similar)
-        expect(dateEl.textContent?.toLowerCase()).toMatch(/oct/);
+        expect(dateEl).toHaveTextContent('dom 25/10/2026');
+    });
+
+    it('does not repeat the date in the breadcrumb', () => {
+        vi.setSystemTime(new Date('2026-10-25T09:14:00'));
+        render(<AppLayout>x</AppLayout>);
+        const breadcrumb = screen
+            .getByText('General', { selector: 'span' })
+            .closest('div');
+        expect(breadcrumb).not.toHaveTextContent(/2026/);
+    });
+
+    it('moves to the next day after midnight', () => {
+        vi.setSystemTime(new Date('2026-10-25T23:59:30'));
+        render(<AppLayout>x</AppLayout>);
+
+        act(() => {
+            vi.advanceTimersByTime(61_000);
+        });
+
+        expect(screen.getByTestId('topbar-date')).toHaveTextContent(
+            'lun 26/10/2026',
+        );
     });
 
     it('updates the clock after 1 minute', () => {

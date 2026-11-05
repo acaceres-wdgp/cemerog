@@ -11,8 +11,6 @@
  *  5. Returns null when nothing matches and no useful fallback is given.
  */
 
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import type { NavGroup } from './navigation';
 
 export interface BreadcrumbResult {
@@ -62,9 +60,4 @@ export function resolveBreadcrumb(
     }
 
     return null;
-}
-
-export function formatTopbarDate(date: Date): string {
-    const formatted = format(date, 'EEEE, dd/MM/yyyy', { locale: es });
-    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }

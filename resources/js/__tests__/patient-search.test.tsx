@@ -1,9 +1,9 @@
 /**
- * Tests for PatientSearch component – compact prop variant.
+ * Tests for the shared PatientSearch component.
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import PatientSearch from '@/components/cemerog/PatientSearch';
 
 vi.mock('@inertiajs/react', async (importOriginal) => ({
@@ -48,5 +48,49 @@ describe('PatientSearch – compact prop', () => {
         expect(input).toBeInTheDocument();
         // Compact has rounded-md class
         expect(input.className).toMatch(/rounded-md/);
+    });
+});
+
+describe('PatientSearch – shared behaviour', () => {
+    const renderSearch = (
+        props: Partial<React.ComponentProps<typeof PatientSearch>> = {},
+    ) =>
+        render(
+            <PatientSearch
+                selected={null}
+                query=""
+                onQueryChange={() => {}}
+                onSelect={() => {}}
+                onClear={() => {}}
+                endpoint="/pacientes/buscar"
+                {...props}
+            />,
+        );
+
+    it('does not search with fewer than 3 characters, like the backend', () => {
+        vi.useFakeTimers();
+        global.fetch = vi.fn();
+        const { rerender } = renderSearch({ query: 'An' });
+
+        act(() => {
+            vi.advanceTimersByTime(400);
+        });
+        expect(global.fetch).not.toHaveBeenCalled();
+
+        rerender(
+            <PatientSearch
+                selected={null}
+                query="Ana"
+                onQueryChange={() => {}}
+                onSelect={() => {}}
+                onClear={() => {}}
+                endpoint="/pacientes/buscar"
+            />,
+        );
+        act(() => {
+            vi.advanceTimersByTime(400);
+        });
+        expect(global.fetch).toHaveBeenCalledWith('/pacientes/buscar?q=Ana');
+        vi.useRealTimers();
     });
 });

@@ -30,7 +30,7 @@ export default function CashShiftIndicator() {
                     type="button"
                     disabled={!canOpen}
                     onClick={() => setOpening(true)}
-                    className="inline-flex h-8 items-center gap-1.5 rounded-full border border-card-border bg-muted-bg px-3 text-[12.5px] font-medium text-muted enabled:cursor-pointer enabled:hover:text-text-heading"
+                    className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-card-border bg-muted-bg px-3 text-[12.5px] font-medium whitespace-nowrap text-muted enabled:cursor-pointer enabled:hover:text-text-heading"
                 >
                     <Wallet className="h-3.5 w-3.5" />
                     Caja cerrada{canOpen ? ' · Abrir turno' : ''}
@@ -47,7 +47,7 @@ export default function CashShiftIndicator() {
             href={cuadre.url()}
             title={`Abierta por ${shift.opened_by} desde ${shift.opened_at}`}
             className={cn(
-                'inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-[12.5px] font-medium',
+                'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[12.5px] font-medium whitespace-nowrap',
                 shift.pending_close
                     ? 'border-error-border bg-error-bg text-error'
                     : 'border-accent-border bg-accent-bg text-accent-fg',

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { NAV_GROUPS } from '@/lib/navigation';
-import { resolveBreadcrumb, formatTopbarDate } from '@/lib/breadcrumb';
+import { resolveBreadcrumb } from '@/lib/breadcrumb';
 
 describe('resolveBreadcrumb', () => {
     // Exact matches
@@ -117,19 +117,5 @@ describe('resolveBreadcrumb', () => {
                 page: 'Página personalizada',
             }),
         ).toEqual({ section: 'General', page: 'Página personalizada' });
-    });
-});
-
-describe('formatTopbarDate', () => {
-    it('formats Oct 24, 2026 (Saturday) as Sábado, 24/10/2026', () => {
-        expect(formatTopbarDate(new Date(2026, 9, 24))).toBe(
-            'Sábado, 24/10/2026',
-        );
-    });
-
-    it('formats Jan 1, 2026 (Thursday) as Jueves, 01/01/2026', () => {
-        expect(formatTopbarDate(new Date(2026, 0, 1))).toBe(
-            'Jueves, 01/01/2026',
-        );
     });
 });
