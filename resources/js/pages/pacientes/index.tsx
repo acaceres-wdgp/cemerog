@@ -464,7 +464,13 @@ export default function PacientesIndex({
     const handleRowClick = (row: PatientRow) => {
         router.get(
             '/pacientes',
-            { q: search, filter: activeFilter, sort, paciente: row.id },
+            {
+                q: search,
+                filter: activeFilter,
+                sort,
+                page: patients.current_page,
+                paciente: row.id,
+            },
             {
                 preserveState: true,
                 replace: true,
@@ -482,12 +488,18 @@ export default function PacientesIndex({
         );
     };
 
+    // Keeps the table page: only `selected` is reloaded, not the patient list
     const handleClosePanel = () => {
         setPanelOpen(false);
         router.get(
             '/pacientes',
-            { q: search, filter: activeFilter, sort },
-            { preserveState: true, replace: true, only: [] },
+            {
+                q: search,
+                filter: activeFilter,
+                sort,
+                page: patients.current_page,
+            },
+            { preserveState: true, replace: true, only: ['selected'] },
         );
     };
 
