@@ -73,12 +73,15 @@ class ScheduleSurgery
         if ($room === null || ! $room->is_active) {
             throw ValidationException::withMessages(['operating_room_id' => 'Ese quirófano no está disponible.']);
         }
+        // Locking read: at REPEATABLE READ a plain SELECT would use the snapshot taken
+        // before waiting on the room lock and miss a surgery another user just committed
         $clash = Surgery::where('operating_room_id', $roomId)
             ->where('status', '!=', 'cancelada')
             ->when($except !== null, fn ($q) => $q->where('id', '!=', $except))
             ->where('starts_at', '<', $endsAt)
             ->where('ends_at', '>', $startsAt)
             ->with('patient')
+            ->lockForUpdate()
             ->first();
         if ($clash !== null) {
             throw ValidationException::withMessages(['starts_at' => "{$room->name} ya tiene «{$clash->procedure_name}» de {$clash->starts_at->format('H:i')} a {$clash->ends_at->format('H:i')}."]);
