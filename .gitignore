@@ -42,3 +42,6 @@ yarn-error.log
 /boost.json
 /opencode.json
 /opencode.jsonc
+
+# Playwright MCP browser artifacts (screenshots, snapshots, console logs)
+/.playwright-mcp
