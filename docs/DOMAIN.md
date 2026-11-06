@@ -122,7 +122,7 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 - **Anular factura:** solo el administrador, con motivo, y solo si no tiene pagos. La cuenta vuelve a «pendiente de facturar».
 - **Cobro** (requiere turno de caja abierto por quien cobra, o un administrador): recibo `R-0001`, pago mixto (efectivo con devuelta, tarjeta con aprobación opcional, transferencia con número obligatorio). No se cobra más que el balance.
 - **Crédito:** si el pago no cubre el balance, se exige fecha compromiso (hoy o después) y nota opcional; el resto pasa a cuentas por cobrar. Los abonos siguientes conservan la fecha.
-- **Anular recibo:** solo el administrador, con motivo, y solo recibos del turno abierto.
+- **Anular recibo:** solo el administrador, con motivo, y solo recibos del turno abierto. Un recibo anulado sigue visible en las listas, pero no se puede imprimir.
 
 ### Cuentas por cobrar
 

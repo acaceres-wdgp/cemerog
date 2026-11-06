@@ -38,14 +38,20 @@ export default function PaymentsTable({ pagos }: { pagos: ProfilePayment[] }) {
                                 className={cn(p.voided && 'text-muted')}
                             >
                                 <td className={`${td} pl-5`}>
-                                    <a
-                                        href={caja.receipts.print.url(p.id)}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="font-mono text-[12.5px] font-semibold text-primary"
-                                    >
-                                        {p.number}
-                                    </a>
+                                    {p.voided ? (
+                                        <span className="font-mono text-[12.5px] font-semibold">
+                                            {p.number}
+                                        </span>
+                                    ) : (
+                                        <a
+                                            href={caja.receipts.print.url(p.id)}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="font-mono text-[12.5px] font-semibold text-primary"
+                                        >
+                                            {p.number}
+                                        </a>
+                                    )}
                                 </td>
                                 <td className={`${td} tabular-nums`}>
                                     {p.date}

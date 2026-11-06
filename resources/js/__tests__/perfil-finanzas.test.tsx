@@ -102,6 +102,30 @@ describe('Finanzas del paciente', () => {
         ).toHaveAttribute('href', '/facturacion/recibos/3/imprimir');
     });
 
+    it('a voided receipt shows its number but cannot be opened to print', () => {
+        const pagos = [
+            { ...finanzas.pagos[0], voided: true },
+            finanzas.pagos[1],
+        ];
+        render(
+            <FinanzasTab
+                finanzas={{ ...finanzas, pagos }}
+                patientName="Ana Torres"
+            />,
+        );
+
+        const payments = screen
+            .getByText('Pagos recibidos')
+            .closest('section')!;
+        expect(within(payments).getByText('R-0003')).toBeTruthy();
+        expect(
+            within(payments).queryByRole('link', { name: 'R-0003' }),
+        ).toBeNull();
+        expect(
+            within(payments).getByRole('link', { name: 'R-0002' }),
+        ).toHaveAttribute('href', '/facturacion/recibos/2/imprimir');
+    });
+
     it('without Caja access there is no «Registrar pago»', () => {
         page.props.permissions = [];
         render(<FinanzasTab finanzas={finanzas} patientName="Ana Torres" />);
