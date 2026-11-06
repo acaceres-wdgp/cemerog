@@ -8,6 +8,7 @@ use App\Models\Prescription;
 use App\Models\Turn;
 use App\Models\User;
 use App\Support\AllergyChecker;
+use App\Support\Clinic;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -126,12 +127,7 @@ class PrescriptionController extends Controller
 
         return Inertia::render('consulta/receta-imprimir', [
             'prescription' => $this->formatPrescription($prescription),
-            'clinic' => [
-                'name' => config('cemerog.clinic.name'),
-                'rnc' => config('cemerog.clinic.rnc'),
-                'phone' => config('cemerog.clinic.phone'),
-                'address' => config('cemerog.clinic.address'),
-            ],
+            'clinic' => Clinic::info(),
         ]);
     }
 

@@ -1,13 +1,10 @@
 import React from 'react';
 import PrintablePage from '@/components/cemerog/PrintablePage';
+import ClinicHeader, {
+    type ClinicInfo,
+} from '@/components/cemerog/ClinicHeader';
 import { ageLabel } from '@/lib/patient';
 import type { LabDetail } from './types';
-
-type Clinic = {
-    name: string | null;
-    phone: string | null;
-    address: string | null;
-};
 
 function Header({
     order,
@@ -15,26 +12,14 @@ function Header({
     title,
 }: {
     order: LabDetail;
-    clinic: Clinic;
+    clinic: ClinicInfo;
     title: string;
 }) {
     const p = order.patient;
     return (
         <>
             <div className="mb-4 flex items-start justify-between border-b border-divider pb-4">
-                <div>
-                    <div className="font-serif text-[22px] font-bold text-primary">
-                        {clinic.name ?? 'CEMEROG'}
-                    </div>
-                    <div className="text-[12.5px] text-text-dim">
-                        Dres. Rodríguez &amp; Guzmán
-                    </div>
-                    {clinic.phone && (
-                        <div className="text-[12px] text-muted">
-                            Tel: {clinic.phone}
-                        </div>
-                    )}
-                </div>
+                <ClinicHeader clinic={clinic} />
                 <div className="text-right">
                     <div className="font-serif text-[18px] font-bold tracking-[.04em]">
                         {title}
@@ -73,7 +58,7 @@ export default function LabImprimir({
     clinic,
 }: {
     order: LabDetail;
-    clinic: Clinic;
+    clinic: ClinicInfo;
 }) {
     const done = order.status === 'validada' || order.status === 'entregada';
 
@@ -81,6 +66,15 @@ export default function LabImprimir({
         <>
             <style>{`@media print { body > *:not(#app) { display: none !important; } #app > *:not(.printable-root) { display: none !important; } .page-break { break-after: page; } }`}</style>
             <div className="printable-root min-h-screen bg-surface py-8 print:bg-white print:p-0 print:py-0">
+                <div className="mx-auto mb-4 flex w-full max-w-[816px] print:hidden">
+                    <button
+                        type="button"
+                        onClick={() => window.print()}
+                        className="inline-flex h-9 cursor-pointer items-center rounded-lg bg-primary px-[14px] text-sm font-medium text-white hover:bg-primary-hover"
+                    >
+                        Imprimir
+                    </button>
+                </div>
                 {done ? (
                     order.categories.map((c) => (
                         <div key={c.category} className="page-break mb-6">

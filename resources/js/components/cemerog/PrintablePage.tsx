@@ -20,6 +20,7 @@ export default function PrintablePage({
 }: PrintablePageProps) {
     return (
         <div
+            data-printable-page
             className={`mx-auto min-h-[1056px] w-full max-w-[816px] bg-white p-12 font-sans print:max-w-none print:p-0 ${className}`}
         >
             {showHeader && (

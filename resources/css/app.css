@@ -344,3 +344,20 @@
         @apply h-9 rounded-md border border-[#dfe7df] bg-[#F6F9F5] px-[14px] text-sm font-medium text-[#1f2d22] transition-colors hover:bg-[#EEF6E2];
     }
 }
+
+/* ── Printable documents ─────────────────────────────────────────────────────
+   Chrome prints its header/footer (date, tab title, URL, page number) in the
+   page margins. Printable documents use a named page with no margins, so there
+   is nowhere to draw them, and keep their spacing inside the document (the
+   side padding repeats on every sheet). Other printouts keep the defaults. */
+@page printable {
+    size: letter;
+    margin: 0;
+}
+
+@media print {
+    [data-printable-page] {
+        page: printable;
+        padding: 14mm 16mm !important;
+    }
+}

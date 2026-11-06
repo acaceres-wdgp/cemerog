@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\LabOrder;
 use App\Models\LabTest;
 use App\Models\User;
+use App\Support\Clinic;
 use App\Support\LabPresenter;
 use App\Support\Toast;
 use Illuminate\Database\Eloquent\Builder;
@@ -106,7 +107,7 @@ class LabController extends Controller
     {
         return Inertia::render('lab/imprimir', [
             'order' => $lab->detail($order, false),
-            'clinic' => ['name' => config('cemerog.clinic.name'), 'phone' => config('cemerog.clinic.phone'), 'address' => config('cemerog.clinic.address')],
+            'clinic' => Clinic::info(),
         ]);
     }
 

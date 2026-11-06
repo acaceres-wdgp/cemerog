@@ -2,8 +2,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import AppLayout from '@/layouts/app-layout';
-import AuthLayout from '@/layouts/auth-layout';
+import { resolveLayout } from '@/layouts/resolve-layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -19,14 +18,7 @@ void createInertiaApp({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolve: (name) =>
         resolvePageComponent(`./pages/${name}.tsx`, pages) as any,
-    layout: (name) => {
-        switch (true) {
-            case name.startsWith('auth/'):
-                return AuthLayout;
-            default:
-                return AppLayout;
-        }
-    },
+    layout: resolveLayout,
     strictMode: true,
     withApp(app) {
         return (

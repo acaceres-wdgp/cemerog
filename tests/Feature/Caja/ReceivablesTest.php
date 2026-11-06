@@ -170,6 +170,7 @@ test('the shift report shows the float, receipts, withdrawals and the count', fu
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('cuadre/reporte')
+            ->has('clinic', fn ($clinic) => $clinic->hasAll(['name', 'rnc', 'phone', 'address']))
             ->where('shift.status', 'cerrado')
             ->where('shift.summary.opening', 100000)
             ->where('shift.summary.income.efectivo', 150000)

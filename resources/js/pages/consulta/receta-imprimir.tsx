@@ -2,6 +2,9 @@ import React from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import PrintablePage from '@/components/cemerog/PrintablePage';
+import ClinicHeader, {
+    type ClinicInfo,
+} from '@/components/cemerog/ClinicHeader';
 import { ageLabel } from '@/lib/patient';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -37,13 +40,6 @@ type PrescriptionData = {
     items: PrescriptionItem[];
 };
 
-type ClinicInfo = {
-    name: string | null;
-    rnc: string | null;
-    phone: string | null;
-    address: string | null;
-};
-
 type Props = {
     prescription: PrescriptionData;
     clinic: ClinicInfo;
@@ -74,32 +70,19 @@ export default function RecetaImprimir({ prescription, clinic }: Props) {
             {/* Print CSS: hide app chrome */}
             <style>{`@media print { body > *:not(#app) { display: none !important; } #app > *:not(.printable-root) { display: none !important; } }`}</style>
             <div className="printable-root min-h-screen bg-surface py-8 print:bg-white print:p-0 print:py-0">
+                {/* Print button – hidden when printing */}
+                <div className="mx-auto mb-4 flex w-full max-w-[816px] print:hidden">
+                    <button
+                        onClick={() => window.print()}
+                        className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border-0 bg-primary px-4 font-sans text-sm font-medium text-white"
+                    >
+                        Imprimir
+                    </button>
+                </div>
                 <PrintablePage showHeader={false}>
                     {/* Clinic header */}
                     <div className="mb-6 flex items-start justify-between border-b border-divider pb-5">
-                        <div>
-                            <div className="font-serif text-[22px] font-bold text-primary">
-                                {clinic.name ?? 'CEMEROG'}
-                            </div>
-                            <div className="mt-[2px] text-[12.5px] text-text-dim">
-                                Dres. Rodríguez &amp; Guzmán
-                            </div>
-                            {clinic.rnc && (
-                                <div className="text-[12px] text-muted">
-                                    RNC: {clinic.rnc}
-                                </div>
-                            )}
-                            {clinic.phone && (
-                                <div className="text-[12px] text-muted">
-                                    Tel: {clinic.phone}
-                                </div>
-                            )}
-                            {clinic.address && (
-                                <div className="text-[12px] text-muted">
-                                    {clinic.address}
-                                </div>
-                            )}
-                        </div>
+                        <ClinicHeader clinic={clinic} />
                         <div className="text-right text-[12.5px]">
                             <div className="font-semibold text-text-heading">
                                 Receta Médica
@@ -200,16 +183,6 @@ export default function RecetaImprimir({ prescription, clinic }: Props) {
                         </div>
                     </div>
                 </PrintablePage>
-
-                {/* Print button – hidden when printing */}
-                <div className="mt-4 flex justify-center print:hidden">
-                    <button
-                        onClick={() => window.print()}
-                        className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] border-0 bg-primary px-4 font-sans text-sm font-medium text-white"
-                    >
-                        Imprimir
-                    </button>
-                </div>
             </div>
         </>
     );

@@ -203,6 +203,7 @@ test('the report prints with the patient and the signature', function () {
         ->get("/imagenes/ordenes/{$order->id}/imprimir")
         ->assertInertia(fn ($page) => $page
             ->component('img/imprimir')
+            ->has('clinic', fn ($clinic) => $clinic->hasAll(['name', 'rnc', 'phone', 'address']))
             ->where('order.conclusion', 'Sin alteraciones.')
             ->where('order.signed_by', 'Lic. Ramírez')
         );

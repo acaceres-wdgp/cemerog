@@ -10,6 +10,7 @@ use App\Models\Receipt;
 use App\Models\User;
 use App\Support\CashDenominations;
 use App\Support\CashShiftPresenter;
+use App\Support\Clinic;
 use App\Support\InvoicePresenter;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -67,7 +68,7 @@ class CuadreController extends Controller
                     'patient' => $r->invoice->patient->full_name,
                 ])->values()->all(),
             ],
-            'clinic' => ['name' => config('cemerog.clinic.name')],
+            'clinic' => Clinic::info(),
         ]);
     }
 }

@@ -273,6 +273,7 @@ test('print route returns correct data', function () {
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('consulta/receta-imprimir')
+            ->has('clinic', fn ($clinic) => $clinic->hasAll(['name', 'rnc', 'phone', 'address']))
             ->has('prescription')
             ->where('prescription.id', $prescription->id)
             ->where('prescription.general_instructions', 'Descanso relativo.')

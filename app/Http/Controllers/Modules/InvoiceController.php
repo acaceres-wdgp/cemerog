@@ -10,6 +10,7 @@ use App\Http\Requests\VoidInvoiceRequest;
 use App\Models\Account;
 use App\Models\Invoice;
 use App\Models\User;
+use App\Support\Clinic;
 use App\Support\InvoicePresenter;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
@@ -61,12 +62,7 @@ class InvoiceController extends Controller
     {
         return Inertia::render('caja/factura-imprimir', [
             'invoice' => $presenter->detail($invoice),
-            'clinic' => [
-                'name' => config('cemerog.clinic.name'),
-                'rnc' => config('cemerog.clinic.rnc'),
-                'phone' => config('cemerog.clinic.phone'),
-                'address' => config('cemerog.clinic.address'),
-            ],
+            'clinic' => Clinic::info(),
         ]);
     }
 }

@@ -1,15 +1,11 @@
 import React from 'react';
 import PrintablePage from '@/components/cemerog/PrintablePage';
+import ClinicHeader, {
+    type ClinicInfo,
+} from '@/components/cemerog/ClinicHeader';
 import ChargesTable from './components/ChargesTable';
 import TotalsBox from './components/TotalsBox';
 import type { InvoiceDetail } from './types';
-
-type ClinicInfo = {
-    name: string | null;
-    rnc: string | null;
-    phone: string | null;
-    address: string | null;
-};
 
 export default function FacturaImprimir({
     invoice,
@@ -23,31 +19,18 @@ export default function FacturaImprimir({
             {/* Print CSS: hide app chrome */}
             <style>{`@media print { body > *:not(#app) { display: none !important; } #app > *:not(.printable-root) { display: none !important; } }`}</style>
             <div className="printable-root min-h-screen bg-surface py-8 print:bg-white print:p-0 print:py-0">
+                <div className="mx-auto mb-4 flex w-full max-w-[816px] print:hidden">
+                    <button
+                        type="button"
+                        onClick={() => window.print()}
+                        className="inline-flex h-9 cursor-pointer items-center rounded-lg bg-primary px-[14px] text-sm font-medium text-white hover:bg-primary-hover"
+                    >
+                        Imprimir
+                    </button>
+                </div>
                 <PrintablePage showHeader={false}>
                     <div className="mb-6 flex items-start justify-between border-b border-divider pb-5">
-                        <div>
-                            <div className="font-serif text-[22px] font-bold text-primary">
-                                {clinic.name ?? 'CEMEROG'}
-                            </div>
-                            <div className="mt-[2px] text-[12.5px] text-text-dim">
-                                Dres. Rodríguez &amp; Guzmán
-                            </div>
-                            {clinic.rnc && (
-                                <div className="text-[12px] text-muted">
-                                    RNC: {clinic.rnc}
-                                </div>
-                            )}
-                            {clinic.phone && (
-                                <div className="text-[12px] text-muted">
-                                    Tel: {clinic.phone}
-                                </div>
-                            )}
-                            {clinic.address && (
-                                <div className="text-[12px] text-muted">
-                                    {clinic.address}
-                                </div>
-                            )}
-                        </div>
+                        <ClinicHeader clinic={clinic} />
                         <div className="text-right text-[12.5px]">
                             <div className="font-semibold text-text-heading">
                                 Factura {invoice.number}
@@ -99,15 +82,6 @@ export default function FacturaImprimir({
                         preferencia.
                     </p>
                 </PrintablePage>
-                <div className="mt-4 flex justify-center print:hidden">
-                    <button
-                        type="button"
-                        onClick={() => window.print()}
-                        className="inline-flex h-9 cursor-pointer items-center rounded-lg bg-primary px-[14px] text-sm font-medium text-white hover:bg-primary-hover"
-                    >
-                        Imprimir
-                    </button>
-                </div>
             </div>
         </>
     );
