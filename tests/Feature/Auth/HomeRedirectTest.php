@@ -24,10 +24,10 @@ test('home route resolves to the first accessible module', function (string $rol
     expect(app(ResolveHomeRoute::class)->handle($user))->toBe(route($routeName, absolute: false));
 })->with('role_homes');
 
-test('user without modules falls back to profile settings', function () {
+test('user without modules falls back to the no-modules page', function () {
     $user = User::factory()->create();
 
-    expect(app(ResolveHomeRoute::class)->handle($user))->toBe(route('profile.edit', absolute: false));
+    expect(app(ResolveHomeRoute::class)->handle($user))->toBe(route('sin-modulos', absolute: false));
 });
 
 test('login redirects each role to its home', function (string $role, string $routeName) {

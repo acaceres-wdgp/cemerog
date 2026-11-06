@@ -63,9 +63,7 @@ describe('sidebar active item', () => {
         expect(activeItems('/almacen', 'almacen/index')).toEqual(['Catálogo']);
     });
 
-    it('marks nothing on settings pages', () => {
-        expect(activeItems('/settings/profile', 'settings/profile')).toEqual(
-            [],
-        );
+    it('marks nothing on pages outside the menu', () => {
+        expect(activeItems('/sin-modulos', 'sin-modulos/index')).toEqual([]);
     });
 });

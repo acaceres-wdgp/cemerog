@@ -24,7 +24,7 @@ class ResolveHomeRoute
 
     /**
      * Get the URL of the first module the user can access.
-     * Users without any module land on their profile settings.
+     * Users without any module land on a page that says so.
      */
     public function handle(User $user): string
     {
@@ -36,6 +36,6 @@ class ResolveHomeRoute
             }
         }
 
-        return route('profile.edit', absolute: false);
+        return route('sin-modulos', absolute: false);
     }
 }

@@ -531,3 +531,20 @@ Al llegar un paciente se necesita registrar qué consumió ese día (consultas, 
 | Artículos de inventario        | Inventario › Catálogo       |
 
 **Consecuencias:** una sola fuente de verdad por precio. Si en el futuro se quiere una vista resumen, debe leer estas tablas, no duplicarlas.
+
+---
+
+## ADR-026: Sin pantalla de ajustes de usuario; la app es solo en modo claro
+
+**Fecha**: 2026-11  
+**Estado**: Aceptado
+
+**Contexto:** `/settings` venía del starter kit de Laravel: _Perfil_ (editar el nombre propio) y _Apariencia_ (claro, oscuro o sistema), en inglés y sin enlace desde la interfaz. Editar el nombre propio ya lo hace el administrador en _Usuarios y roles_, y en un médico desincronizaba el nombre de su ficha de doctor (la sincronización va de doctor a usuario). El diseño de CEMEROG no tiene modo oscuro, pero el script de `app.blade.php` agregaba `.dark` según el sistema operativo y Tailwind 4 aplicaba las clases `dark:` de `components/ui` con `prefers-color-scheme`.
+
+**Decisión:**
+
+- Se eliminan `/settings`, `/settings/profile` y `/settings/appearance`, con su controller, layout, componentes y el middleware `HandleAppearance`.
+- Un usuario sin módulos aterriza en `/sin-modulos`, que le pide contactar al administrador y le permite cerrar sesión. Quien tenga algún módulo y abra esa URL va a su página de inicio (`ResolveHomeRoute`), no necesariamente `/inicio`: enfermería, bioanalista, imágenes y almacén no tienen ese módulo.
+- Solo modo claro: sin script de tema en `app.blade.php`, Sonner con `theme="light"` y `@custom-variant dark` en `app.css` ligado a una clase `.dark` que nunca se agrega, de modo que la preferencia del sistema operativo no cambia nada.
+
+**Consecuencias:** el nombre de cada usuario lo gestiona solo el administrador. Para agregar modo oscuro en el futuro habría que definir tokens oscuros y una forma de elegirlo; no basta con volver a poner el script.

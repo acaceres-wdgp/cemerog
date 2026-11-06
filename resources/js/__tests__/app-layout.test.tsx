@@ -205,7 +205,7 @@ describe('active nav item', () => {
     });
 
     it('marks nothing on a non-module URL', () => {
-        page.url = '/settings/profile';
+        page.url = '/sin-modulos';
         render(<AppLayout>x</AppLayout>);
         expect(activeLinks()).toHaveLength(0);
     });
