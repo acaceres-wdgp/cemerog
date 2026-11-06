@@ -110,13 +110,8 @@ export const NAV_GROUPS: NavGroup[] = [
                 href: '/imagenes',
                 permission: 'module.img.access',
             },
-            {
-                key: 'impresos',
-                label: 'Documentos imprimibles',
-                icon: 'Printer',
-                href: '/impresos',
-                permission: 'module.impresos.access',
-            },
+            // «Documentos imprimibles» (/impresos) is hidden while it is still a mock;
+            // the route and the module.impresos.access permission are kept
         ],
     },
     {
