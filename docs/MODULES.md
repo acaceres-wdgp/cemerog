@@ -91,7 +91,7 @@ Cada permiso se verifica:
 
 ## Página de inicio por rol
 
-Tras iniciar sesión, cada usuario aterriza en el primer módulo al que tiene acceso, siguiendo el orden de la columna "Orden impl.". Lo calcula `App\Actions\ResolveHomeRoute`. Un usuario sin módulos aterriza en `/settings/profile`.
+Tras iniciar sesión, cada usuario aterriza en el primer módulo al que tiene acceso, siguiendo el orden de la columna "Orden impl.". Lo calcula `App\Actions\ResolveHomeRoute`. Un usuario sin módulos aterriza en `/sin-modulos`, que le indica contactar al administrador (ADR-026).
 
 Al agregar un módulo nuevo, añádelo en `resources/js/lib/navigation.ts` y también en la lista de `ResolveHomeRoute`.
 
@@ -110,7 +110,7 @@ Al agregar un módulo nuevo, añádelo en `resources/js/lib/navigation.ts` y tam
 Solo el administrador gestiona los accesos y las contraseñas. Los usuarios no tienen ajustes de seguridad propios.
 
 - **Toda contraseña que asigna el administrador es temporal.** Al crear un usuario y al cambiarle la contraseña desde `/admin/usuarios`, se guarda `must_change_password = true`.
-- Con `must_change_password = true`, el middleware `ensure.password.changed` lleva al usuario a `/password/change-required` en su siguiente petición, aunque ya tenga la sesión abierta. No puede usar ningún módulo ni `/settings` hasta cambiarla.
+- Con `must_change_password = true`, el middleware `ensure.password.changed` lleva al usuario a `/password/change-required` en su siguiente petición, aunque ya tenga la sesión abierta. No puede usar ningún módulo hasta cambiarla.
 - El usuario solo cambia su contraseña en ese momento. `/password/change-required` redirige a su página de inicio si no tiene una contraseña temporal.
 - Así, el administrador controla quién entra pero no conoce la contraseña definitiva de nadie.
 - Los usuarios no pueden borrar su propia cuenta. Para dar de baja a alguien, el administrador desactiva su usuario (`is_active = false`), y su sesión se cierra en la siguiente petición.

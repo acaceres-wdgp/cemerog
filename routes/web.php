@@ -65,6 +65,9 @@ Route::middleware('auth')->group(function () {
 // App modules – all require auth + ensure password changed
 Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
 
+    // Landing for users without any module (ADR-026)
+    Route::inertia('/sin-modulos', 'sin-modulos/index')->name('sin-modulos');
+
     // General
     Route::get('/inicio', [InicioController::class, 'index'])
         ->middleware('permission:module.inicio.access')
@@ -323,5 +326,3 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
 if (app()->environment('local')) {
     Route::inertia('/dev/components', 'dev/components')->name('dev.components');
 }
-
-require __DIR__.'/settings.php';

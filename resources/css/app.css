@@ -4,7 +4,10 @@
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
-/* Only light mode – dark mode disabled for CEMEROG */
+/* Only light mode – dark mode disabled for CEMEROG (ADR-026).
+   Tailwind 4 applies `dark:` with prefers-color-scheme by default; tie it to a
+   `.dark` class that is never set, so the OS preference changes nothing. */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
     /* ── Typography ─────────────────────────────── */

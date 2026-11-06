@@ -30,10 +30,10 @@ test('la secretaria recibe module.pacientes.access en los permissions compartido
 
 test('un usuario sin permisos no recibe module.pacientes.access', function () {
     $user = User::factory()->create();
-    // No role assigned — lands on profile settings page
+    // No role assigned — lands on the no-modules page
 
     $this->actingAs($user)
-        ->get('/settings/profile')
+        ->get('/sin-modulos')
         ->assertInertia(fn ($page) => $page
             ->where('permissions', fn ($perms) => ! in_array('module.pacientes.access', collect($perms)->toArray()))
         );

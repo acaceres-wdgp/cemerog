@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Specialty;
 use App\Models\User;
 
 /**
@@ -7,7 +8,7 @@ use App\Models\User;
  */
 dataset('authenticated_pages', [
     'module' => ['/inicio'],
-    'settings' => ['/settings/profile'],
+    'no modules' => ['/sin-modulos'],
     'password change' => ['/password/change-required'],
 ]);
 
@@ -25,14 +26,15 @@ test('deactivated user is logged out on their next request', function (string $u
     $this->assertGuest();
 })->with('authenticated_pages');
 
-test('deactivated user cannot change their profile', function () {
-    $user = User::factory()->inactive()->create(['name' => 'Original']);
+test('deactivated user cannot write', function () {
+    $user = User::factory()->inactive()->create();
+    $user->assignRole('administrador');
 
     $this->actingAs($user)
-        ->patch('/settings/profile', ['name' => 'Changed'])
+        ->post('/admin/doctores/especialidades', ['name' => 'Neurología', 'consultation_price' => 150000])
         ->assertRedirect(route('login'));
 
-    expect($user->fresh()->name)->toBe('Original');
+    expect(Specialty::where('name', 'Neurología')->exists())->toBeFalse();
     $this->assertGuest();
 });
 

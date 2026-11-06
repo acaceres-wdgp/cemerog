@@ -22,6 +22,17 @@ test('self-service password update endpoint does not exist', function () {
         ->assertNotFound();
 });
 
+test('settings pages do not exist', function (string $method, string $url) {
+    $this->actingAs(User::factory()->create())
+        ->{$method}($url, ['name' => 'Changed'])
+        ->assertNotFound();
+})->with([
+    'settings' => ['get', '/settings'],
+    'profile page' => ['get', '/settings/profile'],
+    'profile update' => ['patch', '/settings/profile'],
+    'appearance page' => ['get', '/settings/appearance'],
+]);
+
 test('passkey well-known endpoint does not exist', function () {
     $this->get('/.well-known/passkey-endpoints')->assertNotFound();
 });
