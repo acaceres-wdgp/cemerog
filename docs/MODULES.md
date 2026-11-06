@@ -91,7 +91,7 @@ Cada permiso se verifica:
 
 ## Página de inicio por rol
 
-Tras iniciar sesión, cada usuario aterriza en el primer módulo al que tiene acceso, siguiendo el orden de la columna "Orden impl.". Lo calcula `App\Actions\ResolveHomeRoute`. Un usuario sin módulos aterriza en `/sin-modulos`, que le indica contactar al administrador (ADR-026).
+Tras iniciar sesión, cada usuario aterriza en el primer módulo al que tiene acceso, siguiendo el orden de la columna "Orden impl.". Lo calcula `App\Actions\ResolveHomeRoute`. Un usuario sin módulos aterriza en `/sin-modulos`, que le indica contactar al administrador (ADR-026). Si alguien con módulos abre `/sin-modulos`, se le redirige a su página de inicio.
 
 Al agregar un módulo nuevo, añádelo en `resources/js/lib/navigation.ts` y también en la lista de `ResolveHomeRoute`.
 

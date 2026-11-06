@@ -544,7 +544,7 @@ Al llegar un paciente se necesita registrar qué consumió ese día (consultas, 
 **Decisión:**
 
 - Se eliminan `/settings`, `/settings/profile` y `/settings/appearance`, con su controller, layout, componentes y el middleware `HandleAppearance`.
-- Un usuario sin módulos aterriza en `/sin-modulos`, que le pide contactar al administrador y le permite cerrar sesión.
+- Un usuario sin módulos aterriza en `/sin-modulos`, que le pide contactar al administrador y le permite cerrar sesión. Quien tenga algún módulo y abra esa URL va a su página de inicio (`ResolveHomeRoute`), no necesariamente `/inicio`: enfermería, bioanalista, imágenes y almacén no tienen ese módulo.
 - Solo modo claro: sin script de tema en `app.blade.php`, Sonner con `theme="light"` y `@custom-variant dark` en `app.css` ligado a una clase `.dark` que nunca se agrega, de modo que la preferencia del sistema operativo no cambia nada.
 
 **Consecuencias:** el nombre de cada usuario lo gestiona solo el administrador. Para agregar modo oscuro en el futuro habría que definir tokens oscuros y una forma de elegirlo; no basta con volver a poner el script.

@@ -19,6 +19,26 @@ test('the no-modules page renders for an authenticated user', function () {
         ->assertInertia(fn ($page) => $page->component('sin-modulos/index'));
 });
 
+test('a user with modules is sent to their home instead', function (string $role, string $home) {
+    $user = User::factory()->create();
+    $user->assignRole($role);
+
+    $this->actingAs($user)
+        ->get('/sin-modulos')
+        ->assertRedirect($home);
+})->with([
+    'administrador' => ['administrador', '/inicio'],
+    'enfermeria (sin Inicio)' => ['enfermeria', '/tablero'],
+    'bioanalista (sin Inicio)' => ['bioanalista', '/laboratorio'],
+]);
+
+test('a user with a single direct permission is sent to that module', function () {
+    $user = User::factory()->create();
+    $user->givePermissionTo('module.almacen.access');
+
+    $this->actingAs($user)->get('/sin-modulos')->assertRedirect('/almacen');
+});
+
 test('guests are sent to login', function () {
     $this->get('/sin-modulos')->assertRedirect(route('login'));
 });

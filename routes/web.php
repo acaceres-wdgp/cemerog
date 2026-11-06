@@ -42,6 +42,7 @@ use App\Http\Controllers\Modules\TemaController;
 use App\Http\Controllers\Modules\TurnosController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 // Root redirect
 Route::get('/', fn (Request $request, ResolveHomeRoute $resolveHomeRoute) => $request->user()
@@ -65,8 +66,14 @@ Route::middleware('auth')->group(function () {
 // App modules – all require auth + ensure password changed
 Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
 
-    // Landing for users without any module (ADR-026)
-    Route::inertia('/sin-modulos', 'sin-modulos/index')->name('sin-modulos');
+    // Landing for users without any module (ADR-026); anyone with a module goes to their home
+    Route::get('/sin-modulos', function (Request $request, ResolveHomeRoute $resolveHomeRoute) {
+        $home = $resolveHomeRoute->handle($request->user());
+
+        return $home === route('sin-modulos', absolute: false)
+            ? Inertia::render('sin-modulos/index')
+            : redirect($home);
+    })->name('sin-modulos');
 
     // General
     Route::get('/inicio', [InicioController::class, 'index'])
