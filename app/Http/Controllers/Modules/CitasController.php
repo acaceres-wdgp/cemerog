@@ -80,6 +80,8 @@ class CitasController extends Controller
             'doctors' => $doctors,
             'date' => $date,
             'is_today' => $isToday,
+            // The clinic's day, so «Hoy»/«Mañana» don't depend on the browser's clock or UTC
+            'today' => today()->toDateString(),
         ]);
     }
 

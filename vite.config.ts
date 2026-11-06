@@ -19,6 +19,8 @@ export default defineConfig({
         setupFiles: ['./resources/js/test-setup.ts'],
         globals: true,
         include: ['resources/js/**/*.test.{ts,tsx}'],
+        // The clinic's time zone, so date tests behave the same on any machine
+        env: { TZ: 'America/Santo_Domingo' },
     },
     plugins: lazyPlugins(() => [
         laravel({

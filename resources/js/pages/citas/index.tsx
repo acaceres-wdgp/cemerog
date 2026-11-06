@@ -10,6 +10,7 @@ type Props = {
     doctors: DoctorOption[];
     date: string;
     is_today: boolean;
+    today: string;
 };
 
 export default function CitasIndex({
@@ -17,6 +18,7 @@ export default function CitasIndex({
     doctors,
     date,
     is_today,
+    today,
 }: Props) {
     const [showModal, setShowModal] = useState(false);
     const [selDoc, setSelDoc] = useState<number | null>(null);
@@ -59,6 +61,7 @@ export default function CitasIndex({
                 setSelDoc={setSelDoc}
                 date={date}
                 is_today={is_today}
+                today={today}
                 onNavigate={navigate}
                 onNewCita={() => setShowModal(true)}
             />
