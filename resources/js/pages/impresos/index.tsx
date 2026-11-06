@@ -308,7 +308,9 @@ export default function ImpresosIndex() {
 
     return (
         <div className="flex flex-col gap-5">
-            <div>
+            {/* Only the selected document prints, as on the other printable pages */}
+            <style>{`@media print { body > *:not(#app) { display: none !important; } }`}</style>
+            <div className="print:hidden">
                 <h1
                     style={{
                         fontFamily: 'Bitter,Georgia,serif',
@@ -335,6 +337,7 @@ export default function ImpresosIndex() {
             >
                 {/* Document list */}
                 <div
+                    className="print:!hidden"
                     style={{
                         flex: '0 0 280px',
                         display: 'flex',
@@ -385,6 +388,7 @@ export default function ImpresosIndex() {
                 <div style={{ flex: '1 1 500px', minWidth: 0 }}>
                     {printContent ? (
                         <div
+                            className="print:!border-0"
                             style={{
                                 background: '#fff',
                                 border: '1px solid #e3e9e3',
@@ -393,6 +397,7 @@ export default function ImpresosIndex() {
                             }}
                         >
                             <div
+                                className="print:!hidden"
                                 style={{
                                     padding: '14px 20px',
                                     borderBottom: '1px solid #eef0ec',
@@ -446,6 +451,7 @@ export default function ImpresosIndex() {
                         </div>
                     ) : (
                         <div
+                            className="print:!hidden"
                             style={{
                                 background: '#fff',
                                 border: '1px dashed #d1d5db',

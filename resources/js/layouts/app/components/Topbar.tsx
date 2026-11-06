@@ -141,7 +141,7 @@ export function Topbar({ breadcrumb, userMenuProps }: TopbarProps) {
     const canSearchPatients = permissions.includes('module.pacientes.access');
 
     return (
-        <header className="flex h-14 shrink-0 items-center gap-6 border-b border-card-border bg-white px-4 shadow-sm">
+        <header className="flex h-14 shrink-0 items-center gap-6 border-b border-card-border bg-white px-4 shadow-sm print:hidden">
             {/* Left: breadcrumb – takes the free space and truncates before crowding the right side */}
             <div className="flex min-w-[180px] flex-1 items-center gap-2 overflow-hidden text-sm whitespace-nowrap text-muted">
                 {breadcrumb ? (

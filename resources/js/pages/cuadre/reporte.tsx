@@ -62,7 +62,7 @@ export default function ReporteTurno({
         <>
             {/* Print CSS: hide app chrome */}
             <style>{`@media print { body > *:not(#app) { display: none !important; } #app > *:not(.printable-root) { display: none !important; } }`}</style>
-            <div className="printable-root min-h-screen bg-surface py-8 print:bg-white print:p-0 print:py-0">
+            <div className="printable-root min-h-screen bg-surface py-8 print:min-h-0 print:bg-white print:p-0 print:py-0">
                 <div className="mx-auto mb-4 flex w-full max-w-[816px] print:hidden">
                     <button
                         type="button"

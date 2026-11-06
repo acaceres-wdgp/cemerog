@@ -104,7 +104,7 @@ export function Sidebar({
 
     return (
         <aside
-            className={`flex shrink-0 flex-col transition-all duration-300 ease-in-out ${THEME_BG[theme]} ${collapsed ? 'w-16' : 'w-60'}`}
+            className={`flex shrink-0 flex-col transition-all duration-300 ease-in-out print:hidden ${THEME_BG[theme]} ${collapsed ? 'w-16' : 'w-60'}`}
             data-sidebar-theme={theme}
         >
             {/* Logo */}

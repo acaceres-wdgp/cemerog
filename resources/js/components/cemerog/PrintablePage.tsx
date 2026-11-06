@@ -21,7 +21,7 @@ export default function PrintablePage({
     return (
         <div
             data-printable-page
-            className={`mx-auto min-h-[1056px] w-full max-w-[816px] bg-white p-12 font-sans print:max-w-none print:p-0 ${className}`}
+            className={`mx-auto min-h-[1056px] w-full max-w-[816px] bg-white p-12 font-sans print:min-h-0 print:max-w-none print:p-0 ${className}`}
         >
             {showHeader && (
                 <div className="mb-8 flex items-center justify-between border-b border-card-border pb-6">
