@@ -119,4 +119,29 @@ describe('Registro – cálculo de edad en panel Resumen', () => {
         expect(screen.getByText('36 años')).toBeTruthy();
         expect(screen.queryByText('35 años')).toBeNull();
     });
+
+    it('no adelanta la edad la noche antes del cumpleaños', () => {
+        // nacimiento: 6 nov 1990 | ahora: 5 nov 2026, 9:30 p. m. en RD → aún 35
+        vi.setSystemTime(new Date('2026-11-05T21:30:00-04:00'));
+        mockUseForm.mockReturnValue(makeFormData('1990-11-06'));
+
+        render(<RegistroIndex doctors={mockDoctors} patient={null} />);
+
+        expect(screen.getByText('35 años')).toBeTruthy();
+        expect(screen.queryByText('36 años')).toBeNull();
+    });
+
+    it('no permite elegir mañana como fecha de nacimiento por la noche', () => {
+        vi.setSystemTime(new Date('2026-11-05T21:30:00-04:00'));
+        mockUseForm.mockReturnValue(makeFormData(''));
+
+        const { container } = render(
+            <RegistroIndex doctors={mockDoctors} patient={null} />,
+        );
+
+        expect(container.querySelector('input[type="date"]')).toHaveAttribute(
+            'max',
+            '2026-11-05',
+        );
+    });
 });

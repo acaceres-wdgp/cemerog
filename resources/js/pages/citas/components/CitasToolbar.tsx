@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { DoctorOption } from '../types';
-import { todayStr, tomorrowStr, addDays } from '../lib/dates';
+import { addDays } from '@/lib/dates';
 import { docPalette } from '@/components/cemerog/palettes';
 
 /** Build avatar style from doctor palette — computed at runtime from doctor ID. */
@@ -14,6 +14,8 @@ type CitasToolbarProps = {
     setSelDoc: (id: number | null) => void;
     date: string;
     is_today: boolean;
+    /** The clinic's day («Y-m-d»), from the server */
+    today: string;
     onNavigate: (targetDate: string) => void;
     onNewCita: () => void;
 };
@@ -24,10 +26,12 @@ export function CitasToolbar({
     setSelDoc,
     date,
     is_today,
+    today,
     onNavigate,
     onNewCita,
 }: CitasToolbarProps) {
-    const isTomorrow = date === tomorrowStr();
+    const tomorrow = addDays(today, 1);
+    const isTomorrow = date === tomorrow;
 
     return (
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -74,12 +78,12 @@ export function CitasToolbar({
                     {(
                         [
                             {
-                                key: todayStr(),
+                                key: today,
                                 label: 'Hoy',
                                 active: is_today,
                             },
                             {
-                                key: tomorrowStr(),
+                                key: tomorrow,
                                 label: 'Mañana',
                                 active: isTomorrow,
                             },
@@ -103,18 +107,20 @@ export function CitasToolbar({
                 <div className="flex items-center gap-1">
                     <button
                         onClick={() => onNavigate(addDays(date, -1))}
+                        aria-label="Día anterior"
                         className="h-9 w-9 cursor-pointer rounded-[10px] border border-secondary-border bg-secondary-bg font-[inherit] text-base"
                     >
                         ‹
                     </button>
                     <button
-                        onClick={() => onNavigate(todayStr())}
+                        onClick={() => onNavigate(today)}
                         className="h-9 cursor-pointer rounded-[10px] border border-secondary-border bg-secondary-bg px-3 font-[inherit] text-sm font-medium"
                     >
                         Hoy
                     </button>
                     <button
                         onClick={() => onNavigate(addDays(date, 1))}
+                        aria-label="Día siguiente"
                         className="h-9 w-9 cursor-pointer rounded-[10px] border border-secondary-border bg-secondary-bg font-[inherit] text-base"
                     >
                         ›

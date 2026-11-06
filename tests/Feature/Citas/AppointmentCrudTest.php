@@ -32,6 +32,27 @@ test('authorized user can GET /citas and receives required props', function () {
         );
 });
 
+test('shares the clinic day as today, also at night when UTC is already tomorrow', function () {
+    // 9:30 p. m. in Santo Domingo = 01:30 UTC of the next day
+    $this->travelTo(\Carbon\Carbon::parse('2026-11-05 21:30', 'America/Santo_Domingo'));
+
+    $this->actingAs($this->user)
+        ->get('/citas?date=2026-11-12')
+        ->assertInertia(fn ($page) => $page
+            ->where('today', '2026-11-05')
+            ->where('date', '2026-11-12')
+            ->where('is_today', false)
+        );
+
+    $this->actingAs($this->user)
+        ->get('/citas')
+        ->assertInertia(fn ($page) => $page
+            ->where('today', '2026-11-05')
+            ->where('date', '2026-11-05')
+            ->where('is_today', true)
+        );
+});
+
 test('unauthenticated user is redirected from /citas', function () {
     $this->get('/citas')->assertRedirect('/login');
 });

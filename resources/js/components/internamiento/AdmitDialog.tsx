@@ -1,4 +1,5 @@
 import React, { FormEvent, useState } from 'react';
+import { localDateString } from '@/lib/dates';
 import { router, usePage } from '@inertiajs/react';
 import FormDialog from '@/components/cemerog/FormDialog';
 import FormField from '@/components/cemerog/FormField';
@@ -59,7 +60,7 @@ export default function AdmitDialog({
         surgeryOptions
             ? emptyDraft(
                   surgeryOptions,
-                  new Date().toISOString().slice(0, 10),
+                  localDateString(),
                   options.default_doctor_id,
               )
             : null,

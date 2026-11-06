@@ -232,6 +232,33 @@ describe('Cirugía · agenda', () => {
 });
 
 describe('Ingreso para cirugía', () => {
+    it('defaults the surgery date to the clinic day, also at night', () => {
+        // 9:30 p. m. in Santo Domingo: 2026-11-06 in UTC
+        vi.useFakeTimers({ toFake: ['Date'] });
+        vi.setSystemTime(new Date('2026-11-05T21:30:00-04:00'));
+        try {
+            render(
+                <AdmitDialog
+                    open
+                    onOpenChange={() => undefined}
+                    options={{
+                        beds: [],
+                        doctors: options.doctors,
+                        default_doctor_id: 5,
+                        surgery: options,
+                    }}
+                    patient={{ id: 3, full_name: 'Ana Lucía Gómez Reyes' }}
+                />,
+            );
+            fireEvent.click(
+                screen.getByRole('tab', { name: 'Ingreso para cirugía' }),
+            );
+            expect(screen.getByLabelText(/Fecha/)).toHaveValue('2026-11-05');
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
     it('admits and schedules in one step', () => {
         render(
             <AdmitDialog

@@ -1,4 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
+import { localDateString, parseDateOnly } from '@/lib/dates';
 import { pacientes, registro } from '@/routes';
 import { differenceInYears } from 'date-fns';
 import { Check, CircleCheck, Loader2, TriangleAlert } from 'lucide-react';
@@ -493,11 +494,7 @@ export default function RegistroIndex({
                                                     e.target.value,
                                                 )
                                             }
-                                            max={
-                                                new Date()
-                                                    .toISOString()
-                                                    .split('T')[0]
-                                            }
+                                            max={localDateString()}
                                             autoComplete="new-password"
                                             data-1p-ignore
                                             data-lpignore="true"
@@ -1018,7 +1015,7 @@ export default function RegistroIndex({
                                         <dd className="font-medium text-text-heading">
                                             {differenceInYears(
                                                 new Date(),
-                                                new Date(data.birth_date),
+                                                parseDateOnly(data.birth_date),
                                             )}{' '}
                                             años
                                         </dd>

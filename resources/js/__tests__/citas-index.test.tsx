@@ -75,6 +75,9 @@ const BASE_PROPS = {
     doctors: mockDoctors,
     date: TODAY,
     is_today: true,
+    // Required since «Hoy»/«Mañana» use the clinic day from the server instead of
+    // the UTC date (fix/fechas-hoy-zona-horaria); the expected behaviour is unchanged
+    today: TODAY,
 };
 
 // ─── Appointment list rendering ────────────────────────────────────────────────
@@ -412,6 +415,7 @@ describe('FutureRows – appointment_time normalization', () => {
                 doctors={FUTURE_DOCTORS}
                 date={TOMORROW}
                 is_today={false}
+                today={TODAY}
             />,
         );
         expect(screen.getByText('Test Paciente')).toBeTruthy();
@@ -436,6 +440,7 @@ describe('FutureRows – appointment_time normalization', () => {
                 doctors={FUTURE_DOCTORS}
                 date={TOMORROW}
                 is_today={false}
+                today={TODAY}
             />,
         );
         expect(screen.getByText('Paciente Uno')).toBeTruthy();
@@ -454,6 +459,7 @@ describe('FutureRows – appointment_time normalization', () => {
                 doctors={FUTURE_DOCTORS}
                 date={TOMORROW}
                 is_today={false}
+                today={TODAY}
             />,
         );
         expect(screen.getByText('Paciente Fuera Slot')).toBeTruthy();
@@ -471,6 +477,7 @@ describe('FutureRows – appointment_time normalization', () => {
                 doctors={FUTURE_DOCTORS}
                 date={TOMORROW}
                 is_today={false}
+                today={TODAY}
             />,
         );
         expect(screen.getByText('Paciente Tarde')).toBeTruthy();
@@ -491,6 +498,7 @@ describe('TodayRows – appointment_time display', () => {
                 doctors={mockDoctors}
                 date={TODAY}
                 is_today={true}
+                today={TODAY}
             />,
         );
         // The time column should show '09:00'
