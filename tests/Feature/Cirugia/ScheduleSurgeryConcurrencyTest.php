@@ -17,7 +17,7 @@ test('the clash lookup is a locking read, after locking the operating room', fun
     expect($method)->not->toBeEmpty();
 
     $body = $method[0];
-    $roomLock = strpos($body, 'OperatingRoom::whereKey($roomId)->lockForUpdate()');
+    $roomLock = strpos($body, '$this->lockRoom($roomId)');
     $clash = strpos($body, "Surgery::where('operating_room_id', \$roomId)");
 
     expect($roomLock)->not->toBeFalse()
@@ -27,4 +27,30 @@ test('the clash lookup is a locking read, after locking the operating room', fun
     // The clash query, up to its first(), must include lockForUpdate()
     $clashQuery = substr($body, $clash, strpos($body, '->first()', $clash) - $clash);
     expect($clashQuery)->toContain('->lockForUpdate()');
+});
+
+/**
+ * Same order everywhere: operating room, then surgeries. Locking the surgery
+ * first made two reschedules in one room wait for each other (MySQL error 1213),
+ * even with no conflict between them. Verified with concurrent requests on MySQL.
+ */
+test('rescheduling locks the operating room before the surgery', function () {
+    $source = file_get_contents(app_path('Actions/Cirugia/ScheduleSurgery.php'));
+
+    preg_match('/function reschedule.*?\n    }\n/s', $source, $method);
+    expect($method)->not->toBeEmpty();
+
+    $body = $method[0];
+    $roomLock = strpos($body, 'lockRoom(');
+    $surgeryLock = strpos($body, 'Surgery::whereKey($surgery->id)->lockForUpdate()');
+
+    expect($roomLock)->not->toBeFalse()
+        ->and($surgeryLock)->not->toBeFalse()
+        ->and($roomLock)->toBeLessThan($surgeryLock);
+});
+
+test('scheduling and rescheduling retry when MySQL reports a deadlock', function () {
+    $source = file_get_contents(app_path('Actions/Cirugia/ScheduleSurgery.php'));
+
+    expect(substr_count($source, '}, self::DEADLOCK_ATTEMPTS);'))->toBe(2);
 });
