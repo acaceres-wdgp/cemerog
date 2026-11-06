@@ -1,5 +1,8 @@
 import React from 'react';
 import PrintablePage from '@/components/cemerog/PrintablePage';
+import ClinicHeader, {
+    type ClinicInfo,
+} from '@/components/cemerog/ClinicHeader';
 import { formatMoney } from '@/lib/money';
 import { paymentLabel } from '@/pages/caja/components/ReceiptsList';
 import type { ShiftReceipt, ShiftSummary, Withdrawal } from './types';
@@ -50,7 +53,7 @@ export default function ReporteTurno({
     clinic,
 }: {
     shift: ShiftReport;
-    clinic: { name: string | null };
+    clinic: ClinicInfo;
 }) {
     const s = shift.summary;
     const difference = shift.difference;
@@ -60,13 +63,20 @@ export default function ReporteTurno({
             {/* Print CSS: hide app chrome */}
             <style>{`@media print { body > *:not(#app) { display: none !important; } #app > *:not(.printable-root) { display: none !important; } }`}</style>
             <div className="printable-root min-h-screen bg-surface py-8 print:bg-white print:p-0 print:py-0">
+                <div className="mx-auto mb-4 flex w-full max-w-[816px] print:hidden">
+                    <button
+                        type="button"
+                        onClick={() => window.print()}
+                        className="inline-flex h-9 cursor-pointer items-center rounded-lg bg-primary px-[14px] text-sm font-medium text-white hover:bg-primary-hover"
+                    >
+                        Imprimir
+                    </button>
+                </div>
                 <PrintablePage showHeader={false}>
                     <div className="mb-5 flex items-start justify-between border-b border-divider pb-4">
                         <div>
-                            <div className="font-serif text-[20px] font-bold text-primary">
-                                {clinic.name ?? 'CEMEROG'}
-                            </div>
-                            <div className="text-[13px] font-semibold text-text-heading">
+                            <ClinicHeader clinic={clinic} />
+                            <div className="mt-2 text-[13px] font-semibold text-text-heading">
                                 Cierre de caja · turno #{shift.id}
                             </div>
                         </div>
@@ -212,15 +222,6 @@ export default function ReporteTurno({
                         </div>
                     </div>
                 </PrintablePage>
-                <div className="mt-4 flex justify-center print:hidden">
-                    <button
-                        type="button"
-                        onClick={() => window.print()}
-                        className="inline-flex h-9 cursor-pointer items-center rounded-lg bg-primary px-[14px] text-sm font-medium text-white hover:bg-primary-hover"
-                    >
-                        Imprimir
-                    </button>
-                </div>
             </div>
         </>
     );

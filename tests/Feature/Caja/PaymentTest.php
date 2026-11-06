@@ -267,6 +267,7 @@ test('the receipt print page renders', function () {
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('caja/recibo-imprimir')
+            ->has('clinic', fn ($clinic) => $clinic->hasAll(['name', 'rnc', 'phone', 'address']))
             ->where('receipt.number', 'R-0001')
             ->where('receipt.invoice.number', 'F-0000001')
         );

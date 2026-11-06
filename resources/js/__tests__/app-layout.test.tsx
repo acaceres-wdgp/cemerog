@@ -143,6 +143,15 @@ describe('nav items per role (sidebar)', () => {
         ).not.toBeInTheDocument();
     });
 
+    // /impresos is still a mock: hidden from the menu for now, route kept
+    it('does not show Documentos imprimibles even with its permission', () => {
+        page.props.permissions = ['module.impresos.access'];
+        render(<AppLayout>x</AppLayout>);
+        expect(
+            screen.queryByRole('link', { name: 'Documentos imprimibles' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('medico role sees clinical modules but not caja or admin', () => {
         page.props.permissions = [
             'module.inicio.access',

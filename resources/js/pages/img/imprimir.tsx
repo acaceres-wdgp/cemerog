@@ -1,16 +1,13 @@
 import React from 'react';
 import PrintablePage from '@/components/cemerog/PrintablePage';
+import ClinicHeader, {
+    type ClinicInfo,
+} from '@/components/cemerog/ClinicHeader';
 import type {
     ImagingOrderDetail,
     ImagingPatient,
 } from '@/components/img/types';
 import { ageLabel } from '@/lib/patient';
-
-type Clinic = {
-    name: string | null;
-    phone: string | null;
-    address: string | null;
-};
 
 /** Informe de imágenes firmado, listo para imprimir */
 export default function ImgImprimir({
@@ -20,27 +17,24 @@ export default function ImgImprimir({
 }: {
     patient: ImagingPatient;
     order: ImagingOrderDetail;
-    clinic: Clinic;
+    clinic: ClinicInfo;
 }) {
     return (
         <>
             <style>{`@media print { body > *:not(#app) { display: none !important; } #app > *:not(.printable-root) { display: none !important; } }`}</style>
             <div className="printable-root min-h-screen bg-surface py-8 print:bg-white print:p-0 print:py-0">
+                <div className="mx-auto mb-4 flex w-full max-w-[816px] print:hidden">
+                    <button
+                        type="button"
+                        onClick={() => window.print()}
+                        className="inline-flex h-9 cursor-pointer items-center rounded-lg bg-primary px-[14px] text-sm font-medium text-white hover:bg-primary-hover"
+                    >
+                        Imprimir
+                    </button>
+                </div>
                 <PrintablePage showHeader={false}>
                     <div className="mb-4 flex items-start justify-between border-b border-divider pb-4">
-                        <div>
-                            <div className="font-serif text-[22px] font-bold text-primary">
-                                {clinic.name ?? 'CEMEROG'}
-                            </div>
-                            <div className="text-[12.5px] text-text-dim">
-                                Dres. Rodríguez &amp; Guzmán
-                            </div>
-                            {clinic.phone && (
-                                <div className="text-[12px] text-muted">
-                                    Tel: {clinic.phone}
-                                </div>
-                            )}
-                        </div>
+                        <ClinicHeader clinic={clinic} />
                         <div className="text-right">
                             <div className="font-serif text-[18px] font-bold tracking-[.04em]">
                                 INFORME DE IMÁGENES

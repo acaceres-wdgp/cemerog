@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ImagingAttachment;
 use App\Models\ImagingOrder;
 use App\Models\User;
+use App\Support\Clinic;
 use App\Support\ImagingPresenter;
 use App\Support\Toast;
 use Illuminate\Database\Eloquent\Builder;
@@ -131,7 +132,7 @@ class ImgController extends Controller
         return Inertia::render('img/imprimir', [
             'patient' => $img->patient($order->patient),
             'order' => $img->detail($order),
-            'clinic' => ['name' => config('cemerog.clinic.name'), 'phone' => config('cemerog.clinic.phone'), 'address' => config('cemerog.clinic.address')],
+            'clinic' => Clinic::info(),
         ]);
     }
 

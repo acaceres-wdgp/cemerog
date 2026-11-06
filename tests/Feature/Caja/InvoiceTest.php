@@ -244,6 +244,7 @@ test('the invoice print page renders', function () {
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('caja/factura-imprimir')
+            ->has('clinic', fn ($clinic) => $clinic->hasAll(['name', 'rnc', 'phone', 'address']))
             ->where('invoice.number', 'F-0000001')
             ->where('invoice.total', 200000)
         );

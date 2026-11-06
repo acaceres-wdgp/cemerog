@@ -175,7 +175,11 @@ test('the result detail shows the results by category with their flags', functio
 
     $this->actingAs($this->bio)
         ->get("/laboratorio/ordenes/{$order->id}/imprimir")
-        ->assertInertia(fn ($page) => $page->component('lab/imprimir')->where('order.number', $order->number));
+        ->assertInertia(fn ($page) => $page
+            ->component('lab/imprimir')
+            ->where('order.number', $order->number)
+            ->has('clinic', fn ($clinic) => $clinic->hasAll(['name', 'rnc', 'phone', 'address']))
+        );
 });
 
 test('the history lists validated orders and can search by patient or order', function () {

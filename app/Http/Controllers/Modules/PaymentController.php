@@ -10,6 +10,7 @@ use App\Http\Requests\VoidReceiptRequest;
 use App\Models\Invoice;
 use App\Models\Receipt;
 use App\Models\User;
+use App\Support\Clinic;
 use App\Support\InvoicePresenter;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
@@ -52,12 +53,7 @@ class PaymentController extends Controller
     {
         return Inertia::render('caja/recibo-imprimir', [
             'receipt' => $presenter->receipt($receipt),
-            'clinic' => [
-                'name' => config('cemerog.clinic.name'),
-                'rnc' => config('cemerog.clinic.rnc'),
-                'phone' => config('cemerog.clinic.phone'),
-                'address' => config('cemerog.clinic.address'),
-            ],
+            'clinic' => Clinic::info(),
         ]);
     }
 }
