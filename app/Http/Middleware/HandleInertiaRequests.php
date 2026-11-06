@@ -53,7 +53,11 @@ class HandleInertiaRequests extends Middleware
             'permissions' => $user
                 ? $user->getAllPermissions()->pluck('name')->toArray()
                 : [],
+            // Sidebar state from cookies, so the server-rendered layout matches the browser
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') !== 'collapsed',
+            'sidebarTheme' => in_array($request->cookie('sidebar_theme'), ['carbon', 'slate', 'forest'], true)
+                ? $request->cookie('sidebar_theme')
+                : 'carbon',
             'can_attend' => fn () => $user !== null && $user->canAttendPatients(),
             'doctor' => fn () => $user?->doctor
                 ? [

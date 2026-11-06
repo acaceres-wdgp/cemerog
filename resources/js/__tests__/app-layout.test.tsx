@@ -38,6 +38,7 @@ const page = vi.hoisted(() => ({
         permissions: [] as string[],
         can_attend: true,
         sidebarOpen: true,
+        sidebarTheme: 'carbon',
     },
 }));
 
@@ -70,6 +71,8 @@ beforeEach(() => {
     page.props.auth.user.roles = ['administrador'];
     page.props.permissions = ALL_PERMISSIONS;
     page.props.can_attend = true;
+    page.props.sidebarOpen = true;
+    page.props.sidebarTheme = 'carbon';
     // Clear sidebar cookies so each test starts from a known state
     document.cookie =
         'sidebar_state=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
@@ -283,6 +286,25 @@ describe('sidebar theme', () => {
         expect(sidebar).not.toBeNull();
         // Default theme is 'carbon' (cookie absent or set to carbon)
         expect(sidebar?.getAttribute('data-sidebar-theme')).toBe('carbon');
+    });
+
+    // The server has no cookies API: the initial state must come from props
+    it('starts with the theme the server sent, without reading cookies', () => {
+        page.props.sidebarTheme = 'forest';
+        render(<AppLayout>x</AppLayout>);
+        expect(
+            document
+                .querySelector('[data-sidebar-theme]')
+                ?.getAttribute('data-sidebar-theme'),
+        ).toBe('forest');
+    });
+
+    it('starts collapsed when the server says so, without reading cookies', () => {
+        page.props.sidebarOpen = false;
+        render(<AppLayout>x</AppLayout>);
+        expect(
+            screen.getByRole('button', { name: /Expandir menú/i }),
+        ).toBeInTheDocument();
     });
 });
 

@@ -13,6 +13,7 @@ declare module '@inertiajs/core' {
             auth: Auth;
             permissions: string[];
             sidebarOpen: boolean;
+            sidebarTheme: 'carbon' | 'slate' | 'forest';
             [key: string]: unknown;
         };
     }
@@ -53,6 +54,7 @@ export interface PageProps {
     can_attend: boolean;
     name: string;
     sidebarOpen: boolean;
+    sidebarTheme: 'carbon' | 'slate' | 'forest';
     doctor?: DoctorProp | null;
     queue?: QueueProp | null;
     [key: string]: unknown;

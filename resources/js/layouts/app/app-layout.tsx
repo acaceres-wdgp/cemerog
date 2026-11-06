@@ -1,7 +1,8 @@
 /**
  * AppLayout – main application shell with collapsible sidebar and topbar.
- * Sidebar theme is persisted in a cookie (sidebar_theme).
- * Collapsed state is persisted in cookie (sidebar_state).
+ * Sidebar theme and collapsed state are persisted in cookies (sidebar_theme,
+ * sidebar_state). The server reads them and shares sidebarTheme/sidebarOpen, so
+ * the initial state is the same in the server render and in the browser.
  */
 
 import { ReactNode, useState } from 'react';
@@ -14,13 +15,6 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { Sidebar, type SidebarTheme } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
 
-function getCookie(name: string): string | null {
-    const match = document.cookie.match(
-        new RegExp('(^| )' + name + '=([^;]+)'),
-    );
-    return match ? decodeURIComponent(match[2]) : null;
-}
-
 function setCookie(name: string, value: string, days = 365) {
     const expires = new Date(Date.now() + days * 864e5).toUTCString();
     document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
@@ -31,24 +25,15 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
-    const { auth } = usePage<PageProps>().props;
+    const { auth, sidebarOpen, sidebarTheme } = usePage<PageProps>().props;
     const user = auth?.user;
 
-    const [collapsed, setCollapsed] = useState<boolean>(() => {
-        if (typeof window !== 'undefined') {
-            return getCookie('sidebar_state') === 'collapsed';
-        }
-        return false;
-    });
-
-    const [theme, setTheme] = useState<SidebarTheme>(() => {
-        if (typeof window !== 'undefined') {
-            const saved = getCookie('sidebar_theme');
-            if (saved === 'slate' || saved === 'forest' || saved === 'carbon')
-                return saved;
-        }
-        return 'carbon';
-    });
+    const [collapsed, setCollapsed] = useState<boolean>(
+        () => sidebarOpen === false,
+    );
+    const [theme, setTheme] = useState<SidebarTheme>(
+        () => sidebarTheme ?? 'carbon',
+    );
 
     const [showThemePicker, setShowThemePicker] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
