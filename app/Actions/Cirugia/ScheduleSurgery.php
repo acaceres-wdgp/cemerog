@@ -19,6 +19,9 @@ use Illuminate\Validation\ValidationException;
  */
 class ScheduleSurgery
 {
+    /** MySQL can still abort one of two crossed transactions (error 1213): try it again */
+    private const DEADLOCK_ATTEMPTS = 3;
+
     /**
      * @param  array{surgery_procedure_id: int, operating_room_id: int, surgeon_id: int, anesthetist_id?: int|null, notes?: string|null}  $data
      */
@@ -46,13 +49,16 @@ class ScheduleSurgery
             $surgery->update(['number' => sprintf('Q-%06d', $surgery->id)]);
 
             return $surgery;
-        });
+        }, self::DEADLOCK_ATTEMPTS);
     }
 
     /** Reprogramar: new time and/or operating room while still scheduled */
     public function reschedule(Surgery $surgery, int $operatingRoomId, CarbonInterface $startsAt, CarbonInterface $endsAt): Surgery
     {
         return DB::transaction(function () use ($surgery, $operatingRoomId, $startsAt, $endsAt): Surgery {
+            // Same order as scheduling (room, then surgeries): the other way around,
+            // two reschedules in one room wait for each other and MySQL aborts one
+            $this->lockRoom($operatingRoomId);
             $surgery = Surgery::whereKey($surgery->id)->lockForUpdate()->firstOrFail();
             if ($surgery->status !== 'programada') {
                 throw ValidationException::withMessages(['surgery' => 'Solo se reprograma una cirugía programada.']);
@@ -61,7 +67,7 @@ class ScheduleSurgery
             $surgery->update(['operating_room_id' => $operatingRoomId, 'starts_at' => $startsAt, 'ends_at' => $endsAt]);
 
             return $surgery;
-        });
+        }, self::DEADLOCK_ATTEMPTS);
     }
 
     private function ensureFree(int $roomId, CarbonInterface $startsAt, CarbonInterface $endsAt, ?int $except = null): void
@@ -69,19 +75,27 @@ class ScheduleSurgery
         if ($endsAt->lte($startsAt)) {
             throw ValidationException::withMessages(['duration_minutes' => 'La hora de fin debe ser después del inicio.']);
         }
-        $room = OperatingRoom::whereKey($roomId)->lockForUpdate()->first();
+        $room = $this->lockRoom($roomId);
         if ($room === null || ! $room->is_active) {
             throw ValidationException::withMessages(['operating_room_id' => 'Ese quirófano no está disponible.']);
         }
+        // Locking read: at REPEATABLE READ a plain SELECT would use the snapshot taken
+        // before waiting on the room lock and miss a surgery another user just committed
         $clash = Surgery::where('operating_room_id', $roomId)
             ->where('status', '!=', 'cancelada')
             ->when($except !== null, fn ($q) => $q->where('id', '!=', $except))
             ->where('starts_at', '<', $endsAt)
             ->where('ends_at', '>', $startsAt)
             ->with('patient')
+            ->lockForUpdate()
             ->first();
         if ($clash !== null) {
             throw ValidationException::withMessages(['starts_at' => "{$room->name} ya tiene «{$clash->procedure_name}» de {$clash->starts_at->format('H:i')} a {$clash->ends_at->format('H:i')}."]);
         }
+    }
+
+    private function lockRoom(int $roomId): ?OperatingRoom
+    {
+        return OperatingRoom::whereKey($roomId)->lockForUpdate()->first();
     }
 }

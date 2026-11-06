@@ -130,12 +130,12 @@ test('nursing moves it to the operating room and marks it performed: charged to 
     $surgery = scheduled();
     Carbon::setTestNow('2026-11-12 09:05:00');
 
-    $this->actingAs($this->enfermera)->post("/cirugia/{$surgery->id}/avanzar")->assertSessionHasNoErrors();
+    $this->actingAs($this->enfermera)->post("/cirugia/{$surgery->id}/avanzar", ['from' => 'programada'])->assertSessionHasNoErrors();
     expect($surgery->fresh()->status)->toBe('quirofano');
     // No longer reschedulable
     $this->actingAs($this->cirujano)->post("/cirugia/{$surgery->id}/cancelar", ['reason' => 'x'])->assertSessionHasErrors('surgery');
 
-    $this->actingAs($this->enfermera)->post("/cirugia/{$surgery->id}/avanzar")->assertSessionHasNoErrors();
+    $this->actingAs($this->enfermera)->post("/cirugia/{$surgery->id}/avanzar", ['from' => 'quirofano'])->assertSessionHasNoErrors();
     $surgery->refresh();
     $charge = AccountCharge::firstOrFail();
     expect($surgery->status)->toBe('realizada')
@@ -144,8 +144,54 @@ test('nursing moves it to the operating room and marks it performed: charged to 
         ->and($charge->total)->toBe(3500000)
         ->and($charge->account->status)->toBe('pendiente_facturar');
 
-    $this->actingAs($this->enfermera)->post("/cirugia/{$surgery->id}/avanzar")->assertSessionHasErrors('surgery');
+    $this->actingAs($this->enfermera)->post("/cirugia/{$surgery->id}/avanzar", ['from' => 'quirofano'])->assertSessionHasErrors('surgery');
     expect(AccountCharge::count())->toBe(1);
+});
+
+test('a stale «Pasar a quirófano» does not mark the surgery as performed nor charge it', function () {
+    $surgery = scheduled();
+    $this->actingAs($this->enfermera)->post("/cirugia/{$surgery->id}/avanzar", ['from' => 'programada']);
+
+    // Another user's screen still shows it as scheduled
+    $this->actingAs($this->cirujano)
+        ->post("/cirugia/{$surgery->id}/avanzar", ['from' => 'programada'])
+        ->assertSessionHasErrors(['surgery' => 'Esta cirugía ya pasó a quirófano. No se cambió nada.']);
+
+    expect($surgery->fresh()->status)->toBe('quirofano')
+        ->and($surgery->fresh()->performed_at)->toBeNull()
+        ->and(AccountCharge::count())->toBe(0);
+});
+
+test('a stale «Marcar como realizada» tells it was already performed and charges once', function () {
+    $surgery = scheduled();
+    $this->actingAs($this->enfermera)->post("/cirugia/{$surgery->id}/avanzar", ['from' => 'programada']);
+    $this->actingAs($this->enfermera)->post("/cirugia/{$surgery->id}/avanzar", ['from' => 'quirofano']);
+
+    $this->actingAs($this->cirujano)
+        ->post("/cirugia/{$surgery->id}/avanzar", ['from' => 'quirofano'])
+        ->assertSessionHasErrors(['surgery' => 'Esta cirugía ya fue marcada como realizada. No se cambió nada.']);
+
+    expect(AccountCharge::count())->toBe(1);
+});
+
+test('a cancelled surgery cannot move forward', function () {
+    $surgery = scheduled();
+    $this->actingAs($this->cirujano)->post("/cirugia/{$surgery->id}/cancelar", ['reason' => 'Paciente desiste']);
+
+    $this->actingAs($this->enfermera)
+        ->post("/cirugia/{$surgery->id}/avanzar", ['from' => 'programada'])
+        ->assertSessionHasErrors(['surgery' => 'Esta cirugía fue cancelada. No se cambió nada.']);
+
+    expect($surgery->fresh()->status)->toBe('cancelada');
+});
+
+test('moving a surgery forward needs the status the user saw', function () {
+    $surgery = scheduled();
+
+    $this->actingAs($this->enfermera)->post("/cirugia/{$surgery->id}/avanzar")->assertSessionHasErrors('from');
+    $this->actingAs($this->enfermera)->post("/cirugia/{$surgery->id}/avanzar", ['from' => 'realizada'])->assertSessionHasErrors('from');
+
+    expect($surgery->fresh()->status)->toBe('programada');
 });
 
 test('«Ingreso para cirugía» admits and schedules; the charge goes to the stay', function () {
@@ -171,8 +217,8 @@ test('«Ingreso para cirugía» admits and schedules; the charge goes to the sta
     $this->actingAs($this->enfermera)->get('/cirugia')
         ->assertInertia(fn ($page) => $page->where('surgeries.0.room', 'Hab. 5 · Cama única'));
 
-    $this->actingAs($this->enfermera)->post("/cirugia/{$surgery->id}/avanzar");
-    $this->actingAs($this->enfermera)->post("/cirugia/{$surgery->id}/avanzar");
+    $this->actingAs($this->enfermera)->post("/cirugia/{$surgery->id}/avanzar", ['from' => 'programada']);
+    $this->actingAs($this->enfermera)->post("/cirugia/{$surgery->id}/avanzar", ['from' => 'quirofano']);
 
     expect(AccountCharge::where('type', 'cirugia')->value('account_id'))->toBe($admission->account_id)
         ->and($admission->account->fresh()->status)->toBe('abierta')

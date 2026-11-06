@@ -89,7 +89,10 @@ class CirugiaController extends Controller
         /** @var User $user */
         $user = $request->user();
         abort_unless(self::canAdvance($user), 403);
-        $action->handle($surgery, $user);
+        $from = (string) $request->validate(
+            ['from' => ['required', 'in:programada,quirofano']],
+        )['from'];
+        $action->handle($surgery, $user, $from);
         $surgery->refresh();
 
         Toast::success($surgery->status === 'realizada'

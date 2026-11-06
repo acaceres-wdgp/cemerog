@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { Ban, CalendarClock } from 'lucide-react';
 import { SURGERY_STATUS } from '@/components/cirugia/types';
 import type { SurgeryOptions } from '@/components/cirugia/types';
@@ -29,6 +29,7 @@ export default function SurgeryPanel({
 }) {
     const [rescheduling, setRescheduling] = useState(false);
     const [cancelling, setCancelling] = useState(false);
+    const errors = (usePage().props.errors ?? {}) as Record<string, string>;
 
     if (!surgery) {
         return (
@@ -82,13 +83,23 @@ export default function SurgeryPanel({
                 </p>
             )}
             <div className="flex flex-col gap-2 border-t border-divider px-5 py-4">
+                {errors.surgery && (
+                    <p
+                        role="alert"
+                        className="m-0 rounded-lg bg-error-bg px-3 py-2 text-[13px] text-error"
+                    >
+                        {errors.surgery}
+                    </p>
+                )}
                 {next && canAdvance && (
                     <button
                         type="button"
                         onClick={() =>
                             router.post(
                                 cirugia.advance.url(surgery.id),
-                                {},
+                                // The server rejects it if the status changed
+                                // since this screen loaded
+                                { from: surgery.status },
                                 { preserveScroll: true },
                             )
                         }

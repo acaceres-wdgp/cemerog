@@ -23,10 +23,18 @@ class AdvanceSurgery
         private readonly CloseDailyAccountIfDone $closeAccount,
     ) {}
 
-    public function handle(Surgery $surgery, User $user): Surgery
+    /**
+     * @param  string  $from  The status the user saw: a stale «Pasar a quirófano»
+     *                        must not end up marking the surgery as performed
+     */
+    public function handle(Surgery $surgery, User $user, string $from): Surgery
     {
-        return DB::transaction(function () use ($surgery, $user): Surgery {
+        return DB::transaction(function () use ($surgery, $user, $from): Surgery {
             $surgery = Surgery::whereKey($surgery->id)->lockForUpdate()->firstOrFail();
+
+            if ($surgery->status !== $from) {
+                throw ValidationException::withMessages(['surgery' => $this->alreadyChanged($surgery->status)]);
+            }
 
             if ($surgery->status === 'programada') {
                 $surgery->update(['status' => 'quirofano', 'started_at' => now()]);
@@ -56,5 +64,15 @@ class AdvanceSurgery
 
             return $surgery;
         });
+    }
+
+    private function alreadyChanged(string $status): string
+    {
+        return match ($status) {
+            'quirofano' => 'Esta cirugía ya pasó a quirófano. No se cambió nada.',
+            'realizada' => 'Esta cirugía ya fue marcada como realizada. No se cambió nada.',
+            'cancelada' => 'Esta cirugía fue cancelada. No se cambió nada.',
+            default => 'El estado de esta cirugía cambió. No se cambió nada.',
+        };
     }
 }

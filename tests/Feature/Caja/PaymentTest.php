@@ -273,6 +273,22 @@ test('the receipt print page renders', function () {
         );
 });
 
+test('a voided receipt cannot be printed', function () {
+    openRegister($this->cajero);
+    pay($this->cajero, $this->invoice, [['method' => 'tarjeta', 'amount' => 200000]]);
+    $receipt = Receipt::first();
+
+    $this->actingAs($this->admin)
+        ->post("/facturacion/recibos/{$receipt->id}/anular", ['void_reason' => 'Pago duplicado'])
+        ->assertSessionHasNoErrors();
+
+    $this->actingAs($this->cajero)
+        ->get("/facturacion/recibos/{$receipt->id}/imprimir")
+        ->assertRedirect(route('caja', ['factura' => $receipt->invoice_id]))
+        ->assertSessionHas('inertia.flash_data.toast.type', 'error')
+        ->assertSessionHas('inertia.flash_data.toast.message', "El recibo {$receipt->number} está anulado y no se puede imprimir.");
+});
+
 test('the receipts migration can be rolled back', function () {
     $migration = '2026_11_01_300000_create_receipts_table';
 

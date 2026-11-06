@@ -5,10 +5,11 @@ import React from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockPost, mockGet, mockPut } = vi.hoisted(() => ({
+const { mockPost, mockGet, mockPut, pageErrors } = vi.hoisted(() => ({
     mockPost: vi.fn(),
     mockGet: vi.fn(),
     mockPut: vi.fn(),
+    pageErrors: { current: {} as Record<string, string> },
 }));
 
 vi.mock('@inertiajs/react', async (importOriginal) => ({
@@ -20,7 +21,7 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
         visit: vi.fn(),
         delete: vi.fn(),
     },
-    usePage: () => ({ props: { errors: {} } }),
+    usePage: () => ({ props: { errors: pageErrors.current } }),
 }));
 
 import AdminCirugiasIndex from '@/pages/admin-cirugias/index';
@@ -147,6 +148,24 @@ describe('Cirugía · agenda', () => {
         );
     });
 
+    it('tells why the surgery could not move forward', () => {
+        pageErrors.current = {
+            surgery: 'Esta cirugía ya pasó a quirófano. No se cambió nada.',
+        };
+        renderAgenda();
+        pageErrors.current = {};
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Esta cirugía ya pasó a quirófano. No se cambió nada.',
+        );
+    });
+
+    it('shows no notice while nothing was rejected', () => {
+        renderAgenda();
+
+        expect(screen.queryByRole('alert')).toBeNull();
+    });
+
     it('the selected surgery shows its data and moves forward', () => {
         renderAgenda();
 
@@ -158,7 +177,7 @@ describe('Cirugía · agenda', () => {
         );
         expect(mockPost).toHaveBeenCalledWith(
             '/cirugia/1/avanzar',
-            {},
+            { from: 'programada' },
             expect.anything(),
         );
 

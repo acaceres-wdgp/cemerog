@@ -49,8 +49,14 @@ class PaymentController extends Controller
         return back();
     }
 
-    public function print(Receipt $receipt, InvoicePresenter $presenter): Response
+    public function print(Receipt $receipt, InvoicePresenter $presenter): Response|RedirectResponse
     {
+        if ($receipt->voided_at !== null) {
+            Toast::error("El recibo {$receipt->number} está anulado y no se puede imprimir.");
+
+            return redirect()->route('caja', ['factura' => $receipt->invoice_id]);
+        }
+
         return Inertia::render('caja/recibo-imprimir', [
             'receipt' => $presenter->receipt($receipt),
             'clinic' => Clinic::info(),

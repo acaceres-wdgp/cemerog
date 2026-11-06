@@ -143,6 +143,8 @@ function CredentialsDialog({ credentials, onClose }: CredentialsDialogProps) {
                 </div>
             }
         >
+            {/* Only the credentials print, not the page behind the dialog */}
+            <style>{`@media print { body > *:not([role="dialog"]) { display: none !important; } }`}</style>
             <div className="flex flex-col gap-4">
                 <div className="rounded-lg border border-divider bg-app-bg p-4">
                     <p className="mb-1 text-sm font-medium text-text-secondary">

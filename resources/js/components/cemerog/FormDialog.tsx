@@ -55,6 +55,7 @@ export default function FormDialog({
                         'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
                         'fixed top-[50%] left-[50%] z-50 flex max-h-[90vh] w-full translate-x-[-50%] translate-y-[-50%] flex-col duration-200',
                         'rounded-[14px] border border-card-border bg-card-bg',
+                        'print:static print:max-h-none print:translate-x-0 print:translate-y-0 print:border-0 print:shadow-none',
                         'shadow-[0_24px_64px_-16px_rgba(16,40,24,.35)]',
                         maxWidth,
                     )}
@@ -66,13 +67,13 @@ export default function FormDialog({
                                 {title}
                             </DialogTitle>
                             {description && (
-                                <DialogDescription className="mt-0.5 text-[13px] text-muted">
+                                <DialogDescription className="mt-0.5 text-[13px] text-muted print:hidden">
                                     {description}
                                 </DialogDescription>
                             )}
                         </div>
                         <DialogPrimitive.Close
-                            className="inline-flex h-[30px] w-[30px] shrink-0 cursor-pointer items-center justify-center rounded-lg border-0 bg-app-bg text-sm text-text-heading outline-none hover:bg-secondary-bg"
+                            className="inline-flex h-[30px] w-[30px] shrink-0 cursor-pointer items-center justify-center rounded-lg border-0 bg-app-bg text-sm text-text-heading outline-none hover:bg-secondary-bg print:hidden"
                             aria-label="Cerrar"
                         >
                             ✕
@@ -87,7 +88,7 @@ export default function FormDialog({
                             {children}
                         </div>
 
-                        <div className="flex justify-end gap-2 border-t border-card-border px-5 py-4">
+                        <div className="flex justify-end gap-2 border-t border-card-border px-5 py-4 print:hidden">
                             {footer ?? (
                                 <>
                                     <Button

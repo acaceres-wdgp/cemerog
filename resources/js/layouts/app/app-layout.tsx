@@ -95,7 +95,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     };
 
     return (
-        <div className="flex h-screen overflow-hidden bg-app-bg">
+        <div className="flex h-screen overflow-hidden bg-app-bg print:block print:h-auto print:overflow-visible print:bg-white">
             {/* ── Sidebar ───────────────────────────────────── */}
             <Sidebar
                 collapsed={collapsed}
@@ -109,7 +109,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             />
 
             {/* ── Main content ─────────────────────────────── */}
-            <div className="flex flex-1 flex-col overflow-hidden">
+            <div className="flex flex-1 flex-col overflow-hidden print:block print:overflow-visible">
                 {/* Topbar */}
                 <Topbar
                     breadcrumb={breadcrumb}
@@ -125,7 +125,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 />
 
                 {/* Page content */}
-                <main className="flex-1 overflow-y-auto px-8 pt-7 pb-12">
+                <main className="flex-1 overflow-y-auto px-8 pt-7 pb-12 print:overflow-visible print:p-0">
                     {children}
                 </main>
             </div>
