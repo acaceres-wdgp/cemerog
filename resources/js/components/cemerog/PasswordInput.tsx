@@ -1,9 +1,12 @@
 /**
  * PasswordInput – input with show/hide toggle and optional password generator.
+ * Built on ui/input so it looks exactly like the other inputs.
  */
 
 import { forwardRef, InputHTMLAttributes, useState } from 'react';
 import { Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 interface PasswordInputProps extends InputHTMLAttributes<HTMLInputElement> {
     error?: string;
@@ -22,7 +25,7 @@ function generatePassword(length = 16): string {
 
 const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
     (
-        { error, showGenerator = false, onGenerate, className = '', ...props },
+        { error, showGenerator = false, onGenerate, className, ...props },
         ref,
     ) => {
         const [show, setShow] = useState(false);
@@ -34,14 +37,15 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
 
         return (
             <div className="relative flex items-center">
-                <input
+                <Input
                     ref={ref}
                     type={show ? 'text' : 'password'}
-                    className={`w-full rounded-md border px-3 py-2 pr-10 text-sm text-text-body transition-colors placeholder:text-muted focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none ${
-                        error
-                            ? 'border-error-border bg-error-bg'
-                            : 'border-input-border bg-white'
-                    } ${showGenerator ? 'pr-20' : 'pr-10'} ${className}`}
+                    aria-invalid={error ? true : undefined}
+                    className={cn(
+                        showGenerator ? 'pr-20' : 'pr-10',
+                        error && 'border-error-border bg-error-bg',
+                        className,
+                    )}
                     {...props}
                 />
                 {showGenerator && (
