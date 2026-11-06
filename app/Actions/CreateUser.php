@@ -20,7 +20,8 @@ class CreateUser
             'email' => $data['email'] ?? null,
             'password' => $data['password'],
             'is_active' => $data['is_active'] ?? true,
-            'must_change_password' => $data['must_change_password'] ?? false,
+            // The admin assigns a temporary password: the user replaces it on first login
+            'must_change_password' => true,
         ]);
 
         if (! empty($roles)) {

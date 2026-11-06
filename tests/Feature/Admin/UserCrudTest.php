@@ -186,6 +186,50 @@ test('admin can create a user', function () {
     ]);
 });
 
+test('a user created by the admin must change the temporary password', function () {
+    $this->actingAs($this->admin)
+        ->post('/admin/usuarios', [
+            'name' => 'Usuario Nuevo',
+            'username' => 'usuario.nuevo',
+            'password' => 'temporal123',
+            'password_confirmation' => 'temporal123',
+        ])
+        ->assertRedirect(route('admin'));
+
+    expect(User::where('username', 'usuario.nuevo')->first()->must_change_password)->toBeTrue();
+});
+
+test('the request cannot skip the temporary password change on create', function () {
+    $this->actingAs($this->admin)
+        ->post('/admin/usuarios', [
+            'name' => 'Usuario Nuevo',
+            'username' => 'usuario.nuevo',
+            'password' => 'temporal123',
+            'password_confirmation' => 'temporal123',
+            'must_change_password' => false,
+        ])
+        ->assertRedirect(route('admin'));
+
+    expect(User::where('username', 'usuario.nuevo')->first()->must_change_password)->toBeTrue();
+});
+
+test('a new user is sent to change the password on first login and cannot use modules', function () {
+    $this->actingAs($this->admin)
+        ->post('/admin/usuarios', [
+            'name' => 'Usuario Nuevo',
+            'username' => 'usuario.nuevo',
+            'password' => 'temporal123',
+            'password_confirmation' => 'temporal123',
+            'roles' => ['secretaria'],
+        ]);
+    auth()->logout();
+
+    $this->post('/login', ['username' => 'usuario.nuevo', 'password' => 'temporal123'])
+        ->assertRedirect(route('password.change-required'));
+
+    $this->get('/tablero')->assertRedirect(route('password.change-required'));
+});
+
 test('non-admin gets 403 on store', function () {
     $user = User::factory()->create();
 
