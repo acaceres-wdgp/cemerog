@@ -81,6 +81,9 @@ test('a doctor schedules an ambulatory surgery; the week agenda shows it', funct
             ->where('surgeries.0.date_label', 'Jue 12/11/2026')
             ->where('surgeries.0.start', '09:00')
             ->where('surgeries.0.end', '10:30')
+            // Shown on a 12-hour clock; start/end stay in 24 h for the calendar
+            ->where('surgeries.0.start_label', '9:00 AM')
+            ->where('surgeries.0.end_label', '10:30 AM')
             ->where('surgeries.0.room', 'Ambulatoria')
             ->where('surgeries.0.anesthetist', 'Dr. Ramón Peralta')
             ->where('can_schedule', false)
@@ -94,7 +97,8 @@ test('a doctor schedules an ambulatory surgery; the week agenda shows it', funct
 test('two surgeries never overlap in the same operating room', function () {
     scheduled();
 
-    $this->actingAs($this->cirujano)->post('/cirugia', surgeryPayload(['time' => '10:00']))->assertSessionHasErrors('starts_at');
+    $this->actingAs($this->cirujano)->post('/cirugia', surgeryPayload(['time' => '10:00']))
+        ->assertSessionHasErrors(['starts_at' => 'Quirófano 1 ya tiene «Apendicectomía» de 9:00 AM a 10:30 AM.']);
     $this->actingAs($this->cirujano)->post('/cirugia', surgeryPayload(['time' => '10:30']))->assertSessionHasNoErrors();
 
     $q2 = OperatingRoom::create(['name' => 'Quirófano 2', 'position' => 2]);

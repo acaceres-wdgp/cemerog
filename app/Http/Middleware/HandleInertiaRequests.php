@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\CashShift;
 use App\Models\Turn;
 use App\Models\User;
+use App\Support\ClinicTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Middleware;
@@ -95,7 +96,7 @@ class HandleInertiaRequests extends Middleware
         return [
             'id' => $shift->id,
             'opened_by' => $shift->opener->name,
-            'opened_at' => $shift->opened_at->format('d/m/Y H:i'),
+            'opened_at' => ClinicTime::dateTime($shift->opened_at),
             'mine' => $shift->opened_by === $user->id,
             'can_operate' => $shift->opened_by === $user->id || $user->hasRole('administrador'),
             'pending_close' => $shift->isPendingClose(),

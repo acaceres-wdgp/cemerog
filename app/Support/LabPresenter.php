@@ -43,8 +43,10 @@ class LabPresenter
             'id' => $order->id,
             'number' => $order->number,
             'status' => $order->status,
-            'ordered_at' => $order->ordered_at->format('d/m/Y H:i'),
-            'ordered_time' => $order->ordered_at->format('H:i'),
+            'ordered_at' => ClinicTime::dateTime($order->ordered_at),
+            'ordered_time' => ClinicTime::time($order->ordered_at),
+            // To sort by: the display strings above do not sort in time order
+            'ordered_iso' => $order->ordered_at->toIso8601String(),
             'tests' => $order->items->map(fn (LabOrderItem $i): string => $i->name)->all(),
             'total' => (int) $order->items->sum('price'),
             'indication' => $order->indication,
@@ -64,7 +66,7 @@ class LabPresenter
 
         return [
             ...$this->summary($order),
-            'validated_at' => $order->validated_at?->format('d/m/Y H:i'),
+            'validated_at' => ClinicTime::dateTime($order->validated_at),
             'results' => $done ? $this->flatResults($order) : [],
         ];
     }
@@ -118,7 +120,7 @@ class LabPresenter
                 'document_number' => $p->document_type === 'no_tiene' ? null : $p->document_number,
             ],
             'has_out_of_range' => $order->items->contains(fn (LabOrderItem $i): bool => $i->results->contains('out_of_range', true)),
-            'validated_at' => $order->validated_at?->format('d/m/Y H:i'),
+            'validated_at' => ClinicTime::dateTime($order->validated_at),
         ];
     }
 
@@ -150,9 +152,9 @@ class LabPresenter
 
         return [
             ...$this->row($order),
-            'sample_at' => $order->sample_at?->format('d/m/Y H:i'),
+            'sample_at' => ClinicTime::dateTime($order->sample_at),
             'validated_by' => $order->validated_by !== null ? User::find($order->validated_by)?->name : null,
-            'delivered_at' => $order->delivered_at?->format('d/m/Y H:i'),
+            'delivered_at' => ClinicTime::dateTime($order->delivered_at),
             'can_validate' => $canValidate,
             'categories' => array_map(fn (string $category, array $data): array => [
                 'category' => $category,

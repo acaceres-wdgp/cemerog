@@ -16,6 +16,7 @@ use App\Models\Patient;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\AdmissionPresenter;
+use App\Support\ClinicTime;
 use App\Support\EmergencyPresenter;
 use App\Support\ImagingPresenter;
 use App\Support\LabPresenter;
@@ -82,7 +83,7 @@ class EmergenciaController extends Controller
             // A free cubicle clicked on the board comes preselected
             'selected_cubicle_id' => $request->integer('cubiculo') ?: null,
             'emergency_fee' => Setting::emergencyFee(),
-            'arrived_at' => now()->format('d/m/Y · H:i'),
+            'arrived_at' => ClinicTime::dateTime(now(), ' · '),
         ]);
     }
 

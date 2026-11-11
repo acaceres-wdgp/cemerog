@@ -8,6 +8,7 @@ use App\Models\Patient;
 use App\Models\Surgery;
 use App\Models\SurgeryProcedure;
 use App\Models\User;
+use App\Support\ClinicTime;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -90,7 +91,7 @@ class ScheduleSurgery
             ->lockForUpdate()
             ->first();
         if ($clash !== null) {
-            throw ValidationException::withMessages(['starts_at' => "{$room->name} ya tiene «{$clash->procedure_name}» de {$clash->starts_at->format('H:i')} a {$clash->ends_at->format('H:i')}."]);
+            throw ValidationException::withMessages(['starts_at' => "{$room->name} ya tiene «{$clash->procedure_name}» de ".ClinicTime::time($clash->starts_at).' a '.ClinicTime::time($clash->ends_at).'.']);
         }
     }
 

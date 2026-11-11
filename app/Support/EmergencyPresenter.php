@@ -23,11 +23,11 @@ class EmergencyPresenter
             'number' => $e->number,
             'status' => $e->status,
             'arrived_at' => $e->arrived_at->toIso8601String(),
-            'arrived_time' => $e->arrived_at->format('H:i'),
+            'arrived_time' => ClinicTime::time($e->arrived_at),
             'reason' => $e->reason,
             'doctor' => $e->doctor->name,
             'last_vital' => $e->latestVital?->summary(),
-            'last_vital_time' => $e->latestVital?->taken_at->format('H:i'),
+            'last_vital_time' => ClinicTime::time($e->latestVital?->taken_at),
             'cubicle' => ['id' => $e->cubicle->id, 'name' => $e->cubicle->name],
             'patient' => [
                 'id' => $p->id,
@@ -49,7 +49,7 @@ class EmergencyPresenter
 
         return [
             ...$this->row($e),
-            'arrived_on' => $e->arrived_at->format('d/m/Y H:i'),
+            'arrived_on' => ClinicTime::dateTime($e->arrived_at),
             'patient' => [
                 ...$this->row($e)['patient'],
                 'document_type' => $p->document_type,
@@ -78,7 +78,7 @@ class EmergencyPresenter
         return $e->vitals()->with('taker')->reorder()->orderByDesc('taken_at')->orderByDesc('id')->get()
             ->map(fn (EmergencyVital $v): array => [
                 'id' => $v->id,
-                'time' => $v->taken_at->format('H:i'),
+                'time' => ClinicTime::time($v->taken_at),
                 'date' => $v->taken_at->format('d/m/Y'),
                 'presion_arterial' => $v->presion_arterial,
                 'frecuencia_cardiaca' => $v->frecuencia_cardiaca,
@@ -101,7 +101,7 @@ class EmergencyPresenter
             ->map(fn (EmergencyApplication $a): array => [
                 'id' => $a->id,
                 'kind' => $a->kind,
-                'time' => $a->applied_at->format('H:i'),
+                'time' => ClinicTime::time($a->applied_at),
                 'date' => $a->applied_at->format('d/m/Y'),
                 'description' => $a->description,
                 'quantity' => $a->quantity,
