@@ -19,6 +19,8 @@ test('creating doctor with create_user option creates a linked medico user', fun
             'name' => 'Dr. Franklin Rodríguez',
             'specialty_id' => $this->specialty->id,
             'access_mode' => 'create_user',
+            'consultation_price' => 150000,
+
         ])
         ->assertRedirect(route('doctores'));
 
@@ -40,6 +42,8 @@ test('creating doctor with create_user returns credentials once via Inertia flas
             'name' => 'Dr. Franklin Rodríguez',
             'specialty_id' => $this->specialty->id,
             'access_mode' => 'create_user',
+            'consultation_price' => 150000,
+
         ]);
 
     $response->assertRedirect(route('doctores'));
@@ -58,6 +62,8 @@ test('credentials flash is consumed after first GET — second GET has no creden
             'name' => 'Dr. Franklin Rodríguez',
             'specialty_id' => $this->specialty->id,
             'access_mode' => 'create_user',
+            'consultation_price' => 150000,
+
         ])
         ->assertRedirect(route('doctores'));
 
@@ -77,6 +83,8 @@ test('username collision results in numeric suffix', function () {
             'name' => 'Dr. Franklin Rodríguez',
             'specialty_id' => $this->specialty->id,
             'access_mode' => 'create_user',
+            'consultation_price' => 150000,
+
         ]);
 
     $doctor = Doctor::where('name', 'Dr. Franklin Rodríguez')->first();
@@ -96,6 +104,8 @@ test('creating doctor with link_user links existing user without credentials fla
             'specialty_id' => $this->specialty->id,
             'access_mode' => 'link_user',
             'user_id' => $existingUser->id,
+            'consultation_price' => 150000,
+
         ])
         ->assertRedirect(route('doctores'));
 
@@ -114,6 +124,8 @@ test('linking an admin user adds medico role and keeps admin role', function () 
             'specialty_id' => $this->specialty->id,
             'access_mode' => 'link_user',
             'user_id' => $adminUser->id,
+            'consultation_price' => 150000,
+
         ])
         ->assertRedirect(route('doctores'));
 
@@ -136,6 +148,8 @@ test('cannot link an already-linked user', function () {
             'specialty_id' => $this->specialty->id,
             'access_mode' => 'link_user',
             'user_id' => $linkedUser->id,
+            'consultation_price' => 150000,
+
         ])
         ->assertSessionHasErrors('user_id');
 });
@@ -150,6 +164,8 @@ test('cannot link an inactive user', function () {
             'specialty_id' => $this->specialty->id,
             'access_mode' => 'link_user',
             'user_id' => $inactiveUser->id,
+            'consultation_price' => 150000,
+
         ])
         ->assertSessionHasErrors('user_id');
 });
@@ -178,6 +194,8 @@ test('user creation failure rolls back doctor creation', function () {
             'name' => 'Dra. Ana García',
             'specialty_id' => $this->specialty->id,
             'access_mode' => 'create_user',
+            'consultation_price' => 150000,
+
         ])
         ->assertRedirect(route('doctores'));
 
@@ -312,6 +330,8 @@ test('user name is stored without Dr./Dra. prefix when creating with create_user
             'name' => 'Dr. Carlos Méndez',
             'specialty_id' => $this->specialty->id,
             'access_mode' => 'create_user',
+            'consultation_price' => 150000,
+
         ])
         ->assertRedirect(route('doctores'));
 

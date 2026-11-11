@@ -23,6 +23,8 @@ test('admin can create a doctor', function () {
             'exequatur' => 'EX-001234',
             'phone' => '809-555-0100',
             'specialty_id' => $this->specialty->id,
+            'consultation_price' => 150000,
+
         ])
         ->assertRedirect(route('doctores'));
 
@@ -40,6 +42,8 @@ test('store doctor flashes success message', function () {
         ->post('/admin/doctores', [
             'name' => 'Dra. Ana López',
             'specialty_id' => $this->specialty->id,
+            'consultation_price' => 150000,
+
         ])
         ->assertRedirect(route('doctores'))
         ->assertSessionHas('inertia.flash_data.toast.type', 'success')
@@ -51,6 +55,8 @@ test('admin can create doctor with optional fields omitted', function () {
         ->post('/admin/doctores', [
             'name' => 'Dr. Sin Exequatur',
             'specialty_id' => $this->specialty->id,
+            'consultation_price' => 150000,
+
         ])
         ->assertRedirect(route('doctores'));
 
@@ -68,6 +74,8 @@ test('non-admin cannot create doctor', function () {
         ->post('/admin/doctores', [
             'name' => 'Dr. Intruso',
             'specialty_id' => $this->specialty->id,
+            'consultation_price' => 150000,
+
         ])
         ->assertForbidden();
 });
@@ -77,6 +85,8 @@ test('store doctor validates name is required', function () {
         ->post('/admin/doctores', [
             'name' => '',
             'specialty_id' => $this->specialty->id,
+            'consultation_price' => 150000,
+
         ])
         ->assertSessionHasErrors('name');
 });
@@ -86,6 +96,8 @@ test('store doctor validates name max 100 chars', function () {
         ->post('/admin/doctores', [
             'name' => str_repeat('x', 101),
             'specialty_id' => $this->specialty->id,
+            'consultation_price' => 150000,
+
         ])
         ->assertSessionHasErrors('name');
 });
@@ -94,6 +106,8 @@ test('store doctor validates specialty_id is required', function () {
     $this->actingAs($this->admin)
         ->post('/admin/doctores', [
             'name' => 'Dr. Test',
+            'consultation_price' => 150000,
+
         ])
         ->assertSessionHasErrors('specialty_id');
 });
@@ -103,6 +117,8 @@ test('store doctor validates specialty_id exists', function () {
         ->post('/admin/doctores', [
             'name' => 'Dr. Test',
             'specialty_id' => 9999,
+            'consultation_price' => 150000,
+
         ])
         ->assertSessionHasErrors('specialty_id');
 });
@@ -113,6 +129,8 @@ test('store doctor validates exequatur max 30 chars', function () {
             'name' => 'Dr. Test',
             'specialty_id' => $this->specialty->id,
             'exequatur' => str_repeat('E', 31),
+            'consultation_price' => 150000,
+
         ])
         ->assertSessionHasErrors('exequatur');
 });
@@ -123,6 +141,8 @@ test('store doctor validates phone max 20 chars', function () {
             'name' => 'Dr. Test',
             'specialty_id' => $this->specialty->id,
             'phone' => str_repeat('8', 21),
+            'consultation_price' => 150000,
+
         ])
         ->assertSessionHasErrors('phone');
 });

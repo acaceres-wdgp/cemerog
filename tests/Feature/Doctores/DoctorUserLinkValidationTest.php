@@ -26,6 +26,8 @@ test('creating a doctor with a valid medico user links them correctly', function
             'specialty_id' => $this->specialty->id,
             'user_id' => $medicoUser->id,
             'office' => 'Consultorio 1',
+            'consultation_price' => 150000,
+
         ])
         ->assertRedirect(route('doctores'));
 
@@ -41,6 +43,8 @@ test('creating a doctor without user_id is allowed (nullable)', function () {
         ->post('/admin/doctores', [
             'name' => 'Dr. Sin Usuario',
             'specialty_id' => $this->specialty->id,
+            'consultation_price' => 150000,
+
         ])
         ->assertRedirect(route('doctores'));
 
@@ -66,6 +70,8 @@ test('cannot create doctor with a user already linked to another doctor', functi
             'name' => 'Dr. Duplicado',
             'specialty_id' => $this->specialty->id,
             'user_id' => $medicoUser->id,
+            'consultation_price' => 150000,
+
         ])
         ->assertSessionHasErrors('user_id');
 });
@@ -79,6 +85,8 @@ test('cannot create doctor with a user that does not have the medico role', func
             'name' => 'Dr. Test',
             'specialty_id' => $this->specialty->id,
             'user_id' => $nonMedicoUser->id,
+            'consultation_price' => 150000,
+
         ])
         ->assertSessionHasErrors('user_id');
 });
@@ -89,6 +97,8 @@ test('cannot create doctor with a non-existent user_id', function () {
             'name' => 'Dr. Test',
             'specialty_id' => $this->specialty->id,
             'user_id' => 99999,
+            'consultation_price' => 150000,
+
         ])
         ->assertSessionHasErrors('user_id');
 });
@@ -99,6 +109,8 @@ test('store doctor validates office max 100 chars', function () {
             'name' => 'Dr. Test',
             'specialty_id' => $this->specialty->id,
             'office' => str_repeat('x', 101),
+            'consultation_price' => 150000,
+
         ])
         ->assertSessionHasErrors('office');
 });

@@ -19,7 +19,7 @@ class StoreSpecialtyRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:100', Rule::unique('specialties', 'name')],
-            'consultation_price' => ['required', 'integer', 'min:0'],
+            'consultation_price' => ['required', 'integer', 'min:1'],
         ];
     }
 
@@ -31,7 +31,7 @@ class StoreSpecialtyRequest extends FormRequest
             'name.unique' => 'Ya existe una especialidad con ese nombre.',
             'consultation_price.required' => 'El precio de consulta es obligatorio.',
             'consultation_price.integer' => 'El precio debe ser un número entero.',
-            'consultation_price.min' => 'El precio no puede ser negativo.',
+            'consultation_price.min' => 'El precio de consulta debe ser mayor que RD$0.',
         ];
     }
 }

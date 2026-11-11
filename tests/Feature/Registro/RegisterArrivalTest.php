@@ -29,6 +29,17 @@ function validNewPatientPayload(int $doctorId): array
     ];
 }
 
+test('a consultation is not registered with a doctor without a price', function () {
+    $sinPrecio = Doctor::factory()->create(['name' => 'Dr. Sin Precio', 'consultation_price' => 0, 'is_active' => true]);
+
+    $this->actingAs($this->secretaria)
+        ->post('/registro', validNewPatientPayload($sinPrecio->id))
+        ->assertSessionHasErrors(['doctor_id' => 'Dr. Sin Precio no tiene precio de consulta. Pide a Administración que lo configure en Doctores antes de registrar la llegada.']);
+
+    expect(Patient::count())->toBe(0)
+        ->and(Turn::count())->toBe(0);
+});
+
 // C1 – new patient flow creates patient + turn and redirects with flash
 test('registrar paciente nuevo crea paciente y turno con flash', function () {
     $this->actingAs($this->secretaria)

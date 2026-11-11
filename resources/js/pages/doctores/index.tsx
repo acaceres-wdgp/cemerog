@@ -332,7 +332,7 @@ function SpecialtyModal({ onClose, specialty }: SpecialtyModalProps) {
                                 </span>
                                 <input
                                     type="number"
-                                    min="0"
+                                    min="0.01"
                                     step="0.01"
                                     value={data.consultation_price}
                                     onChange={(e) =>
@@ -434,22 +434,27 @@ function DoctorModal({
     const [confirmResetOpen, setConfirmResetOpen] = useState(false);
 
     const pageErrors = usePage().props.errors as Record<string, string>;
+    // A new doctor starts with the price of the specialty (docs/DOMAIN.md)
+    const specialtyPrice = (id: string) => {
+        const sp = specialties.find((x) => String(x.id) === id);
+        return sp ? String(sp.consultation_price / 100) : '';
+    };
+    const initialSpecialtyId = String(
+        doctor?.specialty_id ?? defaultSpecialtyId ?? specialties[0]?.id ?? '',
+    );
+    // Once the price is typed by hand, a specialty change leaves it alone
+    const [priceTouched, setPriceTouched] = useState(isEdit);
     const { data, setData, post, put, transform, processing, errors } = useForm(
         {
             name: doctor?.name ?? '',
             exequatur: doctor?.exequatur ?? '',
             phone: doctor?.phone ?? '',
-            specialty_id: String(
-                doctor?.specialty_id ??
-                    defaultSpecialtyId ??
-                    specialties[0]?.id ??
-                    '',
-            ),
+            specialty_id: initialSpecialtyId,
             user_id: String(doctor?.user_id ?? ''),
             office: doctor?.office ?? '',
             consultation_price: doctor
                 ? String(doctor.consultation_price / 100)
-                : '',
+                : specialtyPrice(initialSpecialtyId),
             consultation_fee: doctor
                 ? String(doctor.consultation_fee / 100)
                 : '',
@@ -469,9 +474,11 @@ function DoctorModal({
                     : null,
             office: form.office || null,
             access_mode: accessMode,
-            consultation_price: Math.round(
-                parseFloat(form.consultation_price || '0') * 100,
-            ),
+            // Empty stays null: the server asks for the price instead of saving RD$0
+            consultation_price:
+                form.consultation_price === ''
+                    ? null
+                    : Math.round(parseFloat(form.consultation_price) * 100),
             consultation_fee: Math.round(
                 parseFloat(form.consultation_fee || '0') * 100,
             ),
@@ -696,9 +703,16 @@ function DoctorModal({
                             <span>Especialidad *</span>
                             <select
                                 value={data.specialty_id}
-                                onChange={(e) =>
-                                    setData('specialty_id', e.target.value)
-                                }
+                                onChange={(e) => {
+                                    const id = e.target.value;
+                                    setData((prev) => ({
+                                        ...prev,
+                                        specialty_id: id,
+                                        consultation_price: priceTouched
+                                            ? prev.consultation_price
+                                            : specialtyPrice(id),
+                                    }));
+                                }}
                                 style={{
                                     ...inputStyle,
                                     ...(errors.specialty_id
@@ -747,7 +761,7 @@ function DoctorModal({
                                     fontSize: 14,
                                 }}
                             >
-                                <span>Precio de consulta (RD$)</span>
+                                <span>Precio de consulta (RD$) *</span>
                                 <div
                                     className={`flex h-9 items-center overflow-hidden rounded-lg border ${(pageErrors.consultation_price ?? errors.consultation_price) ? 'border-error' : 'border-divider'}`}
                                 >
@@ -756,15 +770,16 @@ function DoctorModal({
                                     </span>
                                     <input
                                         type="number"
-                                        min="0"
+                                        min="0.01"
                                         step="0.01"
                                         value={data.consultation_price}
-                                        onChange={(e) =>
+                                        onChange={(e) => {
+                                            setPriceTouched(true);
                                             setData(
                                                 'consultation_price',
                                                 e.target.value,
-                                            )
-                                        }
+                                            );
+                                        }}
                                         placeholder="0.00"
                                         aria-label="Precio de consulta"
                                         className="h-full flex-1 bg-transparent pr-2 text-sm outline-none"
