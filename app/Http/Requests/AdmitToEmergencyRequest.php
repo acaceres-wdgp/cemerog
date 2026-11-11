@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\DocumentNumberFormat;
 use App\Rules\UniqueDocumentNumber;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -29,6 +30,7 @@ class AdmitToEmergencyRequest extends FormRequest
                 Rule::requiredIf(! $existing && $this->input('document_type') !== 'no_tiene'),
                 'nullable', 'string', 'max:50',
                 new UniqueDocumentNumber(type: (string) $this->input('document_type', 'cedula')),
+                new DocumentNumberFormat((string) $this->input('document_type', 'cedula')),
             ],
             'sex' => [Rule::requiredIf(! $existing), 'nullable', Rule::in(['M', 'F'])],
             'cubicle_id' => ['required', 'integer', 'exists:emergency_cubicles,id'],
