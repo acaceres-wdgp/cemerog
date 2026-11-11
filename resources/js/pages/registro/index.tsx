@@ -682,22 +682,28 @@ export default function RegistroIndex({
                                         <label className="mb-1 block text-[13px] font-medium text-text-body">
                                             Tel. de contacto
                                         </label>
-                                        <input
-                                            type="text"
+                                        <MaskedInput
+                                            mask="(000) 000-0000"
                                             name="patient_emergency_phone"
+                                            placeholder="(___) ___-____"
                                             value={data.emergency_contact_phone}
-                                            onChange={(e) =>
+                                            onChange={(v) =>
                                                 setData(
                                                     'emergency_contact_phone',
-                                                    e.target.value,
+                                                    v,
                                                 )
                                             }
                                             autoComplete="off"
                                             data-1p-ignore
                                             data-lpignore="true"
                                             data-form-type="other"
-                                            className="h-9 w-full rounded-lg border border-card-border bg-white px-3 text-sm outline-none focus:border-primary"
+                                            className="h-9 w-full rounded-lg border border-card-border bg-white px-3 text-sm tabular-nums outline-none focus:border-primary"
                                         />
+                                        {errors.emergency_contact_phone && (
+                                            <p className="mt-1 text-[12px] text-error">
+                                                {errors.emergency_contact_phone}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div>

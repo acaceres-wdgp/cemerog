@@ -335,4 +335,23 @@ describe('RegistroEdit', () => {
             ).toBeTruthy();
         });
     });
+
+    describe('errores de teléfono', () => {
+        it('muestra por qué se rechazaron el teléfono y el de contacto', () => {
+            formState.errors = {
+                phone: 'El teléfono debe tener 10 dígitos y empezar por 809, 829 u 849.',
+                emergency_contact_phone: 'Teléfono de contacto incompleto.',
+            };
+            render(<RegistroEdit patient={basePatient} />);
+
+            expect(
+                screen.getByText(
+                    'El teléfono debe tener 10 dígitos y empezar por 809, 829 u 849.',
+                ),
+            ).toBeTruthy();
+            expect(
+                screen.getByText('Teléfono de contacto incompleto.'),
+            ).toBeTruthy();
+        });
+    });
 });

@@ -1,6 +1,7 @@
 import React from 'react';
 import FormField from '@/components/cemerog/FormField';
 import SegmentedControl from '@/components/cemerog/SegmentedControl';
+import { formatWithMask } from '@/components/cemerog/masked-input';
 
 export type NewPatient = {
     identified: boolean;
@@ -116,10 +117,23 @@ export default function NewPatientFields({
                         <FormField
                             name="document_number"
                             label="Documento"
-                            placeholder="Cédula o pasaporte"
+                            placeholder={
+                                value.document_type === 'cedula'
+                                    ? '000-0000000-0'
+                                    : 'Número del documento'
+                            }
                             value={value.document_number}
                             onChange={(e) =>
-                                onChange({ document_number: e.target.value })
+                                onChange({
+                                    // A cédula keeps the same shape as in Registro
+                                    document_number:
+                                        value.document_type === 'cedula'
+                                            ? formatWithMask(
+                                                  e.target.value,
+                                                  '000-0000000-0',
+                                              )
+                                            : e.target.value,
+                                })
                             }
                             error={errors.document_number}
                             required

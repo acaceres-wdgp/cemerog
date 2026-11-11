@@ -279,6 +279,11 @@ export function PatientFormCard({
                         onChange={(v) => setData('phone', v)}
                         className={inputCls}
                     />
+                    {errors.phone && (
+                        <span className="text-xs text-error" role="alert">
+                            {errors.phone}
+                        </span>
+                    )}
                 </label>
                 <label className={cn(labelCls, 'col-span-2')}>
                     <span>Dirección</span>
@@ -306,6 +311,11 @@ export function PatientFormCard({
                         onChange={(v) => setData('emergency_contact_phone', v)}
                         className={inputCls}
                     />
+                    {errors.emergency_contact_phone && (
+                        <span className="text-xs text-error" role="alert">
+                            {errors.emergency_contact_phone}
+                        </span>
+                    )}
                 </label>
                 <label className={labelCls}>
                     <span>Tipo de sangre</span>

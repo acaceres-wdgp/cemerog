@@ -31,6 +31,11 @@ function applyMask(digits: string, mask: string): string {
     return result;
 }
 
+/** A value formatted with a mask, as MaskedInput does while typing */
+export function formatWithMask(value: string, mask: string): string {
+    return applyMask(stripToDigits(value).slice(0, digitSlots(mask)), mask);
+}
+
 function stripToDigits(value: string): string {
     return value.replace(/\D/g, '');
 }

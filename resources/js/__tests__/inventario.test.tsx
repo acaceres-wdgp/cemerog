@@ -336,4 +336,17 @@ describe('Proveedores', () => {
             expect.anything(),
         );
     });
+
+    it('formats the supplier phone as it is typed', () => {
+        render(<Proveedores suppliers={[]} can_edit />);
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Nuevo proveedor' }),
+        );
+        const phone = within(screen.getByRole('dialog')).getByLabelText(
+            /Teléfono/,
+        ) as HTMLInputElement;
+
+        fireEvent.change(phone, { target: { value: '8095550101' } });
+        expect(phone.value).toBe('809-555-0101');
+    });
 });

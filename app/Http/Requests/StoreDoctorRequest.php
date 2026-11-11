@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use App\Rules\DominicanPhone;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -27,7 +28,7 @@ class StoreDoctorRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:100'],
             'exequatur' => ['nullable', 'string', 'max:30'],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'phone' => ['nullable', 'string', 'max:20', new DominicanPhone],
             'specialty_id' => ['required', 'integer', Rule::exists('specialties', 'id')],
             'access_mode' => ['nullable', 'string', Rule::in(['none', 'create_user', 'link_user'])],
             'user_id' => array_merge(

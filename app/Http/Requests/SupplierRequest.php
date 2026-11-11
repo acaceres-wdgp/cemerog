@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use App\Models\InventoryItem;
 use App\Models\Supplier;
+use App\Rules\DominicanPhone;
+use App\Rules\Rnc;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,8 +24,8 @@ class SupplierRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:150', Rule::unique('suppliers', 'name')->ignore($supplier?->id)],
-            'rnc' => ['nullable', 'string', 'max:20'],
-            'phone' => ['nullable', 'string', 'max:30'],
+            'rnc' => ['nullable', 'string', 'max:20', new Rnc],
+            'phone' => ['nullable', 'string', 'max:30', new DominicanPhone],
             'contact' => ['nullable', 'string', 'max:150'],
             'is_active' => ['sometimes', 'boolean'],
         ];

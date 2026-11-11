@@ -84,6 +84,14 @@ test('a new patient is registered with the minimum, marked incomplete and charge
         ->and(Account::find($emergency->account_id)->status)->toBe('abierta');
 });
 
+test('an incomplete cédula is rejected at the quick admission', function () {
+    $this->actingAs($this->enfermera)
+        ->post('/emergencia/ingreso', newPatientAdmission(['document_number' => '001']))
+        ->assertSessionHasErrors(['document_number' => 'La cédula debe tener 11 dígitos (000-0000000-0).']);
+
+    expect(Patient::count())->toBe(0);
+});
+
 test('an unidentified patient is registered as N.N. without a document', function () {
     $this->actingAs($this->enfermera)
         ->post('/emergencia/ingreso', newPatientAdmission([

@@ -156,3 +156,32 @@ describe('Registro – Solo registrar paciente (mode=new)', () => {
         expect(screen.getByText(/sin crear atención/i)).toBeInTheDocument();
     });
 });
+
+describe('Registro – teléfono de contacto', () => {
+    beforeEach(() => {
+        global.fetch = vi
+            .fn()
+            .mockResolvedValue({ ok: true, json: async () => null });
+    });
+
+    it('uses the phone mask and shows why the server refused it', () => {
+        mockUseForm.mockReturnValue({
+            ...makeFormReturn(),
+            errors: {
+                emergency_contact_phone:
+                    'El teléfono debe tener 10 dígitos y empezar por 809, 829 u 849.',
+            },
+        });
+        render(<RegistroIndex doctors={DOCTORS} patient={null} />);
+
+        const input = document.querySelector(
+            'input[name="patient_emergency_phone"]',
+        ) as HTMLInputElement;
+        expect(input.getAttribute('placeholder')).toBe('(___) ___-____');
+        expect(
+            screen.getByText(
+                'El teléfono debe tener 10 dígitos y empezar por 809, 829 u 849.',
+            ),
+        ).toBeTruthy();
+    });
+});
