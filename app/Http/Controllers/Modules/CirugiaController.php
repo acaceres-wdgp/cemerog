@@ -9,6 +9,7 @@ use App\Http\Requests\SurgeryRequest;
 use App\Models\Patient;
 use App\Models\Surgery;
 use App\Models\User;
+use App\Support\ClinicTime;
 use App\Support\SurgeryPresenter;
 use App\Support\Toast;
 use Carbon\CarbonImmutable;
@@ -50,7 +51,7 @@ class CirugiaController extends Controller
         $patient = Patient::findOrFail($request->integer('patient_id'));
         $surgery = $action->handle($patient, $request->validated(), $request->startsAt(), $request->endsAt(), $user);
 
-        Toast::success("{$surgery->procedure_name} programada para {$patient->full_name} · {$surgery->starts_at->format('d/m/Y H:i')}.");
+        Toast::success("{$surgery->procedure_name} programada para {$patient->full_name} · ".ClinicTime::dateTime($surgery->starts_at).'.');
 
         return redirect()->route('cirugia', ['semana' => $surgery->starts_at->toDateString(), 'cirugia' => $surgery->id]);
     }
@@ -60,7 +61,7 @@ class CirugiaController extends Controller
         $action->reschedule($surgery, $request->integer('operating_room_id'), $request->startsAt(), $request->endsAt());
         $surgery->refresh();
 
-        Toast::success("{$surgery->procedure_name} reprogramada para el {$surgery->starts_at->format('d/m/Y H:i')}.");
+        Toast::success("{$surgery->procedure_name} reprogramada para el ".ClinicTime::dateTime($surgery->starts_at).'.');
 
         return redirect()->route('cirugia', ['semana' => $surgery->starts_at->toDateString(), 'cirugia' => $surgery->id]);
     }

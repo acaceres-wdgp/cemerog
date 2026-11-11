@@ -2,6 +2,7 @@ import StatusBadge from '@/components/cemerog/StatusBadge';
 import { AppointmentRow, DoctorOption } from '../types';
 import { SLOTS } from '../lib/dates';
 import { docPalette } from '@/components/cemerog/palettes';
+import { formatClockTime } from '@/lib/dates';
 
 const TYPE_LABELS: Record<string, string> = {
     consulta: 'Consulta',
@@ -66,8 +67,8 @@ function CitaRow({
         cita.status === 'pendiente' || cita.status === 'confirmada';
     return (
         <tr key={cita.id}>
-            <td className="border-b border-divider py-[10px] pr-3 pl-5 font-semibold text-text-heading tabular-nums">
-                {showTime ? timeLabel : ''}
+            <td className="border-b border-divider py-[10px] pr-3 pl-5 font-semibold whitespace-nowrap text-text-heading tabular-nums">
+                {showTime ? formatClockTime(timeLabel) : ''}
             </td>
             <td className="border-b border-divider px-3 py-[10px]">
                 <div className="font-medium">{cita.patient_name}</div>
@@ -131,8 +132,8 @@ export function FutureRows({
                     if (!isSlot) return null;
                     return (
                         <tr key={time}>
-                            <td className="w-[60px] border-b border-row-divider py-1.5 pr-3 pl-5 font-semibold text-text-tertiary tabular-nums">
-                                {time}
+                            <td className="w-[60px] border-b border-row-divider py-1.5 pr-3 pl-5 font-semibold whitespace-nowrap text-text-tertiary tabular-nums">
+                                {formatClockTime(time)}
                             </td>
                             <td
                                 colSpan={5}

@@ -15,6 +15,7 @@ use App\Models\Patient;
 use App\Models\Turn;
 use App\Models\User;
 use App\Support\AdmissionPresenter;
+use App\Support\ClinicTime;
 use App\Support\Toast;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
@@ -75,7 +76,7 @@ class InternamientoController extends Controller
         });
 
         if ($scheduled !== null) {
-            Toast::success("{$patient->full_name} ingresado en {$admission->bed?->label()}. {$scheduled->procedure_name} programada para el {$scheduled->starts_at->format('d/m/Y H:i')}.");
+            Toast::success("{$patient->full_name} ingresado en {$admission->bed?->label()}. {$scheduled->procedure_name} programada para el ".ClinicTime::dateTime($scheduled->starts_at).'.');
 
             return redirect()->route('cirugia', ['semana' => $scheduled->starts_at->toDateString(), 'cirugia' => $scheduled->id]);
         }

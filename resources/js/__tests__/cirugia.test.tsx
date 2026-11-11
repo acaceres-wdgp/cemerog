@@ -70,6 +70,8 @@ const block = (o: Partial<SurgeryBlock>): SurgeryBlock => ({
     date_label: 'Mié 11/11/2026',
     start: '08:00',
     end: '10:00',
+    start_label: '8:00 AM',
+    end_label: '10:00 AM',
     duration_minutes: 120,
     notes: null,
     cancel_reason: null,
@@ -86,6 +88,8 @@ const surgeries = [
         date: '2026-11-09',
         start: '09:00',
         end: '10:00',
+        start_label: '9:00 AM',
+        end_label: '10:00 AM',
         room: 'Ambulatoria',
     }),
     block({
@@ -96,6 +100,8 @@ const surgeries = [
         date: '2026-11-10',
         start: '10:00',
         end: '11:00',
+        start_label: '10:00 AM',
+        end_label: '11:00 AM',
         cancel_reason: 'Fiebre',
     }),
 ];
@@ -170,7 +176,9 @@ describe('Cirugía · agenda', () => {
         renderAgenda();
 
         // The first one is selected
-        expect(screen.getByText('Mié 11/11/2026 · 08:00 – 10:00')).toBeTruthy();
+        expect(
+            screen.getByText('Mié 11/11/2026 · 8:00 AM – 10:00 AM'),
+        ).toBeTruthy();
         expect(screen.getByText('Hab. 5 · Cama única')).toBeTruthy();
         fireEvent.click(
             screen.getByRole('button', { name: 'Pasar a quirófano' }),

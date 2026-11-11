@@ -3,6 +3,7 @@ import { Activity, Clock, DollarSign, Users } from 'lucide-react';
 import StatCard from '@/components/cemerog/StatCard';
 import StatusBadge from '@/components/cemerog/StatusBadge';
 import { useCan } from '@/hooks/use-can';
+import { formatClockTime } from '@/lib/dates';
 import { caja, citas, lab, registro, tablero } from '@/routes';
 
 const MOCK_ATENCIONES = [
@@ -280,7 +281,7 @@ export default function InicioIndex() {
                                                 fontSize: 13,
                                             }}
                                         >
-                                            {a.hora}
+                                            {formatClockTime(a.hora)}
                                         </td>
                                         <td
                                             style={{
@@ -369,7 +370,7 @@ export default function InicioIndex() {
                                     fontVariantNumeric: 'tabular-nums',
                                 }}
                             >
-                                {c.hora}
+                                {formatClockTime(c.hora)}
                             </span>
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <div

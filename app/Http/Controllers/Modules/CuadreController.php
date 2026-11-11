@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Support\CashDenominations;
 use App\Support\CashShiftPresenter;
 use App\Support\Clinic;
+use App\Support\ClinicTime;
 use App\Support\InvoicePresenter;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -47,9 +48,9 @@ class CuadreController extends Controller
                 'id' => $shift->id,
                 'status' => $shift->status,
                 'opened_by' => $shift->opener->name,
-                'opened_at' => $shift->opened_at->format('d/m/Y H:i'),
+                'opened_at' => ClinicTime::dateTime($shift->opened_at),
                 'closed_by' => $shift->closer?->name,
-                'closed_at' => $shift->closed_at?->format('d/m/Y H:i'),
+                'closed_at' => ClinicTime::dateTime($shift->closed_at),
                 'summary' => $summary->handle($shift),
                 'expected_cash' => $shift->expected_cash,
                 'counted_cash' => $shift->counted_cash,
@@ -60,7 +61,7 @@ class CuadreController extends Controller
                     'amount' => $w->amount,
                     'reason' => $w->reason,
                     'created_by' => $w->creator->name,
-                    'time' => $w->created_at?->format('H:i'),
+                    'time' => ClinicTime::time($w->created_at),
                 ])->all(),
                 'receipts' => $shift->receipts->sortBy('id')->map(fn (Receipt $r): array => [
                     ...$presenter->receiptRow($r),

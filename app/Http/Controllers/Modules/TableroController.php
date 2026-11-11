@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\Turn;
 use App\Models\User;
+use App\Support\ClinicTime;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -40,7 +41,7 @@ class TableroController extends Controller
                 'doctor_id' => $t->doctor_id,
                 'doctor_name' => $t->doctor->name,
                 'doctor_specialty' => $t->doctor->specialty->name,
-                'arrived_at' => $t->arrived_at->format('H:i'),
+                'arrived_at' => ClinicTime::time($t->arrived_at),
                 'status' => $t->status,
                 'appointment_id' => $t->appointment_id,
             ]);

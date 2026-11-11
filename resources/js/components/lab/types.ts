@@ -33,6 +33,8 @@ export type LabOrderSummary = {
     status: LabOrderStatus;
     ordered_at: string;
     ordered_time: string;
+    /** ISO moment to sort by */
+    ordered_iso: string;
     tests: string[];
     total: number;
     indication: string | null;

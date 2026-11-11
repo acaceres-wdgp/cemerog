@@ -36,7 +36,7 @@ class AdmissionPresenter
                     'name' => $b->name,
                     'label' => "{$r->name} · {$b->name}",
                     'status' => $b->status,
-                    'cleaning_since' => $b->cleaning_since?->format('H:i'),
+                    'cleaning_since' => ClinicTime::time($b->cleaning_since),
                     'admission' => $b->admission !== null ? $this->summary($b->admission) : null,
                 ])->all(),
             ])->values()->all();
@@ -84,7 +84,7 @@ class AdmissionPresenter
             'bed_label' => $a->bed?->label() ?? $stay?->bed_label,
             'room_type' => $stay?->room_type,
             'daily_price' => $stay?->daily_price,
-            'discharged_at' => $a->discharged_at?->format('d/m/Y H:i'),
+            'discharged_at' => ClinicTime::dateTime($a->discharged_at),
             'patient' => [
                 'id' => $p->id,
                 'full_name' => $p->full_name,
@@ -98,7 +98,7 @@ class AdmissionPresenter
             'stays' => $a->stays->map(fn (AdmissionStay $s): array => [
                 'bed_label' => $s->bed_label,
                 'room_type' => $s->room_type,
-                'started_at' => $s->started_at->format('d/m/Y H:i'),
+                'started_at' => ClinicTime::dateTime($s->started_at),
                 'reason' => $s->reason,
             ])->all(),
         ];
@@ -117,7 +117,7 @@ class AdmissionPresenter
                 'body' => $n->body,
                 'shift' => $n->shift,
                 'author' => $n->author->name,
-                'at' => $n->created_at->format('d/m/Y H:i'),
+                'at' => ClinicTime::dateTime($n->created_at),
             ])->values()->all();
     }
 
@@ -172,7 +172,7 @@ class AdmissionPresenter
             'diagnosis' => trim(($a->diagnosis_code !== null ? $a->diagnosis_code.' ' : '').$a->diagnosis_label),
             'day' => $a->dayNumber(),
             'doctor' => $a->doctor->name,
-            'admitted_at' => $a->admitted_at->format('d/m/Y H:i'),
+            'admitted_at' => ClinicTime::dateTime($a->admitted_at),
             // «Internado por cirugía» while a surgery is pending
             'for_surgery' => Surgery::pending()->where('admission_id', $a->id)->exists(),
         ];

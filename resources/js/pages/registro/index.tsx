@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { localDateString, parseDateOnly } from '@/lib/dates';
+import { formatTime, localDateString, parseDateOnly } from '@/lib/dates';
 import { pacientes, registro } from '@/routes';
 import { differenceInYears } from 'date-fns';
 import { Check, CircleCheck, Loader2, TriangleAlert } from 'lucide-react';
@@ -1042,13 +1042,7 @@ export default function RegistroIndex({
                                 <div className="flex justify-between px-5 py-3">
                                     <dt className="text-muted">Llegada</dt>
                                     <dd className="font-medium text-text-heading tabular-nums">
-                                        {new Date().toLocaleTimeString(
-                                            'es-DO',
-                                            {
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                            },
-                                        )}
+                                        {formatTime(new Date())}
                                     </dd>
                                 </div>
                                 {selectedDoctor && (

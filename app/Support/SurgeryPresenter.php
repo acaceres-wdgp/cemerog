@@ -35,6 +35,9 @@ class SurgeryPresenter
             'date_label' => self::DAYS[$s->starts_at->dayOfWeekIso - 1].' '.$s->starts_at->format('d/m/Y'),
             'start' => $s->starts_at->format('H:i'),
             'end' => $s->ends_at->format('H:i'),
+            // For display; start/end stay in 24 h to place the block and fill the time input
+            'start_label' => ClinicTime::time($s->starts_at),
+            'end_label' => ClinicTime::time($s->ends_at),
             'duration_minutes' => (int) $s->starts_at->diffInMinutes($s->ends_at),
             'notes' => $s->notes,
             'cancel_reason' => $s->cancel_reason,

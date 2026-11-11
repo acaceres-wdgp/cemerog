@@ -1,5 +1,6 @@
 import { useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { formatDateTime } from '@/lib/dates';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -74,13 +75,7 @@ function initials(name: string): string {
 
 function formatLastActivity(ts: number | null): string {
     if (!ts) return '—';
-    const d = new Date(ts * 1000);
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const yyyy = d.getFullYear();
-    const hh = String(d.getHours()).padStart(2, '0');
-    const min = String(d.getMinutes()).padStart(2, '0');
-    return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+    return formatDateTime(new Date(ts * 1000));
 }
 
 // ─── User form modal (create / edit) ─────────────────────────────────────────

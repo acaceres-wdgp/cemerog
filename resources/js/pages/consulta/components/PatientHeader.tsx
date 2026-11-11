@@ -1,10 +1,9 @@
 import React from 'react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import StatusBadge from '@/components/cemerog/StatusBadge';
 import { initials } from '../lib/helpers';
 import { TurnItem } from '../types';
 import { ageLabel } from '@/lib/patient';
+import { formatTime } from '@/lib/dates';
 
 // ─── Patient Header ───────────────────────────────────────────────────────────
 
@@ -64,7 +63,7 @@ export default function PatientHeader({ turn }: { turn: TurnItem }) {
                     { label: 'Médico', val: d.full_name },
                     {
                         label: 'Llegada',
-                        val: format(arrivedAt, 'HH:mm', { locale: es }),
+                        val: formatTime(arrivedAt),
                     },
                 ].map((f) => (
                     <div

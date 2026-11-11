@@ -487,7 +487,7 @@ describe('FutureRows – appointment_time normalization', () => {
 // ─── TodayRows: appointment_time sin segundos ─────────────────────────────────
 
 describe('TodayRows – appointment_time display', () => {
-    it('muestra 09:00 y NO 09:00:00 cuando appointment_time es "09:00"', () => {
+    it('muestra 9:00 AM y no 09:00:00 cuando appointment_time es "09:00"', () => {
         const cita = {
             ...mockAppointments[0],
             appointment_time: '09:00',
@@ -501,8 +501,8 @@ describe('TodayRows – appointment_time display', () => {
                 today={TODAY}
             />,
         );
-        // The time column should show '09:00'
-        expect(screen.getByText('09:00')).toBeTruthy();
+        // The time column shows a 12-hour time
+        expect(screen.getByText('9:00 AM')).toBeTruthy();
         expect(screen.queryByText('09:00:00')).toBeNull();
     });
 });

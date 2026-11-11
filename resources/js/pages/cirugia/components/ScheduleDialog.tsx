@@ -84,7 +84,7 @@ export default function ScheduleDialog({
                     name="notes"
                     label="Notas"
                     rows={2}
-                    placeholder="Ej.: ayuno desde las 22:00, reservar sangre"
+                    placeholder="Ej.: ayuno desde las 10:00 PM, reservar sangre"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     error={errors.notes}

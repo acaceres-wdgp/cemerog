@@ -66,7 +66,7 @@ class InvoicePresenter
             'number' => $invoice->number,
             'status' => $invoice->status,
             'patient' => $invoice->patient->full_name,
-            'issued_at' => $invoice->issued_at->format('d/m/Y H:i'),
+            'issued_at' => ClinicTime::dateTime($invoice->issued_at),
             'total' => $invoice->total,
             'paid_amount' => $invoice->paid_amount,
             'balance' => $invoice->balance(),
@@ -80,7 +80,7 @@ class InvoicePresenter
         return [
             'id' => $receipt->id,
             'number' => $receipt->number,
-            'created_at' => $receipt->created_at?->format('d/m/Y H:i'),
+            'created_at' => ClinicTime::dateTime($receipt->created_at),
             'created_by' => $receipt->creator->name,
             'total' => $receipt->total,
             'voided' => $receipt->voided_at !== null,
@@ -137,7 +137,7 @@ class InvoicePresenter
             'receipts' => $invoice->receipts->sortBy('id')->map(fn (Receipt $r): array => $this->receiptRow($r))->values()->all(),
             'void_reason' => $invoice->void_reason,
             'voided_by' => $invoice->voider?->name,
-            'voided_at' => $invoice->voided_at?->format('d/m/Y H:i'),
+            'voided_at' => ClinicTime::dateTime($invoice->voided_at),
             'lines' => $invoice->lines->map(fn (InvoiceLine $l): array => [
                 'id' => $l->id,
                 'date' => ($l->accountCharge->created_at ?? $invoice->issued_at)->format('d/m/Y'),

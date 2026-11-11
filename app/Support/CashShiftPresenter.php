@@ -28,9 +28,9 @@ class CashShiftPresenter
             'id' => $shift->id,
             'status' => $shift->status,
             'opened_by' => $shift->opener->name,
-            'opened_at' => $shift->opened_at->format('d/m/Y H:i'),
+            'opened_at' => ClinicTime::dateTime($shift->opened_at),
             'closed_by' => $shift->closer?->name,
-            'closed_at' => $shift->closed_at?->format('d/m/Y H:i'),
+            'closed_at' => ClinicTime::dateTime($shift->closed_at),
             'pending_close' => $open && $shift->isPendingClose(),
             'can_operate' => $open && ($shift->opened_by === $user->id || $user->hasRole('administrador')),
             'summary' => $this->summary->handle($shift),
@@ -48,7 +48,7 @@ class CashShiftPresenter
                 'amount' => $w->amount,
                 'reason' => $w->reason,
                 'created_by' => $w->creator->name,
-                'time' => $w->created_at?->format('H:i'),
+                'time' => ClinicTime::time($w->created_at),
             ])->all(),
         ];
     }
@@ -89,7 +89,7 @@ class CashShiftPresenter
             fn (Receipt $r) => $r->payments->map(fn (Payment $p): array => [
                 'id' => $p->id,
                 'receipt_id' => $r->id,
-                'time' => $r->created_at?->format('H:i'),
+                'time' => ClinicTime::time($r->created_at),
                 'receipt' => $r->number,
                 'patient' => $r->invoice->patient->full_name,
                 'concept' => 'Pago de '.$r->invoice->number,

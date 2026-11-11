@@ -1,6 +1,4 @@
 import React from 'react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import {
     formatPesoLb,
     formatTallaFtIn,
@@ -11,6 +9,7 @@ import { buildInstruction } from '../lib/instructionBuilder';
 import { ClinicalEntry, DischargeDetail, PrescriptionData } from '../types';
 import ImagingReportBlock from '@/components/img/ImagingReportBlock';
 import LabResultsList from '@/components/lab/LabResultsList';
+import { formatDateTime } from '@/lib/dates';
 
 // ─── Prescription block ───────────────────────────────────────────────────────
 
@@ -187,9 +186,7 @@ export default function HistorialDetail({
         );
     }
 
-    const dateStr = format(new Date(sel.date), 'dd/MM/yyyy HH:mm', {
-        locale: es,
-    });
+    const dateStr = formatDateTime(new Date(sel.date));
 
     return (
         <div className="flex min-w-0 flex-[2_1_480px] flex-col gap-4 p-5 px-6 text-[13.5px]">
