@@ -152,6 +152,7 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 
 - CRUD de usuarios con asignación de roles.
 - Contraseña temporal + cambio obligatorio en primer login.
+- El formulario marca los permisos de los roles, pero solo se guardan como directos los que se agregan aparte. Así, cada usuario recibe los cambios futuros de su rol (`cemerog:sync-permissions`), también cuando se le quita un permiso.
 - **Pendiente de implementar**: interfaz de gestión de usuarios.
 
 ### Administración – Doctores y especialidades

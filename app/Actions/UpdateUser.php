@@ -2,10 +2,13 @@
 
 namespace App\Actions;
 
+use App\Actions\Concerns\KeepsOnlyExtraPermissions;
 use App\Models\User;
 
 class UpdateUser
 {
+    use KeepsOnlyExtraPermissions;
+
     /**
      * @param  array<string, mixed>  $data
      */
@@ -22,7 +25,7 @@ class UpdateUser
         ]);
 
         $user->syncRoles($roles);
-        $user->syncPermissions($permissions);
+        $user->syncPermissions($this->extraPermissions($roles, $permissions));
 
         return $user;
     }
