@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Doctor;
 use App\Rules\DocumentNumberFormat;
 use App\Rules\DominicanPhone;
 use App\Rules\UniqueDocumentNumber;
@@ -49,7 +50,19 @@ class RegisterArrivalRequest extends FormRequest
 
             // ── Attention fields ───────────────────────────────────────────────
             'attention_type' => ['required', 'string', Rule::in(['consulta', 'analisis', 'emergencia'])],
-            'doctor_id' => ['required_if:attention_type,consulta,emergencia', 'nullable', 'integer', 'exists:doctors,id'],
+            'doctor_id' => [
+                'required_if:attention_type,consulta,emergencia', 'nullable', 'integer', 'exists:doctors,id',
+                // A consultation charges the doctor's price: never register one at RD$0
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($this->input('attention_type') !== 'consulta') {
+                        return;
+                    }
+                    $doctor = Doctor::find($value);
+                    if ($doctor !== null && $doctor->consultation_price <= 0) {
+                        $fail("{$doctor->name} no tiene precio de consulta. Pide a Administración que lo configure en Doctores antes de registrar la llegada.");
+                    }
+                },
+            ],
             'notes' => ['required_if:attention_type,emergencia', 'nullable', 'string', 'max:1000'],
             'cubicle_id' => ['required_if:attention_type,emergencia', 'nullable', 'integer', 'exists:emergency_cubicles,id'],
             'appointment_id' => ['nullable', 'integer', 'exists:appointments,id'],

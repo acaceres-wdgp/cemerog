@@ -165,7 +165,8 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 - Desactivar un doctor desactiva también su usuario vinculado.
 - Cambiar el nombre del doctor sincroniza el campo `name` del usuario (no el `username`).
 - Restablecer contraseña genera nueva contraseña temporal y activa `must_change_password`.
-- `doctors.consultation_price` y `doctors.consultation_fee` (centavos enteros) definen el precio de consulta y el honorario por consulta por médico. Se inicializan con el precio de la especialidad al crear el doctor. Validación: `consultation_fee ≤ consultation_price`. Ver ADR-016.
+- `doctors.consultation_price` y `doctors.consultation_fee` (centavos enteros) definen el precio de consulta y el honorario por consulta por médico. Al crear el doctor, el formulario propone el precio de la especialidad. Validación: `consultation_fee ≤ consultation_price`. Ver ADR-016.
+- **Una consulta nunca cuesta RD$0:** el precio del doctor y el de la especialidad son obligatorios y mayores que 0. Si un doctor antiguo quedó en RD$0, Registro no deja registrar una consulta con él hasta que Administración le ponga precio. El honorario sí puede quedar en 0.
 
 ### Habitaciones y camas
 

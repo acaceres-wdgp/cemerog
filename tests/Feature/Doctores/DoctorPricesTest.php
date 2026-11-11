@@ -52,17 +52,63 @@ test('creating a doctor stores consultation_price and consultation_fee as intege
     expect($doctor->consultation_fee)->toBeInt();
 });
 
-test('consultation_price and consultation_fee default to 0', function () {
+const PRICE_REQUIRED = 'Escribe el precio de la consulta: no puede ser RD$0.';
+
+/*
+ * A consultation is never free: a doctor saved with RD$0 charged every
+ * consultation at RD$0, and those charges keep their price forever.
+ */
+test('a doctor cannot be created without a consultation price or with RD$0', function (array $price) {
     $this->actingAs($this->admin)
         ->post('/admin/doctores', [
             'name' => 'Dr. Sin Precio',
             'specialty_id' => $this->specialty->id,
+            ...$price,
         ])
-        ->assertRedirect(route('doctores'));
+        ->assertSessionHasErrors(['consultation_price' => PRICE_REQUIRED]);
 
-    $doctor = Doctor::where('name', 'Dr. Sin Precio')->firstOrFail();
-    expect($doctor->consultation_price)->toBe(0);
-    expect($doctor->consultation_fee)->toBe(0);
+    expect(Doctor::where('name', 'Dr. Sin Precio')->exists())->toBeFalse();
+})->with([
+    'sin precio' => [[]],
+    'precio vacío' => [['consultation_price' => null]],
+    'RD$0' => [['consultation_price' => 0]],
+]);
+
+test('the honorarium may be left empty', function () {
+    $this->actingAs($this->admin)
+        ->post('/admin/doctores', [
+            'name' => 'Dr. Sin Honorario',
+            'specialty_id' => $this->specialty->id,
+            'consultation_price' => 150000,
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect(Doctor::where('name', 'Dr. Sin Honorario')->value('consultation_fee'))->toBe(0);
+});
+
+test('editing a doctor cannot leave the price at RD$0, but may omit it', function () {
+    $doctor = Doctor::factory()->create(['specialty_id' => $this->specialty->id, 'consultation_price' => 150000]);
+    $base = ['name' => $doctor->name, 'specialty_id' => $doctor->specialty_id];
+
+    $this->actingAs($this->admin)
+        ->put("/admin/doctores/{$doctor->id}", [...$base, 'consultation_price' => 0])
+        ->assertSessionHasErrors(['consultation_price' => PRICE_REQUIRED]);
+
+    $this->actingAs($this->admin)
+        ->put("/admin/doctores/{$doctor->id}", $base)
+        ->assertSessionHasNoErrors();
+
+    expect($doctor->fresh()->consultation_price)->toBe(150000);
+});
+
+test('a specialty price cannot be RD$0 either: new doctors start from it', function () {
+    $this->actingAs($this->admin)
+        ->post('/admin/doctores/especialidades', ['name' => 'Gratis', 'consultation_price' => 0])
+        ->assertSessionHasErrors(['consultation_price' => 'El precio de consulta debe ser mayor que RD$0.']);
+
+    $this->actingAs($this->admin)
+        ->put("/admin/doctores/especialidades/{$this->specialty->id}", ['name' => 'Medicina General', 'consultation_price' => 0])
+        ->assertSessionHasErrors(['consultation_price' => 'El precio de consulta debe ser mayor que RD$0.']);
 });
 
 test('validation rejects consultation_fee greater than consultation_price', function () {

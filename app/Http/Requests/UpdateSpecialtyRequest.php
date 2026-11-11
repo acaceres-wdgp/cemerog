@@ -28,7 +28,7 @@ class UpdateSpecialtyRequest extends FormRequest
                 'max:100',
                 Rule::unique('specialties', 'name')->ignore($specialty->id),
             ],
-            'consultation_price' => ['required', 'integer', 'min:0'],
+            'consultation_price' => ['required', 'integer', 'min:1'],
         ];
     }
 
@@ -40,7 +40,7 @@ class UpdateSpecialtyRequest extends FormRequest
             'name.unique' => 'Ya existe una especialidad con ese nombre.',
             'consultation_price.required' => 'El precio de consulta es obligatorio.',
             'consultation_price.integer' => 'El precio debe ser un número entero.',
-            'consultation_price.min' => 'El precio no puede ser negativo.',
+            'consultation_price.min' => 'El precio de consulta debe ser mayor que RD$0.',
         ];
     }
 }

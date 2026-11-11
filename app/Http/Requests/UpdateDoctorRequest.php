@@ -61,7 +61,8 @@ class UpdateDoctorRequest extends FormRequest
                 ] : [],
             ),
             'office' => ['nullable', 'string', 'max:100'],
-            'consultation_price' => ['nullable', 'integer', 'min:0'],
+            // Optional when editing (the current price stays), never RD$0
+            'consultation_price' => ['sometimes', 'required', 'integer', 'min:1'],
             'consultation_fee' => [
                 'nullable',
                 'integer',
@@ -87,6 +88,8 @@ class UpdateDoctorRequest extends FormRequest
             'user_id.exists' => 'El usuario seleccionado no existe.',
             'user_id.unique' => 'Este usuario ya está vinculado a otro doctor.',
             'office.max' => 'El consultorio no puede superar los 100 caracteres.',
+            'consultation_price.required' => 'Escribe el precio de la consulta: no puede ser RD$0.',
+            'consultation_price.min' => 'Escribe el precio de la consulta: no puede ser RD$0.',
             'consultation_price.integer' => 'El precio debe ser un número entero en centavos.',
             'consultation_fee.integer' => 'El honorario debe ser un número entero en centavos.',
         ];

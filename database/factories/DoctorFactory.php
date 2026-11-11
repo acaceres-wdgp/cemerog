@@ -22,6 +22,8 @@ class DoctorFactory extends Factory
             'phone' => $this->faker->numerify('###-###-####'),
             'specialty_id' => Specialty::factory(),
             'is_active' => true,
+            // A consultation is never free (see StoreDoctorRequest)
+            'consultation_price' => 150000,
         ];
     }
 }
