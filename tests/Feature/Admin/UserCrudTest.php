@@ -275,6 +275,49 @@ test('store assigns direct permissions to user', function () {
     expect($user->hasDirectPermission('module.registro.access'))->toBeTrue();
 });
 
+test('store keeps only the extra permissions as direct ones, not the role ones', function () {
+    $this->actingAs($this->admin)
+        ->post('/admin/usuarios', [
+            'name' => 'Secretaria Nueva',
+            'username' => 'secretaria.nueva',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'roles' => ['secretaria'],
+            // The form sends the role permissions checked, plus an extra one
+            'permissions' => [
+                'module.inicio.access', 'module.tablero.access', 'module.registro.access',
+                'module.citas.access', 'module.impresos.access', 'module.habs.access',
+            ],
+        ])
+        ->assertRedirect(route('admin'));
+
+    $user = User::where('username', 'secretaria.nueva')->first();
+    expect($user->getDirectPermissions()->pluck('name')->all())->toBe(['module.habs.access'])
+        ->and($user->hasPermissionTo('module.registro.access'))->toBeTrue();
+});
+
+test('a user created with a role follows later changes to that role', function () {
+    $this->actingAs($this->admin)
+        ->post('/admin/usuarios', [
+            'name' => 'Secretaria Nueva',
+            'username' => 'secretaria.nueva',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'roles' => ['secretaria'],
+            'permissions' => ['module.inicio.access', 'module.registro.access'],
+        ]);
+
+    // Roles change later (cemerog:sync-permissions): one permission is removed, another added
+    $role = Role::findByName('secretaria');
+    $role->revokePermissionTo('module.registro.access');
+    $role->givePermissionTo('module.caja.access');
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+    $user = User::where('username', 'secretaria.nueva')->first()->fresh();
+    expect($user->hasPermissionTo('module.registro.access'))->toBeFalse()
+        ->and($user->hasPermissionTo('module.caja.access'))->toBeTrue();
+});
+
 test('store validates required fields', function () {
     $this->actingAs($this->admin)
         ->post('/admin/usuarios', [])
@@ -415,6 +458,24 @@ test('update syncs roles', function () {
     $user->refresh();
     expect($user->hasRole('medico'))->toBeFalse();
     expect($user->hasRole('secretaria'))->toBeTrue();
+});
+
+test('update keeps only the extra permissions as direct ones', function () {
+    $user = User::factory()->create();
+    $user->assignRole('secretaria');
+    $user->givePermissionTo(['module.inicio.access', 'module.registro.access']);
+
+    $this->actingAs($this->admin)
+        ->put("/admin/usuarios/{$user->id}", [
+            'name' => $user->name,
+            'username' => $user->username,
+            'is_active' => true,
+            'roles' => ['secretaria'],
+            'permissions' => ['module.inicio.access', 'module.registro.access', 'module.habs.access'],
+        ])
+        ->assertRedirect(route('admin'));
+
+    expect($user->fresh()->getDirectPermissions()->pluck('name')->all())->toBe(['module.habs.access']);
 });
 
 test('update returns 404 for non-existent user', function () {

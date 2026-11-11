@@ -2,10 +2,13 @@
 
 namespace App\Actions;
 
+use App\Actions\Concerns\KeepsOnlyExtraPermissions;
 use App\Models\User;
 
 class CreateUser
 {
+    use KeepsOnlyExtraPermissions;
+
     /**
      * @param  array<string, mixed>  $data
      */
@@ -27,6 +30,8 @@ class CreateUser
         if (! empty($roles)) {
             $user->syncRoles($roles);
         }
+
+        $permissions = $this->extraPermissions($roles, $permissions);
 
         if (! empty($permissions)) {
             $user->syncPermissions($permissions);
