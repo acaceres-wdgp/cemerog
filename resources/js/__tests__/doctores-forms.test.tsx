@@ -13,6 +13,12 @@ const page = vi.hoisted(() => ({
                 consultation_price: 150000,
                 doctors_count: 0,
             },
+            {
+                id: 8,
+                name: 'Cardiología',
+                consultation_price: 250000,
+                doctors_count: 0,
+            },
         ],
         doctors: [
             {
@@ -93,8 +99,52 @@ describe('doctores forms', () => {
             user_id: null,
             office: null,
             access_mode: 'create_user',
-            consultation_price: 0,
+            // Starts with the specialty price: a consultation is never RD$0
+            consultation_price: 150000,
             consultation_fee: 0,
+        });
+    });
+
+    it('starts a new doctor with the specialty price and follows a specialty change', () => {
+        render(<DoctoresIndex />);
+        fireEvent.click(screen.getByText('+ Nuevo doctor'));
+        const price = () =>
+            screen.getByLabelText('Precio de consulta') as HTMLInputElement;
+
+        expect(price().value).toBe('1500');
+        fireEvent.change(screen.getByLabelText(/Especialidad/), {
+            target: { value: '8' },
+        });
+        expect(price().value).toBe('2500');
+    });
+
+    it('keeps a price typed by hand when the specialty changes', () => {
+        render(<DoctoresIndex />);
+        fireEvent.click(screen.getByText('+ Nuevo doctor'));
+        const price = () =>
+            screen.getByLabelText('Precio de consulta') as HTMLInputElement;
+
+        fireEvent.change(price(), { target: { value: '1800' } });
+        fireEvent.change(screen.getByLabelText(/Especialidad/), {
+            target: { value: '8' },
+        });
+        expect(price().value).toBe('1800');
+    });
+
+    it('sends an emptied price as null, so the server asks for it', () => {
+        const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+        render(<DoctoresIndex />);
+        fireEvent.click(screen.getByText('+ Nuevo doctor'));
+        fireEvent.change(screen.getByLabelText(/Nombre completo/), {
+            target: { value: 'Dra. Ana Pérez' },
+        });
+        fireEvent.change(screen.getByLabelText('Precio de consulta'), {
+            target: { value: '' },
+        });
+        fireEvent.click(screen.getByText('✓ Guardar doctor'));
+
+        expect(submittedData(visit)).toMatchObject({
+            consultation_price: null,
         });
     });
 
