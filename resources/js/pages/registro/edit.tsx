@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { useRef, useState } from 'react';
+import { httpFailureMessage, networkFailureMessage } from '@/lib/upload-errors';
 import type { DocumentType, PatientSearchResult } from '@/types/patient';
 import { PatientFormCard } from './components/PatientFormCard';
 import { PatientInfoCard } from './components/PatientInfoCard';
@@ -50,6 +51,7 @@ export default function RegistroEdit({ patient }: Props) {
     );
     const [isDragging, setIsDragging] = useState(false);
     const [photoError, setPhotoError] = useState<string | null>(null);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     const MAX_PHOTO_BYTES = 20 * 1024 * 1024;
     const ALLOWED_TYPES = [
@@ -111,7 +113,22 @@ export default function RegistroEdit({ patient }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(`/registro/pacientes/${patient.id}`);
+        setSubmitError(null);
+        const notSaved = 'No se guardaron los cambios';
+        put(`/registro/pacientes/${patient.id}`, {
+            // The photo may be refused before reaching the app (size limit
+            // of the web server): say it, instead of Inertia's error dialog
+            onHttpException: (response) => {
+                setSubmitError(
+                    httpFailureMessage(response.status, { notSaved }),
+                );
+                return false;
+            },
+            onNetworkError: () => {
+                setSubmitError(networkFailureMessage({ notSaved }));
+                return false;
+            },
+        });
     };
 
     return (
@@ -135,6 +152,7 @@ export default function RegistroEdit({ patient }: Props) {
                         setData={setData}
                         errors={errors}
                         processing={processing}
+                        submitError={submitError}
                         patient={patient}
                         onDocumentTypeChange={handleDocumentTypeChange}
                     />

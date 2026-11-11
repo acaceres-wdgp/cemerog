@@ -4,7 +4,7 @@
  * Do NOT modify without a documented reason.
  */
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const { mockPut, mockRouterDelete, formState } = vi.hoisted(() => ({
@@ -229,7 +229,37 @@ describe('RegistroEdit', () => {
             render(<RegistroEdit patient={basePatient} />);
             const form = document.querySelector('form')!;
             fireEvent.submit(form);
-            expect(mockPut).toHaveBeenCalledWith('/registro/pacientes/42');
+            expect(mockPut).toHaveBeenCalledWith(
+                '/registro/pacientes/42',
+                expect.any(Object),
+            );
+        });
+
+        it('avisa junto al botón si el servidor rechaza la foto por tamaño', () => {
+            render(<RegistroEdit patient={basePatient} />);
+            fireEvent.submit(document.querySelector('form')!);
+            const options = mockPut.mock.calls.at(-1)![1];
+            let handled: boolean | void = undefined;
+            act(() => {
+                handled = options.onHttpException({ status: 413 });
+            });
+
+            expect(handled).toBe(false);
+            expect(screen.getByRole('alert').textContent).toContain(
+                'El servidor no aceptó el archivo por su tamaño. No se guardaron los cambios: prueba con un archivo más pequeño.',
+            );
+        });
+
+        it('avisa si se corta la conexión al guardar', () => {
+            render(<RegistroEdit patient={basePatient} />);
+            fireEvent.submit(document.querySelector('form')!);
+            act(() => {
+                mockPut.mock.calls.at(-1)![1].onNetworkError(new Error('x'));
+            });
+
+            expect(screen.getByRole('alert').textContent).toContain(
+                'Se cortó la conexión mientras se subía. No se guardaron los cambios',
+            );
         });
     });
 

@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import { FileImage, FileText, Upload, X } from 'lucide-react';
 import { fileSize } from '@/components/img/types';
 import type { ImagingAttachmentItem } from '@/components/img/types';
 import * as attachments from '@/routes/img/attachments';
+import {
+    httpFailureMessage,
+    networkFailureMessage,
+    tooLargeMessage,
+} from '@/lib/upload-errors';
 import * as orders from '@/routes/img/orders';
+
+/** Same limit the server validates: files max:10 */
+const MAX_FILES = 10;
 
 /** «Archivos adjuntos»: open each file; add or remove while editable */
 export default function AttachmentsField({
@@ -21,13 +29,51 @@ export default function AttachmentsField({
         k.startsWith('files'),
     )?.[1];
 
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const [uploading, setUploading] = useState(false);
+
     const upload = (list: FileList | null) => {
         if (!list || list.length === 0) return;
+        const chosen = Array.from(list);
+        setUploadError(null);
+
+        // Checked here too, so a large file is not sent only to be rejected
+        if (chosen.length > MAX_FILES) {
+            setUploadError(
+                `Puedes adjuntar hasta ${MAX_FILES} archivos a la vez. No se subió nada.`,
+            );
+            return;
+        }
+        const tooLarge = chosen.map(tooLargeMessage).find(Boolean);
+        if (tooLarge) {
+            setUploadError(tooLarge);
+            return;
+        }
+
         router.post(
             orders.attachments.url(orderId),
-            { files: Array.from(list) },
-            // Keep what is typed in the report while the file uploads
-            { forceFormData: true, preserveScroll: true, preserveState: true },
+            { files: chosen },
+            {
+                forceFormData: true,
+                // Keep what is typed in the report while the file uploads
+                preserveScroll: true,
+                preserveState: true,
+                onStart: () => setUploading(true),
+                onFinish: () => setUploading(false),
+                // false: show our message instead of Inertia's error dialog
+                onHttpException: (response) => {
+                    setUploadError(
+                        httpFailureMessage(response.status, {
+                            fileCount: chosen.length,
+                        }),
+                    );
+                    return false;
+                },
+                onNetworkError: () => {
+                    setUploadError(networkFailureMessage());
+                    return false;
+                },
+            },
         );
     };
 
@@ -86,9 +132,24 @@ export default function AttachmentsField({
                         accept="image/*,.pdf,.dcm"
                         aria-label="Adjuntar imágenes o PDF"
                         className="sr-only"
-                        onChange={(e) => upload(e.target.files)}
+                        onChange={(e) => {
+                            upload(e.target.files);
+                            // Lets the same file be chosen again after an error
+                            e.target.value = '';
+                        }}
                     />
                 </label>
+            )}
+            {uploading && (
+                <p className="m-0 text-[12px] text-muted">Subiendo…</p>
+            )}
+            {uploadError && (
+                <p
+                    role="alert"
+                    className="m-0 rounded-lg bg-error-bg px-3 py-2 text-[12.5px] text-error"
+                >
+                    {uploadError}
+                </p>
             )}
             {error && <p className="m-0 text-[12px] text-error">{error}</p>}
         </div>
