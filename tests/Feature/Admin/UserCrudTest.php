@@ -514,6 +514,93 @@ test('admin can re-activate an inactive user', function () {
     expect($user->fresh()->is_active)->toBeTrue();
 });
 
+test('an admin cannot deactivate their own account', function () {
+    $this->actingAs($this->admin)
+        ->patch("/admin/usuarios/{$this->admin->id}/toggle")
+        ->assertRedirect(route('admin'))
+        ->assertInertiaFlash('toast.type', 'error')
+        ->assertInertiaFlash('toast.message', 'No puedes desactivar tu propia cuenta. Pide a otro administrador que lo haga.');
+
+    expect($this->admin->fresh()->is_active)->toBeTrue();
+});
+
+test('an admin cannot deactivate their own account by editing it', function () {
+    $this->actingAs($this->admin)
+        ->put("/admin/usuarios/{$this->admin->id}", [
+            'name' => $this->admin->name,
+            'username' => $this->admin->username,
+            'is_active' => false,
+            'roles' => [],
+            'permissions' => ['module.admin.access'],
+        ])
+        ->assertSessionHasErrors(['is_active' => 'No puedes desactivar tu propia cuenta. Pide a otro administrador que lo haga.']);
+
+    expect($this->admin->fresh()->is_active)->toBeTrue();
+});
+
+test('an admin can still edit their own active account', function () {
+    $this->actingAs($this->admin)
+        ->put("/admin/usuarios/{$this->admin->id}", [
+            'name' => 'Nombre Nuevo',
+            'username' => $this->admin->username,
+            'is_active' => true,
+            'roles' => [],
+            'permissions' => ['module.admin.access'],
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($this->admin->fresh()->name)->toBe('Nombre Nuevo');
+});
+
+test('an admin cannot remove their own access to Administración', function () {
+    $this->admin->assignRole('administrador');
+
+    $this->actingAs($this->admin)
+        ->put("/admin/usuarios/{$this->admin->id}", [
+            'name' => $this->admin->name,
+            'username' => $this->admin->username,
+            'is_active' => true,
+            'roles' => ['medico'],
+            'permissions' => ['module.inicio.access'],
+        ])
+        ->assertSessionHasErrors(['permissions' => 'No puedes quitarte el acceso a Administración. Pide a otro administrador que lo haga.']);
+
+    $admin = $this->admin->fresh();
+    expect($admin->hasRole('administrador'))->toBeTrue()
+        ->and($admin->hasPermissionTo('module.admin.access'))->toBeTrue();
+});
+
+test('an admin keeps access through the role even without the checkbox', function () {
+    $this->actingAs($this->admin)
+        ->put("/admin/usuarios/{$this->admin->id}", [
+            'name' => $this->admin->name,
+            'username' => $this->admin->username,
+            'is_active' => true,
+            'roles' => ['administrador'],
+            'permissions' => [],
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($this->admin->fresh()->hasPermissionTo('module.admin.access'))->toBeTrue();
+});
+
+test('an admin can remove Administración from another user', function () {
+    $other = User::factory()->create();
+    $other->assignRole('administrador');
+
+    $this->actingAs($this->admin)
+        ->put("/admin/usuarios/{$other->id}", [
+            'name' => $other->name,
+            'username' => $other->username,
+            'is_active' => true,
+            'roles' => ['secretaria'],
+            'permissions' => [],
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($other->fresh()->hasPermissionTo('module.admin.access'))->toBeFalse();
+});
+
 test('non-admin gets 403 on toggle', function () {
     $noAdmin = User::factory()->create();
     $target = User::factory()->create();

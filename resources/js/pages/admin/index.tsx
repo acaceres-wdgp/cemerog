@@ -21,6 +21,7 @@ type Props = {
     roles: Role[];
     // Not `permissions`: that name is the shared prop the sidebar reads
     available_permissions: Permission[];
+    auth: { user: { id: number } | null };
 };
 
 // ─── Design tokens / constants ────────────────────────────────────────────────
@@ -656,6 +657,22 @@ function UserModal({
                                     }),
                                 )}
                             </div>
+                            {/* Refusals on the account itself: they have no field of their own */}
+                            {[
+                                errors.roles,
+                                errors.permissions,
+                                errors.is_active,
+                            ]
+                                .filter(Boolean)
+                                .map((message) => (
+                                    <p
+                                        key={message}
+                                        role="alert"
+                                        className="m-0 rounded-lg bg-error-bg px-3 py-2 text-[12.5px] text-error"
+                                    >
+                                        {message}
+                                    </p>
+                                ))}
                         </div>
                     </div>
 
@@ -988,6 +1005,7 @@ export default function AdminIndex() {
         users,
         roles,
         available_permissions: permissions,
+        auth,
     } = usePage<Props>().props;
 
     const [query, setQuery] = useState('');
@@ -1366,7 +1384,14 @@ export default function AdminIndex() {
                                             >
                                                 Contraseña
                                             </button>
-                                            <ToggleButton user={u} />
+                                            {/* The server refuses it too: no one deactivates their own account */}
+                                            {u.id === auth.user?.id ? (
+                                                <span className="inline-flex h-7 items-center px-2.5 text-[12px] text-muted">
+                                                    Tu cuenta
+                                                </span>
+                                            ) : (
+                                                <ToggleButton user={u} />
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
