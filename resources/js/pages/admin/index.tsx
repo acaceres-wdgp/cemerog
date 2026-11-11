@@ -119,7 +119,8 @@ function UserModal({
             password_confirmation: '',
             is_active: editUser?.is_active ?? true,
             roles: editUser?.roles ?? [],
-            permissions: editUser?.permissions ?? [],
+            // Role permissions are checked too: the server stores only the extras
+            permissions: editUser?.all_permissions ?? [],
         });
 
     function handleClose() {
