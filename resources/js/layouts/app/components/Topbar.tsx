@@ -20,6 +20,7 @@ import {
 import CashShiftIndicator from '@/components/caja/CashShiftIndicator';
 import type { PageProps } from '@/types/global';
 import { UserMenu, type UserMenuProps } from './UserMenu';
+import { formatTime } from '@/lib/dates';
 
 export interface TopbarProps {
     breadcrumb: BreadcrumbResult | null;
@@ -28,7 +29,7 @@ export interface TopbarProps {
 
 /** Format time as "9:14 a. m." using date-fns + es locale */
 function formatClock(d: Date): string {
-    return format(d, 'h:mm a', { locale: es });
+    return formatTime(d);
 }
 
 /** Format date as "mié 04/11/2026" */

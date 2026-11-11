@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import type { CitaRow, DoctorOption } from '../types';
 import { docPalette } from '@/components/cemerog/palettes';
 import StatusBadge from '@/components/cemerog/StatusBadge';
+import { formatClockTime } from '@/lib/dates';
 
 const TYPE_LABELS: Record<string, string> = {
     consulta: 'Consulta',
@@ -134,7 +135,11 @@ export function CitasHoyPanel({
                                         <td
                                             className={`border-b border-divider p-[10px_12px] font-semibold tabular-nums ${c.has_turn ? 'text-muted' : 'text-text-heading'}`}
                                         >
-                                            {c.appointment_time ?? '—'}
+                                            {c.appointment_time
+                                                ? formatClockTime(
+                                                      c.appointment_time,
+                                                  )
+                                                : '—'}
                                         </td>
                                         <td className="border-b border-divider p-[10px_12px]">
                                             <div

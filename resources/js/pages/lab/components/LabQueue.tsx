@@ -36,7 +36,7 @@ export default function LabQueue({
         .sort(
             (a, b) =>
                 FLOW.indexOf(a.status) - FLOW.indexOf(b.status) ||
-                a.ordered_at.localeCompare(b.ordered_at),
+                a.ordered_iso.localeCompare(b.ordered_iso),
         );
     const active = rows.filter((o) => o.status !== 'cancelada').length;
 

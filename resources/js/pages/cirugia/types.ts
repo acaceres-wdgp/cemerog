@@ -17,6 +17,9 @@ export type SurgeryBlock = {
     date_label: string;
     start: string;
     end: string;
+    /** «9:00 AM»: start/end stay in 24 h for the grid and the time input */
+    start_label: string;
+    end_label: string;
     duration_minutes: number;
     notes: string | null;
     cancel_reason: string | null;

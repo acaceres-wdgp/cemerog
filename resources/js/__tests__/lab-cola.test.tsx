@@ -26,6 +26,7 @@ const row = (id: number, status: LabRow['status'], name: string): LabRow => ({
     status,
     ordered_at: '01/11/2026 08:1' + id,
     ordered_time: '08:1' + id,
+    ordered_iso: `2026-11-01T08:1${id}:00-04:00`,
     ordered_date: '01/11/2026',
     tests: ['Hemograma completo', 'Glucosa en ayunas'],
     total: 55000,
@@ -62,6 +63,26 @@ describe('Cola de laboratorio', () => {
     beforeEach(() => {
         mockPost.mockClear();
         mockVisit.mockClear();
+    });
+
+    it('orders the same step by when it was ordered, not by the shown text', () => {
+        // As text, «10:00 AM» sorts before «9:00 AM»
+        const ten = {
+            ...row(4, 'ordenada', 'Orden de las 10'),
+            ordered_at: '01/11/2026 10:00 AM',
+            ordered_iso: '2026-11-01T10:00:00-04:00',
+        };
+        const nine = {
+            ...row(5, 'ordenada', 'Orden de las 9'),
+            ordered_at: '01/11/2026 9:00 AM',
+            ordered_iso: '2026-11-01T09:00:00-04:00',
+        };
+        render(<LabIndex view="hoy" orders={[ten, nine]} counts={counts} />);
+
+        const names = screen
+            .getAllByText(/Orden de las/)
+            .map((el) => el.textContent);
+        expect(names).toEqual(['Orden de las 9', 'Orden de las 10']);
     });
 
     it('lists the orders by step, with the next action of each one', () => {

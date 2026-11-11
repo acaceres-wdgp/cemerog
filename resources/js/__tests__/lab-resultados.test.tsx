@@ -24,6 +24,7 @@ const order = (o: Partial<LabOrderSummary>): LabOrderSummary => ({
     status: 'validada',
     ordered_at: '01/11/2026 08:10',
     ordered_time: '08:10',
+    ordered_iso: '2026-11-01T08:10:00-04:00',
     tests: ['Glucosa en ayunas'],
     total: 25000,
     indication: null,

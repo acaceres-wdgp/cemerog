@@ -2,6 +2,7 @@ import { cn } from '@/lib/utils';
 import StatusBadge from '@/components/cemerog/StatusBadge';
 import { AppointmentRow, DoctorOption } from '../types';
 import { docPalette } from '@/components/cemerog/palettes';
+import { formatClockTime } from '@/lib/dates';
 
 /** Build avatar style from doctor palette — computed at runtime from doctor ID. */
 function palStyle(pal: { bg: string; fg: string }): React.CSSProperties {
@@ -141,7 +142,9 @@ export function TodayRows({
                             {TYPE_LABELS[cita.type] ?? cita.type}
                         </td>
                         <td className="border-b border-divider px-3 py-[10px] text-[13px] text-muted tabular-nums">
-                            {cita.appointment_time ?? '—'}
+                            {cita.appointment_time
+                                ? formatClockTime(cita.appointment_time)
+                                : '—'}
                         </td>
                         <td className="border-b border-divider px-3 py-[10px] text-right">
                             {canCancel && (

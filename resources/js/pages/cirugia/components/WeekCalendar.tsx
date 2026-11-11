@@ -2,6 +2,7 @@ import React from 'react';
 import { SURGERY_STATUS } from '@/components/cirugia/types';
 import { cn } from '@/lib/utils';
 import type { SurgeryBlock } from '../types';
+import { formatClockTime, formatTimeRange } from '@/lib/dates';
 
 const FIRST = 7;
 const LAST = 18;
@@ -34,7 +35,7 @@ export default function WeekCalendar({
     return (
         <div className="overflow-x-auto rounded-[14px] border border-card-border bg-white">
             <div className="min-w-[760px]">
-                <div className="grid grid-cols-[56px_repeat(7,1fr)] border-b border-divider">
+                <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-divider">
                     <div />
                     {days.map((d, i) => (
                         <div
@@ -55,14 +56,14 @@ export default function WeekCalendar({
                         </div>
                     ))}
                 </div>
-                <div className="grid grid-cols-[56px_repeat(7,1fr)]">
+                <div className="grid grid-cols-[72px_repeat(7,1fr)]">
                     <div>
                         {Array.from({ length: LAST - FIRST }, (_, i) => (
                             <div
                                 key={i}
-                                className="h-14 pt-0.5 pr-2 text-right text-[11.5px] text-muted tabular-nums"
+                                className="h-14 pt-0.5 pr-2 text-right text-[11.5px] whitespace-nowrap text-muted tabular-nums"
                             >
-                                {String(FIRST + i).padStart(2, '0')}:00
+                                {formatClockTime(`${FIRST + i}:00`)}
                             </div>
                         ))}
                     </div>
@@ -129,8 +130,11 @@ export default function WeekCalendar({
                                                 height,
                                             }}
                                         >
-                                            <span className="font-medium tabular-nums">
-                                                {s.start} – {s.end}
+                                            <span className="truncate font-medium tabular-nums">
+                                                {formatTimeRange(
+                                                    s.start_label,
+                                                    s.end_label,
+                                                )}
                                             </span>
                                             <span className="truncate font-semibold">
                                                 {s.procedure}

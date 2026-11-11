@@ -56,7 +56,8 @@ export default function SurgeryPanel({
                     {surgery.procedure}
                 </div>
                 <div className="text-[13px] text-muted">
-                    {surgery.date_label} · {surgery.start} – {surgery.end}
+                    {surgery.date_label} · {surgery.start_label} –{' '}
+                    {surgery.end_label}
                 </div>
             </div>
             <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 px-5 py-4 text-[13.5px]">
