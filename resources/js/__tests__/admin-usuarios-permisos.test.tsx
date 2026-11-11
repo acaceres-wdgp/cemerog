@@ -1,10 +1,23 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 const props = {
     errors: {},
+    // The signed-in admin is user 1
+    auth: { user: { id: 1 } },
     users: [
+        {
+            id: 1,
+            name: 'Admin Actual',
+            username: 'admin',
+            email: null,
+            is_active: true,
+            roles: ['administrador'],
+            permissions: [],
+            all_permissions: [],
+            last_activity: null,
+        },
         {
             id: 7,
             name: 'Ana Secretaria',
@@ -52,7 +65,7 @@ describe('Usuarios: permisos al editar', () => {
     it('checks the permissions the user gets from the role, not only the direct ones', () => {
         render(<AdminIndex />);
 
-        fireEvent.click(screen.getByRole('button', { name: /Editar/ }));
+        fireEvent.click(screen.getAllByRole('button', { name: /Editar/ })[1]);
 
         const checkbox = (name: string) =>
             screen.getByRole('checkbox', { name }) as HTMLInputElement;
@@ -60,5 +73,22 @@ describe('Usuarios: permisos al editar', () => {
         expect(checkbox('Registrar pacientes').checked).toBe(true);
         expect(checkbox('Habitaciones').checked).toBe(true);
         expect(checkbox('Facturación').checked).toBe(false);
+    });
+
+    it('does not offer to deactivate your own account', () => {
+        render(<AdminIndex />);
+
+        const row = (name: string) => screen.getByText(name).closest('tr')!;
+        expect(
+            within(row('Admin Actual')).queryByRole('button', {
+                name: /Desactivar/,
+            }),
+        ).toBeNull();
+        expect(within(row('Admin Actual')).getByText('Tu cuenta')).toBeTruthy();
+        expect(
+            within(row('Ana Secretaria')).getByRole('button', {
+                name: /Desactivar/,
+            }),
+        ).toBeTruthy();
     });
 });

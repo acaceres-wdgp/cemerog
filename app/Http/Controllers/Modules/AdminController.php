@@ -11,6 +11,7 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -131,8 +132,18 @@ class AdminController extends Controller
         return redirect()->route('admin');
     }
 
-    public function toggleActive(User $user): RedirectResponse
+    /** Shown when an admin tries to deactivate the account they are using */
+    public const SELF_DEACTIVATION_MESSAGE = 'No puedes desactivar tu propia cuenta. Pide a otro administrador que lo haga.';
+
+    public function toggleActive(Request $request, User $user): RedirectResponse
     {
+        // Deactivating yourself ends your session and may leave nobody to manage users
+        if ($user->is_active && $user->is($request->user())) {
+            Toast::error(self::SELF_DEACTIVATION_MESSAGE);
+
+            return redirect()->route('admin');
+        }
+
         $user->update(['is_active' => ! $user->is_active]);
 
         $status = $user->is_active ? 'activado' : 'desactivado';
