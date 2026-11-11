@@ -53,6 +53,8 @@ interface PatientFormCardProps {
     setData: <K extends keyof FormData>(key: K, value: FormData[K]) => void;
     errors: Partial<Record<keyof FormData, string>>;
     processing: boolean;
+    /** Why the last save did not reach the app, shown next to the button */
+    submitError?: string | null;
     patient: PatientSearchResult;
     onDocumentTypeChange: (type: DocumentType) => void;
 }
@@ -62,6 +64,7 @@ export function PatientFormCard({
     setData,
     errors,
     processing,
+    submitError,
     patient,
     onDocumentTypeChange,
 }: PatientFormCardProps) {
@@ -333,6 +336,14 @@ export function PatientFormCard({
                 </div>
             </div>
 
+            {submitError && (
+                <p
+                    role="alert"
+                    className="mx-5 mt-0 mb-3 rounded-lg bg-error-bg px-3 py-2 text-[13px] text-error"
+                >
+                    {submitError}
+                </p>
+            )}
             <div className="flex items-center justify-end gap-2 border-t border-divider p-[14px_20px]">
                 <a
                     href="/registro"
