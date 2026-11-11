@@ -84,6 +84,21 @@ describe('Ingreso rápido', () => {
         );
     });
 
+    it('formats a cédula as it is typed, but not a passport', () => {
+        render(<EmergenciaIngreso {...props} />);
+        const doc = () =>
+            screen.getByLabelText(/^Documento/) as HTMLInputElement;
+
+        fireEvent.change(doc(), { target: { value: '00112345678999' } });
+        expect(doc().value).toBe('001-1234567-8');
+
+        fireEvent.change(screen.getByLabelText(/Tipo de documento/), {
+            target: { value: 'pasaporte' },
+        });
+        fireEvent.change(doc(), { target: { value: 'AB123456' } });
+        expect(doc().value).toBe('AB123456');
+    });
+
     it('an unidentified patient without a document needs only sex and reason', () => {
         render(<EmergenciaIngreso {...props} />);
 

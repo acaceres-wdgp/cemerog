@@ -3,6 +3,7 @@ import { router, usePage } from '@inertiajs/react';
 import FormDialog from '@/components/cemerog/FormDialog';
 import FormField from '@/components/cemerog/FormField';
 import * as suppliers from '@/routes/almacen/suppliers';
+import { formatWithMask } from '@/components/cemerog/masked-input';
 
 export type SupplierRow = {
     id: number;
@@ -93,8 +94,17 @@ export default function SupplierDialog({
                     <FormField
                         name="phone"
                         label="Teléfono"
+                        placeholder="809-000-0000"
+                        inputMode="tel"
                         value={form.phone}
-                        onChange={(e) => set({ phone: e.target.value })}
+                        onChange={(e) =>
+                            set({
+                                phone: formatWithMask(
+                                    e.target.value,
+                                    '000-000-0000',
+                                ),
+                            })
+                        }
                         error={errors.phone}
                     />
                 </div>
