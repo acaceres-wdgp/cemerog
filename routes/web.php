@@ -122,6 +122,7 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::get('/pacientes/buscar', [PacientesController::class, 'search'])->name('citas.pacientes.buscar');
         Route::post('/', [CitasController::class, 'store'])->name('citas.store');
         Route::put('/{appointment}', [CitasController::class, 'update'])->name('citas.update');
+        Route::patch('/{appointment}/status', [CitasController::class, 'updateStatus'])->name('citas.status');
         Route::delete('/{appointment}', [CitasController::class, 'cancel'])->name('citas.cancel');
     });
 

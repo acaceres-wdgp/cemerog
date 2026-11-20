@@ -6,6 +6,7 @@ use App\Actions\CreateAppointment;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Requests\UpdateAppointmentRequest;
+use App\Http\Requests\UpdateAppointmentStatusRequest;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\User;
@@ -116,6 +117,21 @@ class CitasController extends Controller
         Toast::success('Cita actualizada.');
 
         return redirect()->route('citas', ['date' => $appointment->appointment_date->format('Y-m-d')]);
+    }
+
+    public function updateStatus(UpdateAppointmentStatusRequest $request, Appointment $appointment): RedirectResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        if ($user->seesOnlyOwnSchedule() && $appointment->doctor_id !== $user->ownScheduleDoctorId()) {
+            abort(403);
+        }
+
+        $appointment->update(['status' => $request->validated('status')]);
+
+        Toast::success('Estado de la cita actualizado.');
+
+        return back();
     }
 
     public function cancel(Appointment $appointment): RedirectResponse
