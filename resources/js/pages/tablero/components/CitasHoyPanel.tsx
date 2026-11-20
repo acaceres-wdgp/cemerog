@@ -16,7 +16,8 @@ interface CitasHoyPanelProps {
     citaTab: string;
     onCitaTabChange: (tab: string) => void;
     onAssign: (cita: CitaRow) => void;
-    onNoShow: (cita: CitaRow) => void;
+    /** Omitted when the user can't change appointments (no citas access) */
+    onNoShow?: (cita: CitaRow) => void;
 }
 
 export function CitasHoyPanel({
@@ -245,14 +246,18 @@ export function CitasHoyPanel({
                                                     >
                                                         + Asignar turno
                                                     </button>
-                                                    <button
-                                                        onClick={() =>
-                                                            onNoShow(c)
-                                                        }
-                                                        className="inline-flex h-[30px] cursor-pointer items-center gap-1.5 rounded-[8px] border border-secondary-border bg-secondary-bg px-[10px] font-[inherit] text-[12.5px] font-medium whitespace-nowrap text-text-dim"
-                                                    >
-                                                        ✕ No asistió
-                                                    </button>
+                                                    {onNoShow &&
+                                                        c.status !==
+                                                            'no_asistio' && (
+                                                            <button
+                                                                onClick={() =>
+                                                                    onNoShow(c)
+                                                                }
+                                                                className="inline-flex h-[30px] cursor-pointer items-center gap-1.5 rounded-[8px] border border-secondary-border bg-secondary-bg px-[10px] font-[inherit] text-[12.5px] font-medium whitespace-nowrap text-text-dim"
+                                                            >
+                                                                ✕ No asistió
+                                                            </button>
+                                                        )}
                                                 </div>
                                             )}
                                         </td>

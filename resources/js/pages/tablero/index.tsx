@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
+import { useCan } from '@/hooks/use-can';
 import type { TurnRow, CitaRow, DoctorOption } from './types';
 import { StatCards } from './components/StatCards';
 import { TurnosPanel } from './components/TurnosPanel';
@@ -18,6 +19,7 @@ export default function TableroIndex({ turns, appointments, doctors }: Props) {
     const [activeTab, setActiveTab] = useState('todas');
     const [citaTab, setCitaTab] = useState('pendientes');
     const [showWalkIn, setShowWalkIn] = useState(false);
+    const can = useCan();
 
     function assignTurnFromCita(cita: CitaRow) {
         router.post(
@@ -46,7 +48,14 @@ export default function TableroIndex({ turns, appointments, doctors }: Props) {
         router.patch(
             `/citas/${cita.id}/status`,
             { status: 'no_asistio' },
-            { preserveScroll: true },
+            {
+                preserveScroll: true,
+                onError: (errors: Record<string, string>) => {
+                    if (errors.status) {
+                        toast.error(errors.status);
+                    }
+                },
+            },
         );
     }
 
@@ -118,7 +127,7 @@ export default function TableroIndex({ turns, appointments, doctors }: Props) {
                 citaTab={citaTab}
                 onCitaTabChange={setCitaTab}
                 onAssign={assignTurnFromCita}
-                onNoShow={markNoShow}
+                onNoShow={can('module.citas.access') ? markNoShow : undefined}
             />
 
             {/* ── Modal walk-in ── */}

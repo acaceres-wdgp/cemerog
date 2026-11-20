@@ -13,9 +13,11 @@ const mockPatch = vi.hoisted(() => vi.fn());
 const mockPost = vi.hoisted(() => vi.fn());
 const mockVisit = vi.hoisted(() => vi.fn());
 const mockToastError = vi.hoisted(() => vi.fn());
+const page = vi.hoisted(() => ({ props: { permissions: [] as string[] } }));
 
 vi.mock('@inertiajs/react', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@inertiajs/react')>()),
+    usePage: () => page,
     router: {
         patch: mockPatch,
         post: mockPost,
@@ -110,6 +112,7 @@ function renderTablero(
 
 beforeEach(() => {
     vi.clearAllMocks();
+    page.props.permissions = ['module.tablero.access', 'module.citas.access'];
 });
 
 describe('TableroIndex – rendering', () => {
@@ -332,6 +335,42 @@ describe('TableroIndex – assignTurnFromCita', () => {
 });
 
 describe('TableroIndex – markNoShow', () => {
+    it('shows the validation error as a toast', () => {
+        vi.spyOn(window, 'confirm').mockReturnValue(true);
+        mockPatch.mockImplementationOnce((_url, _data, options) =>
+            options.onError({ status: 'El paciente ya tiene un turno.' }),
+        );
+        renderTablero({ appointments: [makeCita({ id: 32 })] });
+
+        fireEvent.click(screen.getByRole('button', { name: /no asistió/i }));
+
+        expect(mockToastError).toHaveBeenCalledWith(
+            'El paciente ya tiene un turno.',
+        );
+    });
+
+    it('hides the button for users without citas access', () => {
+        page.props.permissions = ['module.tablero.access'];
+        renderTablero({ appointments: [makeCita({ id: 33 })] });
+
+        expect(
+            screen.queryByRole('button', { name: /no asistió/i }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: /asignar turno/i }),
+        ).toBeInTheDocument();
+    });
+
+    it('hides the button once the appointment is already marked', () => {
+        renderTablero({
+            appointments: [makeCita({ id: 34, status: 'no_asistio' })],
+        });
+
+        expect(
+            screen.queryByRole('button', { name: /✕ no asistió/i }),
+        ).not.toBeInTheDocument();
+    });
+
     it('calls router.patch after confirm', () => {
         const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
         const cita = makeCita({
@@ -350,7 +389,7 @@ describe('TableroIndex – markNoShow', () => {
         expect(mockPatch).toHaveBeenCalledWith(
             '/citas/30/status',
             { status: 'no_asistio' },
-            { preserveScroll: true },
+            expect.objectContaining({ preserveScroll: true }),
         );
 
         confirmSpy.mockRestore();
