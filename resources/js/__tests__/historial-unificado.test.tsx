@@ -179,6 +179,37 @@ describe('HistorialPanel – counters', () => {
     });
 });
 
+// ─── Prescriptions inside a consultation ─────────────────────────────────────
+
+describe('HistorialPanel – receta inside a consultation', () => {
+    // A consultation note whose turn has a prescription
+    const consultaConReceta: ClinicalEntry = {
+        ...consultaEntry,
+        motivo_consulta: 'Faringitis',
+        prescription: recetaEntry.prescription,
+    };
+
+    it('counts it under Recetas', () => {
+        render(
+            <HistorialPanel
+                historial={[consultaConReceta, recetaEntry, consultaEntry]}
+            />,
+        );
+        const btn = screen.getByRole('button', { name: /recetas/i });
+        expect(btn.textContent).toMatch(/2/);
+    });
+
+    it('shows it when filtering by Recetas', () => {
+        render(
+            <HistorialPanel historial={[consultaConReceta, consultaEntry]} />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: /recetas/i }));
+
+        expect(screen.getAllByText('Faringitis').length).toBeGreaterThan(0);
+        expect(screen.queryByText('Dolor de cabeza')).toBeNull();
+    });
+});
+
 // ─── Receta detail ────────────────────────────────────────────────────────────
 
 describe('HistorialPanel – receta detail', () => {

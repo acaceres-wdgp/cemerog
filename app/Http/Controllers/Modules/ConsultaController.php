@@ -160,7 +160,13 @@ class ConsultaController extends Controller
             ])
             ->all();
 
-        Consultation::create($data);
+        $consultation = Consultation::create($data);
+
+        // A prescription saved before the note joins it now; one already
+        // joined to an earlier note of the turn keeps it
+        Prescription::where('turn_id', $turn->id)
+            ->whereNull('consultation_id')
+            ->update(['consultation_id' => $consultation->id]);
 
         Toast::success('Consulta guardada exitosamente.');
 

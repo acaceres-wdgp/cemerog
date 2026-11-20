@@ -70,6 +70,7 @@ Una sola sucursal. Moneda: peso dominicano (DOP).
 - Genera órdenes de laboratorio e imagen.
 - La pestaña **«Órdenes y cargos»** muestra los cargos de la cuenta diaria del paciente. Visibilidad: médico+admin ve todos los cargos; médico sin admin ve solo los suyos.
 - Al dar de alta al último turno abierto del día, la cuenta pasa a `pendiente_facturar` automáticamente (ver ADR-016).
+- La receta pertenece a la consulta de su turno, sin importar el orden: si se guarda antes de la nota clínica, se une a la nota cuando esta se guarda. En el historial, el filtro «Recetas» incluye las notas que llevan receta.
 
 #### Reglas de autoría y acceso (ADR-015)
 

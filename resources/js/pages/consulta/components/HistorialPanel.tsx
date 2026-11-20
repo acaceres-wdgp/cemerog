@@ -11,6 +11,11 @@ type OwnerFilter = 'all' | 'mine' | 'other';
 
 const LAB_IMAGE_TYPES: ClinicalEntryType[] = ['laboratorio', 'imagen'];
 
+/** A standalone prescription, or a consultation note that carries one */
+function hasPrescription(e: ClinicalEntry): boolean {
+    return e.type === 'receta' || (e.type === 'consulta' && !!e.prescription);
+}
+
 function applyFilters(
     entries: ClinicalEntry[],
     typeFilter: TypeFilter,
@@ -18,7 +23,7 @@ function applyFilters(
 ): ClinicalEntry[] {
     return entries.filter((e) => {
         if (typeFilter === 'consulta' && e.type !== 'consulta') return false;
-        if (typeFilter === 'receta' && e.type !== 'receta') return false;
+        if (typeFilter === 'receta' && !hasPrescription(e)) return false;
         if (typeFilter === 'analisis' && !LAB_IMAGE_TYPES.includes(e.type))
             return false;
         if (ownerFilter === 'mine' && !e.mine) return false;
@@ -85,7 +90,7 @@ export default function HistorialPanel({
     const [ownerFilter, setOwnerFilter] = useState<OwnerFilter>('all');
 
     const countConsulta = historial.filter((e) => e.type === 'consulta').length;
-    const countReceta = historial.filter((e) => e.type === 'receta').length;
+    const countReceta = historial.filter(hasPrescription).length;
     const countAnalisis = historial.filter((e) =>
         LAB_IMAGE_TYPES.includes(e.type),
     ).length;
