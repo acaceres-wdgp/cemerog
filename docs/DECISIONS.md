@@ -7,7 +7,9 @@
 
 ### Decisión
 
-Laravel 12 + Inertia 2 + React 19 + TypeScript + Tailwind CSS 4 + shadcn/ui.
+Laravel 13 + Inertia 3 + React 19 + TypeScript + Tailwind CSS 4 + shadcn/ui.
+
+Actualizado el 23/11/2026 para reflejar las versiones mayores declaradas en `composer.json` y `package.json` y bloqueadas en `composer.lock` y `package-lock.json`. La decisión inicial usaba Laravel 12 e Inertia 2.
 
 ### Justificación
 

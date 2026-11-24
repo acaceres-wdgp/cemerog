@@ -1,6 +1,6 @@
 # Arquitectura – CEMEROG
 
-## Backend (Laravel 12)
+## Backend (Laravel 13)
 
 ### Patrones
 
@@ -74,7 +74,7 @@ app/
 └── Policies/
 ```
 
-## Frontend (React 19 + TypeScript)
+## Frontend (Inertia 3 + React 19 + TypeScript)
 
 ### Estructura de carpetas
 
