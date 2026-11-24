@@ -176,25 +176,29 @@ No existe borrado ni desactivación de pacientes. Una vez creado, un expediente 
 
 ---
 
-## ADR-010: Hash de dígitos para document_number y phone
+## ADR-010: Cifrado y hashes de document_number y phone
 
 **Fecha**: 2026-10  
 **Estado**: Aceptado
 
 ### Decisión
 
-`document_number` y `phone` se almacenan cifrados con `encrypted` cast. Para búsquedas exactas e índices únicos se guardan columnas `document_number_hash` y `phone_hash` (HMAC-SHA256 de `config('app.key')`), calculadas sobre solo los dígitos del valor.
+`document_number` y `phone` se cifran mediante atributos (`Attribute`) del modelo `Patient`, que llaman a `App\Support\Pii::encrypt` y `Pii::decrypt` (`Crypt::encryptString` / `Crypt::decryptString`, sin serialización PHP). Solo `email` usa el cast `encrypted` de Eloquent. Nunca combinar un cast `encrypted` con un `Attribute` sobre la misma columna.
+
+Para búsquedas exactas e índices únicos se guardan columnas `document_number_hash` y `phone_hash` (HMAC-SHA256 de `config('app.key')`). `phone_hash` usa solo los dígitos del teléfono mediante `Pii::hash()`. La normalización original de `document_number_hash` también usaba solo dígitos; ADR-014 la reemplazó por normalización según el tipo de documento mediante `Pii::documentHash($type, $number)`.
+
+Actualizado el 23/11/2026 para reflejar la implementación actual y la normalización definida en ADR-014.
 
 ### Justificación
 
 - Los campos cifrados no son consultables con `LIKE` en la base de datos.
-- Al normalizar a solo dígitos antes de hashear, `031-0234567-8`, `03102345678` y `(031) 023-4567-8` producen el mismo hash → el sistema los reconoce como el mismo documento.
+- Para cédulas, al normalizar a solo dígitos antes de hashear, `031-0234567-8`, `03102345678` y `(031) 023-4567-8` producen el mismo hash → el sistema los reconoce como el mismo documento. Los tipos alfanuméricos conservan letras y dígitos según ADR-014.
 - HMAC-SHA256 (no SHA simple) evita ataques de preimagen con rainbow tables, usando la clave de la app como secreto.
 
 ### Consecuencias
 
-- Al guardar un paciente, el mutador calcula automáticamente el hash.
-- La regla `UniqueDocumentNumber` también normaliza a dígitos antes de hashear para consistencia.
+- Al guardar un paciente, el evento `saving` calcula `document_number_hash` mediante `Pii::documentHash` cuando ya está disponible `document_type`. El mutador de `phone` calcula `phone_hash` mediante `Pii::hash`.
+- La regla `UniqueDocumentNumber` también usa `Pii::documentHash` con el tipo de documento para mantener la misma normalización.
 - El backfill se ejecuta en la migración `add_phone_hash_to_patients` para registros existentes.
 
 ---
