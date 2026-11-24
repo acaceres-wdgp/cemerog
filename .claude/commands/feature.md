@@ -82,7 +82,6 @@ Los tests deben **fallar** antes de implementar.
 
 - Componente(s) en `components/cemerog/` si son reutilizables
 - Página en `pages/<modulo>/`
-- Usar `AppLayout` como wrapper
 - Usar `PageHeader` + contenido
 
 ### 5. Verificar que los tests pasan
