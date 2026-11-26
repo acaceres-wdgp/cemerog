@@ -20,6 +20,7 @@ use App\Http\Controllers\Modules\EmergenciaController;
 use App\Http\Controllers\Modules\EmergencyCareController;
 use App\Http\Controllers\Modules\EmergencyConfigController;
 use App\Http\Controllers\Modules\EntradaController;
+use App\Http\Controllers\Modules\FacturasController;
 use App\Http\Controllers\Modules\HabsController;
 use App\Http\Controllers\Modules\ImgcatController;
 use App\Http\Controllers\Modules\ImgController;
@@ -218,6 +219,10 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/recibos/{receipt}/anular', [PaymentController::class, 'void'])->name('caja.receipts.void');
         Route::get('/recibos/{receipt}/imprimir', [PaymentController::class, 'print'])->name('caja.receipts.print');
     });
+
+    Route::get('/facturas', [FacturasController::class, 'index'])
+        ->middleware('permission:module.caja.access')
+        ->name('facturas');
 
     Route::get('/cuentas-por-cobrar', [CxcController::class, 'index'])
         ->middleware('permission:module.cxc.access')

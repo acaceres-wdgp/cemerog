@@ -36,6 +36,7 @@ const CLEAN_PAGES = [
     'citas/',
     'tablero/',
     'consulta/',
+    'facturas/',
 ];
 
 // Matches a 3- or 6-digit hex color, e.g. #2E8B3E or #333

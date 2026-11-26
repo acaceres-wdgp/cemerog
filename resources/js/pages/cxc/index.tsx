@@ -14,6 +14,8 @@ const digits = (s: string) => s.replace(/\D/g, '');
 function matches(row: ReceivableRow, query: string): boolean {
     const q = query.trim().toLowerCase();
     if (q === '') return true;
+    // An invoice number (as sent from Facturas) is not a cédula
+    if (/^f-\d+$/.test(q)) return row.number.toLowerCase().includes(q);
     const text =
         `${row.patient.full_name} ${row.patient.document_number} ${row.number}`.toLowerCase();
     if (text.includes(q)) return true;
@@ -21,9 +23,9 @@ function matches(row: ReceivableRow, query: string): boolean {
     return d.length >= 3 && digits(row.patient.document_number).includes(d);
 }
 
-export default function CxcIndex({ invoices }: CxcProps) {
+export default function CxcIndex({ invoices, search = '' }: CxcProps) {
     const [bucket, setBucket] = useState<Bucket>('todas');
-    const [query, setQuery] = useState('');
+    const [query, setQuery] = useState(search);
 
     // Oldest first
     const rows = useMemo(
