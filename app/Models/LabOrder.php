@@ -61,6 +61,12 @@ class LabOrder extends Model
         return $this->belongsTo(Patient::class)->withTrashed();
     }
 
+    /** @return BelongsTo<User, $this> */
+    public function validator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'validated_by');
+    }
+
     /** @return BelongsTo<Doctor, $this> */
     public function doctor(): BelongsTo
     {
