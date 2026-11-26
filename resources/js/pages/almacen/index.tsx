@@ -4,7 +4,6 @@ import { PackagePlus, Plus, Search, Truck } from 'lucide-react';
 import SegmentedControl from '@/components/cemerog/SegmentedControl';
 import { entrada } from '@/routes';
 import { suppliers as suppliersRoute } from '@/routes/almacen';
-import AdjustDialog from './components/AdjustDialog';
 import CatalogStats from './components/CatalogStats';
 import type { AlertFilter } from './components/CatalogStats';
 import CatalogTable from './components/CatalogTable';
@@ -31,7 +30,6 @@ export default function AlmacenIndex({
     const [editing, setEditing] = useState<InventoryItemRow | 'new' | null>(
         null,
     );
-    const [adjusting, setAdjusting] = useState<InventoryItemRow | null>(null);
 
     const rows = useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -120,7 +118,6 @@ export default function AlmacenIndex({
                     rows={rows}
                     canEdit={can_edit}
                     onEdit={setEditing}
-                    onAdjust={setAdjusting}
                 />
                 {rows.length === 0 && (
                     <div className="p-8 text-center text-muted">
@@ -133,14 +130,8 @@ export default function AlmacenIndex({
             {editing && (
                 <ItemDialog
                     item={editing === 'new' ? null : editing}
-                    onClose={() => setEditing(null)}
-                />
-            )}
-            {adjusting && (
-                <AdjustDialog
-                    item={adjusting}
                     reasons={adjustment_reasons}
-                    onClose={() => setAdjusting(null)}
+                    onClose={() => setEditing(null)}
                 />
             )}
         </div>

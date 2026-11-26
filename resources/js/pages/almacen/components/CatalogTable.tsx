@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pencil, SlidersHorizontal } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import { formatMoney } from '@/lib/money';
 import { cn } from '@/lib/utils';
 import { expiryLabel, KIND_LABELS } from '../types';
@@ -18,12 +18,10 @@ export default function CatalogTable({
     rows,
     canEdit,
     onEdit,
-    onAdjust,
 }: {
     rows: InventoryItemRow[];
     canEdit: boolean;
     onEdit: (item: InventoryItemRow) => void;
-    onAdjust: (item: InventoryItemRow) => void;
 }) {
     return (
         <table className="w-full min-w-[1000px] border-collapse text-[14px]">
@@ -126,15 +124,6 @@ export default function CatalogTable({
                         <td className={`${td} pr-5`}>
                             {canEdit && (
                                 <div className="flex justify-end gap-1.5">
-                                    <button
-                                        type="button"
-                                        aria-label={`Ajustar existencia de ${i.name}`}
-                                        title="Ajustar existencia"
-                                        onClick={() => onAdjust(i)}
-                                        className={iconBtn}
-                                    >
-                                        <SlidersHorizontal className="h-4 w-4" />
-                                    </button>
                                     <button
                                         type="button"
                                         aria-label={`Editar ${i.name}`}

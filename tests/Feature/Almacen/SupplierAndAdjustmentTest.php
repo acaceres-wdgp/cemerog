@@ -36,20 +36,39 @@ test('suppliers are registered and edited', function () {
         ->assertInertia(fn ($page) => $page->component('almacen/proveedores')->has('suppliers', 1));
 });
 
-test('a physical count adjusts the stock with a reason and keeps the record', function () {
-    $this->actingAs($this->almacen)
-        ->post("/almacen/articulos/{$this->item->id}/ajustes", ['new_stock' => 12, 'reason' => 'conteo', 'note' => 'Conteo del viernes'])
-        ->assertSessionHasNoErrors();
+test('editing the item corrects the stock with a reason and keeps the record', function () {
+    $edit = fn (array $extra) => $this->actingAs($this->almacen)->put("/almacen/articulos/{$this->item->id}", [
+        'name' => 'Ceftriaxona', 'presentation' => '1 g · vial', 'kind' => 'medicamento', 'price' => 45000, 'min_stock' => 5, ...$extra,
+    ]);
+
+    // A different stock needs its reason
+    $edit(['new_stock' => 12])->assertSessionHasErrors(['reason']);
+    $edit(['new_stock' => 12, 'reason' => 'otro'])->assertSessionHasErrors(['reason']);
+    $edit(['new_stock' => -1, 'reason' => 'conteo'])->assertSessionHasErrors(['new_stock']);
+    expect($this->item->fresh()->stock)->toBe(-2)->and(InventoryAdjustment::count())->toBe(0);
+
+    $edit(['new_stock' => 12, 'reason' => 'conteo', 'note' => 'Conteo del viernes', 'price' => 50000])
+        ->assertSessionHasNoErrors()
+        ->assertSessionHas('inertia.flash_data.toast.message', 'MED-001 actualizado · existencia ajustada a 12.');
 
     $adjustment = InventoryAdjustment::first();
     expect($this->item->fresh()->stock)->toBe(12)
+        ->and($this->item->fresh()->price)->toBe(50000)
         ->and($adjustment->stock_before)->toBe(-2)
         ->and($adjustment->quantity)->toBe(14)
-        ->and($adjustment->reason)->toBe('conteo');
+        ->and($adjustment->reason)->toBe('conteo')
+        ->and($adjustment->note)->toBe('Conteo del viernes')
+        ->and($adjustment->created_by)->toBe($this->almacen->id);
 
+    // The same stock is not an adjustment and needs no reason
+    $edit(['new_stock' => 12, 'price' => 55000])->assertSessionHasNoErrors();
+    expect(InventoryAdjustment::count())->toBe(1)->and($this->item->fresh()->price)->toBe(55000);
+});
+
+test('the separate adjustment endpoint is gone', function () {
     $this->actingAs($this->almacen)
-        ->post("/almacen/articulos/{$this->item->id}/ajustes", ['new_stock' => 12, 'reason' => 'otro'])
-        ->assertSessionHasErrors(['new_stock', 'reason']);
+        ->post("/almacen/articulos/{$this->item->id}/ajustes", ['new_stock' => 12, 'reason' => 'conteo'])
+        ->assertNotFound();
 });
 
 test('the warehouse role edits the catalog; other roles only see it if they have access', function () {

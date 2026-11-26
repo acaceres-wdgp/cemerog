@@ -11,9 +11,12 @@ import type { InventoryItemRow, ItemKind } from '../types';
 /** Create or edit a catalog item (administrators) */
 export default function ItemDialog({
     item,
+    reasons = {},
     onClose,
 }: {
     item: InventoryItemRow | null;
+    /** Reasons for a change of stock (conteo, merma, vencido) */
+    reasons?: Record<string, string>;
     onClose: () => void;
 }) {
     const errors = (usePage().props.errors ?? {}) as Record<string, string>;
@@ -24,10 +27,16 @@ export default function ItemDialog({
         price: item ? (item.price / 100).toFixed(2) : '',
         min_stock: item ? String(item.min_stock) : '0',
         is_active: item?.is_active ?? true,
+        stock: item ? String(item.stock) : '0',
+        reason: Object.keys(reasons)[0] ?? 'conteo',
+        note: '',
     });
     const [isLoading, setIsLoading] = useState(false);
     const set = (patch: Partial<typeof form>) =>
         setForm((f) => ({ ...f, ...patch }));
+    // A different stock is an adjustment and needs its reason
+    const newStock = parseInt(form.stock, 10);
+    const diff = item && !Number.isNaN(newStock) ? newStock - item.stock : 0;
 
     const submit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -39,6 +48,13 @@ export default function ItemDialog({
             price: parseMoney(form.price),
             min_stock: parseInt(form.min_stock, 10) || 0,
             ...(item ? { is_active: form.is_active } : {}),
+            ...(item && diff !== 0
+                ? {
+                      new_stock: newStock,
+                      reason: form.reason,
+                      note: form.note.trim() || null,
+                  }
+                : {}),
         };
         const options = {
             preserveScroll: true,
@@ -58,7 +74,11 @@ export default function ItemDialog({
             submitLabel={item ? 'Guardar' : 'Agregar al catálogo'}
             onSubmit={submit}
             isLoading={isLoading}
-            submitDisabled={form.name.trim() === '' || form.price.trim() === ''}
+            submitDisabled={
+                form.name.trim() === '' ||
+                form.price.trim() === '' ||
+                (item !== null && Number.isNaN(newStock))
+            }
         >
             <div className="flex flex-col gap-3">
                 <SegmentedControl<ItemKind>
@@ -104,9 +124,16 @@ export default function ItemDialog({
                     <FormField
                         name="stock"
                         label="Existencia"
-                        value={item ? String(item.stock) : '0'}
-                        readOnly
-                        className="[&_input]:bg-list-row-bg"
+                        inputMode="numeric"
+                        value={form.stock}
+                        readOnly={!item}
+                        onChange={(e) =>
+                            set({ stock: e.target.value.replace(/\D/g, '') })
+                        }
+                        error={errors.new_stock}
+                        className={
+                            item ? undefined : '[&_input]:bg-list-row-bg'
+                        }
                     />
                     <FormField
                         name="min_stock"
@@ -117,11 +144,51 @@ export default function ItemDialog({
                         error={errors.min_stock}
                     />
                 </div>
-                <p className="m-0 text-[12.5px] text-muted">
-                    {item
-                        ? 'La existencia cambia con las entradas de mercancía, lo que se aplica en Emergencia y «Ajustar existencia».'
-                        : 'El artículo empieza con existencia 0; la mercancía entra con «Entrada de mercancía».'}
-                </p>
+                {item && diff !== 0 && !Number.isNaN(newStock) ? (
+                    <div className="flex flex-col gap-3 rounded-[10px] border border-card-border bg-list-row-bg px-3 py-3">
+                        <p className="m-0 text-[13px] text-text-secondary">
+                            Existencia {item.stock} → {newStock}:{' '}
+                            {diff > 0
+                                ? `se suman ${diff}`
+                                : `se restan ${-diff}`}{' '}
+                            {Math.abs(diff) === 1 ? 'unidad' : 'unidades'}.
+                            Queda registrado como ajuste con su motivo.
+                        </p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <FormField
+                                as="select"
+                                name="reason"
+                                label="Motivo del cambio"
+                                required
+                                value={form.reason}
+                                onChange={(e) =>
+                                    set({ reason: e.target.value })
+                                }
+                                error={errors.reason}
+                            >
+                                {Object.entries(reasons).map(([k, label]) => (
+                                    <option key={k} value={k}>
+                                        {label}
+                                    </option>
+                                ))}
+                            </FormField>
+                            <FormField
+                                name="note"
+                                label="Nota"
+                                placeholder="Opcional"
+                                value={form.note}
+                                onChange={(e) => set({ note: e.target.value })}
+                                error={errors.note}
+                            />
+                        </div>
+                    </div>
+                ) : (
+                    <p className="m-0 text-[12.5px] text-muted">
+                        {item
+                            ? 'Cambia la existencia aquí si el conteo físico no coincide; se pedirá el motivo. Las entradas y lo aplicado a pacientes la actualizan solos.'
+                            : 'El artículo empieza con existencia 0; la mercancía entra con «Entrada de mercancía».'}
+                    </p>
+                )}
                 {item && item.suppliers.length > 0 && (
                     <div className="rounded-[10px] border border-card-border">
                         <div className="border-b border-divider px-3 py-2 text-[13px] font-semibold text-text-heading">
