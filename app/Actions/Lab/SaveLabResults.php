@@ -2,6 +2,7 @@
 
 namespace App\Actions\Lab;
 
+use App\Events\ResultPublished;
 use App\Models\LabOrder;
 use App\Models\LabResult;
 use App\Models\LabTestParameter;
@@ -18,7 +19,7 @@ class SaveLabResults
     /** @param array<int|string, string|null> $values result id => value */
     public function handle(LabOrder $order, array $values, User $user, bool $validate = false): LabOrder
     {
-        return DB::transaction(function () use ($order, $values, $user, $validate): LabOrder {
+        $order = DB::transaction(function () use ($order, $values, $user, $validate): LabOrder {
             $order = LabOrder::whereKey($order->id)->lockForUpdate()->firstOrFail();
             if (! in_array($order->status, ['muestra', 'ingresado'], true)) {
                 throw ValidationException::withMessages(['order' => $order->status === 'ordenada'
@@ -53,5 +54,12 @@ class SaveLabResults
 
             return $order;
         });
+
+        if ($validate) {
+            // Visible in the results portal from now on
+            ResultPublished::dispatch($order);
+        }
+
+        return $order;
     }
 }
