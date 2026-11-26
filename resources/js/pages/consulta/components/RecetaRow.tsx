@@ -9,6 +9,8 @@ type Props = {
     disabled: boolean;
     /** Required fields still missing (marked in red) */
     invalid?: (keyof RxRow)[];
+    /** The quantity was computed from dose, frequency and days */
+    quantityComputed?: boolean;
     onChange: (patch: Partial<RxRow>) => void;
     onRemove: () => void;
 };
@@ -18,6 +20,7 @@ export default function RecetaRow({
     index,
     disabled,
     invalid = [],
+    quantityComputed = false,
     onChange,
     onRemove,
 }: Props) {
@@ -113,6 +116,14 @@ export default function RecetaRow({
                     type="number"
                     min={1}
                 />
+                {quantityComputed && (
+                    <div
+                        className="mt-[5px] text-[12px] text-muted"
+                        title="Dosis × veces al día × días. Puedes cambiarla."
+                    >
+                        Calculada
+                    </div>
+                )}
             </td>
             <td className="border-b border-divider p-2 text-center align-top">
                 <button

@@ -5,6 +5,7 @@ import { conflict } from '@/lib/allergy';
 import consulta from '@/routes/consulta';
 import { TurnItem, PrescriptionData } from '../types';
 import { buildInstruction } from '../lib/instructionBuilder';
+import { computeQuantity } from '../lib/quantityCalc';
 import { thCls } from '../lib/helpers';
 import RecetaRow from './RecetaRow';
 import AllergyAlert from './AllergyAlert';
@@ -20,6 +21,8 @@ export type RxRow = {
     duration_days: string;
     is_continuous: boolean;
     quantity: string;
+    /** Typed by the doctor (or saved); otherwise it is computed */
+    quantity_manual?: boolean;
 };
 
 /** Required fields of a medication line, with their labels */
@@ -59,6 +62,23 @@ export function missingFields(row: RxRow): (keyof RxRow)[] {
         if (field === 'quantity') return !positive(row.quantity);
         return String(row[field]).trim() === '';
     });
+}
+
+/**
+ * Applies a change to a line. The quantity to dispense is computed from dose,
+ * frequency and days until the doctor types one; clearing it computes it
+ * again.
+ */
+function withQuantity(row: RxRow, patch: Partial<RxRow>): RxRow {
+    const next = { ...row, ...patch };
+    if ('quantity' in patch && (patch.quantity ?? '').trim() !== '') {
+        return { ...next, quantity_manual: true };
+    }
+    if ('quantity' in patch) next.quantity_manual = false;
+    if (next.quantity_manual) return next;
+    const computed = computeQuantity(next);
+
+    return { ...next, quantity: computed === null ? '' : String(computed) };
 }
 
 type Props = {
@@ -104,6 +124,7 @@ export default function RecetaTab({
                 duration_days: item.duration_days?.toString() ?? '',
                 is_continuous: item.is_continuous,
                 quantity: item.quantity.toString(),
+                quantity_manual: true,
             }));
         }
         return [
@@ -161,7 +182,9 @@ export default function RecetaTab({
 
     function updateRow(index: number, patch: Partial<RxRow>) {
         setRows((prev) =>
-            prev.map((row, i) => (i === index ? { ...row, ...patch } : row)),
+            prev.map((row, i) =>
+                i === index ? withQuantity(row, patch) : row,
+            ),
         );
         markDirty();
     }
@@ -319,6 +342,9 @@ export default function RecetaTab({
                                 index={i}
                                 disabled={isDischargedTurn}
                                 invalid={triedToSave ? missing[i] : []}
+                                quantityComputed={
+                                    !row.quantity_manual && row.quantity !== ''
+                                }
                                 onChange={(patch) => updateRow(i, patch)}
                                 onRemove={() => removeRow(i)}
                             />

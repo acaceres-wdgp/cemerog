@@ -504,6 +504,97 @@ describe('RecetaTab – required fields', () => {
     });
 });
 
+// ─── Quantity computed by itself ─────────────────────────────────────────────
+
+describe('RecetaTab – quantity to dispense', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockUsePage.mockReturnValue({ props: { errors: {} } });
+    });
+
+    const fill = (label: string, value: string) =>
+        fireEvent.change(screen.getByLabelText(label), { target: { value } });
+
+    it('is computed from dose, frequency and days, and the doctor can change it', () => {
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
+
+        fill('Medicamento 1', 'Amoxicilina 500 mg');
+        fill('Dosis 1', '1 cápsula');
+        fill('Frecuencia 1', 'cada 8 horas');
+        expect(screen.getByLabelText('Cantidad 1')).toHaveValue(null);
+        fill('Duración 1', '7');
+        expect(screen.getByLabelText('Cantidad 1')).toHaveValue(21);
+        expect(screen.getByText('Calculada')).toBeTruthy();
+
+        fill('Duración 1', '10');
+        expect(screen.getByLabelText('Cantidad 1')).toHaveValue(30);
+
+        // Typed by the doctor: it stays
+        fill('Cantidad 1', '28');
+        fill('Duración 1', '14');
+        expect(screen.getByLabelText('Cantidad 1')).toHaveValue(28);
+        expect(screen.queryByText('Calculada')).toBeNull();
+
+        // Cleared: it is computed again
+        fill('Cantidad 1', '');
+        expect(screen.getByLabelText('Cantidad 1')).toHaveValue(42);
+    });
+
+    it('is left to the doctor when it cannot be computed', () => {
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
+
+        fill('Medicamento 1', 'Acetaminofén jarabe');
+        fill('Dosis 1', '5 ml');
+        fill('Frecuencia 1', 'cada 8 horas');
+        fill('Duración 1', '5');
+
+        expect(screen.getByLabelText('Cantidad 1')).toHaveValue(null);
+        expect(screen.queryByText('Calculada')).toBeNull();
+    });
+
+    it('a saved prescription keeps its quantity', () => {
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={{
+                    id: 5,
+                    general_instructions: null,
+                    prescribed_at: '2026-10-27T10:00:00',
+                    items: [
+                        {
+                            id: 1,
+                            position: 1,
+                            medication: 'Amoxicilina',
+                            route: null,
+                            dose: '1 cápsula',
+                            frequency: 'cada 8 horas',
+                            duration_days: 7,
+                            is_continuous: false,
+                            quantity: 20,
+                        },
+                    ],
+                }}
+                isDischargedTurn={false}
+            />,
+        );
+
+        fill('Duración 1', '10');
+        expect(screen.getByLabelText('Cantidad 1')).toHaveValue(20);
+    });
+});
+
 // ─── Instruction text builder ─────────────────────────────────────────────────
 
 describe('buildInstruction', () => {
