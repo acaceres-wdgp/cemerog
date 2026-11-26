@@ -107,7 +107,7 @@ describe('Catálogo', () => {
         expect(screen.getAllByRole('row')).toHaveLength(2);
     });
 
-    it('adjusts the stock after a physical count', () => {
+    it('the edit dialog changes the stock, asking for the reason; there is no separate adjust button', () => {
         render(
             <AlmacenIndex
                 items={catalog}
@@ -119,25 +119,37 @@ describe('Catálogo', () => {
             />,
         );
 
-        fireEvent.click(
-            screen.getByRole('button', {
-                name: 'Ajustar existencia de Omeprazol',
-            }),
-        );
+        expect(
+            screen.queryByRole('button', { name: /Ajustar existencia/ }),
+        ).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'Editar Omeprazol' }));
         const dialog = screen.getByRole('dialog');
-        fireEvent.change(within(dialog).getByLabelText(/Existencia real/), {
+        expect(within(dialog).queryByLabelText(/Motivo del cambio/)).toBeNull();
+
+        fireEvent.change(within(dialog).getByLabelText(/Existencia/), {
             target: { value: '12' },
         });
-        expect(within(dialog).getByText('Se suman 3 unidades.')).toBeTruthy();
-        fireEvent.click(
-            within(dialog).getByRole('button', { name: 'Ajustar' }),
-        );
+        expect(within(dialog).getByText(/se suman 3 unidades/)).toBeTruthy();
+        fireEvent.change(within(dialog).getByLabelText(/Motivo del cambio/), {
+            target: { value: 'merma' },
+        });
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }));
 
-        expect(mockPost).toHaveBeenCalledWith(
-            '/almacen/articulos/2/ajustes',
-            { new_stock: 12, reason: 'conteo', note: null },
+        expect(mockPut).toHaveBeenCalledWith(
+            '/almacen/articulos/2',
+            expect.objectContaining({ new_stock: 12, reason: 'merma', note: null }),
             expect.anything(),
         );
+    });
+
+    it('saving without changing the stock sends no adjustment', () => {
+        render(<AlmacenIndex items={catalog} can_edit adjustment_reasons={{ conteo: 'Conteo físico' }} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Editar Omeprazol' }));
+        fireEvent.click(
+            within(screen.getByRole('dialog')).getByRole('button', { name: 'Guardar' }),
+        );
+
+        expect(mockPut.mock.calls[0][1]).not.toHaveProperty('new_stock');
     });
 
     it('the edit dialog shows the cost of each supplier', () => {

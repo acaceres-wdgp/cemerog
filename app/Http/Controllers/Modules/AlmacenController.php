@@ -12,7 +12,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -66,40 +65,35 @@ class AlmacenController extends Controller
         return back();
     }
 
+    /** Edit the item and, with a reason, correct its stock in the same step */
     public function update(InventoryItemRequest $request, InventoryItem $item): RedirectResponse
     {
         $data = $request->validated();
-        $item->update([...$data, 'min_stock' => $data['min_stock'] ?? 0]);
+        $newStock = isset($data['new_stock']) ? (int) $data['new_stock'] : null;
 
-        Toast::success("{$item->code} actualizado.");
-
-        return back();
-    }
-
-    /** Set the stock after a physical count, waste or expired goods */
-    public function adjust(Request $request, InventoryItem $item): RedirectResponse
-    {
-        abort_unless($request->user()?->hasAnyRole(InventoryItem::EDITOR_ROLES), 403);
-        $data = $request->validate([
-            'new_stock' => ['required', 'integer', 'between:0,1000000', Rule::notIn([$item->stock])],
-            'reason' => ['required', Rule::in(array_keys(InventoryAdjustment::REASONS))],
-            'note' => ['nullable', 'string', 'max:255'],
-        ], ['new_stock.not_in' => 'La existencia ya es esa.']);
-
-        DB::transaction(function () use ($item, $data, $request): void {
+        $adjusted = DB::transaction(function () use ($item, $data, $newStock, $request): bool {
             $item = InventoryItem::whereKey($item->id)->lockForUpdate()->firstOrFail();
+            $item->update([
+                ...collect($data)->only(['name', 'presentation', 'kind', 'price', 'is_active'])->all(),
+                'min_stock' => $data['min_stock'] ?? 0,
+            ]);
+            if ($newStock === null || $newStock === $item->stock) {
+                return false;
+            }
             InventoryAdjustment::create([
                 'inventory_item_id' => $item->id,
                 'stock_before' => $item->stock,
-                'quantity' => (int) $data['new_stock'] - $item->stock,
+                'quantity' => $newStock - $item->stock,
                 'reason' => $data['reason'],
                 'note' => $data['note'] ?? null,
                 'created_by' => $request->user()->id,
             ]);
-            $item->update(['stock' => (int) $data['new_stock']]);
+            $item->update(['stock' => $newStock]);
+
+            return true;
         });
 
-        Toast::success("Existencia de {$item->name} ajustada a {$data['new_stock']}.");
+        Toast::success($adjusted ? "{$item->code} actualizado · existencia ajustada a {$newStock}." : "{$item->code} actualizado.");
 
         return back();
     }

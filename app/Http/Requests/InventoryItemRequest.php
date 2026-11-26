@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\InventoryAdjustment;
 use App\Models\InventoryItem;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -15,13 +16,18 @@ class InventoryItemRequest extends FormRequest
     }
 
     /**
-     * Stock is not edited here: it only changes through goods entries,
-     * applications in Emergencia and adjustments with a reason.
+     * The stock can be corrected while editing (`new_stock`), but only with
+     * a reason: it becomes an adjustment, like goods entries and
+     * applications to patients, every change of stock is recorded.
      *
      * @return array<string, mixed>
      */
     public function rules(): array
     {
+        /** @var InventoryItem|null $item */
+        $item = $this->route('item');
+        $changesStock = $item !== null && $this->filled('new_stock') && (int) $this->input('new_stock') !== $item->stock;
+
         return [
             'name' => ['required', 'string', 'max:150'],
             'presentation' => ['nullable', 'string', 'max:100'],
@@ -29,6 +35,9 @@ class InventoryItemRequest extends FormRequest
             'price' => ['required', 'integer', 'min:0', 'max:100000000'],
             'min_stock' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'is_active' => ['sometimes', 'boolean'],
+            'new_stock' => ['nullable', 'integer', 'between:0,1000000'],
+            'reason' => [Rule::requiredIf($changesStock), 'nullable', Rule::in(array_keys(InventoryAdjustment::REASONS))],
+            'note' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -38,6 +47,7 @@ class InventoryItemRequest extends FormRequest
         return [
             'kind.in' => 'Elige Medicamento o Insumo.',
             'price.min' => 'El precio no puede ser negativo.',
+            'reason.required' => 'Indica el motivo del cambio de existencia.',
         ];
     }
 }
