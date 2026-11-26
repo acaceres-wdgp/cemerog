@@ -51,4 +51,15 @@ describe('login page', () => {
             'Ingresa tu contraseña',
         );
     });
+
+    it('links patients to the results portal', () => {
+        page.props.errors = {};
+        render(<Login />);
+
+        expect(
+            screen.getByRole('link', {
+                name: '¿Eres paciente? Consulta tus resultados',
+            }),
+        ).toHaveAttribute('href', '/resultados');
+    });
 });

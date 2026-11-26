@@ -1,3 +1,5 @@
+import type { ResultsAccess } from '@/components/caja/ResultsAccessBox';
+
 export type ChargeRow = {
     id: number;
     date: string | null;
@@ -79,6 +81,8 @@ export type InvoiceDetail = Omit<InvoiceSummary, 'patient'> & {
     voided_by: string | null;
     voided_at: string | null;
     lines: ChargeRow[];
+    /** Lab or imaging: its results portal code (Facturación only) */
+    results?: { code: ResultsAccess | null } | null;
 };
 
 export type CajaProps = {

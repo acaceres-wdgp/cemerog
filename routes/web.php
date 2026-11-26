@@ -34,6 +34,7 @@ use App\Http\Controllers\Modules\PacientesController;
 use App\Http\Controllers\Modules\PaymentController;
 use App\Http\Controllers\Modules\PrescriptionController;
 use App\Http\Controllers\Modules\RegistroController;
+use App\Http\Controllers\Modules\ResultCodeController;
 use App\Http\Controllers\Modules\StudyCategoryController;
 use App\Http\Controllers\Modules\StudyOrderController;
 use App\Http\Controllers\Modules\SupplierController;
@@ -239,6 +240,11 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/recibos/{receipt}/anular', [PaymentController::class, 'void'])->name('caja.receipts.void');
         Route::get('/recibos/{receipt}/imprimir', [PaymentController::class, 'print'])->name('caja.receipts.print');
     });
+
+    // A new results portal code (lost code), from caja or recepción
+    Route::post('/facturacion/facturas/{invoice}/codigo-resultados', [ResultCodeController::class, 'regenerate'])
+        ->middleware('permission:module.caja.access|module.pacientes.access')
+        ->name('caja.invoices.result-code');
 
     Route::get('/facturas', [FacturasController::class, 'index'])
         ->middleware('permission:module.caja.access')

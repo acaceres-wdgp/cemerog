@@ -12,6 +12,7 @@ use App\Models\Invoice;
 use App\Models\User;
 use App\Support\Clinic;
 use App\Support\InvoicePresenter;
+use App\Support\ResultAccessPresenter;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -64,6 +65,8 @@ class InvoiceController extends Controller
             // Supplies print as one «Insumos» line
             'invoice' => $presenter->printed($invoice),
             'clinic' => Clinic::info(),
+            // Lab or imaging: the code of the results portal, with its QR
+            'results_access' => ResultAccessPresenter::forAccount($invoice->account),
         ]);
     }
 }

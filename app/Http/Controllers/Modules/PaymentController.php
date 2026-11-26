@@ -12,6 +12,7 @@ use App\Models\Receipt;
 use App\Models\User;
 use App\Support\Clinic;
 use App\Support\InvoicePresenter;
+use App\Support\ResultAccessPresenter;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -60,6 +61,7 @@ class PaymentController extends Controller
         return Inertia::render('caja/recibo-imprimir', [
             'receipt' => $presenter->receipt($receipt),
             'clinic' => Clinic::info(),
+            'results_access' => ResultAccessPresenter::forAccount($receipt->invoice->account),
         ]);
     }
 }
