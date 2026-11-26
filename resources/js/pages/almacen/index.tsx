@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from '@inertiajs/react';
-import { PackagePlus, Plus, Search, Truck } from 'lucide-react';
+import { Plus, Search, Truck } from 'lucide-react';
 import SegmentedControl from '@/components/cemerog/SegmentedControl';
 import { entrada } from '@/routes';
 import { suppliers as suppliersRoute } from '@/routes/almacen';
@@ -27,9 +27,7 @@ export default function AlmacenIndex({
     const [tab, setTab] = useState<Tab>('todos');
     const [alert, setAlert] = useState<AlertFilter>('todas');
     const [query, setQuery] = useState('');
-    const [editing, setEditing] = useState<InventoryItemRow | 'new' | null>(
-        null,
-    );
+    const [editing, setEditing] = useState<InventoryItemRow | null>(null);
 
     const rows = useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -63,19 +61,15 @@ export default function AlmacenIndex({
                         <Truck className="h-4 w-4" />
                         Proveedores
                     </Link>
-                    <Link href={entrada.url()} className={secondary}>
-                        <PackagePlus className="h-4 w-4" />
-                        Registrar entrada
-                    </Link>
                     {can_edit && (
-                        <button
-                            type="button"
-                            onClick={() => setEditing('new')}
-                            className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[10px] bg-primary px-[14px] font-medium text-white hover:bg-primary-hover"
+                        // A new item comes in with its first goods entry
+                        <Link
+                            href={entrada.url({ query: { nuevo: 1 } })}
+                            className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-primary px-[14px] font-medium text-white hover:bg-primary-hover"
                         >
                             <Plus className="h-4 w-4" />
                             Nuevo artículo
-                        </button>
+                        </Link>
                     )}
                 </div>
             </div>
@@ -129,7 +123,7 @@ export default function AlmacenIndex({
             </section>
             {editing && (
                 <ItemDialog
-                    item={editing === 'new' ? null : editing}
+                    item={editing}
                     reasons={adjustment_reasons}
                     onClose={() => setEditing(null)}
                 />

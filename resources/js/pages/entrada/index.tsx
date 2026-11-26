@@ -17,6 +17,8 @@ type Props = {
     next_number: string;
     recent: RecentEntry[];
     today: string;
+    /** From «Nuevo artículo» in the catalog */
+    open_new_product?: boolean;
 };
 
 let nextKey = 1;
@@ -42,6 +44,7 @@ export default function EntradaIndex({
     next_number,
     recent,
     today,
+    open_new_product = false,
 }: Props) {
     const page = usePage();
     const errors = (page.props.errors ?? {}) as Record<string, string>;
@@ -51,7 +54,10 @@ export default function EntradaIndex({
     const [invoiceRef, setInvoiceRef] = useState('');
     const [receivedOn, setReceivedOn] = useState(today);
     const [lines, setLines] = useState<EntryLine[]>(() => [emptyLine()]);
-    const [newProductFor, setNewProductFor] = useState<number | null>(null);
+    // «Nuevo artículo» opens the new product form on the first line
+    const [newProductFor, setNewProductFor] = useState<number | null>(() =>
+        open_new_product ? (lines[0]?.key ?? null) : null,
+    );
     const [addingSupplier, setAddingSupplier] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 

@@ -271,6 +271,19 @@ describe('Entrada de mercancía', () => {
         );
     });
 
+    it('opens «Producto nuevo» right away when coming from the catalog', () => {
+        render(<EntradaIndex {...entradaProps} open_new_product />);
+
+        const dialog = screen.getByRole('dialog');
+        expect(within(dialog).getByText('Producto nuevo')).toBeTruthy();
+    });
+
+    it('starts without the new product dialog otherwise', () => {
+        render(<EntradaIndex {...entradaProps} />);
+
+        expect(screen.queryByRole('dialog')).toBeNull();
+    });
+
     it('creates a product that is not in the catalog and warns about duplicates', () => {
         render(<EntradaIndex {...entradaProps} />);
 
