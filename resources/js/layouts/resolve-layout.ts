@@ -1,5 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
+import PortalLayout from '@/layouts/portal-layout';
 
 /**
  * Printable documents (opened in a new tab) render without the app layout:
@@ -19,6 +20,11 @@ export const PRINTABLE_PAGES = [
 export function resolveLayout(name: string) {
     if ((PRINTABLE_PAGES as readonly string[]).includes(name)) {
         return undefined;
+    }
+
+    // The results portal is public, for patients: its own layout
+    if (name.startsWith('portal/')) {
+        return PortalLayout;
     }
 
     return name.startsWith('auth/') ? AuthLayout : AppLayout;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { usePage } from '@inertiajs/react';
-import { Ban, CreditCard, FileText, Printer } from 'lucide-react';
+import { Ban, CreditCard, FileText, Printer, QrCode } from 'lucide-react';
 import OpenShiftDialog from '@/components/caja/OpenShiftDialog';
 import caja from '@/routes/caja';
 import type { CashShiftProp } from '@/types/global';
@@ -9,10 +9,11 @@ import ChargesTable from './ChargesTable';
 import EmitInvoiceDialog from './EmitInvoiceDialog';
 import PaymentDialog from './PaymentDialog';
 import ReceiptsList from './ReceiptsList';
+import ResultCodeDialog from './ResultCodeDialog';
 import TotalsBox from './TotalsBox';
 import VoidInvoiceDialog from './VoidInvoiceDialog';
 
-type Dialog = 'emit' | 'pay' | 'void' | null;
+type Dialog = 'emit' | 'pay' | 'void' | 'code' | null;
 
 const primary =
     'inline-flex h-9 flex-none cursor-pointer items-center gap-2 rounded-[10px] border-0 bg-primary px-[14px] font-medium whitespace-nowrap text-white shadow-sm hover:bg-primary-hover';
@@ -108,6 +109,16 @@ export default function AccountPanel({
                                 >
                                     <Ban className="h-4 w-4" />
                                     Anular factura
+                                </button>
+                            )}
+                            {invoice.results && (
+                                <button
+                                    type="button"
+                                    onClick={() => setDialog('code')}
+                                    className={secondary}
+                                >
+                                    <QrCode className="h-4 w-4" />
+                                    Código de resultados
                                 </button>
                             )}
                             <a
@@ -215,6 +226,13 @@ export default function AccountPanel({
                     invoice={invoice}
                     open
                     onOpenChange={(o) => !o && setDialog(null)}
+                />
+            )}
+            {invoice?.results && dialog === 'code' && (
+                <ResultCodeDialog
+                    invoiceId={invoice.id}
+                    code={invoice.results.code}
+                    onClose={() => setDialog(null)}
                 />
             )}
             {invoice && dialog === 'void' && (

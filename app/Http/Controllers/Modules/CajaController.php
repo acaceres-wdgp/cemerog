@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Modules;
 
+use App\Actions\Results\GenerateResultAccessCode;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\Invoice;
 use App\Models\User;
 use App\Support\InvoicePresenter;
+use App\Support\ResultAccessPresenter;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -43,7 +45,13 @@ class CajaController extends Controller
             'pending_accounts' => $pending->map(fn (Account $a) => $presenter->account($a))->all(),
             'accounts_in_care' => $inCare->map(fn (Account $a) => $presenter->account($a))->all(),
             'invoices' => $invoices->map(fn (Invoice $i) => $presenter->summary($i))->all(),
-            'selected_invoice' => $selected ? $presenter->detail($selected) : null,
+            'selected_invoice' => $selected ? [
+                ...$presenter->detail($selected),
+                // «Código de resultados»: only accounts with lab or imaging
+                'results' => GenerateResultAccessCode::accountHasResults($selected->account) ? [
+                    'code' => ResultAccessPresenter::forAccount($selected->account),
+                ] : null,
+            ] : null,
             'can_void' => $user->hasRole('administrador'),
         ]);
     }

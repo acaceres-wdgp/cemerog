@@ -2,6 +2,7 @@
 
 namespace App\Actions\Caja;
 
+use App\Actions\Results\GenerateResultAccessCode;
 use App\Models\Account;
 use App\Models\AccountCharge;
 use App\Models\Invoice;
@@ -11,6 +12,8 @@ use Illuminate\Validation\ValidationException;
 
 class CreateInvoice
 {
+    public function __construct(private GenerateResultAccessCode $resultCode) {}
+
     /**
      * Issue the invoice of a daily account that is pending billing, with all
      * its charges in a single invoice and an optional discount (up to 100%).
@@ -68,6 +71,10 @@ class CreateInvoice
             }
 
             $account->update(['status' => 'facturada']);
+
+            // Lab or imaging studies: the patient gets a code for the results
+            // portal, printed on the invoice and the receipt
+            $this->resultCode->handle($account, $user, $invoice);
 
             return $invoice;
         });

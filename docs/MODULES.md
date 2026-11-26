@@ -19,6 +19,7 @@
 | caja          | /facturacion             | caja/index          | admin, caja, secretaria                                  | Terminado              | 12          |
 | caja          | /facturas                | facturas/index      | admin, caja, secretaria (permiso de caja)                | Terminado              | 12          |
 | cxc           | /cuentas-por-cobrar      | cxc/index           | admin, caja, secretaria                                  | Terminado              | 13          |
+| portal        | /resultados              | portal/acceso       | Público (pacientes: código + fecha de nacimiento)        | Terminado              | —           |
 | cuadre        | /cuadre-de-caja          | cuadre/index        | admin, caja, secretaria                                  | Terminado              | 14          |
 | almacen       | /almacen                 | almacen/index       | admin, almacen                                           | Terminado (fase 1)     | 15          |
 | entrada       | /entrada-mercancia       | entrada/index       | admin, almacen                                           | Terminado (fase 1)     | 16          |

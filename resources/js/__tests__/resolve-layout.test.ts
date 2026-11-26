@@ -6,6 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
+import PortalLayout from '@/layouts/portal-layout';
 import { PRINTABLE_PAGES, resolveLayout } from '@/layouts/resolve-layout';
 
 const pages = import.meta.glob('../pages/**/*.tsx', {
@@ -32,6 +33,11 @@ describe('resolveLayout', () => {
 
     it('uses AuthLayout for auth pages', () => {
         expect(resolveLayout('auth/login')).toBe(AuthLayout);
+    });
+
+    it('uses the public PortalLayout for the results portal', () => {
+        expect(resolveLayout('portal/acceso')).toBe(PortalLayout);
+        expect(resolveLayout('portal/estudio')).toBe(PortalLayout);
     });
 
     it('uses AppLayout for every other page', () => {

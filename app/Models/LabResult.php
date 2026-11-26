@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -21,5 +22,11 @@ class LabResult extends Model
     protected function casts(): array
     {
         return ['position' => 'integer', 'out_of_range' => 'boolean'];
+    }
+
+    /** @return BelongsTo<LabTestParameter, $this> */
+    public function parameter(): BelongsTo
+    {
+        return $this->belongsTo(LabTestParameter::class, 'lab_test_parameter_id');
     }
 }

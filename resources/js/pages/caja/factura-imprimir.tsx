@@ -1,5 +1,8 @@
 import React from 'react';
 import PrintablePage from '@/components/cemerog/PrintablePage';
+import ResultsAccessBox, {
+    type ResultsAccess,
+} from '@/components/caja/ResultsAccessBox';
 import ClinicHeader, {
     type ClinicInfo,
 } from '@/components/cemerog/ClinicHeader';
@@ -10,9 +13,12 @@ import type { InvoiceDetail } from './types';
 export default function FacturaImprimir({
     invoice,
     clinic,
+    results_access = null,
 }: {
     invoice: InvoiceDetail;
     clinic: ClinicInfo;
+    /** Lab or imaging: the code of the results portal */
+    results_access?: ResultsAccess | null;
 }) {
     return (
         <>
@@ -76,6 +82,10 @@ export default function FacturaImprimir({
                             }
                         />
                     </div>
+
+                    {results_access && (
+                        <ResultsAccessBox access={results_access} />
+                    )}
 
                     <p className="mt-10 text-center text-[12px] text-muted">
                         Emitida por {invoice.issued_by}. Gracias por su

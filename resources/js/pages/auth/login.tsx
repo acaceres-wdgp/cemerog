@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import PasswordInput from '@/components/cemerog/PasswordInput';
+import { portal } from '@/routes';
 
 type LoginForm = {
     username: string;
@@ -161,6 +162,15 @@ export default function Login({ status }: Props) {
                             </Button>
                         </form>
                     </div>
+
+                    <p className="mt-5 text-center text-sm">
+                        <a
+                            href={portal.url()}
+                            className="font-medium text-primary underline underline-offset-2"
+                        >
+                            ¿Eres paciente? Consulta tus resultados
+                        </a>
+                    </p>
 
                     <p className="mt-6 text-center text-xs text-[#71717a]">
                         &copy; {new Date().getFullYear()} CEMEROG. Sistema de

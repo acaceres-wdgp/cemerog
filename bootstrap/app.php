@@ -3,8 +3,10 @@
 use App\Actions\ResolveHomeRoute;
 use App\Http\Middleware\AttendPatients;
 use App\Http\Middleware\EnsurePasswordChanged;
+use App\Http\Middleware\EnsurePortalSession;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\PortalHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -36,6 +38,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'attend-patients' => AttendPatients::class,
             'ensure.password.changed' => EnsurePasswordChanged::class,
             'permission' => PermissionMiddleware::class,
+            'portal.headers' => PortalHeaders::class,
+            'portal.session' => EnsurePortalSession::class,
             'role' => RoleMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
         ]);

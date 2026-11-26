@@ -1,5 +1,8 @@
 import React from 'react';
 import PrintablePage from '@/components/cemerog/PrintablePage';
+import ResultsAccessBox, {
+    type ResultsAccess,
+} from '@/components/caja/ResultsAccessBox';
 import ClinicHeader, {
     type ClinicInfo,
 } from '@/components/cemerog/ClinicHeader';
@@ -20,9 +23,12 @@ type PrintableReceipt = ReceiptRow & {
 export default function ReciboImprimir({
     receipt,
     clinic,
+    results_access = null,
 }: {
     receipt: PrintableReceipt;
     clinic: ClinicInfo;
+    /** Lab or imaging: the code of the results portal */
+    results_access?: ResultsAccess | null;
 }) {
     return (
         <>
@@ -80,6 +86,10 @@ export default function ReciboImprimir({
                             Balance {formatMoney(receipt.invoice.balance)}
                         </span>
                     </div>
+
+                    {results_access && (
+                        <ResultsAccessBox access={results_access} />
+                    )}
 
                     <p className="mt-10 text-center text-[12px] text-muted">
                         Recibido por {receipt.created_by}.

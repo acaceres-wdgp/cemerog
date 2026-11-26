@@ -2,6 +2,7 @@
 
 namespace App\Actions\Img;
 
+use App\Events\ResultPublished;
 use App\Models\ImagingOrder;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,7 @@ class SaveImagingReport
 {
     public function handle(ImagingOrder $order, ?string $findings, ?string $conclusion, User $user, bool $sign = false): ImagingOrder
     {
-        return DB::transaction(function () use ($order, $findings, $conclusion, $user, $sign): ImagingOrder {
+        $order = DB::transaction(function () use ($order, $findings, $conclusion, $user, $sign): ImagingOrder {
             $order = ImagingOrder::whereKey($order->id)->lockForUpdate()->firstOrFail();
             if (! $order->isReportEditable()) {
                 throw ValidationException::withMessages(['order' => $order->status === 'ordenada'
@@ -40,5 +41,12 @@ class SaveImagingReport
 
             return $order;
         });
+
+        if ($sign) {
+            // Visible in the results portal from now on
+            ResultPublished::dispatch($order);
+        }
+
+        return $order;
     }
 }

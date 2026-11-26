@@ -554,3 +554,14 @@ Al llegar un paciente se necesita registrar qué consumió ese día (consultas, 
 - Solo modo claro: sin script de tema en `app.blade.php`, Sonner con `theme="light"` y `@custom-variant dark` en `app.css` ligado a una clase `.dark` que nunca se agrega, de modo que la preferencia del sistema operativo no cambia nada.
 
 **Consecuencias:** el nombre de cada usuario lo gestiona solo el administrador. Para agregar modo oscuro en el futuro habría que definir tokens oscuros y una forma de elegirlo; no basta con volver a poner el script.
+
+## ADR-027: Portal de resultados — dependencias de PDF y QR
+
+**Contexto:** el portal público de resultados (prompt 09) descarga los resultados en PDF y la factura imprime un QR que abre el portal con el código. El proyecto no tenía ninguna librería de PDF ni de QR.
+
+**Decisión:**
+
+- `barryvdh/laravel-dompdf` (^3.1, sobre `dompdf/dompdf`) genera los PDF de resultados desde una vista Blade, en el servidor.
+- `bacon/bacon-qr-code` (^3.0) genera el QR como SVG en el servidor. Se usa directo, sin `simplesoftwareio/simple-qrcode`, porque ese paquete solo envuelve a bacon y agrega dependencias.
+
+**Consecuencias:** los PDF se arman sin navegador ni servicios externos, y el QR no depende de ninguna API de terceros.

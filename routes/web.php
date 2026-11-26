@@ -34,6 +34,7 @@ use App\Http\Controllers\Modules\PacientesController;
 use App\Http\Controllers\Modules\PaymentController;
 use App\Http\Controllers\Modules\PrescriptionController;
 use App\Http\Controllers\Modules\RegistroController;
+use App\Http\Controllers\Modules\ResultCodeController;
 use App\Http\Controllers\Modules\StudyCategoryController;
 use App\Http\Controllers\Modules\StudyOrderController;
 use App\Http\Controllers\Modules\SupplierController;
@@ -41,6 +42,8 @@ use App\Http\Controllers\Modules\SurgeryCatalogController;
 use App\Http\Controllers\Modules\TableroController;
 use App\Http\Controllers\Modules\TemaController;
 use App\Http\Controllers\Modules\TurnosController;
+use App\Http\Controllers\Portal\PortalAccessController;
+use App\Http\Controllers\Portal\PortalResultsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -51,6 +54,24 @@ Route::get('/', fn (Request $request, ResolveHomeRoute $resolveHomeRoute) => $re
     : redirect()->route('login'));
 
 // Auth routes
+// Portal de resultados: public, for patients, with its own session (code +
+// birth date) and independent of the staff authentication
+Route::prefix('/resultados')->middleware('portal.headers')->group(function () {
+    Route::get('/', [PortalAccessController::class, 'show'])->name('portal');
+    Route::post('/acceso', [PortalAccessController::class, 'store'])->name('portal.access');
+    Route::post('/salir', [PortalAccessController::class, 'logout'])->name('portal.logout');
+
+    Route::middleware('portal.session')->group(function () {
+        Route::get('/mis-resultados', [PortalResultsController::class, 'index'])->name('portal.results');
+        Route::get('/todos.pdf', [PortalResultsController::class, 'all'])->name('portal.all');
+        Route::get('/estudio/{item}', [PortalResultsController::class, 'show'])->where('item', '(lab|img)-[0-9]+')->name('portal.study');
+        Route::get('/estudio/{item}/pdf', [PortalResultsController::class, 'pdf'])->where('item', '(lab|img)-[0-9]+')->name('portal.study.pdf');
+        Route::get('/estudio/{item}/imagen/{n}', [PortalResultsController::class, 'image'])
+            ->where(['item' => 'img-[0-9]+', 'n' => '[0-9]+'])
+            ->name('portal.study.image');
+    });
+});
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])->name('login.store');
@@ -219,6 +240,11 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
         Route::post('/recibos/{receipt}/anular', [PaymentController::class, 'void'])->name('caja.receipts.void');
         Route::get('/recibos/{receipt}/imprimir', [PaymentController::class, 'print'])->name('caja.receipts.print');
     });
+
+    // A new results portal code (lost code), from caja or recepción
+    Route::post('/facturacion/facturas/{invoice}/codigo-resultados', [ResultCodeController::class, 'regenerate'])
+        ->middleware('permission:module.caja.access|module.pacientes.access')
+        ->name('caja.invoices.result-code');
 
     Route::get('/facturas', [FacturasController::class, 'index'])
         ->middleware('permission:module.caja.access')
