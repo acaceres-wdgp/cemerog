@@ -11,7 +11,6 @@ use App\Models\Supplier;
 use App\Models\User;
 use App\Support\Toast;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,11 +18,9 @@ use Inertia\Response;
 /** Inventario › Entrada de mercancía */
 class EntradaController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(): Response
     {
         return Inertia::render('entrada/index', [
-            // «Nuevo artículo» in the catalog comes here with the new product form open
-            'open_new_product' => $request->boolean('nuevo'),
             'items' => InventoryItem::where('is_active', true)->orderBy('name')->get()
                 ->map(fn (InventoryItem $i): array => [
                     'id' => $i->id,

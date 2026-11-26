@@ -142,11 +142,11 @@ describe('Inventario › Catálogo', () => {
         expect(screen.queryByText('Gasa estéril')).toBeNull();
     });
 
-    it('«Nuevo artículo» goes to the goods entry with the new product form', () => {
+    it('«Nuevo artículo» goes straight to the goods entry, without any dialog', () => {
         render(<AlmacenIndex items={items} can_edit />);
 
         const link = screen.getByRole('link', { name: /Nuevo artículo/ });
-        expect(link.getAttribute('href')).toBe('/entrada-mercancia?nuevo=1');
+        expect(link.getAttribute('href')).toBe('/entrada-mercancia');
         expect(screen.queryByText('Registrar entrada')).toBeNull();
         expect(screen.queryByRole('dialog')).toBeNull();
     });
