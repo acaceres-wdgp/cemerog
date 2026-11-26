@@ -68,7 +68,7 @@ test('editing the item corrects the stock with a reason and keeps the record', f
 test('the separate adjustment endpoint is gone', function () {
     $this->actingAs($this->almacen)
         ->post("/almacen/articulos/{$this->item->id}/ajustes", ['new_stock' => 12, 'reason' => 'conteo'])
-        ->assertStatus(405);
+        ->assertNotFound();
 });
 
 test('the warehouse role edits the catalog; other roles only see it if they have access', function () {
