@@ -354,6 +354,156 @@ describe('RecetaTab – save calls router.post for new, router.put for existing'
     });
 });
 
+// ─── Required fields ──────────────────────────────────────────────────────────
+
+describe('RecetaTab – required fields', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockUsePage.mockReturnValue({ props: { errors: {} } });
+    });
+
+    const fill = (label: string, value: string) =>
+        fireEvent.change(screen.getByLabelText(label), { target: { value } });
+    const save = () =>
+        fireEvent.click(
+            screen.getByRole('button', { name: /guardar receta/i }),
+        );
+
+    it('says which fields are missing and does not save', () => {
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
+
+        fill('Medicamento 1', 'Amoxicilina 500 mg');
+        fill('Dosis 1', '1 cápsula');
+        fill('Frecuencia 1', 'cada 8 horas');
+        fill('Cantidad 1', '21');
+        save();
+
+        expect(mockRouterPost).not.toHaveBeenCalled();
+        expect(screen.getByRole('alert').textContent).toContain(
+            'Amoxicilina 500 mg: falta Duración (días)',
+        );
+        expect(screen.getByLabelText('Duración 1')).toHaveAttribute(
+            'aria-invalid',
+            'true',
+        );
+        expect(screen.getByLabelText('Dosis 1')).not.toHaveAttribute(
+            'aria-invalid',
+        );
+
+        // Filling it clears the error and saves
+        fill('Duración 1', '7');
+        expect(screen.queryByRole('alert')).toBeNull();
+        save();
+        expect(mockRouterPost).toHaveBeenCalled();
+    });
+
+    it('lists every missing field of every medication', () => {
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
+
+        fill('Medicamento 1', 'Ibuprofeno');
+        fireEvent.click(screen.getByText('+ Agregar medicamento'));
+        fill('Dosis 2', '1 tableta');
+        save();
+
+        const text = screen.getByRole('alert').textContent;
+        expect(text).toContain(
+            'Ibuprofeno: falta Dosis, Frecuencia, Duración (días), Cantidad',
+        );
+        expect(text).toContain(
+            'Medicamento 2: falta Medicamento, Frecuencia, Duración (días), Cantidad',
+        );
+        expect(mockRouterPost).not.toHaveBeenCalled();
+    });
+
+    it('a continuous medication needs no days; a blank line is ignored', () => {
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
+
+        fill('Medicamento 1', 'Losartán 50 mg');
+        fill('Dosis 1', '1 tableta');
+        fill('Frecuencia 1', 'cada 24 horas');
+        fill('Cantidad 1', '30');
+        fireEvent.click(screen.getByLabelText('Continuo'));
+        fireEvent.click(screen.getByText('+ Agregar medicamento'));
+        save();
+
+        expect(screen.queryByRole('alert')).toBeNull();
+        expect(mockRouterPost).toHaveBeenCalledWith(
+            '/consulta/turnos/1/receta',
+            expect.objectContaining({
+                items: [
+                    expect.objectContaining({
+                        medication: 'Losartán 50 mg',
+                        is_continuous: true,
+                        duration_days: null,
+                    }),
+                ],
+            }),
+            expect.any(Object),
+        );
+    });
+
+    it('a quantity of 0 is missing', () => {
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
+
+        fill('Medicamento 1', 'Paracetamol');
+        fill('Dosis 1', '1 tableta');
+        fill('Frecuencia 1', 'cada 8 horas');
+        fill('Duración 1', '3');
+        fill('Cantidad 1', '0');
+        save();
+
+        expect(screen.getByRole('alert').textContent).toContain(
+            'Paracetamol: falta Cantidad',
+        );
+    });
+
+    it('shows what the server rejects in a line', () => {
+        mockUsePage.mockReturnValue({
+            props: {
+                errors: {
+                    'items.0.duration_days':
+                        'The items.0.duration_days field is required.',
+                },
+            },
+        });
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
+
+        expect(screen.getByRole('alert').textContent).toContain(
+            'No se pudo guardar la receta: revisa Duración (días) del medicamento 1.',
+        );
+    });
+});
+
 // ─── Instruction text builder ─────────────────────────────────────────────────
 
 describe('buildInstruction', () => {
