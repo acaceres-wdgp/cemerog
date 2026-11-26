@@ -131,7 +131,9 @@ export default function ItemDialog({
                             set({ stock: e.target.value.replace(/\D/g, '') })
                         }
                         error={errors.new_stock}
-                        className={item ? undefined : '[&_input]:bg-list-row-bg'}
+                        className={
+                            item ? undefined : '[&_input]:bg-list-row-bg'
+                        }
                     />
                     <FormField
                         name="min_stock"
@@ -146,9 +148,11 @@ export default function ItemDialog({
                     <div className="flex flex-col gap-3 rounded-[10px] border border-card-border bg-list-row-bg px-3 py-3">
                         <p className="m-0 text-[13px] text-text-secondary">
                             Existencia {item.stock} → {newStock}:{' '}
-                            {diff > 0 ? `se suman ${diff}` : `se restan ${-diff}`}{' '}
-                            {Math.abs(diff) === 1 ? 'unidad' : 'unidades'}. Queda
-                            registrado como ajuste con su motivo.
+                            {diff > 0
+                                ? `se suman ${diff}`
+                                : `se restan ${-diff}`}{' '}
+                            {Math.abs(diff) === 1 ? 'unidad' : 'unidades'}.
+                            Queda registrado como ajuste con su motivo.
                         </p>
                         <div className="grid grid-cols-2 gap-3">
                             <FormField
@@ -157,7 +161,9 @@ export default function ItemDialog({
                                 label="Motivo del cambio"
                                 required
                                 value={form.reason}
-                                onChange={(e) => set({ reason: e.target.value })}
+                                onChange={(e) =>
+                                    set({ reason: e.target.value })
+                                }
                                 error={errors.reason}
                             >
                                 {Object.entries(reasons).map(([k, label]) => (

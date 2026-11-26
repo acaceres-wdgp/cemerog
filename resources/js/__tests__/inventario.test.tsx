@@ -122,7 +122,9 @@ describe('Catálogo', () => {
         expect(
             screen.queryByRole('button', { name: /Ajustar existencia/ }),
         ).toBeNull();
-        fireEvent.click(screen.getByRole('button', { name: 'Editar Omeprazol' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Editar Omeprazol' }),
+        );
         const dialog = screen.getByRole('dialog');
         expect(within(dialog).queryByLabelText(/Motivo del cambio/)).toBeNull();
 
@@ -133,20 +135,36 @@ describe('Catálogo', () => {
         fireEvent.change(within(dialog).getByLabelText(/Motivo del cambio/), {
             target: { value: 'merma' },
         });
-        fireEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }));
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Guardar' }),
+        );
 
         expect(mockPut).toHaveBeenCalledWith(
             '/almacen/articulos/2',
-            expect.objectContaining({ new_stock: 12, reason: 'merma', note: null }),
+            expect.objectContaining({
+                new_stock: 12,
+                reason: 'merma',
+                note: null,
+            }),
             expect.anything(),
         );
     });
 
     it('saving without changing the stock sends no adjustment', () => {
-        render(<AlmacenIndex items={catalog} can_edit adjustment_reasons={{ conteo: 'Conteo físico' }} />);
-        fireEvent.click(screen.getByRole('button', { name: 'Editar Omeprazol' }));
+        render(
+            <AlmacenIndex
+                items={catalog}
+                can_edit
+                adjustment_reasons={{ conteo: 'Conteo físico' }}
+            />,
+        );
         fireEvent.click(
-            within(screen.getByRole('dialog')).getByRole('button', { name: 'Guardar' }),
+            screen.getByRole('button', { name: 'Editar Omeprazol' }),
+        );
+        fireEvent.click(
+            within(screen.getByRole('dialog')).getByRole('button', {
+                name: 'Guardar',
+            }),
         );
 
         expect(mockPut.mock.calls[0][1]).not.toHaveProperty('new_stock');
