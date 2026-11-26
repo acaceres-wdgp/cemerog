@@ -135,6 +135,17 @@ test('invoices are filtered by period, state, area, condition and cashier', func
         ->and($count(['periodo' => 'todo', 'cajero' => $this->juan->id]))->toBe(1);
 });
 
+test('«hoy» is the clinic day, also for invoices late at night or just after midnight', function () {
+    $this->travelTo(Carbon::parse('2026-11-26 23:50:00', 'America/Santo_Domingo'));
+    listedInvoice($this->rosa, ['issued_at' => Carbon::parse('2026-11-26 00:10:00', 'America/Santo_Domingo')]);
+    listedInvoice($this->rosa, ['issued_at' => Carbon::parse('2026-11-26 21:40:00', 'America/Santo_Domingo')]);
+    listedInvoice($this->rosa, ['issued_at' => Carbon::parse('2026-11-25 23:55:00', 'America/Santo_Domingo')]);
+
+    $this->actingAs($this->rosa)
+        ->get('/facturas?periodo=hoy')
+        ->assertInertia(fn ($page) => $page->where('invoices.total', 2));
+});
+
 test('the state tabs count with the other filters but without the state', function () {
     listedInvoice($this->rosa, ['status' => 'pagada', 'paid_amount' => 100000]);
     listedInvoice($this->rosa, []);

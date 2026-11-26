@@ -27,6 +27,7 @@ describe('resolveLayout', () => {
         'caja/factura-imprimir',
         'caja/recibo-imprimir',
         'cuadre/reporte',
+        'cuadre/reporte-dia',
     ])('renders %s without a layout', (name) => {
         expect(resolveLayout(name)).toBeUndefined();
     });

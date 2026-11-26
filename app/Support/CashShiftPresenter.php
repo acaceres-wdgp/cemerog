@@ -29,6 +29,8 @@ class CashShiftPresenter
             'status' => $shift->status,
             'opened_by' => $shift->opener->name,
             'opened_at' => ClinicTime::dateTime($shift->opened_at),
+            // The day of the shift, for «Imprimir cuadre del día»
+            'opened_on' => $shift->opened_at->copy()->setTimezone(ClinicTime::TIMEZONE)->toDateString(),
             'closed_by' => $shift->closer?->name,
             'closed_at' => ClinicTime::dateTime($shift->closed_at),
             'pending_close' => $open && $shift->isPendingClose(),

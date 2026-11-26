@@ -115,7 +115,8 @@ class FacturasController extends Controller
             default => null,
         };
         if ($from !== null) {
-            $query->where('issued_at', '>=', $from->utc());
+            // Dates are stored in the app time zone: compare in it, not in UTC
+            $query->where('issued_at', '>=', $from->setTimezone((string) config('app.timezone')));
         }
     }
 

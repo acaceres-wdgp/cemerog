@@ -49,6 +49,7 @@ const openShift: CashShiftView = {
     status: 'abierto',
     opened_by: 'Kenia Marte',
     opened_at: '31/10/2026 08:00',
+    opened_on: '2026-10-31',
     closed_by: null,
     closed_at: null,
     pending_close: false,
@@ -121,6 +122,22 @@ describe('Cuadre de caja', () => {
         mockPost.mockClear();
         mockGet.mockClear();
         page.props.cash_shift = null;
+    });
+
+    it('prints the cuadre of the day of the shift', () => {
+        render(<CuadreIndex {...props()} />);
+
+        expect(
+            screen.getByRole('link', { name: /Imprimir cuadre del día/ }),
+        ).toHaveAttribute('href', '/cuadre-de-caja/dia?fecha=2026-10-31');
+    });
+
+    it('without a shift, the cuadre of the day is today', () => {
+        render(<CuadreIndex {...props({ shift: null, shifts: [] })} />);
+
+        expect(
+            screen.getByRole('link', { name: /Imprimir cuadre del día/ }),
+        ).toHaveAttribute('href', '/cuadre-de-caja/dia');
     });
 
     it('without an open shift offers to open one', () => {

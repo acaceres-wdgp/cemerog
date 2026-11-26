@@ -12,8 +12,10 @@ use App\Support\CashDenominations;
 use App\Support\CashShiftPresenter;
 use App\Support\Clinic;
 use App\Support\ClinicTime;
+use App\Support\DailyCuadre;
 use App\Support\InvoicePresenter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -35,6 +37,22 @@ class CuadreController extends Controller
             'shift' => $shift ? $presenter->shift($shift, $user) : null,
             'shifts' => $presenter->picker(),
             'denominations' => CashDenominations::VALUES,
+        ]);
+    }
+
+    /** Printable cuadre of a day (?fecha=AAAA-MM-DD, today by default): every shift of it */
+    public function day(Request $request, DailyCuadre $cuadre): Response
+    {
+        $date = (string) $request->query('fecha', '');
+        $day = preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) && checkdate((int) substr($date, 5, 2), (int) substr($date, 8, 2), (int) substr($date, 0, 4))
+            ? Carbon::parse($date, ClinicTime::TIMEZONE)
+            : Carbon::now(ClinicTime::TIMEZONE);
+
+        return Inertia::render('cuadre/reporte-dia', [
+            'day' => $cuadre->handle($day),
+            'clinic' => Clinic::info(),
+            'printed_by' => $request->user()?->name,
+            'printed_at' => ClinicTime::dateTime(now()),
         ]);
     }
 
