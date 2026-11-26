@@ -48,23 +48,6 @@ class AlmacenController extends Controller
         ]);
     }
 
-    public function store(InventoryItemRequest $request): RedirectResponse
-    {
-        $data = $request->validated();
-        $item = InventoryItem::create([
-            ...$data,
-            'code' => InventoryItem::nextCode($data['kind']),
-            'min_stock' => $data['min_stock'] ?? 0,
-            // Starts empty: the goods come in through «Entrada de mercancía»
-            'stock' => 0,
-            'is_active' => true,
-        ]);
-
-        Toast::success("{$item->code} · {$item->name} agregado al catálogo.");
-
-        return back();
-    }
-
     /** Edit the item and, with a reason, correct its stock in the same step */
     public function update(InventoryItemRequest $request, InventoryItem $item): RedirectResponse
     {

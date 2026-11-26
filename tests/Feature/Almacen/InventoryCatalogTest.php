@@ -24,24 +24,12 @@ function itemPayload(array $overrides = []): array
     ];
 }
 
-test('the administrator adds a medication and it gets its code', function () {
+test('new items only come in through «Entrada de mercancía», not from the catalog', function () {
     $this->actingAs($this->admin)
         ->post('/almacen/articulos', itemPayload())
-        ->assertRedirect()
-        ->assertSessionHasNoErrors();
+        ->assertNotFound();
 
-    $item = InventoryItem::first();
-    expect($item->code)->toBe('MED-001')
-        ->and($item->name)->toBe('Dipirona 1 g/2 ml')
-        ->and($item->price)->toBe(15000)
-        // Stock only enters through goods entries or adjustments
-        ->and($item->stock)->toBe(0)
-        ->and($item->is_active)->toBeTrue();
-
-    $this->actingAs($this->admin)->post('/almacen/articulos', itemPayload(['name' => 'Gasa estéril', 'kind' => 'insumo', 'price' => 2500]));
-    $this->actingAs($this->admin)->post('/almacen/articulos', itemPayload(['name' => 'Ceftriaxona 1 g']));
-
-    expect(InventoryItem::orderBy('id')->pluck('code')->all())->toBe(['MED-001', 'INS-001', 'MED-002']);
+    expect(InventoryItem::count())->toBe(0);
 });
 
 test('the catalog lists the items with low-stock and expiry alerts, cost and lot', function () {
@@ -65,11 +53,9 @@ test('the catalog lists the items with low-stock and expiry alerts, cost and lot
         );
 });
 
-test('only the warehouse role and administrators create or edit items', function () {
+test('only the warehouse role and administrators edit items', function () {
     $enfermera = User::factory()->create();
     $enfermera->assignRole('enfermeria');
-
-    $this->actingAs($enfermera)->post('/almacen/articulos', itemPayload())->assertForbidden();
 
     $item = InventoryItem::create([...itemPayload(), 'code' => 'MED-001']);
     $this->actingAs($enfermera)->put("/almacen/articulos/{$item->id}", itemPayload(['price' => 1]))->assertForbidden();
@@ -100,8 +86,10 @@ test('an item can be edited and deactivated; the code does not change', function
 });
 
 test('an item needs a name, a kind and a price in centavos', function () {
+    $item = InventoryItem::create([...itemPayload(), 'code' => 'MED-001']);
+
     $this->actingAs($this->admin)
-        ->post('/almacen/articulos', itemPayload(['name' => '', 'kind' => 'otro', 'price' => -5]))
+        ->put("/almacen/articulos/{$item->id}", itemPayload(['name' => '', 'kind' => 'otro', 'price' => -5]))
         ->assertSessionHasErrors(['name', 'kind', 'price']);
 });
 

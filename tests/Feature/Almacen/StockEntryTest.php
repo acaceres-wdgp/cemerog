@@ -69,7 +69,9 @@ test('an entry can create a product that is not in the catalog', function () {
                 'quantity' => 100, 'unit_cost' => 900,
             ],
         ]))
-        ->assertSessionHasNoErrors();
+        ->assertSessionHasNoErrors()
+        // Back to the catalog, where the new product now shows
+        ->assertRedirect('/almacen');
 
     $gasa = InventoryItem::where('name', 'Gasa estéril 4x4')->first();
     expect($gasa->code)->toBe('INS-001')
@@ -113,6 +115,17 @@ test('the entry page lists the catalog, the active suppliers and the recent entr
             ->where('recent.0.lines_count', 1)
             ->where('recent.0.total_cost', 30000)
         );
+});
+
+test('«Nuevo artículo» from the catalog opens the entry with a new product', function () {
+    $this->actingAs($this->almacen)
+        ->get('/entrada-mercancia?nuevo=1')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('open_new_product', true));
+
+    $this->actingAs($this->almacen)
+        ->get('/entrada-mercancia')
+        ->assertInertia(fn ($page) => $page->where('open_new_product', false));
 });
 
 test('only the warehouse role and administrators register entries', function () {

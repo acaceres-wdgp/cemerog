@@ -247,7 +247,6 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
     // Inventario
     Route::prefix('/almacen')->middleware('permission:module.almacen.access')->group(function () {
         Route::get('/', [AlmacenController::class, 'index'])->name('almacen');
-        Route::post('/articulos', [AlmacenController::class, 'store'])->name('almacen.items.store');
         Route::put('/articulos/{item}', [AlmacenController::class, 'update'])->name('almacen.items.update');
         Route::get('/proveedores', [SupplierController::class, 'index'])->name('almacen.suppliers');
         Route::post('/proveedores', [SupplierController::class, 'store'])->name('almacen.suppliers.store');

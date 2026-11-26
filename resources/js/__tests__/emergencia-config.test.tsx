@@ -127,7 +127,7 @@ describe('Inventario › Catálogo', () => {
 
         expect(screen.getByText('Bajo mínimo')).toBeTruthy();
         expect(
-            screen.queryByRole('button', { name: 'Nuevo artículo' }),
+            screen.queryByRole('link', { name: /Nuevo artículo/ }),
         ).toBeNull();
 
         fireEvent.click(screen.getByRole('tab', { name: /Insumos/ }));
@@ -142,37 +142,12 @@ describe('Inventario › Catálogo', () => {
         expect(screen.queryByText('Gasa estéril')).toBeNull();
     });
 
-    it('an administrator adds an item with its price in centavos and no stock', () => {
+    it('«Nuevo artículo» goes to the goods entry with the new product form', () => {
         render(<AlmacenIndex items={items} can_edit />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Nuevo artículo' }));
-        const dialog = screen.getByRole('dialog');
-        fireEvent.click(within(dialog).getByRole('tab', { name: 'Insumo' }));
-        fireEvent.change(within(dialog).getByLabelText(/Nombre/), {
-            target: { value: 'Algodón' },
-        });
-        fireEvent.change(within(dialog).getByLabelText(/Precio/), {
-            target: { value: '35' },
-        });
-        // Stock is not typed here: it starts at 0
-        expect(within(dialog).getByLabelText(/Existencia/)).toHaveAttribute(
-            'readonly',
-        );
-        expect(within(dialog).getByLabelText(/Existencia/)).toHaveValue('0');
-        fireEvent.click(
-            within(dialog).getByRole('button', { name: 'Agregar al catálogo' }),
-        );
-
-        expect(mockPost).toHaveBeenCalledWith(
-            '/almacen/articulos',
-            {
-                name: 'Algodón',
-                presentation: null,
-                kind: 'insumo',
-                price: 3500,
-                min_stock: 0,
-            },
-            expect.anything(),
-        );
+        const link = screen.getByRole('link', { name: /Nuevo artículo/ });
+        expect(link.getAttribute('href')).toBe('/entrada-mercancia?nuevo=1');
+        expect(screen.queryByText('Registrar entrada')).toBeNull();
+        expect(screen.queryByRole('dialog')).toBeNull();
     });
 });

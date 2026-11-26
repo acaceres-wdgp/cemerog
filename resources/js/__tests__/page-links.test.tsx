@@ -51,6 +51,9 @@ collectUrls(
     KNOWN_URLS,
 );
 
+/** The catalog as the warehouse role sees it (with «Nuevo artículo») */
+const AlmacenForEditor = () => <AlmacenIndex can_edit />;
+
 function internalHrefs(Page: ComponentType): string[] {
     const { container } = render(<Page />);
 
@@ -62,7 +65,7 @@ function internalHrefs(Page: ComponentType): string[] {
 describe('page links', () => {
     it.each([
         ['inicio', InicioIndex],
-        ['almacen', AlmacenIndex],
+        ['almacen', AlmacenForEditor],
     ])('%s only links to existing routes', (_, Page) => {
         const hrefs = internalHrefs(Page);
 
@@ -77,7 +80,7 @@ describe('page links', () => {
         expect(hrefs).toContain('/laboratorio');
     });
 
-    it('almacen links to entrada de mercancia', () => {
-        expect(internalHrefs(AlmacenIndex)).toContain('/entrada-mercancia');
+    it('almacen «Nuevo artículo» goes to entrada de mercancia', () => {
+        expect(internalHrefs(AlmacenForEditor)).toContain('/entrada-mercancia');
     });
 });
