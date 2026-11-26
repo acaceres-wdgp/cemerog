@@ -2,7 +2,9 @@ import React from 'react';
 import { router } from '@inertiajs/react';
 import SegmentedControl from '@/components/cemerog/SegmentedControl';
 import { cn } from '@/lib/utils';
+import { Printer } from 'lucide-react';
 import { cuadre } from '@/routes';
+import cuadreRoutes from '@/routes/cuadre';
 import type { CashShiftView, ShiftOption } from '../types';
 
 const CURRENT = 'actual';
@@ -80,7 +82,22 @@ export default function ShiftHeader({
                     />
                 </div>
             </div>
-            {shift && <StatusPill shift={shift} />}
+            <div className="flex flex-wrap items-center gap-3">
+                {shift && <StatusPill shift={shift} />}
+                <a
+                    href={cuadreRoutes.day.url(
+                        shift
+                            ? { query: { fecha: shift.opened_on } }
+                            : undefined,
+                    )}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex h-9 items-center gap-2 rounded-[10px] border border-secondary-border bg-secondary-bg px-[14px] font-medium whitespace-nowrap text-text-body hover:bg-accent-bg"
+                >
+                    <Printer className="h-4 w-4" />
+                    Imprimir cuadre del día
+                </a>
+            </div>
         </div>
     );
 }

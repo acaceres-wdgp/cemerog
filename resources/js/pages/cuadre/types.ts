@@ -44,6 +44,8 @@ export type CashShiftView = {
     status: 'abierto' | 'cerrado';
     opened_by: string;
     opened_at: string;
+    /** AAAA-MM-DD, for the cuadre of the day */
+    opened_on: string;
     closed_by: string | null;
     closed_at: string | null;
     pending_close: boolean;

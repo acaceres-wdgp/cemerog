@@ -268,6 +268,9 @@ Route::middleware(['auth', 'ensure.password.changed'])->group(function () {
     Route::post('/cuadre-de-caja/cerrar', [CashShiftController::class, 'close'])
         ->middleware('permission:module.cuadre.access')
         ->name('cuadre.close');
+    Route::get('/cuadre-de-caja/dia', [CuadreController::class, 'day'])
+        ->middleware('permission:module.cuadre.access')
+        ->name('cuadre.day');
     Route::get('/cuadre-de-caja/turnos/{shift}/reporte', [CuadreController::class, 'report'])
         ->middleware('permission:module.cuadre.access')
         ->name('cuadre.report');

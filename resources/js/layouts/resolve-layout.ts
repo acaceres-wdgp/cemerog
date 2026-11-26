@@ -14,6 +14,7 @@ export const PRINTABLE_PAGES = [
     'caja/factura-imprimir',
     'caja/recibo-imprimir',
     'cuadre/reporte',
+    'cuadre/reporte-dia',
 ] as const;
 
 /** The single place that decides each page's layout (used by createInertiaApp) */
