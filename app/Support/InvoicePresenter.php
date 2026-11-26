@@ -112,6 +112,36 @@ class InvoicePresenter
         ];
     }
 
+    /**
+     * The invoice as printed for the patient. Supplies show as one
+     * «Insumos» line with their total, without their detail; the screens of
+     * the clinic keep every line (detail()).
+     *
+     * @return array<string, mixed>
+     */
+    public function printed(Invoice $invoice): array
+    {
+        $detail = $this->detail($invoice);
+        $lines = [];
+        $supplies = null;
+        foreach ($detail['lines'] as $line) {
+            if ($line['area'] !== self::AREAS['insumo']) {
+                $lines[] = $line;
+
+                continue;
+            }
+            if ($supplies === null) {
+                // Where the first supply was, keeping the order of the rest
+                $supplies = count($lines);
+                $lines[] = [...$line, 'description' => 'Insumos', 'quantity' => 1, 'unit_price' => 0, 'total' => 0, 'doctor' => null];
+            }
+            $lines[$supplies]['total'] += $line['total'];
+            $lines[$supplies]['unit_price'] = $lines[$supplies]['total'];
+        }
+
+        return [...$detail, 'lines' => $lines];
+    }
+
     /** @return array<string, mixed> */
     public function detail(Invoice $invoice): array
     {

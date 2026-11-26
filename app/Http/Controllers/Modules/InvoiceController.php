@@ -61,7 +61,8 @@ class InvoiceController extends Controller
     public function print(Invoice $invoice, InvoicePresenter $presenter): Response
     {
         return Inertia::render('caja/factura-imprimir', [
-            'invoice' => $presenter->detail($invoice),
+            // Supplies print as one «Insumos» line
+            'invoice' => $presenter->printed($invoice),
             'clinic' => Clinic::info(),
         ]);
     }
