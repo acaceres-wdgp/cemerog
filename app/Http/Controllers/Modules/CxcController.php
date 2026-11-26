@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Modules;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -14,7 +15,7 @@ use Inertia\Response;
  */
 class CxcController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $today = today();
 
@@ -44,6 +45,10 @@ class CxcController extends Controller
             ->values()
             ->all();
 
-        return Inertia::render('cxc/index', ['invoices' => $invoices]);
+        return Inertia::render('cxc/index', [
+            'invoices' => $invoices,
+            // «Registrar pago» in Facturas comes here with its invoice
+            'search' => (string) $request->query('factura', ''),
+        ]);
     }
 }

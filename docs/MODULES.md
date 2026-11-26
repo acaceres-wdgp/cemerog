@@ -17,6 +17,7 @@
 | img           | /imagenes                | img/index           | admin, medico, imagenes                                  | Terminado (fase 1)     | 10          |
 | impresos      | /impresos                | impresos/index      | admin, medico, enfermeria, secretaria, bioanalista, caja | Esqueleto, sin menú    | 11          |
 | caja          | /facturacion             | caja/index          | admin, caja, secretaria                                  | Terminado              | 12          |
+| caja          | /facturas                | facturas/index      | admin, caja, secretaria (permiso de caja)                | Terminado              | 12          |
 | cxc           | /cuentas-por-cobrar      | cxc/index           | admin, caja, secretaria                                  | Terminado              | 13          |
 | cuadre        | /cuadre-de-caja          | cuadre/index        | admin, caja, secretaria                                  | Terminado              | 14          |
 | almacen       | /almacen                 | almacen/index       | admin, almacen                                           | Terminado (fase 1)     | 15          |

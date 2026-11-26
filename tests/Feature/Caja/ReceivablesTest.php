@@ -142,6 +142,16 @@ test('an installment on an overdue invoice keeps its past due date', function ()
         ->and($invoice->fresh()->credit_due_date->toDateString())->toBe(today()->subDays(5)->toDateString());
 });
 
+test('«Registrar pago» from Facturas opens cuentas por cobrar with its invoice', function () {
+    $this->actingAs($this->cajero)
+        ->get('/cuentas-por-cobrar?factura=F-0000004')
+        ->assertInertia(fn ($page) => $page->where('search', 'F-0000004'));
+
+    $this->actingAs($this->cajero)
+        ->get('/cuentas-por-cobrar')
+        ->assertInertia(fn ($page) => $page->where('search', ''));
+});
+
 test('doctors cannot see accounts receivable', function () {
     $medico = User::factory()->create();
     $medico->assignRole('medico');
