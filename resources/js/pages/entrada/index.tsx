@@ -17,8 +17,6 @@ type Props = {
     next_number: string;
     recent: RecentEntry[];
     today: string;
-    /** From «Nuevo artículo» in the catalog */
-    open_new_product?: boolean;
 };
 
 let nextKey = 1;
@@ -32,6 +30,11 @@ const emptyLine = (): EntryLine => ({
     cost: '',
 });
 
+const lineIsBlank = (l: EntryLine) =>
+    l.itemId === null &&
+    l.newItem === null &&
+    [l.quantity, l.lot, l.expires, l.cost].every((v) => v === '');
+
 const lineIsComplete = (l: EntryLine) =>
     (l.itemId !== null || l.newItem !== null) &&
     (parseInt(l.quantity, 10) || 0) > 0 &&
@@ -44,7 +47,6 @@ export default function EntradaIndex({
     next_number,
     recent,
     today,
-    open_new_product = false,
 }: Props) {
     const page = usePage();
     const errors = (page.props.errors ?? {}) as Record<string, string>;
@@ -54,10 +56,7 @@ export default function EntradaIndex({
     const [invoiceRef, setInvoiceRef] = useState('');
     const [receivedOn, setReceivedOn] = useState(today);
     const [lines, setLines] = useState<EntryLine[]>(() => [emptyLine()]);
-    // «Nuevo artículo» opens the new product form on the first line
-    const [newProductFor, setNewProductFor] = useState<number | null>(() =>
-        open_new_product ? (lines[0]?.key ?? null) : null,
-    );
+    const [newProductFor, setNewProductFor] = useState<number | null>(null);
     const [addingSupplier, setAddingSupplier] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -169,6 +168,13 @@ export default function EntradaIndex({
                     <button
                         type="button"
                         onClick={() => {
+                            // Reuse a blank line instead of leaving it empty
+                            const blank = lines.find(lineIsBlank);
+                            if (blank) {
+                                setNewProductFor(blank.key);
+
+                                return;
+                            }
                             const line = emptyLine();
                             setLines((ls) => [...ls, line]);
                             setNewProductFor(line.key);

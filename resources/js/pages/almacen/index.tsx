@@ -64,7 +64,7 @@ export default function AlmacenIndex({
                     {can_edit && (
                         // A new item comes in with its first goods entry
                         <Link
-                            href={entrada.url({ query: { nuevo: 1 } })}
+                            href={entrada.url()}
                             className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-primary px-[14px] font-medium text-white hover:bg-primary-hover"
                         >
                             <Plus className="h-4 w-4" />

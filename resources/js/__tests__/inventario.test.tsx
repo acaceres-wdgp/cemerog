@@ -271,17 +271,40 @@ describe('Entrada de mercancía', () => {
         );
     });
 
-    it('opens «Producto nuevo» right away when coming from the catalog', () => {
-        render(<EntradaIndex {...entradaProps} open_new_product />);
-
-        const dialog = screen.getByRole('dialog');
-        expect(within(dialog).getByText('Producto nuevo')).toBeTruthy();
-    });
-
-    it('starts without the new product dialog otherwise', () => {
+    it('opens without any dialog (coming from «Nuevo artículo»)', () => {
         render(<EntradaIndex {...entradaProps} />);
 
         expect(screen.queryByRole('dialog')).toBeNull();
+    });
+
+    it('puts the new product on the blank line instead of adding another', () => {
+        render(<EntradaIndex {...entradaProps} />);
+
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: /Producto nuevo \(no está en catálogo\)/,
+            }),
+        );
+        const dialog = screen.getByRole('dialog');
+        fireEvent.change(within(dialog).getByLabelText(/^Medicamento/), {
+            target: { value: 'Pantoprazol 40 mg' },
+        });
+        fireEvent.change(within(dialog).getByLabelText(/Presentación/), {
+            target: { value: 'Vial' },
+        });
+        fireEvent.change(within(dialog).getByLabelText(/Costo unit/), {
+            target: { value: '85' },
+        });
+        fireEvent.change(within(dialog).getByLabelText(/Precio de venta/), {
+            target: { value: '250' },
+        });
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: /Crear y agregar/ }),
+        );
+
+        expect(screen.getByText(/Pantoprazol 40 mg/)).toBeTruthy();
+        expect(screen.getByLabelText('Cantidad de la línea 1')).toBeTruthy();
+        expect(screen.queryByLabelText('Cantidad de la línea 2')).toBeNull();
     });
 
     it('creates a product that is not in the catalog and warns about duplicates', () => {
@@ -325,10 +348,10 @@ describe('Entrada de mercancía', () => {
         fireEvent.change(screen.getByLabelText(/Proveedor/), {
             target: { value: '7' },
         });
-        fireEvent.change(screen.getByLabelText('Cantidad de la línea 2'), {
+        // It took the blank first line, so there is nothing to remove
+        fireEvent.change(screen.getByLabelText('Cantidad de la línea 1'), {
             target: { value: '100' },
         });
-        fireEvent.click(screen.getByRole('button', { name: 'Quitar línea 1' }));
         fireEvent.click(
             screen.getByRole('button', { name: /Registrar entrada/ }),
         );

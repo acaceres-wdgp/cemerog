@@ -117,17 +117,6 @@ test('the entry page lists the catalog, the active suppliers and the recent entr
         );
 });
 
-test('«Nuevo artículo» from the catalog opens the entry with a new product', function () {
-    $this->actingAs($this->almacen)
-        ->get('/entrada-mercancia?nuevo=1')
-        ->assertOk()
-        ->assertInertia(fn ($page) => $page->where('open_new_product', true));
-
-    $this->actingAs($this->almacen)
-        ->get('/entrada-mercancia')
-        ->assertInertia(fn ($page) => $page->where('open_new_product', false));
-});
-
 test('only the warehouse role and administrators register entries', function () {
     $this->actingAs($this->enfermera)->get('/entrada-mercancia')->assertForbidden();
     $this->actingAs($this->enfermera)
