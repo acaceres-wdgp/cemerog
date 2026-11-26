@@ -250,6 +250,57 @@ test('the invoice print page renders', function () {
         );
 });
 
+test('the printed invoice shows the supplies as one «Insumos» line; the screens keep their detail', function () {
+    $account = billableAccount($this->patient, $this->doctor, $this->admin);
+    foreach ([['Jeringa 10 CC', 2, 2500], ['Catéter IV 20G', 1, 9000]] as [$name, $qty, $price]) {
+        AccountCharge::create([
+            'account_id' => $account->id,
+            'created_by' => $this->admin->id,
+            'type' => 'insumo',
+            'description' => $name,
+            'quantity' => $qty,
+            'unit_price' => $price,
+            'total' => $qty * $price,
+        ]);
+    }
+    $invoice = invoiceAccount($this->secretaria, $account);
+
+    $this->actingAs($this->secretaria)
+        ->get("/facturacion/facturas/{$invoice->id}/imprimir")
+        ->assertInertia(fn ($page) => $page
+            ->has('invoice.lines', 3)
+            ->where('invoice.lines.0.description', 'Consulta – '.$this->doctor->name)
+            ->where('invoice.lines.1.description', 'Hemograma')
+            ->where('invoice.lines.2.description', 'Insumos')
+            ->where('invoice.lines.2.area', 'Insumos')
+            ->where('invoice.lines.2.quantity', 1)
+            ->where('invoice.lines.2.unit_price', 14000)
+            ->where('invoice.lines.2.total', 14000)
+            ->where('invoice.total', 214000)
+        )
+        // Not even hidden in the page data
+        ->assertDontSee('Jeringa')
+        ->assertDontSee('Catéter');
+
+    $this->actingAs($this->secretaria)
+        ->get("/facturas?factura={$invoice->id}")
+        ->assertInertia(fn ($page) => $page
+            ->has('selected_invoice.lines', 4)
+            ->where('selected_invoice.lines.2.description', 'Jeringa 10 CC')
+        );
+});
+
+test('an invoice without supplies prints its lines as they are', function () {
+    $invoice = invoiceAccount($this->secretaria, billableAccount($this->patient, $this->doctor, $this->admin));
+
+    $this->actingAs($this->secretaria)
+        ->get("/facturacion/facturas/{$invoice->id}/imprimir")
+        ->assertInertia(fn ($page) => $page
+            ->has('invoice.lines', 2)
+            ->where('invoice.lines.1.description', 'Hemograma')
+        );
+});
+
 test('the invoices migration can be rolled back', function () {
     $migration = '2026_11_01_200000_create_invoices_table';
 
