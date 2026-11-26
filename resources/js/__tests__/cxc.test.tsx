@@ -100,6 +100,25 @@ describe('Cuentas por cobrar', () => {
         ).toBe('RD$1,500.00');
     });
 
+    it('opens with the invoice sent from Facturas', () => {
+        render(
+            <CxcIndex
+                invoices={invoices.map((i) => ({
+                    ...i,
+                    // Its digits must not match a cédula
+                    patient: { ...i.patient, document_number: '000-1000000-3' },
+                }))}
+                search="F-0000003"
+            />,
+        );
+
+        expect(
+            screen.getByLabelText('Buscar paciente, cédula o factura'),
+        ).toHaveValue('F-0000003');
+        expect(screen.getAllByRole('row')).toHaveLength(2);
+        expect(screen.getByText('Yesenia Brito')).toBeTruthy();
+    });
+
     it('searches by name, cédula without dashes or invoice number', () => {
         render(<CxcIndex invoices={invoices} />);
         const search = screen.getByLabelText(

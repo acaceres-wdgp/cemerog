@@ -125,6 +125,13 @@ export const NAV_GROUPS: NavGroup[] = [
                 permission: 'module.caja.access',
             },
             {
+                key: 'facturas',
+                label: 'Facturas',
+                icon: 'FileText',
+                href: '/facturas',
+                permission: 'module.caja.access',
+            },
+            {
                 key: 'cxc',
                 label: 'Cuentas por cobrar',
                 icon: 'Receipt',

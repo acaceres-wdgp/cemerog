@@ -18,4 +18,6 @@ export type ReceivableRow = {
 
 export type CxcProps = {
     invoices: ReceivableRow[];
+    /** Search to start with («Registrar pago» from Facturas sends its invoice) */
+    search?: string;
 };
