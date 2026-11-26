@@ -219,7 +219,41 @@ const entradaProps = {
     today: '2026-10-31',
 };
 
+/** Types into a searchable select and picks the matching option */
+function choose(label: string | RegExp, text: string, option: RegExp) {
+    fireEvent.change(screen.getByRole('combobox', { name: label }), {
+        target: { value: text },
+    });
+    fireEvent.mouseDown(screen.getByRole('option', { name: option }));
+}
+
 describe('Entrada de mercancía', () => {
+    it('finds the supplier and the product by typing', () => {
+        render(
+            <EntradaIndex
+                {...entradaProps}
+                suppliers={[
+                    { id: 7, name: 'Laboratorios Rowe' },
+                    { id: 8, name: 'Distribuidora del Cibao' },
+                ]}
+            />,
+        );
+
+        fireEvent.change(screen.getByRole('combobox', { name: /Proveedor/ }), {
+            target: { value: 'cibao' },
+        });
+        expect(screen.getAllByRole('option')).toHaveLength(1);
+
+        fireEvent.change(
+            screen.getByRole('combobox', { name: 'Producto de la línea 1' }),
+            { target: { value: 'med-001' } },
+        );
+        expect(screen.getByRole('option', { name: /Dipirona/ })).toBeTruthy();
+        expect(
+            screen.getByRole('option', { name: '+ Crear producto nuevo…' }),
+        ).toBeTruthy();
+    });
+
     it('registers an entry with an existing product (its last cost is suggested)', () => {
         render(<EntradaIndex {...entradaProps} />);
 
@@ -230,12 +264,8 @@ describe('Entrada de mercancía', () => {
         });
         expect(submit).toBeDisabled();
 
-        fireEvent.change(screen.getByLabelText(/Proveedor/), {
-            target: { value: '7' },
-        });
-        fireEvent.change(screen.getByLabelText('Producto de la línea 1'), {
-            target: { value: '1' },
-        });
+        choose(/Proveedor/, 'rowe', /Laboratorios Rowe/);
+        choose('Producto de la línea 1', 'dipi', /Dipirona/);
         expect(
             screen.getByLabelText('Costo unitario de la línea 1'),
         ).toHaveValue('62.00');
@@ -345,9 +375,7 @@ describe('Entrada de mercancía', () => {
         );
 
         expect(screen.getByText('Nuevo')).toBeTruthy();
-        fireEvent.change(screen.getByLabelText(/Proveedor/), {
-            target: { value: '7' },
-        });
+        choose(/Proveedor/, 'rowe', /Laboratorios Rowe/);
         // It took the blank first line, so there is nothing to remove
         fireEvent.change(screen.getByLabelText('Cantidad de la línea 1'), {
             target: { value: '100' },

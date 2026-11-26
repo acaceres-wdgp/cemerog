@@ -1,5 +1,6 @@
 import React from 'react';
 import FormField from '@/components/cemerog/FormField';
+import SearchSelect from '@/components/cemerog/SearchSelect';
 
 /** Proveedor · Factura / NCF · Fecha de recepción */
 export default function EntryHeaderFields({
@@ -27,23 +28,29 @@ export default function EntryHeaderFields({
 }) {
     return (
         <div className="grid gap-3 px-5 py-4 sm:grid-cols-3">
-            <div className="flex flex-col gap-1">
-                <FormField
-                    as="select"
-                    name="supplier_id"
-                    label="Proveedor"
-                    value={supplierId}
-                    onChange={(e) => onSupplier(e.target.value)}
-                    error={errors.supplier_id}
-                    required
+            <div className="flex flex-col gap-1.5">
+                <label
+                    htmlFor="supplier_id"
+                    className="text-sm font-medium text-text-heading"
                 >
-                    <option value="">Elegir proveedor…</option>
-                    {suppliers.map((s) => (
-                        <option key={s.id} value={s.id}>
-                            {s.name}
-                        </option>
-                    ))}
-                </FormField>
+                    Proveedor<span className="ml-1 text-error">*</span>
+                </label>
+                <SearchSelect
+                    id="supplier_id"
+                    options={suppliers.map((s) => ({
+                        value: String(s.id),
+                        label: s.name,
+                    }))}
+                    value={supplierId}
+                    onChange={onSupplier}
+                    placeholder="Buscar proveedor…"
+                    invalid={Boolean(errors.supplier_id)}
+                />
+                {errors.supplier_id && (
+                    <p className="m-0 text-xs text-error" role="alert">
+                        {errors.supplier_id}
+                    </p>
+                )}
                 <button
                     type="button"
                     onClick={onNewSupplier}

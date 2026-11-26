@@ -1,5 +1,6 @@
 import React from 'react';
 import { Trash2 } from 'lucide-react';
+import SearchSelect from '@/components/cemerog/SearchSelect';
 import { formatMoney, parseMoney } from '@/lib/money';
 import type { CatalogOption, EntryLine } from '../types';
 import { itemLabel } from '../types';
@@ -9,7 +10,6 @@ const th =
 const td = 'border-b border-divider px-2 py-2 align-middle';
 const input =
     'h-9 w-full rounded-lg border border-input-border bg-white px-2 tabular-nums outline-none focus:border-primary';
-export const NEW_PRODUCT = '__new';
 
 /** Producto · Existencia · Cantidad · Lote · Vence · Costo unit. · Subtotal */
 export default function EntryLinesTable({
@@ -27,6 +27,12 @@ export default function EntryLinesTable({
     onRemove: (key: number) => void;
     onNewProduct: (key: number) => void;
 }) {
+    const options = catalog.map((c) => ({
+        value: String(c.id),
+        label: itemLabel(c),
+        hint: c.code,
+    }));
+
     return (
         <table className="w-full min-w-[960px] border-collapse text-[14px]">
             <thead>
@@ -66,23 +72,24 @@ export default function EntryLinesTable({
                                         </div>
                                     </div>
                                 ) : (
-                                    <select
+                                    <SearchSelect
                                         aria-label={`Producto de la línea ${index + 1}`}
-                                        value={l.itemId ?? ''}
-                                        onChange={(e) => {
-                                            if (
-                                                e.target.value === NEW_PRODUCT
-                                            ) {
-                                                onNewProduct(l.key);
-                                                return;
-                                            }
-                                            const id =
-                                                Number(e.target.value) || null;
+                                        options={options}
+                                        value={
+                                            l.itemId === null
+                                                ? ''
+                                                : String(l.itemId)
+                                        }
+                                        placeholder="Buscar producto o código…"
+                                        invalid={Boolean(
+                                            err('inventory_item_id'),
+                                        )}
+                                        onChange={(value) => {
                                             const chosen = catalog.find(
-                                                (c) => c.id === id,
+                                                (c) => String(c.id) === value,
                                             );
                                             onChange(l.key, {
-                                                itemId: id,
+                                                itemId: chosen?.id ?? null,
                                                 cost:
                                                     chosen?.cost != null
                                                         ? (
@@ -91,20 +98,12 @@ export default function EntryLinesTable({
                                                         : l.cost,
                                             });
                                         }}
-                                        className={`${input} min-w-[220px]`}
-                                    >
-                                        <option value="">
-                                            Elegir producto…
-                                        </option>
-                                        {catalog.map((c) => (
-                                            <option key={c.id} value={c.id}>
-                                                {c.code} · {itemLabel(c)}
-                                            </option>
-                                        ))}
-                                        <option value={NEW_PRODUCT}>
-                                            + Crear producto nuevo…
-                                        </option>
-                                    </select>
+                                        action={{
+                                            label: '+ Crear producto nuevo…',
+                                            onSelect: () => onNewProduct(l.key),
+                                        }}
+                                        className="min-w-[220px]"
+                                    />
                                 )}
                                 {err('inventory_item_id') && (
                                     <div className="text-xs text-error">
