@@ -129,7 +129,7 @@ describe('Facturación', () => {
         render(<CajaIndex {...props()} />);
 
         expect(screen.getByText('Cuentas en caja')).toBeTruthy();
-        expect(screen.getByText('Pendiente de facturar')).toBeTruthy();
+        expect(screen.getByText('Pendientes de facturar')).toBeTruthy();
         expect(screen.getByText('Cuenta por facturar')).toBeTruthy();
         expect(screen.getByText('Laboratorio')).toBeTruthy();
         expect(screen.getByText('Balance pendiente')).toBeTruthy();
@@ -276,6 +276,7 @@ describe('Facturación', () => {
             />,
         );
 
+        fireEvent.click(screen.getByRole('button', { name: /En atención 1/ }));
         fireEvent.click(screen.getByText('Ana Torres'));
         expect(screen.getByText(/sigue en atención/)).toBeTruthy();
         expect(

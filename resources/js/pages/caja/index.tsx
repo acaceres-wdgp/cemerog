@@ -59,7 +59,7 @@ export default function CajaIndex({
             : undefined;
 
     return (
-        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
             <CajaQueue
                 pending={pending_accounts}
                 inCare={accounts_in_care}
