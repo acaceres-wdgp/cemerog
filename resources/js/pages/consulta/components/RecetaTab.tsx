@@ -5,6 +5,7 @@ import { conflict } from '@/lib/allergy';
 import consulta from '@/routes/consulta';
 import { TurnItem, PrescriptionData } from '../types';
 import { buildInstruction } from '../lib/instructionBuilder';
+import { computeQuantity } from '../lib/quantityCalc';
 import { thCls } from '../lib/helpers';
 import RecetaRow from './RecetaRow';
 import AllergyAlert from './AllergyAlert';
@@ -20,7 +21,65 @@ export type RxRow = {
     duration_days: string;
     is_continuous: boolean;
     quantity: string;
+    /** Typed by the doctor (or saved); otherwise it is computed */
+    quantity_manual?: boolean;
 };
+
+/** Required fields of a medication line, with their labels */
+const REQUIRED: [keyof RxRow, string][] = [
+    ['medication', 'Medicamento'],
+    ['dose', 'Dosis'],
+    ['frequency', 'Frecuencia'],
+    ['duration_days', 'Duración (días)'],
+    ['quantity', 'Cantidad'],
+];
+const FIELD_LABELS: Record<string, string> = Object.fromEntries(REQUIRED);
+
+/** A line with nothing typed is not part of the prescription */
+export function isBlankRow(row: RxRow): boolean {
+    return (
+        [
+            row.medication,
+            row.route,
+            row.dose,
+            row.frequency,
+            row.duration_days,
+            row.quantity,
+        ].every((v) => v.trim() === '') && !row.is_continuous
+    );
+}
+
+/** Required fields still missing in a line (days only when it is not continuous) */
+export function missingFields(row: RxRow): (keyof RxRow)[] {
+    if (isBlankRow(row)) return [];
+    const positive = (v: string) =>
+        /^\d+$/.test(v.trim()) && parseInt(v, 10) >= 1;
+
+    return REQUIRED.map(([field]) => field).filter((field) => {
+        if (field === 'duration_days') {
+            return !row.is_continuous && !positive(row.duration_days);
+        }
+        if (field === 'quantity') return !positive(row.quantity);
+        return String(row[field]).trim() === '';
+    });
+}
+
+/**
+ * Applies a change to a line. The quantity to dispense is computed from dose,
+ * frequency and days until the doctor types one; clearing it computes it
+ * again.
+ */
+function withQuantity(row: RxRow, patch: Partial<RxRow>): RxRow {
+    const next = { ...row, ...patch };
+    if ('quantity' in patch && (patch.quantity ?? '').trim() !== '') {
+        return { ...next, quantity_manual: true };
+    }
+    if ('quantity' in patch) next.quantity_manual = false;
+    if (next.quantity_manual) return next;
+    const computed = computeQuantity(next);
+
+    return { ...next, quantity: computed === null ? '' : String(computed) };
+}
 
 type Props = {
     turn: TurnItem;
@@ -65,6 +124,7 @@ export default function RecetaTab({
                 duration_days: item.duration_days?.toString() ?? '',
                 is_continuous: item.is_continuous,
                 quantity: item.quantity.toString(),
+                quantity_manual: true,
             }));
         }
         return [
@@ -88,19 +148,43 @@ export default function RecetaTab({
     const savedPrescriptionId = prescription?.id ?? null;
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    // Missing fields are shown once the doctor tries to save
+    const [triedToSave, setTriedToSave] = useState(false);
 
     const allergyConflict = findAllergyConflict(rows, turn.patient.allergies);
+    const missing = rows.map(missingFields);
+    const missingText = triedToSave
+        ? rows
+              .map((row, i) =>
+                  missing[i].length === 0
+                      ? null
+                      : `${row.medication.trim() || `Medicamento ${i + 1}`}: falta ${missing[
+                            i
+                        ]
+                            .map((f) => FIELD_LABELS[f])
+                            .join(', ')}`,
+              )
+              .filter((line): line is string => line !== null)
+        : [];
+    // A line the server rejected (it should not happen after the check above)
+    const serverItemError = Object.keys(errors ?? {})
+        .map((key) => key.match(/^items\.(\d+)\.(\w+)$/))
+        .find((m) => m !== null);
     const saveError = errors?.allergy
         ? String(errors.allergy)
         : errors?.turn_id
           ? String(errors.turn_id)
-          : null;
+          : serverItemError
+            ? `No se pudo guardar la receta: revisa ${FIELD_LABELS[serverItemError[2]] ?? serverItemError[2]} del medicamento ${Number(serverItemError[1]) + 1}.`
+            : null;
 
     const markDirty = () => setIsDirty(true);
 
     function updateRow(index: number, patch: Partial<RxRow>) {
         setRows((prev) =>
-            prev.map((row, i) => (i === index ? { ...row, ...patch } : row)),
+            prev.map((row, i) =>
+                i === index ? withQuantity(row, patch) : row,
+            ),
         );
         markDirty();
     }
@@ -129,11 +213,14 @@ export default function RecetaTab({
 
     function handleSave() {
         if (allergyConflict || isSaving) return;
+        setTriedToSave(true);
+        if (rows.some((row) => missingFields(row).length > 0)) return;
         setIsSaving(true);
 
+        const filled = rows.filter((row) => !isBlankRow(row));
         const payload = {
             general_instructions: generalInstructions || null,
-            items: rows.map((row, i) => ({
+            items: filled.map((row, i) => ({
                 position: i + 1,
                 medication: row.medication,
                 route: row.route || null,
@@ -205,8 +292,27 @@ export default function RecetaTab({
 
             {allergyConflict && <AllergyAlert medication={allergyConflict} />}
 
+            {missingText.length > 0 && (
+                <div
+                    role="alert"
+                    className="mx-[18px] mb-3 rounded-[10px] border border-error bg-error-bg px-[14px] py-[10px] text-[13px] text-error"
+                >
+                    <div className="font-semibold">
+                        Completa los campos requeridos para guardar la receta:
+                    </div>
+                    <ul className="m-0 mt-1 list-disc pl-5">
+                        {missingText.map((line) => (
+                            <li key={line}>{line}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
             {saveError && (
-                <div className="mx-[18px] mb-3 rounded-[10px] border border-error bg-error-bg px-[14px] py-[10px] text-[13px] text-error">
+                <div
+                    role="alert"
+                    className="mx-[18px] mb-3 rounded-[10px] border border-error bg-error-bg px-[14px] py-[10px] text-[13px] text-error"
+                >
                     {saveError}
                 </div>
             )}
@@ -235,6 +341,10 @@ export default function RecetaTab({
                                 row={row}
                                 index={i}
                                 disabled={isDischargedTurn}
+                                invalid={triedToSave ? missing[i] : []}
+                                quantityComputed={
+                                    !row.quantity_manual && row.quantity !== ''
+                                }
                                 onChange={(patch) => updateRow(i, patch)}
                                 onRemove={() => removeRow(i)}
                             />

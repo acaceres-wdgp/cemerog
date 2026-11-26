@@ -7,6 +7,10 @@ type Props = {
     row: RxRow;
     index: number;
     disabled: boolean;
+    /** Required fields still missing (marked in red) */
+    invalid?: (keyof RxRow)[];
+    /** The quantity was computed from dose, frequency and days */
+    quantityComputed?: boolean;
     onChange: (patch: Partial<RxRow>) => void;
     onRemove: () => void;
 };
@@ -15,11 +19,21 @@ export default function RecetaRow({
     row,
     index,
     disabled,
+    invalid = [],
+    quantityComputed = false,
     onChange,
     onRemove,
 }: Props) {
-    const inputCls =
-        'h-[34px] w-full rounded-lg border border-input-border px-[10px] font-sans text-[13.5px] outline-none disabled:bg-surface disabled:text-muted';
+    const base =
+        'h-[34px] w-full rounded-lg border px-[10px] font-sans text-[13.5px] outline-none disabled:bg-surface disabled:text-muted';
+    // Red border on a required field that is still missing
+    const field = (name: keyof RxRow) =>
+        invalid.includes(name)
+            ? {
+                  className: `${base} border-error bg-error-bg`,
+                  'aria-invalid': true as const,
+              }
+            : { className: `${base} border-input-border` };
 
     return (
         <tr>
@@ -29,7 +43,7 @@ export default function RecetaRow({
                     onChange={(e) => onChange({ medication: e.target.value })}
                     disabled={disabled}
                     placeholder="Medicamento"
-                    className={inputCls}
+                    {...field('medication')}
                     aria-label={`Medicamento ${index + 1}`}
                 />
             </td>
@@ -39,7 +53,7 @@ export default function RecetaRow({
                     onChange={(e) => onChange({ route: e.target.value })}
                     disabled={disabled}
                     placeholder="Vía"
-                    className={inputCls}
+                    {...field('route')}
                     aria-label={`Vía ${index + 1}`}
                 />
             </td>
@@ -49,7 +63,7 @@ export default function RecetaRow({
                     onChange={(e) => onChange({ dose: e.target.value })}
                     disabled={disabled}
                     placeholder="Dosis"
-                    className={inputCls}
+                    {...field('dose')}
                     aria-label={`Dosis ${index + 1}`}
                 />
             </td>
@@ -59,7 +73,7 @@ export default function RecetaRow({
                     onChange={(e) => onChange({ frequency: e.target.value })}
                     disabled={disabled}
                     placeholder="Frecuencia"
-                    className={inputCls}
+                    {...field('frequency')}
                     aria-label={`Frecuencia ${index + 1}`}
                 />
             </td>
@@ -72,7 +86,7 @@ export default function RecetaRow({
                         }
                         disabled={disabled || row.is_continuous}
                         placeholder="días"
-                        className={inputCls}
+                        {...field('duration_days')}
                         aria-label={`Duración ${index + 1}`}
                         type="number"
                         min={1}
@@ -97,11 +111,19 @@ export default function RecetaRow({
                     onChange={(e) => onChange({ quantity: e.target.value })}
                     disabled={disabled}
                     placeholder="Cant."
-                    className={inputCls}
+                    {...field('quantity')}
                     aria-label={`Cantidad ${index + 1}`}
                     type="number"
                     min={1}
                 />
+                {quantityComputed && (
+                    <div
+                        className="mt-[5px] text-[12px] text-muted"
+                        title="Dosis × veces al día × días. Puedes cambiarla."
+                    >
+                        Calculada
+                    </div>
+                )}
             </td>
             <td className="border-b border-divider p-2 text-center align-top">
                 <button
