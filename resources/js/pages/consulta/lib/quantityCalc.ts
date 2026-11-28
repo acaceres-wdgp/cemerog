@@ -16,9 +16,13 @@ const WORDS: Record<string, number> = {
     seis: 6,
 };
 
-/** Units measured by volume or weight are not counted as pieces */
+/**
+ * Units measured by volume or weight are not counted as pieces. Only the unit
+ * right after the amount counts, joined or not: «500mg» and «5 ml» are not
+ * pieces, «1 tableta de 500 mg» is one tablet.
+ */
 const NOT_COUNTABLE =
-    /\b(ml|cc|mg|mcg|g|gr|l|ui|u|gotas?|puff|puffs|inhalaciones?)\b/;
+    /^\s*(ml|cc|mg|mcg|g|gr|l|ui|u|gotas?|puff|puffs|inhalaciones?)(?![a-z])/;
 
 const normalize = (s: string) =>
     s
@@ -27,16 +31,28 @@ const normalize = (s: string) =>
         .replace(/[̀-ͯ]/g, '')
         .trim();
 
-/** «1», «1.5», «1/2», «½», «una» → number */
-function leadingNumber(text: string): number | null {
+/** «1», «1.5», «1/2», «½», «una» → the number and the text after it */
+function leadingNumber(text: string): { value: number; rest: string } | null {
     const t = text.replace('½', '1/2').replace('¼', '1/4');
     const fraction = t.match(/^(\d+)\s*\/\s*(\d+)/);
-    if (fraction) return Number(fraction[1]) / Number(fraction[2]);
+    if (fraction) {
+        return {
+            value: Number(fraction[1]) / Number(fraction[2]),
+            rest: t.slice(fraction[0].length),
+        };
+    }
     const number = t.match(/^(\d+(?:[.,]\d+)?)/);
-    if (number) return Number(number[1].replace(',', '.'));
+    if (number) {
+        return {
+            value: Number(number[1].replace(',', '.')),
+            rest: t.slice(number[0].length),
+        };
+    }
     const word = t.match(/^([a-z]+)/);
 
-    return word && word[1] in WORDS ? WORDS[word[1]] : null;
+    return word && word[1] in WORDS
+        ? { value: WORDS[word[1]], rest: t.slice(word[0].length) }
+        : null;
 }
 
 /** «cada 8 horas» → 3, «2 veces al día» → 2, «diario» → 1; null if irregular */
@@ -51,7 +67,7 @@ export function dosesPerDay(frequency: string): number | null {
     }
     const times = f.match(/^(\S+)\s+vez|^(\S+)\s+veces/);
     if (times && /(al|por|cada)\s+dia/.test(f)) {
-        return leadingNumber(times[1] ?? times[2]);
+        return leadingNumber(times[1] ?? times[2])?.value ?? null;
     }
     if (
         /^(diario|diaria|cada dia|cada noche|cada manana|al dia|una vez)$/.test(
@@ -64,12 +80,14 @@ export function dosesPerDay(frequency: string): number | null {
     return null;
 }
 
-/** «1 cápsula» → 1, «1/2 tableta» → 0.5; null for ml, mg, drops or no number */
+/** «1 cápsula» → 1, «1/2 tableta» → 0.5; null for ml, mg, drops, zero or no number */
 export function unitsPerDose(dose: string): number | null {
-    const d = normalize(dose);
-    if (d === '' || NOT_COUNTABLE.test(d)) return null;
+    const amount = leadingNumber(normalize(dose));
+    if (amount === null || NOT_COUNTABLE.test(amount.rest)) return null;
 
-    return leadingNumber(d);
+    return Number.isFinite(amount.value) && amount.value > 0
+        ? amount.value
+        : null;
 }
 
 export function computeQuantity(line: {
@@ -84,7 +102,7 @@ export function computeQuantity(line: {
         : 0;
     const perDose = unitsPerDose(line.dose);
     const perDay = dosesPerDay(line.frequency);
-    if (days < 1 || perDose === null || perDay === null) return null;
+    if (days < 1 || perDose === null || !perDay) return null;
 
     return Math.ceil(perDose * perDay * days);
 }
