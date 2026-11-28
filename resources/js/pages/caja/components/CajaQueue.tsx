@@ -171,7 +171,7 @@ export default function CajaQueue({
     return (
         <section
             aria-label="Cuentas en caja"
-            className="flex min-h-[420px] flex-col overflow-hidden rounded-[14px] border border-card-border bg-white shadow-sm lg:sticky lg:top-[72px] lg:h-[calc(100vh-96px)]"
+            className="flex min-h-[420px] flex-col overflow-hidden rounded-[14px] border border-card-border bg-white shadow-sm lg:h-[calc(100vh-96px)]"
         >
             <div className="flex flex-none flex-col gap-[10px] border-b border-divider px-[14px] pt-[14px] pb-3">
                 <div className="flex items-center justify-between gap-2">
