@@ -188,4 +188,11 @@ describe('Cuentas en caja', () => {
             screen.getByRole('button', { name: /Gina Seis/ }),
         ).toHaveAttribute('aria-current', 'true');
     });
+
+    it('stays anchored at the top instead of following the account panel on scroll', () => {
+        renderQueue();
+
+        // A sticky queue ends glued to the bottom of a taller account panel
+        expect(queue().className).not.toMatch(/sticky/);
+    });
 });
