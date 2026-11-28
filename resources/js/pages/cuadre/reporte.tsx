@@ -1,4 +1,5 @@
 import React from 'react';
+import { Head } from '@inertiajs/react';
 import PrintablePage from '@/components/cemerog/PrintablePage';
 import ClinicHeader, {
     type ClinicInfo,
@@ -6,6 +7,7 @@ import ClinicHeader, {
 import { formatMoney } from '@/lib/money';
 import { paymentLabel } from '@/pages/caja/components/ReceiptsList';
 import type { ShiftReceipt, ShiftSummary, Withdrawal } from './types';
+import { fileDate, printFileName } from '@/lib/print';
 
 type ShiftReport = {
     id: number;
@@ -60,6 +62,13 @@ export default function ReporteTurno({
 
     return (
         <>
+            <Head
+                title={printFileName(
+                    'Cierre de caja',
+                    `Turno ${shift.id}`,
+                    fileDate(shift.opened_at),
+                )}
+            />
             {/* Print CSS: hide app chrome */}
             <style>{`@media print { body > *:not(#app) { display: none !important; } #app > *:not(.printable-root) { display: none !important; } }`}</style>
             <div className="printable-root min-h-screen bg-surface py-8 print:min-h-0 print:bg-white print:p-0 print:py-0">

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Head } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import PrintablePage from '@/components/cemerog/PrintablePage';
@@ -6,6 +7,7 @@ import ClinicHeader, {
     type ClinicInfo,
 } from '@/components/cemerog/ClinicHeader';
 import { ageLabel } from '@/lib/patient';
+import { printFileName } from '@/lib/print';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -67,6 +69,13 @@ export default function RecetaImprimir({ prescription, clinic }: Props) {
 
     return (
         <>
+            <Head
+                title={printFileName(
+                    'Receta',
+                    prescription.patient.full_name,
+                    format(new Date(prescription.prescribed_at), 'yyyy-MM-dd'),
+                )}
+            />
             {/* Print CSS: hide app chrome */}
             <style>{`@media print { body > *:not(#app) { display: none !important; } #app > *:not(.printable-root) { display: none !important; } }`}</style>
             <div className="printable-root min-h-screen bg-surface py-8 print:min-h-0 print:bg-white print:p-0 print:py-0">

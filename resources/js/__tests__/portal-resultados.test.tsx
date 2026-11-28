@@ -6,8 +6,9 @@ import React from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockPost, page } = vi.hoisted(() => ({
+const { mockPost, page, head } = vi.hoisted(() => ({
     mockPost: vi.fn(),
+    head: { title: '' },
     page: {
         component: 'portal/acceso',
         props: {} as Record<string, unknown>,
@@ -19,6 +20,10 @@ vi.mock('@inertiajs/react', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@inertiajs/react')>()),
     router: { post: mockPost },
     usePage: () => page,
+    Head: ({ title }: { title: string }) => {
+        head.title = title;
+        return null;
+    },
 }));
 
 import { formatBirthDate, formatCode, isComplete } from '@/lib/result-code';
@@ -268,6 +273,10 @@ describe('viewer', () => {
             <PortalEstudio patient={patient} study={study} clinic={clinic} />,
         );
 
+        // The name the browser offers for the PDF
+        expect(head.title).toBe(
+            `Hemograma completo - ${patient.name} - 2026-11-26`,
+        );
         const high = screen.getByText('Glóbulos blancos').closest('tr')!;
         expect(within(high).getByText('A')).toBeTruthy();
         expect(screen.getByText('Verificación: L-0012-1')).toBeTruthy();

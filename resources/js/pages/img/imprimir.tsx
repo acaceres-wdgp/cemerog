@@ -1,4 +1,5 @@
 import React from 'react';
+import { Head } from '@inertiajs/react';
 import PrintablePage from '@/components/cemerog/PrintablePage';
 import ClinicHeader, {
     type ClinicInfo,
@@ -8,6 +9,7 @@ import type {
     ImagingPatient,
 } from '@/components/img/types';
 import { ageLabel } from '@/lib/patient';
+import { fileDate, printFileName } from '@/lib/print';
 
 /** Informe de imágenes firmado, listo para imprimir */
 export default function ImgImprimir({
@@ -21,6 +23,13 @@ export default function ImgImprimir({
 }) {
     return (
         <>
+            <Head
+                title={printFileName(
+                    order.name,
+                    patient.full_name,
+                    fileDate(order.ordered_date),
+                )}
+            />
             <style>{`@media print { body > *:not(#app) { display: none !important; } #app > *:not(.printable-root) { display: none !important; } }`}</style>
             <div className="printable-root min-h-screen bg-surface py-8 print:min-h-0 print:bg-white print:p-0 print:py-0">
                 <div className="mx-auto mb-4 flex w-full max-w-[816px] print:hidden">

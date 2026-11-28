@@ -1,4 +1,5 @@
 import React from 'react';
+import { Head } from '@inertiajs/react';
 import PrintablePage from '@/components/cemerog/PrintablePage';
 import ClinicHeader, {
     type ClinicInfo,
@@ -8,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { paymentLabel } from '@/pages/caja/components/ReceiptsList';
 import type { ReceiptRow } from '@/pages/caja/types';
 import type { ShiftMethod, ShiftSummary } from './types';
+import { fileDate, printFileName } from '@/lib/print';
 
 type DayShift = {
     id: number;
@@ -120,6 +122,7 @@ export default function ReporteDia({
 
     return (
         <>
+            <Head title={printFileName('Cuadre de caja', fileDate(day.date))} />
             {/* Print CSS: hide app chrome */}
             <style>{`@media print { body > *:not(#app) { display: none !important; } #app > *:not(.printable-root) { display: none !important; } }`}</style>
             <div className="printable-root min-h-screen bg-surface py-8 print:min-h-0 print:bg-white print:p-0 print:py-0">
