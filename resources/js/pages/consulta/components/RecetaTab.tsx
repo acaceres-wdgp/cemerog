@@ -66,19 +66,21 @@ export function missingFields(row: RxRow): (keyof RxRow)[] {
 
 /**
  * Applies a change to a line. The quantity to dispense is computed from dose,
- * frequency and days until the doctor types one; clearing it computes it
- * again.
+ * frequency and days; once the doctor types it (or clears it to type another)
+ * it stays until another field of the line changes. A typed quantity also
+ * stays when the changed line cannot be computed.
  */
 function withQuantity(row: RxRow, patch: Partial<RxRow>): RxRow {
     const next = { ...row, ...patch };
-    if ('quantity' in patch && (patch.quantity ?? '').trim() !== '') {
-        return { ...next, quantity_manual: true };
-    }
-    if ('quantity' in patch) next.quantity_manual = false;
-    if (next.quantity_manual) return next;
+    if ('quantity' in patch) return { ...next, quantity_manual: true };
     const computed = computeQuantity(next);
+    if (computed === null && next.quantity_manual) return next;
 
-    return { ...next, quantity: computed === null ? '' : String(computed) };
+    return {
+        ...next,
+        quantity: computed === null ? '' : String(computed),
+        quantity_manual: false,
+    };
 }
 
 type Props = {

@@ -537,13 +537,127 @@ describe('RecetaTab – quantity to dispense', () => {
 
         // Typed by the doctor: it stays
         fill('Cantidad 1', '28');
-        fill('Duración 1', '14');
         expect(screen.getByLabelText('Cantidad 1')).toHaveValue(28);
         expect(screen.queryByText('Calculada')).toBeNull();
 
-        // Cleared: it is computed again
-        fill('Cantidad 1', '');
+        // A change to the line computes it again
+        fill('Duración 1', '14');
         expect(screen.getByLabelText('Cantidad 1')).toHaveValue(42);
+        expect(screen.getByText('Calculada')).toBeTruthy();
+    });
+
+    it('can be cleared to type another one', () => {
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
+
+        fill('Dosis 1', '1 cápsula');
+        fill('Frecuencia 1', 'cada 8 horas');
+        fill('Duración 1', '7');
+        expect(screen.getByLabelText('Cantidad 1')).toHaveValue(21);
+
+        fill('Cantidad 1', '');
+        expect(screen.getByLabelText('Cantidad 1')).toHaveValue(null);
+        fill('Cantidad 1', '3');
+        fill('Cantidad 1', '30');
+        expect(screen.getByLabelText('Cantidad 1')).toHaveValue(30);
+        expect(screen.queryByText('Calculada')).toBeNull();
+    });
+
+    it.each([
+        ['Medicamento 1', 'Amoxicilina 875 mg'],
+        ['Vía 1', 'Oral'],
+        ['Dosis 1', '2 cápsulas'],
+        ['Frecuencia 1', 'cada 12 horas'],
+        ['Duración 1', '10'],
+    ])(
+        'a typed quantity is computed again after changing «%s»',
+        (label, value) => {
+            render(
+                <RecetaTab
+                    turn={makeTurn()}
+                    prescription={null}
+                    isDischargedTurn={false}
+                />,
+            );
+
+            fill('Dosis 1', '1 cápsula');
+            fill('Frecuencia 1', 'cada 8 horas');
+            fill('Duración 1', '7');
+            fill('Cantidad 1', '30');
+
+            fill(label, value);
+            const expected: Record<string, number> = {
+                'Dosis 1': 42,
+                'Frecuencia 1': 14,
+                'Duración 1': 30,
+            };
+            expect(screen.getByLabelText('Cantidad 1')).toHaveValue(
+                expected[label] ?? 21,
+            );
+            expect(screen.getByText('Calculada')).toBeTruthy();
+        },
+    );
+
+    it('a typed quantity is computed again when the line becomes continuous or not', () => {
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
+
+        fill('Dosis 1', '1 cápsula');
+        fill('Frecuencia 1', 'cada 8 horas');
+        fill('Duración 1', '7');
+        fill('Cantidad 1', '30');
+
+        fireEvent.click(screen.getByLabelText('Continuo'));
+        fireEvent.click(screen.getByLabelText('Continuo'));
+        expect(screen.getByLabelText('Cantidad 1')).toHaveValue(21);
+    });
+
+    it('a typed quantity stays when the changed line cannot be computed', () => {
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
+
+        fill('Medicamento 1', 'Salbutamol inhalador');
+        fill('Dosis 1', '2 puffs');
+        fill('Frecuencia 1', 'cada 6 horas');
+        fill('Duración 1', '7');
+        fill('Cantidad 1', '1');
+
+        fill('Medicamento 1', 'Salbutamol inhalador 100 mcg');
+        fill('Duración 1', '10');
+        expect(screen.getByLabelText('Cantidad 1')).toHaveValue(1);
+    });
+
+    it('a computed quantity is cleared when the line can no longer be computed', () => {
+        render(
+            <RecetaTab
+                turn={makeTurn()}
+                prescription={null}
+                isDischargedTurn={false}
+            />,
+        );
+
+        fill('Dosis 1', '1 cápsula');
+        fill('Frecuencia 1', 'cada 8 horas');
+        fill('Duración 1', '7');
+        expect(screen.getByLabelText('Cantidad 1')).toHaveValue(21);
+
+        fill('Dosis 1', '500mg');
+        expect(screen.getByLabelText('Cantidad 1')).toHaveValue(null);
     });
 
     it('is left to the doctor when it cannot be computed', () => {
@@ -564,7 +678,7 @@ describe('RecetaTab – quantity to dispense', () => {
         expect(screen.queryByText('Calculada')).toBeNull();
     });
 
-    it('a saved prescription keeps its quantity', () => {
+    it('a saved prescription keeps its quantity until its line changes', () => {
         render(
             <RecetaTab
                 turn={makeTurn()}
@@ -590,8 +704,9 @@ describe('RecetaTab – quantity to dispense', () => {
             />,
         );
 
-        fill('Duración 1', '10');
         expect(screen.getByLabelText('Cantidad 1')).toHaveValue(20);
+        fill('Duración 1', '10');
+        expect(screen.getByLabelText('Cantidad 1')).toHaveValue(30);
     });
 });
 
