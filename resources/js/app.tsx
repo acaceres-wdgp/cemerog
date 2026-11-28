@@ -3,6 +3,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { resolveLayout } from '@/layouts/resolve-layout';
+import { documentTitle } from '@/lib/print';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -14,7 +15,7 @@ const pages = import.meta.glob([
 ]);
 
 void createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title, page) => documentTitle(title, page?.component, appName),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolve: (name) =>
         resolvePageComponent(`./pages/${name}.tsx`, pages) as any,

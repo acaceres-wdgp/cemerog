@@ -1,4 +1,5 @@
 import React from 'react';
+import { Head } from '@inertiajs/react';
 import PrintablePage from '@/components/cemerog/PrintablePage';
 import ResultsAccessBox, {
     type ResultsAccess,
@@ -9,6 +10,7 @@ import ClinicHeader, {
 import { formatMoney } from '@/lib/money';
 import { paymentLabel } from './components/ReceiptsList';
 import type { ReceiptRow } from './types';
+import { printFileName } from '@/lib/print';
 
 type PrintableReceipt = ReceiptRow & {
     patient: string;
@@ -32,6 +34,9 @@ export default function ReciboImprimir({
 }) {
     return (
         <>
+            <Head
+                title={printFileName('Recibo', receipt.number, receipt.patient)}
+            />
             {/* Print CSS: hide app chrome */}
             <style>{`@media print { body > *:not(#app) { display: none !important; } #app > *:not(.printable-root) { display: none !important; } }`}</style>
             <div className="printable-root min-h-screen bg-surface py-8 print:min-h-0 print:bg-white print:p-0 print:py-0">

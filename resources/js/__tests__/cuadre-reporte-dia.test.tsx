@@ -1,7 +1,18 @@
 /** Cuadre de caja del día: the document to print with every shift of the day */
 import React from 'react';
 import { render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+const { head } = vi.hoisted(() => ({ head: { title: '' } }));
+
+vi.mock('@inertiajs/react', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@inertiajs/react')>()),
+    Head: ({ title }: { title: string }) => {
+        head.title = title;
+        return null;
+    },
+}));
+
 import ReporteDia, { type CashDay } from '@/pages/cuadre/reporte-dia';
 
 const summary = (
@@ -120,6 +131,8 @@ describe('Cuadre de caja del día', () => {
         expect(
             screen.getByRole('heading', { name: 'Cuadre de caja del día' }),
         ).toBeTruthy();
+        // The name the browser offers for the PDF
+        expect(head.title).toBe('Cuadre de caja - 2026-11-26');
         expect(
             screen.getByText('jueves, 26 de noviembre de 2026'),
         ).toBeTruthy();

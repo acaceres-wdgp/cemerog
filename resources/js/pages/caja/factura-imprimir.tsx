@@ -1,4 +1,5 @@
 import React from 'react';
+import { Head } from '@inertiajs/react';
 import PrintablePage from '@/components/cemerog/PrintablePage';
 import ResultsAccessBox, {
     type ResultsAccess,
@@ -9,6 +10,7 @@ import ClinicHeader, {
 import ChargesTable from './components/ChargesTable';
 import TotalsBox from './components/TotalsBox';
 import type { InvoiceDetail } from './types';
+import { printFileName } from '@/lib/print';
 
 export default function FacturaImprimir({
     invoice,
@@ -22,6 +24,13 @@ export default function FacturaImprimir({
 }) {
     return (
         <>
+            <Head
+                title={printFileName(
+                    'Factura',
+                    invoice.number,
+                    invoice.patient.full_name,
+                )}
+            />
             {/* Print CSS: hide app chrome */}
             <style>{`@media print { body > *:not(#app) { display: none !important; } #app > *:not(.printable-root) { display: none !important; } }`}</style>
             <div className="printable-root min-h-screen bg-surface py-8 print:min-h-0 print:bg-white print:p-0 print:py-0">

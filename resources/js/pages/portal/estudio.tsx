@@ -1,7 +1,8 @@
 import React from 'react';
-import { Link } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, Download, Printer } from 'lucide-react';
 import type { ClinicInfo } from '@/components/cemerog/ClinicHeader';
+import { fileDate, printFileName } from '@/lib/print';
 import { cn } from '@/lib/utils';
 import portal from '@/routes/portal';
 import study from '@/routes/portal/study';
@@ -23,6 +24,13 @@ export default function PortalEstudio({
 }) {
     return (
         <div className="-mx-5 -mt-6 -mb-10 flex flex-col bg-surface print:m-0 print:bg-white">
+            <Head
+                title={printFileName(
+                    s.name,
+                    patient.name,
+                    fileDate(patient.service_date),
+                )}
+            />
             <div className="border-b border-card-border bg-white print:hidden">
                 <div className="mx-auto flex max-w-[880px] items-center justify-between gap-[10px] px-4 py-[10px]">
                     <Link
