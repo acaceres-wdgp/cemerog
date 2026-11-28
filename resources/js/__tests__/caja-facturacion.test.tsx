@@ -193,6 +193,57 @@ describe('Facturación', () => {
         );
     });
 
+    it('leaving credit brings back the full amount and the method fields', () => {
+        render(<CajaIndex {...props()} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Emitir factura' }));
+        const dialog = screen.getByRole('dialog');
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Crédito' }),
+        );
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Transferencia' }),
+        );
+
+        expect(within(dialog).getByLabelText(/Monto \(RD\$\)/)).toHaveValue(
+            '2000.00',
+        );
+        expect(
+            within(dialog).getByLabelText(/Número de la transferencia/),
+        ).toBeTruthy();
+
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Crédito' }),
+        );
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Tarjeta' }),
+        );
+        expect(
+            within(dialog).getByLabelText(/Número de aprobación/),
+        ).toBeTruthy();
+    });
+
+    it('leaving credit after a discount collects the discounted total', () => {
+        render(<CajaIndex {...props()} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Emitir factura' }));
+        const dialog = screen.getByRole('dialog');
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Crédito' }),
+        );
+        fireEvent.change(within(dialog).getByLabelText(/Descuento \(%\)/), {
+            target: { value: '10' },
+        });
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Efectivo' }),
+        );
+
+        expect(within(dialog).getByLabelText(/Monto \(RD\$\)/)).toHaveValue(
+            '1800.00',
+        );
+        expect(within(dialog).getByLabelText(/Efectivo recibido/)).toBeTruthy();
+    });
+
     it('a discount needs a reason and lowers the amount to collect', () => {
         render(<CajaIndex {...props()} />);
 

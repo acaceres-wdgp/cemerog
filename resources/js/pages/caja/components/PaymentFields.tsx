@@ -135,6 +135,22 @@ export default function PaymentFields({
             ? parseMoney(state.received) - amount
             : null;
 
+    // Credit starts with a down payment of 0; leaving it collects the
+    // whole balance again, so the cash received for the down payment goes
+    const selectMethod = (m: Method) => {
+        if (m === 'credito' && !credit) {
+            onChange({ method: m, amount: '0' });
+        } else if (m !== 'credito' && credit) {
+            onChange({
+                method: m,
+                amount: (balance / 100).toFixed(2),
+                received: '',
+            });
+        } else {
+            onChange({ method: m });
+        }
+    };
+
     return (
         <div className="flex flex-col gap-4">
             <FormField
@@ -171,13 +187,7 @@ export default function PaymentFields({
                             key={m}
                             label={METHOD_LABELS[m]}
                             active={state.method === m}
-                            onClick={() =>
-                                onChange(
-                                    m === 'credito' && !credit
-                                        ? { method: m, amount: '0' }
-                                        : { method: m },
-                                )
-                            }
+                            onClick={() => selectMethod(m)}
                         />
                     ))}
                 </div>

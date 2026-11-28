@@ -182,6 +182,38 @@ describe('Registrar pago', () => {
         );
     });
 
+    it('leaving credit clears the cash received for the down payment', () => {
+        const dialog = openPayment();
+
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Crédito' }),
+        );
+        fireEvent.change(within(dialog).getByLabelText(/Abono inicial/), {
+            target: { value: '500' },
+        });
+        fireEvent.change(within(dialog).getByLabelText(/Efectivo recibido/), {
+            target: { value: '500' },
+        });
+        fireEvent.click(
+            within(dialog).getAllByRole('button', { name: 'Efectivo' })[0],
+        );
+
+        expect(within(dialog).getByLabelText(/Monto \(RD\$\)/)).toHaveValue(
+            '2000.00',
+        );
+        expect(within(dialog).getByLabelText(/Efectivo recibido/)).toHaveValue(
+            '',
+        );
+        fireEvent.click(
+            within(dialog).getByRole('button', { name: 'Registrar pago' }),
+        );
+        expect(mockPost).toHaveBeenCalledWith(
+            '/facturacion/facturas/9/pagos',
+            { payments: [{ method: 'efectivo', amount: 200000 }] },
+            expect.anything(),
+        );
+    });
+
     it('does not allow paying more than the balance', () => {
         const dialog = openPayment();
 
